@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
-import { FaCalendarAlt, FaSignOutAlt, FaTv, FaCheck, FaTimes, FaSpinner, FaSync, FaEdit, FaSave, FaEye, FaPlus, FaTrash, FaAmbulance } from 'react-icons/fa';
+import { FaCalendarAlt, FaSignOutAlt, FaTv, FaCheck, FaTimes, FaSpinner, FaSync, FaEdit, FaSave, FaEye, FaPlus, FaTrash, FaAmbulance, FaExclamationTriangle } from 'react-icons/fa';
 import reportService from '../services/reportService';
 
 const AdminDashboard = () => {
@@ -17,18 +17,21 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Modal State for View & Edit Report
+  // Modal State for View & Edit & Delete Report
   const [modalOpen, setModalOpen] = useState(false);
   const [modalDept, setModalDept] = useState(null);
   const [loadingReport, setLoadingReport] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState('');
 
   // Editable Form Data inside Modal
   const [editHeader, setEditHeader] = useState({ doctorName: '', room: '', shiftTime: '' });
   const [editReportData, setEditReportData] = useState({});
   const [editTransferCases, setEditTransferCases] = useState([]);
+  const [hasReport, setHasReport] = useState(false);
 
   const fetchStatus = async () => {
     setLoading(true);
@@ -68,11 +71,13 @@ const AdminDashboard = () => {
     setModalOpen(true);
     setLoadingReport(true);
     setIsEditing(false);
+    setShowDeleteConfirm(false);
     setSaveSuccess('');
     try {
       const res = await reportService.getReport(dept.departmentCode, date);
       const report = res.data;
       if (report) {
+        setHasReport(true);
         setEditHeader({
           doctorName: report.doctor_name || '',
           room: report.room || '',
@@ -82,6 +87,7 @@ const AdminDashboard = () => {
         setEditReportData(parsedData);
         setEditTransferCases(report.transferCases || []);
       } else {
+        setHasReport(false);
         setEditHeader({ doctorName: '', room: '', shiftTime: '' });
         setEditReportData({});
         setEditTransferCases([]);
@@ -108,11 +114,26 @@ const AdminDashboard = () => {
       });
       setSaveSuccess('Đã lưu thay đổi báo cáo thành công!');
       setIsEditing(false);
+      setHasReport(true);
       fetchStatus();
     } catch (err) {
       alert('Không thể lưu báo cáo: ' + (err.response?.data?.error || err.message));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDeleteReport = async () => {
+    setDeleting(true);
+    try {
+      await reportService.deleteReport(modalDept.departmentCode, date);
+      setModalOpen(false);
+      setShowDeleteConfirm(false);
+      fetchStatus();
+    } catch (err) {
+      alert('Không thể xóa báo cáo: ' + (err.response?.data?.error || err.message));
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -306,7 +327,7 @@ const AdminDashboard = () => {
         </div>
       )}
 
-      {/* MODAL: VIEW & EDIT REPORT DETAILS */}
+      {/* MODAL: VIEW, EDIT & DELETE REPORT DETAILS */}
       {modalOpen && modalDept && (
         <div style={{
           position: 'fixed',
@@ -370,6 +391,26 @@ const AdminDashboard = () => {
                   {saveSuccess && (
                     <div style={{ backgroundColor: 'var(--brand-green-subtle)', color: 'var(--brand-green)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', marginBottom: '1rem', fontWeight: '600' }}>
                       ✅ {saveSuccess}
+                    </div>
+                  )}
+
+                  {/* Confirmation banner for deleting report */}
+                  {showDeleteConfirm && (
+                    <div style={{ backgroundColor: 'var(--danger-light)', border: '1.5px solid var(--brand-red)', color: 'var(--brand-red)', padding: '1rem 1.25rem', borderRadius: 'var(--radius-md)', marginBottom: '1.25rem', animation: 'fadeIn 0.2s ease-out' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: '700', fontSize: '1rem', marginBottom: '0.5rem' }}>
+                        <FaExclamationTriangle size={20} /> Xác nhận xóa toàn bộ báo cáo này?
+                      </div>
+                      <p style={{ fontSize: '0.875rem', marginBottom: '1rem', color: '#991B1B' }}>
+                        Thao tác này sẽ xóa báo cáo ngày {date} của khoa <strong>{modalDept.departmentName}</strong> và đưa trạng thái về <strong>"Chưa nộp"</strong>. Không thể hoàn tác.
+                      </p>
+                      <div style={{ display: 'flex', gap: '0.75rem' }}>
+                        <button type="button" className="btn btn-danger btn-sm" onClick={handleDeleteReport} disabled={deleting}>
+                          {deleting ? <><FaSpinner className="spinner" /> Đang xóa...</> : <>✅ Có, Xóa Ngay</>}
+                        </button>
+                        <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowDeleteConfirm(false)} disabled={deleting}>
+                          Hủy
+                        </button>
+                      </div>
                     </div>
                   )}
 
@@ -503,9 +544,11 @@ const AdminDashboard = () => {
               borderTop: '1px solid var(--border)',
               display: 'flex',
               justify: 'space-between',
-              alignItems: 'center'
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '0.75rem'
             }}>
-              <div>
+              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
                 {!isEditing ? (
                   <button type="button" className="btn btn-secondary" onClick={() => setIsEditing(true)}>
                     <FaEdit /> Chỉnh Sửa Báo Cáo
@@ -515,7 +558,14 @@ const AdminDashboard = () => {
                     Hủy Chỉnh Sửa
                   </button>
                 )}
+
+                {hasReport && !showDeleteConfirm && (
+                  <button type="button" className="btn btn-danger btn-sm" onClick={() => setShowDeleteConfirm(true)}>
+                    <FaTrash /> Xóa Báo Cáo (Trở về Chưa Nộp)
+                  </button>
+                )}
               </div>
+
               <div style={{ display: 'flex', gap: '0.75rem' }}>
                 <button type="button" className="btn btn-secondary" onClick={() => setModalOpen(false)}>
                   Đóng

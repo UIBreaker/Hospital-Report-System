@@ -109,4 +109,23 @@ const getReportsByDate = async (req, res, next) => {
   }
 };
 
-module.exports = { createOrUpdateReport, getReport, getReportsByDate };
+const deleteReport = async (req, res, next) => {
+  try {
+    const { departmentCode, date } = req.params;
+
+    if (req.user.role !== 'admin' && req.user.departmentCode !== departmentCode) {
+      return res.status(403).json({ success: false, error: 'Access denied' });
+    }
+
+    await pool.execute(
+      'DELETE FROM reports WHERE department_code = ? AND report_date = ?',
+      [departmentCode, date]
+    );
+
+    res.json({ success: true, message: 'Báo cáo đã được xóa thành công' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { createOrUpdateReport, getReport, getReportsByDate, deleteReport };
