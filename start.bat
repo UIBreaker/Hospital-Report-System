@@ -20,9 +20,13 @@ if %errorLevel% equ 0 (
         echo [MySQL] MySQL dang chay san sang.
     )
 ) else (
-    echo [MySQL] Service chua cai dat. Thu khoi dong thu cong...
-    start /B "MySQL" "C:\xampp\mysql\bin\mysqld.exe" --console
-    timeout /t 4 /nobreak >nul
+    echo [MySQL] Service chua cai dat. Khoi dong MySQL qua Terminal...
+    del /f /q "C:\xampp\mysql\data\master*.info" >nul 2>&1
+    del /f /q "C:\xampp\mysql\data\relay-log.info" >nul 2>&1
+    del /f /q "C:\xampp\mysql\data\*relay-bin*" >nul 2>&1
+    start "MySQL Database" cmd /k ""C:\xampp\mysql\bin\mysqld.exe" --defaults-file="C:\xampp\mysql\bin\my.ini" --standalone --console"
+    echo [MySQL] Dang cho 5 giay de MySQL khoi dong hoan toan...
+    timeout /t 5 /nobreak >nul
     echo [MySQL] MySQL da khoi dong.
 )
 echo.

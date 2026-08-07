@@ -10,10 +10,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/admin', adminRoutes);
 
+// Error Handler
 app.use(errorHandler);
 
 module.exports = app;

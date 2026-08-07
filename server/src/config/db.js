@@ -19,27 +19,24 @@ const pool = mysql.createPool({
   connectTimeout: 30000,
 });
 
-// Warm up the pool and verify connection on startup, with retry
-const connectWithRetry = async (retries = 10, delay = 3000) => {
-  for (let i = 1; i <= retries; i++) {
+// Warm up the pool and verify connection on startup, with infinite retry
+const connectWithRetry = async () => {
+  let attempt = 0;
+  while (true) {
+    attempt++;
     try {
       const conn = await pool.getConnection();
       await conn.query('SELECT 1');
       conn.release();
-      console.log('✅ MySQL connected successfully');
+      console.log('✅ MySQL connected successfully (attempt', attempt + ')');
       return;
     } catch (err) {
-      console.error(`⚠️  MySQL connection attempt ${i}/${retries} failed: ${err.message}`);
-      if (i < retries) {
-        console.log(`   Retrying in ${delay / 1000}s...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
-      } else {
-        console.error('❌ Could not connect to MySQL after', retries, 'attempts. Exiting.');
-        process.exit(1);
-      }
+      console.error(`⚠️  MySQL not ready (attempt ${attempt}): ${err.message} — retrying in 3s...`);
+      await new Promise(resolve => setTimeout(resolve, 3000));
     }
   }
 };
+
 
 connectWithRetry();
 
