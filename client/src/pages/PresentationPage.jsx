@@ -187,22 +187,12 @@ const PresentationPage = () => {
       {/* Sidebar - Hidden completely in Fullscreen mode */}
       {!isFullscreen && (
         <div className="no-print" style={{ width: '270px', backgroundColor: '#1E293B', borderRight: '1px solid #334155', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
-          <div style={{ padding: '1rem', borderBottom: '1px solid #334155', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <img src="/logo.png" alt="Logo" style={{ width: '32px', height: '32px' }} />
-              <div>
-                <h2 style={{ fontSize: '0.85rem', fontWeight: '800', color: '#FFFFFF' }}>TRÌNH CHIẾU GIAO BAN</h2>
-                <p style={{ fontSize: '0.75rem', color: '#94A3B8' }}>{slides.length} slide khả dụng</p>
-              </div>
+          <div style={{ padding: '1rem', borderBottom: '1px solid #334155', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <img src="/logo.png" alt="Logo" style={{ width: '32px', height: '32px' }} />
+            <div>
+              <h2 style={{ fontSize: '0.85rem', fontWeight: '800', color: '#FFFFFF' }}>TRÌNH CHIẾU GIAO BAN</h2>
+              <p style={{ fontSize: '0.75rem', color: '#94A3B8' }}>{slides.length} slide khả dụng</p>
             </div>
-            <button 
-              onClick={handleExit}
-              className="btn btn-danger btn-sm"
-              title="Thoát trình chiếu"
-              style={{ padding: '0.3rem 0.5rem', fontSize: '0.75rem' }}
-            >
-              <FaTimes /> Thoát
-            </button>
           </div>
 
           <div style={{ flex: 1, overflowY: 'auto', padding: '0.5rem' }}>
