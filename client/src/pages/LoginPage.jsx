@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
-import { FaHospitalAlt, FaUser, FaLock, FaSpinner, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaUser, FaLock, FaSpinner, FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const LoginPage = () => {
   const [username, setUsername] = useState('');
@@ -27,7 +27,7 @@ const LoginPage = () => {
       const loggedInUser = await login(username, password);
       navigate(loggedInUser.role === 'admin' ? '/admin' : '/report');
     } catch (err) {
-      setError(err.response?.data?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+      setError(err.response?.data?.error || err.response?.data?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại tên đăng nhập hoặc mật khẩu.');
     } finally {
       setIsSubmitting(false);
     }
@@ -38,71 +38,104 @@ const LoginPage = () => {
       minHeight: '100vh',
       display: 'flex',
       flexDirection: 'column',
-      background: 'linear-gradient(135deg, #1E40AF 0%, #7C3AED 100%)',
+      background: 'linear-gradient(135deg, #0F2C59 0%, #1E40AF 50%, #15803D 100%)',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '1rem'
+      padding: '1.5rem',
+      position: 'relative',
+      overflow: 'hidden'
     }}>
-      <div className="glass-card animate-slide-up" style={{ width: '100%', maxWidth: '420px', padding: '2.5rem' }}>
-        <div className="text-center mb-6">
-          <FaHospitalAlt style={{ fontSize: '3rem', color: '#fff', marginBottom: '1rem' }} />
-          <h1 style={{ color: '#fff', fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+      {/* Decorative background circle overlay */}
+      <div style={{
+        position: 'absolute',
+        width: '600px',
+        height: '600px',
+        borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 70%)',
+        top: '-100px',
+        right: '-100px',
+        pointerEvents: 'none'
+      }} />
+
+      <div className="glass-card animate-slide-up" style={{ width: '100%', maxWidth: '440px', padding: '2.5rem 2rem' }}>
+        <div className="text-center mb-6" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{
+            padding: '8px',
+            borderRadius: '50%',
+            backgroundColor: '#FFFFFF',
+            boxShadow: '0 8px 24px rgba(15, 44, 89, 0.15)',
+            marginBottom: '1rem'
+          }}>
+            <img src="/logo.png" alt="Logo TTYT Bình Long" className="logo-img-lg" />
+          </div>
+          <h2 style={{ color: 'var(--brand-blue)', fontSize: '1.1rem', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+            TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG
+          </h2>
+          <h1 style={{ color: 'var(--brand-red)', fontSize: '1.4rem', fontWeight: '700', marginTop: '0.2rem' }}>
             Hệ Thống Báo Cáo Giao Ban
           </h1>
-          <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem' }}>Bệnh Viện Bình Long</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
+            Đăng nhập tài khoản khoa phòng hoặc quản trị
+          </p>
         </div>
 
         {error && (
-          <div style={{ backgroundColor: '#FEE2E2', color: '#DC2626', padding: '0.75rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.9rem' }}>
-            {error}
+          <div style={{ backgroundColor: 'var(--danger-light)', color: 'var(--danger)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', marginBottom: '1.25rem', fontSize: '0.875rem', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            ⚠️ {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div style={{ position: 'relative' }}>
-            <FaUser style={{ position: 'absolute', top: '50%', left: '1rem', transform: 'translateY(-50%)', color: '#64748B' }} />
-            <input 
-              type="text" 
-              placeholder="Tên đăng nhập" 
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              style={{ paddingLeft: '2.5rem' }}
-              required 
-            />
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
+          <div className="form-group">
+            <label style={{ color: 'var(--text-secondary)' }}>Tên đăng nhập</label>
+            <div style={{ position: 'relative' }}>
+              <FaUser style={{ position: 'absolute', top: '50%', left: '1rem', transform: 'translateY(-50%)', color: 'var(--brand-blue-light)' }} />
+              <input 
+                type="text" 
+                placeholder="Nhập tài khoản khoa (VD: hscctnt.bvbl)" 
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                style={{ paddingLeft: '2.6rem' }}
+                required 
+              />
+            </div>
           </div>
           
-          <div style={{ position: 'relative' }}>
-            <FaLock style={{ position: 'absolute', top: '50%', left: '1rem', transform: 'translateY(-50%)', color: '#64748B' }} />
-            <input 
-              type={showPassword ? "text" : "password"} 
-              placeholder="Mật khẩu" 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              style={{ paddingLeft: '2.5rem', paddingRight: '2.5rem' }}
-              required 
-            />
-            <button 
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              style={{ position: 'absolute', top: '50%', right: '0.5rem', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#64748B', cursor: 'pointer', padding: '0.5rem' }}
-            >
-              {showPassword ? <FaEyeSlash /> : <FaEye />}
-            </button>
+          <div className="form-group">
+            <label style={{ color: 'var(--text-secondary)' }}>Mật khẩu</label>
+            <div style={{ position: 'relative' }}>
+              <FaLock style={{ position: 'absolute', top: '50%', left: '1rem', transform: 'translateY(-50%)', color: 'var(--brand-blue-light)' }} />
+              <input 
+                type={showPassword ? "text" : "password"} 
+                placeholder="Nhập mật khẩu" 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={{ paddingLeft: '2.6rem', paddingRight: '2.6rem' }}
+                required 
+              />
+              <button 
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{ position: 'absolute', top: '50%', right: '0.5rem', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.5rem' }}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
           </div>
 
           <button 
             type="submit" 
             className="btn btn-primary" 
             disabled={isSubmitting || !username || !password}
-            style={{ marginTop: '1rem', backgroundColor: '#fff', color: '#1E40AF' }}
+            style={{ marginTop: '0.5rem', width: '100%', padding: '0.8rem', fontSize: '1rem' }}
           >
-            {isSubmitting ? <FaSpinner className="spinner" /> : 'Đăng Nhập'}
+            {isSubmitting ? <><FaSpinner className="spinner" /> Đang kiểm tra...</> : 'Đăng Nhập'}
           </button>
         </form>
       </div>
       
-      <div style={{ marginTop: '2rem', color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem' }}>
-        &copy; 2026 Bệnh Viện Bình Long
+      <div style={{ marginTop: '2rem', color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem', textAlign: 'center' }}>
+        &copy; 2026 Trung Tâm Y Tế Khu Vực Bình Long. Tất cả quyền được bảo lưu.
       </div>
     </div>
   );

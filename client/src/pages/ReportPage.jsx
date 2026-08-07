@@ -1,6 +1,6 @@
-import React, { useState, useContext, Suspense } from 'react';
+import React, { useState, useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
-import { FaCalendarAlt, FaUserMd, FaChevronRight, FaHospitalAlt, FaSignOutAlt, FaSpinner, FaPaperPlane, FaCheckCircle } from 'react-icons/fa';
+import { FaCalendarAlt, FaUserMd, FaChevronRight, FaSignOutAlt, FaSpinner, FaPaperPlane, FaCheckCircle } from 'react-icons/fa';
 import reportService from '../services/reportService';
 
 import HoiSucCapCuuForm from '../components/forms/departments/HoiSucCapCuuForm';
@@ -84,10 +84,10 @@ const ReportPage = () => {
     return (
       <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
         <div className="card animate-fade-in" style={{ maxWidth: '600px', margin: '4rem auto', textAlign: 'center', padding: '3rem' }}>
-          <FaCheckCircle style={{ fontSize: '4rem', color: 'var(--success)', marginBottom: '1.5rem' }} />
-          <h2 style={{ marginBottom: '1rem', color: 'var(--success)' }}>Gửi báo cáo thành công!</h2>
+          <FaCheckCircle style={{ fontSize: '4rem', color: 'var(--brand-green)', marginBottom: '1.5rem' }} />
+          <h2 style={{ marginBottom: '1rem', color: 'var(--brand-green)' }}>Gửi Báo Cáo Thành Công!</h2>
           <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>
-            Báo cáo ngày {headerData.reportDate} của {user?.departmentName} đã được ghi nhận.
+            Báo cáo giao ban ngày <strong>{headerData.reportDate}</strong> của khoa <strong>{user?.departmentName}</strong> đã được ghi nhận vào hệ thống.
           </p>
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
             <button className="btn btn-primary" onClick={() => { setSubmitted(false); setStep(1); setFormData({}); setTransferCases([]); setHeaderData({...headerData, doctorName: '', room: '', shiftTime: ''}); }}>
@@ -103,60 +103,63 @@ const ReportPage = () => {
   }
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{ background: 'linear-gradient(135deg, var(--primary), var(--accent))', padding: '0.75rem', borderRadius: '12px', color: 'white' }}>
-            <FaHospitalAlt size={24} />
-          </div>
+    <div style={{ padding: '1.5rem 2rem', maxWidth: '1200px', margin: '0 auto' }}>
+      {/* Brand Header */}
+      <header className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', padding: '1rem 1.5rem', background: '#FFFFFF' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem' }}>
+          <img src="/logo.png" alt="Logo TTYT Bình Long" className="logo-img" />
           <div>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Xin chào, {user?.departmentName}</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Báo cáo giao ban hằng ngày</p>
+            <h4 style={{ fontSize: '0.8rem', color: 'var(--brand-red)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG
+            </h4>
+            <h2 style={{ fontSize: '1.25rem', color: 'var(--brand-blue)', fontWeight: '800' }}>
+              {user?.departmentName}
+            </h2>
           </div>
         </div>
-        <button onClick={logout} className="btn btn-secondary">
+        <button onClick={logout} className="btn btn-secondary" style={{ fontSize: '0.85rem' }}>
           <FaSignOutAlt /> Đăng xuất
         </button>
       </header>
 
       {step === 1 ? (
         <div className="card animate-fade-in" style={{ maxWidth: '600px', margin: '0 auto' }}>
-          <h3 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', borderBottom: '2px solid var(--primary-light)', paddingBottom: '1rem', color: 'var(--primary)' }}>
-            <FaUserMd style={{ marginRight: '0.5rem' }} />
-            Thông tin ca trực
+          <h3 style={{ fontSize: '1.2rem', marginBottom: '1.5rem', borderBottom: '2px solid var(--primary-lighter)', paddingBottom: '0.75rem', color: 'var(--brand-blue)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <FaUserMd style={{ color: 'var(--brand-red)' }} />
+            Thông Tin Hành Chính Ca Trực
           </h3>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '2rem' }}>
             <div className="form-group">
-              <label>Ngày báo cáo</label>
+              <label>Ngày báo cáo (Mặc định: Ngày hôm qua)</label>
               <div style={{ position: 'relative' }}>
                 <FaCalendarAlt style={{ position: 'absolute', top: '50%', left: '1rem', transform: 'translateY(-50%)', color: 'var(--text-muted)', zIndex: 1 }} />
                 <input 
                   type="date" 
                   value={headerData.reportDate}
                   onChange={(e) => setHeaderData({...headerData, reportDate: e.target.value})}
-                  style={{ paddingLeft: '2.5rem' }}
+                  style={{ paddingLeft: '2.6rem' }}
                 />
               </div>
             </div>
 
             <div className="form-group">
-              <label>Bác sĩ trực chính <span style={{color: 'var(--danger)'}}>*</span></label>
+              <label>Tên Bác sĩ trực chính <span style={{ color: 'var(--brand-red)' }}>*</span></label>
               <div style={{ position: 'relative' }}>
                 <FaUserMd style={{ position: 'absolute', top: '50%', left: '1rem', transform: 'translateY(-50%)', color: 'var(--text-muted)', zIndex: 1 }} />
                 <input 
                   type="text" 
-                  placeholder="Nhập tên bác sĩ trực..."
+                  placeholder="Nhập họ tên Bác sĩ trực..."
                   value={headerData.doctorName}
                   onChange={(e) => setHeaderData({...headerData, doctorName: e.target.value})}
-                  style={{ paddingLeft: '2.5rem' }}
+                  style={{ paddingLeft: '2.6rem' }}
                 />
               </div>
             </div>
 
             <div style={{ display: 'flex', gap: '1rem' }}>
               <div className="form-group" style={{ flex: 1 }}>
-                <label>Phòng/Buồng</label>
+                <label>Phòng / Buồng trực (Không bắt buộc)</label>
                 <input 
                   type="text" 
                   placeholder="VD: Phòng cấp cứu"
@@ -165,10 +168,10 @@ const ReportPage = () => {
                 />
               </div>
               <div className="form-group" style={{ flex: 1 }}>
-                <label>Thời gian trực</label>
+                <label>Thời gian trực (Không bắt buộc)</label>
                 <input 
                   type="text" 
-                  placeholder="VD: 7h - 19h"
+                  placeholder="VD: 07h00 - 07h00"
                   value={headerData.shiftTime}
                   onChange={(e) => setHeaderData({...headerData, shiftTime: e.target.value})}
                 />
@@ -183,22 +186,22 @@ const ReportPage = () => {
               disabled={!headerData.doctorName.trim()}
               style={{ fontSize: '1rem', padding: '0.75rem 2rem' }}
             >
-              Tiếp tục <FaChevronRight />
+              Tiếp tục nhập báo cáo <FaChevronRight />
             </button>
           </div>
         </div>
       ) : (
         <div className="animate-slide-up">
           {/* Header summary bar */}
-          <div className="card" style={{ marginBottom: '1.5rem', padding: '1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(135deg, #EFF6FF, #F5F3FF)' }}>
-            <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
-              <div><strong>📅 Ngày:</strong> {headerData.reportDate}</div>
-              <div><strong>👨‍⚕️ Bác sĩ:</strong> {headerData.doctorName}</div>
-              {headerData.room && <div><strong>🏥 Phòng:</strong> {headerData.room}</div>}
-              {headerData.shiftTime && <div><strong>⏰ Giờ trực:</strong> {headerData.shiftTime}</div>}
+          <div className="card" style={{ marginBottom: '1.5rem', padding: '1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(135deg, #EFF6FF, #F8FAFC)', borderLeft: '4px solid var(--brand-blue)' }}>
+            <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', fontSize: '0.95rem' }}>
+              <div>📅 <strong>Ngày báo cáo:</strong> {headerData.reportDate}</div>
+              <div>👨‍⚕️ <strong>Bác sĩ trực:</strong> {headerData.doctorName}</div>
+              {headerData.room && <div>🏥 <strong>Phòng:</strong> {headerData.room}</div>}
+              {headerData.shiftTime && <div>⏰ <strong>Ca trực:</strong> {headerData.shiftTime}</div>}
             </div>
-            <button className="btn btn-secondary" style={{ padding: '0.25rem 0.75rem', fontSize: '0.875rem' }} onClick={() => setStep(1)}>
-              ✏️ Chỉnh sửa
+            <button className="btn btn-secondary btn-sm" onClick={() => setStep(1)}>
+              ✏️ Sửa thông tin ca trực
             </button>
           </div>
 
@@ -224,7 +227,7 @@ const ReportPage = () => {
 
           {/* Submit error */}
           {submitError && (
-            <div style={{ backgroundColor: '#FEE2E2', color: '#DC2626', padding: '1rem', borderRadius: '8px', marginBottom: '1rem' }}>
+            <div style={{ backgroundColor: 'var(--danger-light)', color: 'var(--danger)', padding: '1rem', borderRadius: 'var(--radius-md)', marginBottom: '1rem', fontSize: '0.9rem' }}>
               ❌ {submitError}
             </div>
           )}
@@ -235,14 +238,14 @@ const ReportPage = () => {
               <button 
                 className="btn btn-primary"
                 onClick={() => setShowConfirm(true)}
-                style={{ fontSize: '1.1rem', padding: '1rem 3rem' }}
+                style={{ fontSize: '1.1rem', padding: '0.9rem 3rem' }}
               >
-                <FaPaperPlane /> Gửi Báo Cáo
+                <FaPaperPlane /> Gửi Báo Cáo Giao Ban
               </button>
             ) : (
               <div className="card" style={{ textAlign: 'center', padding: '2rem', maxWidth: '500px', border: '2px solid var(--warning)' }}>
-                <p style={{ marginBottom: '1.5rem', fontSize: '1.1rem', fontWeight: '500' }}>
-                  ⚠️ Xác nhận gửi báo cáo ngày {headerData.reportDate}?
+                <p style={{ marginBottom: '1.5rem', fontSize: '1.05rem', fontWeight: '600' }}>
+                  ⚠️ Xác nhận gửi báo cáo ngày {headerData.reportDate} của khoa {user?.departmentName}?
                 </p>
                 <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
                   <button 
