@@ -148,9 +148,7 @@ const NoiForm = ({ doctorName, formData, setFormData, transferCases, setTransfer
         </div>
       </div>
 
-      {(chuyenVienCount > 0 || (transferCases && transferCases.length > 0)) && (
-        <TransferCaseForm transferCases={transferCases} setTransferCases={setTransferCases} />
-      )}
+      <TransferCaseForm transferCases={transferCases} setTransferCases={setTransferCases} />
     </div>
   );
 };
