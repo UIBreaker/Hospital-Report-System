@@ -6,6 +6,9 @@ const createOrUpdateReport = async (req, res, next) => {
     await connection.beginTransaction();
     const { departmentCode, reportDate, doctorName, room, shiftTime, reportData, status, transferCases } = req.body;
 
+    // Helper: convert undefined/empty string to null for mysql2 (used for all inserts)
+    const safeVal = (v) => (v === undefined || v === null || v === '' ? null : v);
+
     // Check if report exists
     const [existing] = await connection.execute(
       'SELECT id FROM reports WHERE department_code = ? AND report_date = ?',
@@ -19,25 +22,25 @@ const createOrUpdateReport = async (req, res, next) => {
         `UPDATE reports 
          SET doctor_name = ?, room = ?, shift_time = ?, report_data = ?, status = ?
          WHERE id = ?`,
-        [doctorName, room, shiftTime, JSON.stringify(reportData), status || 'submitted', reportId]
+        [safeVal(doctorName), safeVal(room), safeVal(shiftTime), JSON.stringify(reportData || {}), status || 'submitted', reportId]
       );
       
-      // Delete old transfer cases
+      // Delete old transfer cases before re-inserting
       await connection.execute('DELETE FROM transfer_cases WHERE report_id = ?', [reportId]);
     } else {
       const [result] = await connection.execute(
         `INSERT INTO reports (department_code, report_date, doctor_name, room, shift_time, report_data, status)
          VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [departmentCode, reportDate, doctorName, room, shiftTime, JSON.stringify(reportData), status || 'submitted']
+        [safeVal(departmentCode), safeVal(reportDate), safeVal(doctorName), safeVal(room), safeVal(shiftTime), JSON.stringify(reportData || {}), status || 'submitted']
       );
       reportId = result.insertId;
     }
 
     // Insert new transfer cases (safe: skip _id, handle all fields)
     if (transferCases && Array.isArray(transferCases) && transferCases.length > 0) {
+      // Helper: convert undefined/empty string to null for mysql2
       for (const tc of transferCases) {
-        // patientName can be combined "Name, Age, Address" from frontend
-        const patientName = tc.patientName || tc.patient_name || null;
+        const patientName = safeVal(tc.patientName || tc.patient_name);
         await connection.execute(
           `INSERT INTO transfer_cases 
            (report_id, patient_name, age, address, admission_time, reason, clinical_tests, diagnosis, initial_treatment, progress_notes)
@@ -45,14 +48,14 @@ const createOrUpdateReport = async (req, res, next) => {
           [
             reportId,
             patientName,
-            tc.age || null,
-            tc.address || null,
-            tc.admissionTime || tc.admission_time || null,
-            tc.reason || null,
-            tc.clinicalTests || tc.clinical_tests || null,
-            tc.diagnosis || null,
-            tc.initialTreatment || tc.initial_treatment || null,
-            tc.progressNotes || tc.progress_notes || null
+            safeVal(tc.age),
+            safeVal(tc.address),
+            safeVal(tc.admissionTime || tc.admission_time),
+            safeVal(tc.reason),
+            safeVal(tc.clinicalTests || tc.clinical_tests),
+            safeVal(tc.diagnosis),
+            safeVal(tc.initialTreatment || tc.initial_treatment),
+            safeVal(tc.progressNotes || tc.progress_notes)
           ]
         );
       }
