@@ -8,8 +8,11 @@ const TransferCaseForm = ({ transferCases = [], setTransferCases }) => {
     setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
   }, []);
 
+  // IMPORTANT: use functional updater to avoid stale closure bug with multiple cases
   const handleChange = useCallback((id, field, value) => {
-    setTransferCases(prev => prev.map(tc => tc._id === id ? { ...tc, [field]: value } : tc));
+    setTransferCases(prev =>
+      prev.map(tc => tc._id === id ? { ...tc, [field]: value } : tc)
+    );
   }, [setTransferCases]);
 
   const addCase = useCallback(() => {
@@ -18,7 +21,7 @@ const TransferCaseForm = ({ transferCases = [], setTransferCases }) => {
       ...prev,
       {
         _id: newId,
-        patientName: '',
+        patientName: '',   // Họ tên, tuổi, địa chỉ (combined)
         admissionTime: '',
         reason: '',
         clinicalTests: '',
@@ -127,22 +130,13 @@ const TransferCaseForm = ({ transferCases = [], setTransferCases }) => {
                 {isExpanded && (
                   <div style={{ padding: '1.25rem 1rem' }}>
                     <div className="form-grid" style={{ marginBottom: '0.75rem' }}>
-                      <div className="form-group">
-                        <label>Họ tên bệnh nhân</label>
+                      <div className="form-group full-width">
+                        <label>Họ tên, tuổi, địa chỉ</label>
                         <input
                           type="text"
                           value={tCase.patientName || ''}
                           onChange={(e) => handleChange(id, 'patientName', e.target.value)}
-                          placeholder="Nguyễn Văn A"
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label>Tuổi / Địa chỉ</label>
-                        <input
-                          type="text"
-                          value={tCase.admissionTime ? '' : (tCase.ageAddress || '')}
-                          onChange={(e) => handleChange(id, 'ageAddress', e.target.value)}
-                          placeholder="45 tuổi — Bình Long, Bình Phước"
+                          placeholder="VD: Nguyễn Văn A, 45 tuổi, Bình Long, Bình Phước"
                         />
                       </div>
                       <div className="form-group">

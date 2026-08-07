@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaExpand, FaCompress, FaPrint, FaChevronLeft, FaChevronRight, FaSpinner, FaAmbulance, FaSignOutAlt, FaHome } from 'react-icons/fa';
 import reportService from '../services/reportService';
@@ -136,8 +136,13 @@ const renderReportData = (reportData, isFS) => {
 
 // Table-based rendering for a cleaner look in presentation
 const renderReportTable = (reportData, isFS) => {
-  if (!reportData) return null;
-  const data = typeof reportData === 'string' ? JSON.parse(reportData) : reportData;
+  if (!reportData) return { dataRows: [], headerRows: [], all: [] };
+  let data;
+  try {
+    data = typeof reportData === 'string' ? JSON.parse(reportData) : reportData;
+  } catch (e) {
+    return { dataRows: [], headerRows: [], all: [] };
+  }
 
   const rows = [];
   const fontSize = isFS ? '1.15rem' : '0.95rem';
@@ -200,24 +205,27 @@ const PresentationPage = () => {
     };
   }, []);
 
-  // Build slides
-  const slides = [{ type: 'title', title: 'BÁO CÁO GIAO BAN' }];
-  reports.forEach(report => {
-    const deptName = DEPARTMENT_DISPLAY_NAMES[report.department_code] || report.department_name || report.department_code;
-    slides.push({ type: 'department', title: deptName, report });
-    if (report.transferCases && report.transferCases.length > 0) {
-      report.transferCases.forEach((tc, idx) => {
-        slides.push({
-          type: 'transfer',
-          title: `CA CHUYỂN VIỆN – ${deptName}`,
-          transferCase: tc,
-          caseIndex: idx + 1,
-          totalCases: report.transferCases.length,
-          deptName,
+  // Build slides — memoized so index stays stable across re-renders
+  const slides = useMemo(() => {
+    const s = [{ type: 'title', title: 'BÁO CÁO GIAO BAN' }];
+    reports.forEach(report => {
+      const deptName = DEPARTMENT_DISPLAY_NAMES[report.department_code] || report.department_name || report.department_code;
+      s.push({ type: 'department', title: deptName, report });
+      if (report.transferCases && report.transferCases.length > 0) {
+        report.transferCases.forEach((tc, idx) => {
+          s.push({
+            type: 'transfer',
+            title: `CA CHUYỂN VIỆN – ${deptName}`,
+            transferCase: tc,
+            caseIndex: idx + 1,
+            totalCases: report.transferCases.length,
+            deptName,
+          });
         });
-      });
-    }
-  });
+      }
+    });
+    return s;
+  }, [reports]);
 
   const handleNext = () => { if (currentSlide < slides.length - 1) setCurrentSlide(p => p + 1); };
   const handlePrev = () => { if (currentSlide > 0) setCurrentSlide(p => p - 1); };

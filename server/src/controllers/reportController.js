@@ -33,13 +33,27 @@ const createOrUpdateReport = async (req, res, next) => {
       reportId = result.insertId;
     }
 
-    // Insert new transfer cases
-    if (transferCases && transferCases.length > 0) {
+    // Insert new transfer cases (safe: skip _id, handle all fields)
+    if (transferCases && Array.isArray(transferCases) && transferCases.length > 0) {
       for (const tc of transferCases) {
+        // patientName can be combined "Name, Age, Address" from frontend
+        const patientName = tc.patientName || tc.patient_name || null;
         await connection.execute(
-          `INSERT INTO transfer_cases (report_id, patient_name, age, address, admission_time, reason, clinical_tests, diagnosis, initial_treatment, progress_notes)
+          `INSERT INTO transfer_cases 
+           (report_id, patient_name, age, address, admission_time, reason, clinical_tests, diagnosis, initial_treatment, progress_notes)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [reportId, tc.patientName || null, tc.age || null, tc.address || null, tc.admissionTime || null, tc.reason || null, tc.clinicalTests || null, tc.diagnosis || null, tc.initialTreatment || null, tc.progressNotes || null]
+          [
+            reportId,
+            patientName,
+            tc.age || null,
+            tc.address || null,
+            tc.admissionTime || tc.admission_time || null,
+            tc.reason || null,
+            tc.clinicalTests || tc.clinical_tests || null,
+            tc.diagnosis || null,
+            tc.initialTreatment || tc.initial_treatment || null,
+            tc.progressNotes || tc.progress_notes || null
+          ]
         );
       }
     }
