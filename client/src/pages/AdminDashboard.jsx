@@ -52,6 +52,7 @@ const AdminDashboard = () => {
         { departmentCode: 'gmhs', departmentName: 'Gây mê Hồi sức', status: 'not_submitted' },
         { departmentCode: 'san', departmentName: 'Sản', status: 'not_submitted' },
         { departmentCode: 'xn', departmentName: 'Xét nghiệm', status: 'not_submitted' },
+        { departmentCode: 'noi', departmentName: 'Khoa Nội', status: 'not_submitted' },
       ]);
     } finally {
       setLoading(false);
@@ -215,7 +216,7 @@ const AdminDashboard = () => {
               TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG
             </h4>
             <h2 style={{ fontSize: '1.3rem', color: 'var(--brand-blue)', fontWeight: '800' }}>
-              Ban Giám Đốc — Bảng Theo Dõi Báo Cáo Giao Ban
+              KHNV — Bảng Theo Dõi Báo Cáo Giao Ban
             </h2>
           </div>
         </div>

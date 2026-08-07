@@ -13,6 +13,7 @@ import NhiemForm from '../components/forms/departments/NhiemForm';
 import GayMeHoiSucForm from '../components/forms/departments/GayMeHoiSucForm';
 import SanForm from '../components/forms/departments/SanForm';
 import XetNghiemForm from '../components/forms/departments/XetNghiemForm';
+import NoiForm from '../components/forms/departments/NoiForm';
 
 const DEPARTMENT_FORMS = {
   hscc_tnt: HoiSucCapCuuForm,
@@ -25,6 +26,7 @@ const DEPARTMENT_FORMS = {
   gmhs: GayMeHoiSucForm,
   san: SanForm,
   xn: XetNghiemForm,
+  noi: NoiForm,
 };
 
 const ReportPage = () => {

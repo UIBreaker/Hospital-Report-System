@@ -14,6 +14,7 @@ const DEPARTMENT_DISPLAY_NAMES = {
   gmhs: 'KHOA GÂY MÊ HỒI SỨC',
   san: 'KHOA SẢN',
   xn: 'KHOA XÉT NGHIỆM',
+  noi: 'KHOA NỘI',
 };
 
 const formatDate = (dateStr) => {

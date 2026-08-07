@@ -1,8 +1,8 @@
 # 🏥 Hệ Thống Báo Cáo Giao Ban Bệnh Viện Bình Long
 
-Hệ thống ứng dụng web chuyên biệt phục vụ công tác báo cáo giao ban hằng ngày cho các khoa phòng và Ban Giám đốc Bệnh Viện Bình Long. 
+Hệ thống ứng dụng web chuyên biệt phục vụ công tác báo cáo giao ban hằng ngày cho các khoa phòng và KHNV Bệnh Viện Bình Long. 
 
-Ứng dụng cho phép các bác sĩ trực thuộc 10 khoa phòng chuyên môn nhập liệu biểu mẫu động (Dynamic Form), quản lý chi tiết các ca chuyển viện, đồng thời hỗ trợ Ban Giám đốc theo dõi tiến độ nộp báo cáo và trình chiếu giao ban toàn màn hình trong các buổi họp.
+Ứng dụng cho phép các bác sĩ trực thuộc 10 khoa phòng chuyên môn nhập liệu biểu mẫu động (Dynamic Form), quản lý chi tiết các ca chuyển viện, đồng thời hỗ trợ KHNV theo dõi tiến độ nộp báo cáo và trình chiếu giao ban toàn màn hình trong các buổi họp.
 
 ---
 
@@ -25,7 +25,7 @@ Hệ thống ứng dụng web chuyên biệt phục vụ công tác báo cáo gi
 ## ✨ Các Tính Năng Nổi Bật
 
 1. **🔐 Đăng Nhập Phân Quyền:**
-   - Phân quyền rõ ràng giữa **Tài khoản Khoa phòng** và **Ban Giám đốc (Admin)**.
+   - Phân quyền rõ ràng giữa **Tài khoản Khoa phòng** và **KHNV (Admin)**.
    - Quản lý phiên làm việc bằng JWT Token an toàn.
 
 2. **📋 Biểu Mẫu Báo Cáo Chuyên Môn Động (Dynamic Form):**
@@ -94,7 +94,7 @@ hospital-report-system/
         └── pages/
             ├── LoginPage.jsx        # Trang đăng nhập
             ├── ReportPage.jsx       # Trang nhập báo cáo khoa
-            ├── AdminDashboard.jsx    # Trang tổng hợp Ban Giám đốc
+            ├── AdminDashboard.jsx    # Trang tổng hợp KHNV
             └── PresentationPage.jsx  # Trang trình chiếu giao ban
 ```
 
