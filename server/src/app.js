@@ -10,6 +10,28 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Welcome & Status endpoints
+app.get('/', (req, res) => {
+  res.json({
+    name: 'Hospital Report System API - BVĐK KV Bình Long',
+    status: 'online',
+    frontendUrl: 'http://localhost:5173',
+    endpoints: {
+      auth: '/api/auth/login',
+      reports: '/api/reports',
+      admin: '/api/admin/dashboard'
+    }
+  });
+});
+
+app.get('/api', (req, res) => {
+  res.json({
+    status: 'success',
+    message: 'Hệ thống API Báo cáo Giao ban đang hoạt động bình thường',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/reports', reportRoutes);
