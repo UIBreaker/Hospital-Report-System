@@ -2,6 +2,10 @@
 
 <div align="center">
 
+![Trung Tâm Y Tế Khu Vực Bình Long](client/public/hospital.jpg)
+
+<br/>
+
 ![Logo TTYT Bình Long](client/public/logo.png)
 
 ### **HỆ THỐNG QUẢN LÝ, TỔNG HỢP VÀ TRÌNH CHIẾU BÁO CÁO GIAO BAN Y TẾ CHUYÊN NGHIỆP**
