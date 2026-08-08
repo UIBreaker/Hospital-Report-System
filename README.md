@@ -443,7 +443,6 @@ Dự án được cấu hình sẵn sàng triển khai trên **Vercel** thông q
 - [x] Phiên bản 1.0: Hoàn thiện 11 biểu mẫu khoa, ca chuyển viện, trình chiếu slide và Trợ lý AI.
 - [ ] Phiên bản 1.1: Xuất báo cáo giao ban thành file **PDF** và file **Excel (.xlsx)** theo mẫu chuẩn Bộ Y Tế.
 - [ ] Phiên bản 1.2: Biểu đồ trực quan hóa dữ liệu khám chữa bệnh theo tuần/tháng/quý.
-- [ ] Phiên bản 1.3: Tích hợp thông báo nhắc nhở nộp báo cáo qua Zalo ZNS / Telegram Bot.
 
 ---
 
