@@ -395,7 +395,8 @@ const PresentationPage = () => {
             animation: 'fadeIn 0.25s ease-out',
             display: 'flex', flexDirection: 'column',
             position: 'relative',
-            fontSize: `${fontScale}rem`
+            zoom: fontScale,
+            WebkitZoom: fontScale,
           }}>
             {/* Top decorative gradient line */}
             <div style={{
@@ -792,32 +793,44 @@ const PresentationPage = () => {
             <div style={{
               display: 'flex', alignItems: 'center',
               backgroundColor: '#1E293B', border: '1px solid #334155',
-              borderRadius: '8px', padding: '2px 4px'
+              borderRadius: '8px', padding: '3px 6px', gap: '4px'
             }}>
               <button
-                onClick={() => setFontScale(p => Math.max(0.85, p - 0.15))}
+                onClick={() => setFontScale(p => Math.max(0.8, Number((p - 0.2).toFixed(1))))}
                 title="Thu nhỏ chữ"
                 style={{
-                  background: 'transparent', color: '#CBD5E1', border: 'none',
-                  padding: '0.35rem 0.6rem', cursor: 'pointer', borderRadius: '6px',
-                  display: 'flex', alignItems: 'center', fontSize: '0.85rem'
+                  background: '#334155', color: '#F1F5F9', border: 'none',
+                  padding: '0.35rem 0.75rem', cursor: 'pointer', borderRadius: '6px',
+                  display: 'flex', alignItems: 'center', gap: '0.3rem',
+                  fontSize: '0.85rem', fontWeight: '700'
                 }}
               >
-                <FaSearchMinus />
+                <FaSearchMinus /> Giảm
               </button>
-              <span style={{ color: '#94A3B8', fontSize: '0.75rem', padding: '0 0.3rem', fontWeight: '700' }}>
-                {Math.round(fontScale * 100)}%
-              </span>
               <button
-                onClick={() => setFontScale(p => Math.min(1.45, p + 0.15))}
+                onClick={() => setFontScale(1)}
+                title="Đặt lại cỡ chữ mặc định (100%)"
+                style={{
+                  background: fontScale === 1 ? '#0F172A' : '#2563EB',
+                  color: '#FFFFFF', border: 'none',
+                  padding: '0.35rem 0.6rem', cursor: 'pointer', borderRadius: '6px',
+                  fontSize: '0.85rem', fontWeight: '800'
+                }}
+              >
+                {Math.round(fontScale * 100)}%
+              </button>
+              <button
+                onClick={() => setFontScale(p => Math.min(1.8, Number((p + 0.2).toFixed(1))))}
                 title="Phóng to chữ"
                 style={{
-                  background: 'transparent', color: '#38BDF8', border: 'none',
-                  padding: '0.35rem 0.6rem', cursor: 'pointer', borderRadius: '6px',
-                  display: 'flex', alignItems: 'center', fontSize: '0.85rem', fontWeight: '700'
+                  background: '#2563EB', color: '#FFFFFF', border: 'none',
+                  padding: '0.35rem 0.75rem', cursor: 'pointer', borderRadius: '6px',
+                  display: 'flex', alignItems: 'center', gap: '0.3rem',
+                  fontSize: '0.85rem', fontWeight: '700',
+                  boxShadow: '0 2px 6px rgba(37,99,235,0.4)'
                 }}
               >
-                <FaSearchPlus /> Chữ to
+                <FaSearchPlus /> Phóng to
               </button>
             </div>
 
