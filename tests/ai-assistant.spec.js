@@ -9,11 +9,13 @@ test.describe('Hệ Thống Báo Cáo Giao Ban — Trợ Lý Y Tế AI (AI Assis
     await expect(aiBtn).toBeVisible({ timeout: 15000 });
     await aiBtn.click();
 
-    // Tìm câu hỏi có sẵn về tác giả
-    const authorBtn = page.locator('button:has-text("tác giả")').first();
+    const chatModal = page.locator('.ai-chatbox-window');
+    await expect(chatModal).toBeVisible({ timeout: 10000 });
+
+    const authorBtn = page.locator('button:has-text("Ai là tác giả"), button:has-text("tác giả")').first();
     if (await authorBtn.isVisible({ timeout: 5000 })) {
       await authorBtn.click();
-      await expect(page.locator('.ai-chatbox-window, body')).toContainText('Nguyễn Vũ Nhật Nam');
+      await expect(chatModal).toContainText('Nguyễn Vũ Nhật Nam', { timeout: 10000 });
     }
   });
 

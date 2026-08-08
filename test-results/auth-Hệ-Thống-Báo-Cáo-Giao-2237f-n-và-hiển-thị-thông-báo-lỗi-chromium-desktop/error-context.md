@@ -12,40 +12,50 @@
 # Error details
 
 ```
-Error: expect(locator).toBeVisible() failed
+Error: expect(locator).toContainText(expected) failed
 
-Locator: locator('div:has-text("⚠️"), div:has-text("thất bại"), div:has-text("chính xác")').first()
-Expected: visible
-Timeout: 8000ms
-Error: element(s) not found
+Locator: locator('.glass-card, body')
+Expected pattern: /thất bại|không chính xác|⚠️|Invalid/i
+Error: strict mode violation: locator('.glass-card, body') resolved to 2 elements:
+    1) <body>…</body> aka locator('body')
+    2) <div class="glass-card login-card animate-slide-up">…</div> aka locator('div').nth(3)
 
 Call log:
-  - Expect "toBeVisible" with timeout 8000ms
-  - waiting for locator('div:has-text("⚠️"), div:has-text("thất bại"), div:has-text("chính xác")').first()
+  - Expect "toContainText" with timeout 10000ms
+  - waiting for locator('.glass-card, body')
 
 ```
 
+# Page snapshot
+
 ```yaml
-- img "Logo TTYT Bình Long"
-- heading "TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG" [level=2]
-- heading "Hệ Thống Báo Cáo Giao Ban" [level=1]
-- paragraph: Đăng nhập tài khoản khoa phòng hoặc quản trị
-- text: Tên đăng nhập
-- img
-- 'textbox "VD: Khnv hoặc noi.bvbl"'
-- text: Mật khẩu
-- img
-- textbox "Nhập mật khẩu"
-- button:
-  - img
-- button "Đăng Nhập" [disabled]
-- img
-- text: Phiên bản
-- strong: "1.0"
-- text: TTYT Bình Long © 2026 Trung Tâm Y Tế Khu Vực Bình Long.
-- button "Trợ Lý Y Tế AI Hỏi đáp & Lấy tài khoản khoa":
-  - img
-  - text: Trợ Lý Y Tế AI Hỏi đáp & Lấy tài khoản khoa
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - img "Logo TTYT Bình Long" [ref=e7]
+      - heading "TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG" [level=2] [ref=e8]
+      - heading "Hệ Thống Báo Cáo Giao Ban" [level=1] [ref=e9]
+      - paragraph [ref=e10]: Đăng nhập tài khoản khoa phòng hoặc quản trị
+    - generic [ref=e11]:
+      - generic [ref=e12]:
+        - generic [ref=e13]: Tên đăng nhập
+        - 'textbox "VD: Khnv hoặc noi.bvbl" [ref=e17]': user_khong_ton_tai
+      - generic [ref=e18]:
+        - generic [ref=e19]: Mật khẩu
+        - generic [ref=e20]:
+          - textbox "Nhập mật khẩu" [ref=e23]: pass_sai_123
+          - button [ref=e24] [cursor=pointer]
+      - button "Đang kiểm tra..." [disabled] [ref=e27] [cursor=pointer]
+    - generic [ref=e30]:
+      - generic [ref=e31]:
+        - text: Phiên bản
+        - strong [ref=e34]: "1.0"
+      - generic [ref=e35]: TTYT Bình Long
+  - generic [ref=e36]: © 2026 Trung Tâm Y Tế Khu Vực Bình Long.
+  - button "Trợ Lý Y Tế AI Hỏi đáp & Lấy tài khoản khoa" [ref=e38] [cursor=pointer]:
+    - generic [ref=e42]:
+      - generic [ref=e43]: Trợ Lý Y Tế AI
+      - generic [ref=e44]: Hỏi đáp & Lấy tài khoản khoa
 ```
 
 # Test source
@@ -71,9 +81,9 @@ Call log:
   18 |     await page.fill('input[placeholder*="mật khẩu"]', 'pass_sai_123');
   19 |     await page.click('button[type="submit"]');
   20 | 
-  21 |     const errorMsg = page.locator('div:has-text("⚠️"), div:has-text("thất bại"), div:has-text("chính xác")').first();
-> 22 |     await expect(errorMsg).toBeVisible({ timeout: 8000 });
-     |                            ^ Error: expect(locator).toBeVisible() failed
+  21 |     // Chờ thông báo lỗi xuất hiện
+> 22 |     await expect(page.locator('.glass-card, body')).toContainText(/thất bại|không chính xác|⚠️|Invalid/i, { timeout: 10000 });
+     |                                                     ^ Error: expect(locator).toContainText(expected) failed
   23 |   });
   24 | 
   25 |   test('Đăng nhập thành công với tài khoản Khoa Nội (noi.bvbl) và chuyển hướng vào /report', async ({ page }) => {

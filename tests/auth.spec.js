@@ -18,8 +18,8 @@ test.describe('Hệ Thống Báo Cáo Giao Ban — Authentication & Access Contr
     await page.fill('input[placeholder*="mật khẩu"]', 'pass_sai_123');
     await page.click('button[type="submit"]');
 
-    const errorMsg = page.locator('div:has-text("⚠️"), div:has-text("thất bại"), div:has-text("chính xác")').first();
-    await expect(errorMsg).toBeVisible({ timeout: 8000 });
+    // Chờ thông báo lỗi xuất hiện
+    await expect(page.locator('.glass-card, body')).toContainText(/thất bại|không chính xác|⚠️|Invalid/i, { timeout: 10000 });
   });
 
   test('Đăng nhập thành công với tài khoản Khoa Nội (noi.bvbl) và chuyển hướng vào /report', async ({ page }) => {

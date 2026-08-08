@@ -14,6 +14,17 @@ test.describe('Hệ Thống Báo Cáo Giao Ban — 11 Khoa Dynamic Forms & Ca Ch
   test('Hiển thị thông tin hành chính ca trực và nạp biểu mẫu Khoa Nội', async ({ page }) => {
     await expect(page.locator('body')).toContainText('Khoa Nội');
     await expect(page.locator('input[type="date"]')).toBeVisible();
+
+    // Điền bác sĩ trực và bấm tiếp tục sang Bước 2
+    const doctorInput = page.locator('input[placeholder*="BS."], input[placeholder*="Bác sĩ"]').first();
+    await doctorInput.fill('BS. Nguyễn Văn A');
+    
+    const nextBtn = page.locator('button:has-text("Tiếp tục")');
+    if (await nextBtn.isVisible()) {
+      await nextBtn.click();
+    }
+
+    // Xác nhận Bước 2 đã tải xong
     await expect(page.locator('body')).toContainText('Bệnh Cũ');
   });
 
@@ -21,6 +32,11 @@ test.describe('Hệ Thống Báo Cáo Giao Ban — 11 Khoa Dynamic Forms & Ca Ch
     const doctorInput = page.locator('input[placeholder*="BS."], input[placeholder*="Bác sĩ"]').first();
     if (await doctorInput.isVisible()) {
       await doctorInput.fill('BS. Nguyễn Văn A');
+    }
+
+    const nextBtn = page.locator('button:has-text("Tiếp tục")');
+    if (await nextBtn.isVisible()) {
+      await nextBtn.click();
     }
 
     const numInputs = page.locator('input[type="number"]');
@@ -40,6 +56,16 @@ test.describe('Hệ Thống Báo Cáo Giao Ban — 11 Khoa Dynamic Forms & Ca Ch
   });
 
   test('Thêm mới ca bệnh chuyển viện cấp cứu', async ({ page }) => {
+    const doctorInput = page.locator('input[placeholder*="BS."], input[placeholder*="Bác sĩ"]').first();
+    if (await doctorInput.isVisible()) {
+      await doctorInput.fill('BS. Nguyễn Văn A');
+    }
+
+    const nextBtn = page.locator('button:has-text("Tiếp tục")');
+    if (await nextBtn.isVisible()) {
+      await nextBtn.click();
+    }
+
     const addTransferBtn = page.locator('button:has-text("Thêm Ca Chuyển Viện")');
     if (await addTransferBtn.isVisible()) {
       await addTransferBtn.click();
