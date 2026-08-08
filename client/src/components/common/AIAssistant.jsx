@@ -32,6 +32,7 @@ const INITIAL_MESSAGES = [
 const QUICK_QUESTIONS = [
   { id: 'author', label: '👨‍💻 Ai là tác giả phát triển phần mềm?' },
   { id: 'dept_account', label: '🔑 Cấp tài khoản cho khoa của tôi' },
+  { id: 'test_ui_guide', label: '🧪 Chạy Test Playwright UI Mode' },
   { id: 'lorem_guide', label: '📝 Hướng dẫn phím tắt "lorem + Enter"' },
   { id: 'transfer_guide', label: '🚑 Hướng dẫn nhập ca Bệnh Chuyển Viện' },
   { id: 'presentation_guide', label: '📺 Hướng dẫn Trình Chiếu Giao Ban' },
@@ -88,9 +89,12 @@ const AIAssistant = ({ onAutoFillLogin }) => {
     } else if (qId === 'presentation_guide') {
       userText = 'Cách xem Trình Chiếu Giao Ban?';
       aiResponse = '📺 HƯỚNG DẪN TRÌNH CHIẾU GIAO BAN:\n\n1. Đăng nhập bằng tài khoản Quản trị viên (admin).\n2. Chọn ngày báo cáo và nhấn nút "Trình chiếu giao ban" (hệ thống sẽ mở ngay trong cùng tab).\n3. Dùng phím mũi tên Trái/Phải hoặc phím Cách (Space) để chuyển slide.\n4. Nhấn phím F để bật chế độ Toàn màn hình hoặc bấm nút "Chữ to (+)" ở thanh dưới để phóng to chữ cho phòng họp dễ quan sát!';
+    } else if (qId === 'test_ui_guide') {
+      userText = 'Cách chạy test quan sát click chuột (UI Mode)?';
+      aiResponse = '🧪 HƯỚNG DẪN CHẠY TEST TỰ ĐỘNG VỚI PLAYWRIGHT UI MODE:\n\n1. Mở Terminal / PowerShell tại thư mục dự án.\n2. Chạy một trong các lệnh sau:\n\n   👉 Xem giao diện tương tác UI Mode (quan sát từng bước click chuột, xem timeline & chụp ảnh DOM):\n   npx playwright test --ui\n   (hoặc: npm run test:ui)\n\n   👉 Mở trình duyệt Chrome thật để nhìn chuột tự bấm trực tiếp:\n   npm run test:headed\n\n   👉 Chạy toàn bộ 48 bài test nhanh:\n   npm test\n\n✨ Playwright sẽ tự động mở cửa sổ trình duyệt, đăng nhập, nạp biểu mẫu và thực hiện mọi thao tác bấm chuột tự động 100%!';
     } else if (qId === 'admin_info') {
       userText = 'Tài khoản Quản trị viên (Admin) là gì?';
-      aiResponse = '🛡️ TÀI KHOẢN QUẢN TRỊ VIÊN (ADMIN):\n\n• Tài khoản Admin dành riêng cho Ban Giám Đốc và Phòng Kế Hoạch Nghiệp Vụ (KHNV).\n• Admin có quyền tổng hợp toàn bộ 10 khoa phòng, chỉnh sửa báo cáo và điều khiển trình chiếu slide giao ban.\n• Vì lý do bảo mật, tài khoản Admin không được cấp tự động tại đây.';
+      aiResponse = '🛡️ TÀI KHOẢN QUẢN TRỊ VIÊN (ADMIN):\n\n• Tài khoản Admin: Khnv / Mật khẩu: Khnv@2026\n• Dành riêng cho Ban Giám Đốc và Phòng Kế Hoạch Nghiệp Vụ (KHNV).\n• Admin có quyền tổng hợp toàn bộ các khoa phòng, chỉnh sửa báo cáo và điều khiển trình chiếu slide giao ban.';
     }
 
     const newMsgs = [
@@ -112,8 +116,12 @@ const AIAssistant = ({ onAutoFillLogin }) => {
     let showDepts = false;
     let matchedDept = null;
 
+    // Check if query mentions Playwright / Testing / UI mode
+    if (query.includes('playwright') || query.includes('test') || query.includes('--ui') || query.includes('kiểm thử') || query.includes('click chuột')) {
+      aiReply = '🧪 HƯỚNG DẪN CHẠY TEST GIAO DIỆN (UI MODE):\n\nĐể quan sát Playwright tự động click chuột và chạy từng bước kiểm thử trên giao diện trực quan:\n\n1. Mở cửa sổ Terminal / PowerShell trên máy tính.\n2. Gõ lệnh:\n   npx playwright test --ui\n   (hoặc: npm run test:ui)\n\n3. Để mở trực tiếp trình duyệt Chrome tự động thao tác:\n   npm run test:headed\n\n🎉 Cửa sổ Playwright Test Runner sẽ xuất hiện với đầy đủ dòng thời gian (timeline), ảnh chụp màn hình từng bước và nhật ký chi tiết!';
+    }
     // Check if query mentions author
-    if (query.includes('tác giả') || query.includes('ai tạo') || query.includes('ai làm') || query.includes('phát triển') || query.includes('nhật nam') || query.includes('nguyễn vũ')) {
+    else if (query.includes('tác giả') || query.includes('ai tạo') || query.includes('ai làm') || query.includes('phát triển') || query.includes('nhật nam') || query.includes('nguyễn vũ')) {
       aiReply = '👨‍💻 Tác giả phát triển phần mềm này là NGUYỄN VŨ NHẬT NAM (Sinh năm 2004) – Lập trình viên xây dựng toàn bộ Hệ Thống Báo Cáo Giao Ban Trực Tuyến cho Trung Tâm Y Tế Khu Vực Bình Long.';
     }
     // Check if query matches a department
