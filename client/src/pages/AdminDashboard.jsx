@@ -585,7 +585,7 @@ const AdminDashboard = () => {
       {/* Bottom Left Version 1.0 Badge */}
       <div style={{
         position: 'fixed', bottom: '1.25rem', left: '1.5rem',
-        display: 'flex', alignItems: 'center', gap: '0.5rem',
+        display: 'flex', alignItems: 'center', gap: '0.45rem',
         backgroundColor: 'rgba(15, 44, 89, 0.9)', color: '#CBD5E1',
         padding: '0.45rem 0.9rem', borderRadius: '999px',
         border: '1px solid rgba(255, 255, 255, 0.15)',
@@ -594,8 +594,6 @@ const AdminDashboard = () => {
       }}>
         <FaCodeBranch style={{ color: '#38BDF8' }} />
         <span>Phiên bản <strong style={{ color: '#FFFFFF' }}>1.0</strong></span>
-        <span style={{ color: '#64748B' }}>•</span>
-        <span style={{ color: '#94A3B8' }}>Tác giả: <strong style={{ color: '#F1F5F9' }}>Nguyễn Vũ Nhật Nam (2004)</strong></span>
       </div>
 
       {/* Floating AI Assistant */}

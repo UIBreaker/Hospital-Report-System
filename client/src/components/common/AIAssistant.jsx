@@ -221,7 +221,7 @@ const AIAssistant = ({ onAutoFillLogin }) => {
                 <div style={{ fontSize: '0.95rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                   Trợ Lý Y Tế AI <span style={{ fontSize: '0.65rem', backgroundColor: '#10B981', color: '#FFF', padding: '1px 6px', borderRadius: '999px' }}>Online</span>
                 </div>
-                <div style={{ fontSize: '0.7rem', color: '#93C5FD' }}>TTYT KV Bình Long • Tác giả: Nguyễn Vũ Nhật Nam (2004)</div>
+                <div style={{ fontSize: '0.7rem', color: '#93C5FD' }}>TTYT Khu Vực Bình Long • Hỗ trợ trực tuyến</div>
               </div>
             </div>
             <button
