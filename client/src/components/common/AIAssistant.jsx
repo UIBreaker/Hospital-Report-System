@@ -153,10 +153,11 @@ const AIAssistant = ({ onAutoFillLogin }) => {
   return (
     <>
       {/* Floating AI Button (Bottom Right) */}
-      <div style={{ position: 'fixed', bottom: '1.5rem', right: '1.5rem', zIndex: 9999 }}>
+      <div className="ai-floating-container" style={{ position: 'fixed', bottom: '1.5rem', right: '1.5rem', zIndex: 9999 }}>
         {!isOpen && (
           <button
             onClick={() => setIsOpen(true)}
+            className="ai-floating-btn"
             style={{
               display: 'flex', alignItems: 'center', gap: '0.65rem',
               backgroundColor: '#0F2C59', color: '#FFFFFF',
@@ -171,13 +172,13 @@ const AIAssistant = ({ onAutoFillLogin }) => {
           >
             <div style={{
               width: '28px', height: '28px', borderRadius: '50%',
-              backgroundColor: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center'
+              backgroundColor: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
             }}>
               <FaRobot style={{ fontSize: '1rem', color: '#FFF' }} />
             </div>
-            <div style={{ textAlign: 'left' }}>
+            <div className="ai-btn-text" style={{ textAlign: 'left' }}>
               <div style={{ fontSize: '0.85rem', fontWeight: '800', letterSpacing: '0.3px' }}>Trợ Lý Y Tế AI</div>
-              <div style={{ fontSize: '0.7rem', color: '#93C5FD' }}>Hỏi đáp & Lấy tài khoản khoa</div>
+              <div className="ai-btn-sub" style={{ fontSize: '0.7rem', color: '#93C5FD' }}>Hỏi đáp & Lấy tài khoản khoa</div>
             </div>
             {showNotificationBadge && (
               <span style={{
@@ -193,7 +194,7 @@ const AIAssistant = ({ onAutoFillLogin }) => {
 
       {/* Chatbox Window */}
       {isOpen && (
-        <div style={{
+        <div className="ai-chatbox-window" style={{
           position: 'fixed', bottom: '1.5rem', right: '1.5rem',
           width: 'calc(100vw - 3rem)', maxWidth: '420px', height: '580px',
           maxHeight: 'calc(100vh - 3rem)',

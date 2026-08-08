@@ -207,56 +207,56 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div style={{ padding: '1.5rem 2rem', maxWidth: '1400px', margin: '0 auto', animation: 'fadeIn 0.4s ease-out' }}>
+    <div className="admin-dashboard-wrapper" style={{ maxWidth: '1400px', margin: '0 auto', animation: 'fadeIn 0.4s ease-out' }}>
       {/* Brand Header */}
-      <header className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', padding: '1rem 1.5rem', background: '#FFFFFF' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem' }}>
+      <header className="card admin-header" style={{ marginBottom: '1.5rem', padding: '1rem 1.5rem', background: '#FFFFFF' }}>
+        <div className="admin-header-brand" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <img src="/logo.png" alt="Logo TTYT Bình Long" className="logo-img" />
           <div>
-            <h4 style={{ fontSize: '0.8rem', color: 'var(--brand-red)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <h4 style={{ fontSize: '0.75rem', color: 'var(--brand-red)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
               TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG
             </h4>
-            <h2 style={{ fontSize: '1.3rem', color: 'var(--brand-blue)', fontWeight: '800' }}>
-              KHNV — Bảng Theo Dõi Báo Cáo Giao Ban
+            <h2 style={{ fontSize: '1.2rem', color: 'var(--brand-blue)', fontWeight: '800' }}>
+              KHNV — Theo Dõi Báo Cáo Giao Ban
             </h2>
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: 'var(--bg-color)', padding: '0.5rem 0.9rem', borderRadius: 'var(--radius-md)', border: '1.5px solid var(--border)' }}>
+        <div className="admin-header-actions" style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="admin-date-picker-box" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', backgroundColor: 'var(--bg-color)', padding: '0.45rem 0.85rem', borderRadius: 'var(--radius-md)', border: '1.5px solid var(--border)' }}>
             <FaCalendarAlt color="var(--brand-blue-light)" />
             <input 
               type="date" 
               value={date} 
               onChange={(e) => setDate(e.target.value)}
-              style={{ border: 'none', outline: 'none', padding: 0, width: 'auto', background: 'transparent', fontWeight: '600', color: 'var(--brand-blue)' }}
+              style={{ border: 'none', outline: 'none', padding: 0, width: 'auto', background: 'transparent', fontWeight: '600', color: 'var(--brand-blue)', fontSize: '0.9rem' }}
             />
           </div>
-          <button className="btn btn-ghost" onClick={fetchStatus} title="Làm mới dữ liệu">
+          <button className="btn btn-ghost btn-sm" onClick={fetchStatus} title="Làm mới dữ liệu" style={{ padding: '0.5rem 0.75rem' }}>
             <FaSync className={loading ? 'spinner' : ''} />
           </button>
-          <button className="btn btn-primary" onClick={handlePresentation}>
+          <button className="btn btn-primary" onClick={handlePresentation} style={{ fontSize: '0.85rem', padding: '0.55rem 1.1rem' }}>
             <FaTv /> Trình Chiếu Giao Ban
           </button>
-          <button className="btn btn-secondary" onClick={logout}>
+          <button className="btn btn-secondary btn-sm" onClick={logout} style={{ fontSize: '0.85rem', padding: '0.55rem 0.9rem' }}>
             <FaSignOutAlt /> Đăng xuất
           </button>
         </div>
       </header>
 
-      {/* Stats Summary Bar */}
-      <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '2rem' }}>
-        <div className="card" style={{ flex: 1, textAlign: 'center', background: 'linear-gradient(135deg, #EFF6FF, #DBEAFE)', borderLeft: '4px solid var(--brand-blue)' }}>
-          <div style={{ fontSize: '2.2rem', fontWeight: '800', color: 'var(--brand-blue)' }}>{totalCount}</div>
-          <div style={{ color: 'var(--text-muted)', fontSize: '0.875rem', fontWeight: '600' }}>Tổng số khoa phòng</div>
+      {/* Stats Summary Grid (Clean 3-column on all screens) */}
+      <div className="admin-stats-grid">
+        <div className="card admin-stats-card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #EFF6FF, #DBEAFE)', borderLeft: '4px solid var(--brand-blue)' }}>
+          <div className="stats-num" style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--brand-blue)' }}>{totalCount}</div>
+          <div className="stats-lbl" style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Tổng số khoa</div>
         </div>
-        <div className="card" style={{ flex: 1, textAlign: 'center', background: 'linear-gradient(135deg, #E8F5E9, #C8E6C9)', borderLeft: '4px solid var(--brand-green)' }}>
-          <div style={{ fontSize: '2.2rem', fontWeight: '800', color: 'var(--brand-green)' }}>{submittedCount}</div>
-          <div style={{ color: 'var(--brand-green)', fontSize: '0.875rem', fontWeight: '600' }}>Đã nộp báo cáo</div>
+        <div className="card admin-stats-card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #E8F5E9, #C8E6C9)', borderLeft: '4px solid var(--brand-green)' }}>
+          <div className="stats-num" style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--brand-green)' }}>{submittedCount}</div>
+          <div className="stats-lbl" style={{ color: 'var(--brand-green)', fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Đã nộp</div>
         </div>
-        <div className="card" style={{ flex: 1, textAlign: 'center', background: 'linear-gradient(135deg, #FEF3C7, #FDE68A)', borderLeft: '4px solid #D97706' }}>
-          <div style={{ fontSize: '2.2rem', fontWeight: '800', color: '#92400E' }}>{totalCount - submittedCount}</div>
-          <div style={{ color: '#92400E', fontSize: '0.875rem', fontWeight: '600' }}>Chưa nộp báo cáo</div>
+        <div className="card admin-stats-card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #FEF3C7, #FDE68A)', borderLeft: '4px solid #D97706' }}>
+          <div className="stats-num" style={{ fontSize: '2rem', fontWeight: '800', color: '#92400E' }}>{totalCount - submittedCount}</div>
+          <div className="stats-lbl" style={{ color: '#92400E', fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Chưa nộp</div>
         </div>
       </div>
 
@@ -273,7 +273,7 @@ const AdminDashboard = () => {
           <p style={{ marginTop: '1rem', color: 'var(--text-muted)' }}>Đang tải dữ liệu báo cáo...</p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+        <div className="admin-dept-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
           {statusList.map((dept, index) => {
             const isSubmitted = dept.status === 'submitted';
             return (
@@ -288,37 +288,38 @@ const AdminDashboard = () => {
                   animationDelay: `${index * 0.04}s`,
                   animation: 'slideUp 0.3s ease-out forwards',
                   opacity: 0,
-                  position: 'relative'
+                  position: 'relative',
+                  padding: '1.1rem 1.25rem'
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = 'var(--shadow-lg)'; }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = 'var(--shadow-lg)'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow-md)'; }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
-                  <h3 style={{ fontWeight: '700', fontSize: '1rem', color: 'var(--primary)' }}>{dept.departmentName}</h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.65rem' }}>
+                  <h3 style={{ fontWeight: '700', fontSize: '0.95rem', color: 'var(--primary)', lineHeight: 1.3 }}>{dept.departmentName}</h3>
                   {isSubmitted ? 
-                    <span className="badge badge-success" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                    <span className="badge badge-success" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', flexShrink: 0, marginLeft: '0.5rem' }}>
                       <FaCheck size={10} /> Đã nộp
                     </span> : 
-                    <span className="badge badge-warning" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                    <span className="badge badge-warning" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', flexShrink: 0, marginLeft: '0.5rem' }}>
                       <FaTimes size={10} /> Chưa nộp
                     </span>
                   }
                 </div>
                 
                 {isSubmitted ? (
-                  <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-                    {dept.doctorName && <p><strong>Bác sĩ trực:</strong> {dept.doctorName}</p>}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.75rem' }}>
-                      <span style={{ color: 'var(--brand-green)', fontWeight: '600', fontSize: '0.8rem' }}>✓ Đã nhận báo cáo</span>
-                      <span className="btn btn-secondary btn-sm" style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem' }}>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                    {dept.doctorName && <p style={{ marginBottom: '0.5rem' }}>👨‍⚕️ <strong>Bác sĩ trực:</strong> {dept.doctorName}</p>}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
+                      <span style={{ color: 'var(--brand-green)', fontWeight: '600', fontSize: '0.8rem' }}>✓ Đã nộp báo cáo</span>
+                      <span className="btn btn-secondary btn-sm" style={{ padding: '0.25rem 0.6rem', fontSize: '0.75rem' }}>
                         <FaEye /> Xem / Sửa
                       </span>
                     </div>
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
-                    <span style={{ fontSize: '0.85rem', color: 'var(--text-light)', fontStyle: 'italic' }}>Chưa có báo cáo</span>
-                    <span className="btn btn-secondary btn-sm" style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.75rem' }}>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-light)', fontStyle: 'italic' }}>Chưa có báo cáo</span>
+                    <span className="btn btn-secondary btn-sm" style={{ padding: '0.25rem 0.6rem', fontSize: '0.75rem' }}>
                       <FaEdit /> Nhập hộ
                     </span>
                   </div>
