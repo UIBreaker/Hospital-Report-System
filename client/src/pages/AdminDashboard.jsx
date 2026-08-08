@@ -64,7 +64,7 @@ const AdminDashboard = () => {
   }, [date]);
 
   const handlePresentation = () => {
-    window.open(`/presentation/${date}`, '_blank');
+    navigate(`/presentation/${date}`);
   };
 
   const handleOpenDetailModal = async (dept) => {

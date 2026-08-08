@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaExpand, FaCompress, FaPrint, FaChevronLeft, FaChevronRight, FaSpinner, FaAmbulance, FaSignOutAlt, FaHome } from 'react-icons/fa';
+import { FaExpand, FaCompress, FaPrint, FaChevronLeft, FaChevronRight, FaSpinner, FaAmbulance, FaArrowLeft, FaSearchPlus, FaSearchMinus } from 'react-icons/fa';
 import reportService from '../services/reportService';
 
 const DEPARTMENT_DISPLAY_NAMES = {
@@ -14,7 +14,7 @@ const DEPARTMENT_DISPLAY_NAMES = {
   gmhs: 'GÂY MÊ HỒI SỨC',
   san: 'SẢN',
   xn: 'XÉT NGHIỆM',
-  noi: 'NỘI',
+  noi: 'KHOA NỘI',
 };
 
 // Vietnamese label map for presentation display
@@ -27,10 +27,11 @@ const FIELD_LABELS = {
   tongSoKham: 'Tổng số khám', hauPhau: 'Hậu phẫu',
   // Sản
   sanhThuong: 'Sanh thường', sanhHut: 'Sanh hút', choSanh: 'Chờ sanh',
-  sieuAm: 'Siêu âm', chuyenVienNgoaiTru: 'Chuyển viện ngoại trú',
+  sieuAm: 'Siêu âm', chuyenVienNgoaiTru: 'Chuyển viện ngoại trú', moLayThai: 'Mổ lấy thai',
   // HSCC specific
   keToa: 'Kê toa', ngoaiTru: 'Ngoại trú', truyenMau: 'Truyền máu',
   tieuPhau: 'Tiểu phẫu', boBot: 'Bó bột', ccNgoaiVien: 'Cấp cứu ngoại viện',
+  bsTrucTNT: 'Bác sĩ trực TNT',
   // TNT
   tnt_benhCu: 'Bệnh cũ (TNT)', tnt_benhMoi: 'Bệnh mới (TNT)',
   tnt_xuatVien: 'Xuất viện (TNT)', tnt_chuyenVien: 'Chuyển viện (TNT)',
@@ -52,6 +53,10 @@ const FIELD_LABELS = {
   // GMHS
   phauThuat: 'Phẫu thuật', gayTe: 'Gây tê', gayMe: 'Gây mê',
   gayMeNghinh: 'Gây mê nghỉnh',
+  // Xét nghiệm / CĐHA
+  tongXetNghiem: 'Tổng số xét nghiệm', sinhHoa: 'Sinh hóa', huyetHoc: 'Huyết học',
+  dongMau: 'Đông máu', nuocTieu: 'Nước tiểu', mienDich: 'Miễn dịch',
+  xQuang: 'X-Quang', ctScanner: 'CT-Scanner', dienTim: 'Điện tim',
 };
 
 const getLabel = (key) => {
@@ -63,112 +68,96 @@ const getLabel = (key) => {
 };
 
 const formatDate = (dateStr) => {
+  if (!dateStr) return '';
   const d = new Date(dateStr + 'T00:00:00');
   return d.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 };
 
-// Improved: renders a flat list of key-value pairs from nested report data
-const renderReportData = (reportData, isFS) => {
-  if (!reportData) return null;
-  const data = typeof reportData === 'string' ? JSON.parse(reportData) : reportData;
+// Classify metric severity for smart visual styling
+const getMetricStyle = (key, value) => {
+  const numVal = Number(value);
+  const isPositive = !isNaN(numVal) && numVal > 0;
 
-  const rows = [];
-  const fontSize = isFS ? '1.1rem' : '0.9rem';
-  const valueFontSize = isFS ? '1.2rem' : '1rem';
-
-  const processSection = (obj, sectionLabel = null) => {
-    const entries = Object.entries(obj);
-    if (entries.length === 0) return;
-
-    // Check if this is a nested group
-    const hasNestedObjects = entries.some(([, v]) => v && typeof v === 'object' && !Array.isArray(v));
-
-    if (sectionLabel && hasNestedObjects) {
-      rows.push(
-        <div key={`section_${sectionLabel}`} style={{
-          gridColumn: '1 / -1',
-          marginTop: isFS ? '1.5rem' : '1rem',
-          paddingBottom: '0.4rem',
-          borderBottom: '2px solid #E2E8F0',
-          fontSize: isFS ? '1.1rem' : '0.85rem',
-          fontWeight: '800',
-          color: '#0F2C59',
-          textTransform: 'uppercase',
-          letterSpacing: '1px'
-        }}>
-          {sectionLabel}
-        </div>
-      );
-    }
-
-    entries.forEach(([key, value]) => {
-      if (value === null || value === undefined || value === '' || key === '_id') return;
-
-      if (value && typeof value === 'object' && !Array.isArray(value)) {
-        processSection(value, getLabel(key));
-      } else if (Array.isArray(value)) {
-        // Skip arrays (transfer cases handled separately)
-      } else {
-        rows.push(
-          <div key={key} style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: isFS ? '0.7rem 0.9rem' : '0.5rem 0.75rem',
-            borderBottom: '1px solid #F1F5F9',
-            borderRadius: '6px',
-            backgroundColor: rows.length % 2 === 0 ? '#F8FAFC' : '#FFFFFF',
-            breakInside: 'avoid'
-          }}>
-            <span style={{ color: '#475569', fontWeight: '500', fontSize }}>{getLabel(key)}</span>
-            <span style={{ fontWeight: '800', fontSize: valueFontSize, color: '#0F2C59', marginLeft: '1rem' }}>
-              {String(value)}
-            </span>
-          </div>
-        );
-      }
-    });
-  };
-
-  processSection(data);
-  return rows;
+  if (key.toLowerCase().includes('tuvong') || key.toLowerCase().includes('tu_vong')) {
+    return isPositive
+      ? { bg: '#FEE2E2', border: '#DC2626', text: '#991B1B', label: '#B91C1C', badge: '⚠️ Chú ý' }
+      : { bg: '#F8FAFC', border: '#E2E8F0', text: '#64748B', label: '#475569' };
+  }
+  if (key.toLowerCase().includes('chuyenvien') || key.toLowerCase().includes('chuyen_vien')) {
+    return isPositive
+      ? { bg: '#FEF3C7', border: '#D97706', text: '#B45309', label: '#92400E' }
+      : { bg: '#F8FAFC', border: '#E2E8F0', text: '#64748B', label: '#475569' };
+  }
+  if (key.toLowerCase().includes('benhmoi') || key.toLowerCase().includes('tongso') || key.toLowerCase().includes('tong_so')) {
+    return { bg: '#EFF6FF', border: '#3B82F6', text: '#1D4ED8', label: '#1E40AF' };
+  }
+  if (key.toLowerCase().includes('xuatvien') || key.toLowerCase().includes('xuat_vien')) {
+    return { bg: '#F0FDF4', border: '#22C55E', text: '#15803D', label: '#166534' };
+  }
+  if (key.toLowerCase().includes('hiencon') || key.toLowerCase().includes('hien_con')) {
+    return { bg: '#FAF5FF', border: '#A855F7', text: '#7E22CE', label: '#6B21A8' };
+  }
+  return { bg: '#FFFFFF', border: '#E2E8F0', text: '#0F2C59', label: '#334155' };
 };
 
-// Table-based rendering for a cleaner look in presentation
-const renderReportTable = (reportData, isFS) => {
-  if (!reportData) return { dataRows: [], headerRows: [], all: [] };
+// Parse structured sections from any department data
+const parseDepartmentSections = (reportData) => {
+  if (!reportData) return [];
   let data;
   try {
     data = typeof reportData === 'string' ? JSON.parse(reportData) : reportData;
   } catch (e) {
-    return { dataRows: [], headerRows: [], all: [] };
+    return [];
   }
 
-  const rows = [];
-  const fontSize = isFS ? '1.15rem' : '0.95rem';
+  const sections = [];
 
-  const processObj = (obj, prefix = '') => {
-    Object.entries(obj).forEach(([key, value]) => {
-      if (value === null || value === undefined || value === '' || key === '_id') return;
-      if (Array.isArray(value)) return;
+  // Check if data is divided into named groups (e.g. hscc, tnt, pk21)
+  const topKeys = Object.keys(data).filter(k => k !== '_id');
+  const hasNestedObjects = topKeys.some(k => data[k] && typeof data[k] === 'object' && !Array.isArray(data[k]));
 
-      if (value && typeof value === 'object') {
-        const sLabel = getLabel(key);
-        rows.push({ type: 'header', label: sLabel, key: prefix + key });
-        processObj(value, prefix + key + '_');
-      } else {
-        rows.push({ type: 'row', label: getLabel(key), value: String(value), key: prefix + key });
+  if (hasNestedObjects) {
+    topKeys.forEach(k => {
+      const val = data[k];
+      if (val && typeof val === 'object' && !Array.isArray(val)) {
+        let sectionTitle = getLabel(k);
+        if (k === 'hscc') sectionTitle = 'KHỐI HỒI SỨC CẤP CỨU (HSCC)';
+        if (k === 'tnt') sectionTitle = 'KHỐI THẬN NHÂN TẠO (TNT)';
+        if (k === 'pk21') sectionTitle = 'PHÒNG KHÁM 21';
+
+        const items = [];
+        Object.entries(val).forEach(([subK, subV]) => {
+          if (subV !== null && subV !== undefined && subV !== '' && subK !== '_id') {
+            items.push({ key: subK, label: getLabel(subK), value: String(subV) });
+          }
+        });
+        if (items.length > 0) {
+          sections.push({ title: sectionTitle, items });
+        }
+      } else if (val !== null && val !== undefined && val !== '' && !Array.isArray(val)) {
+        // Flat item in top level
+        let mainSec = sections.find(s => s.title === 'THÔNG TIN CHUNG');
+        if (!mainSec) {
+          mainSec = { title: 'THÔNG TIN CHUNG', items: [] };
+          sections.unshift(mainSec);
+        }
+        mainSec.items.push({ key: k, label: getLabel(k), value: String(val) });
       }
     });
-  };
+  } else {
+    // Flat object
+    const items = [];
+    Object.entries(data).forEach(([k, v]) => {
+      if (v !== null && v !== undefined && v !== '' && k !== '_id' && !Array.isArray(v)) {
+        items.push({ key: k, label: getLabel(k), value: String(v) });
+      }
+    });
+    if (items.length > 0) {
+      sections.push({ title: 'CHỈ SỐ BÁO CÁO TRONG CA TRỰC', items });
+    }
+  }
 
-  processObj(data);
-
-  // Group into pairs for 2-column display
-  const dataRows = rows.filter(r => r.type === 'row');
-  const headerRows = rows.filter(r => r.type === 'header');
-
-  return { dataRows, headerRows, all: rows };
+  return sections;
 };
 
 const PresentationPage = () => {
@@ -180,6 +169,7 @@ const PresentationPage = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [fontScale, setFontScale] = useState(1); // 1 = standard, 1.15 = large, 1.3 = extra large
 
   useEffect(() => {
     const fetchData = async () => {
@@ -205,7 +195,7 @@ const PresentationPage = () => {
     };
   }, []);
 
-  // Build slides — memoized so index stays stable across re-renders
+  // Build slides
   const slides = useMemo(() => {
     const s = [{ type: 'title', title: 'BÁO CÁO GIAO BAN' }];
     reports.forEach(report => {
@@ -220,6 +210,7 @@ const PresentationPage = () => {
             caseIndex: idx + 1,
             totalCases: report.transferCases.length,
             deptName,
+            report,
           });
         });
       }
@@ -248,6 +239,7 @@ const PresentationPage = () => {
       if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); handleNext(); }
       if (e.key === 'ArrowLeft') { e.preventDefault(); handlePrev(); }
       if (e.key === 'f' || e.key === 'F') toggleFullscreen();
+      if (e.key === 'Escape' && !document.fullscreenElement) handleExit();
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
@@ -257,8 +249,8 @@ const PresentationPage = () => {
     return (
       <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0B192C', color: 'white' }}>
         <div style={{ textAlign: 'center' }}>
-          <FaSpinner className="spinner" style={{ fontSize: '3rem', marginBottom: '1rem', color: '#388E3C' }} />
-          <p style={{ fontSize: '1.1rem', opacity: 0.8 }}>Đang tải dữ liệu trình chiếu...</p>
+          <FaSpinner className="spinner" style={{ fontSize: '3.5rem', marginBottom: '1.25rem', color: '#3B82F6' }} />
+          <p style={{ fontSize: '1.3rem', fontWeight: '600', opacity: 0.9 }}>Đang tải dữ liệu trình chiếu giao ban...</p>
         </div>
       </div>
     );
@@ -272,86 +264,108 @@ const PresentationPage = () => {
       ref={containerRef}
       style={{
         display: 'flex', height: '100vh', width: '100vw',
-        backgroundColor: '#0B192C', color: 'white',
-        position: 'relative', overflow: 'hidden'
+        backgroundColor: '#071224', color: '#1E293B',
+        position: 'relative', overflow: 'hidden',
+        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
       }}
     >
       {/* ===================== SIDEBAR ===================== */}
       {!isFullscreen && (
         <div className="no-print" style={{
-          width: '260px', backgroundColor: '#111827',
-          borderRight: '1px solid #1F2937',
+          width: '280px', backgroundColor: '#0F172A',
+          borderRight: '1px solid #1E293B',
           display: 'flex', flexDirection: 'column', flexShrink: 0
         }}>
-          {/* Sidebar header */}
-          <div style={{ padding: '1rem', borderBottom: '1px solid #1F2937', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <img src="/logo.png" alt="Logo" style={{ width: '34px', height: '34px' }} />
+          {/* Sidebar top action bar */}
+          <div style={{ padding: '1rem', borderBottom: '1px solid #1E293B' }}>
+            <button
+              onClick={handleExit}
+              style={{
+                width: '100%', padding: '0.65rem 1rem',
+                backgroundColor: '#1E293B', color: '#F8FAFC',
+                border: '1px solid #334155', borderRadius: '8px',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem',
+                fontSize: '0.9rem', fontWeight: '700', transition: 'all 0.2s'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#334155'}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#1E293B'}
+            >
+              <FaArrowLeft /> Về Bảng Điều Khiển
+            </button>
+          </div>
+
+          {/* Sidebar header info */}
+          <div style={{ padding: '1rem 1.2rem', borderBottom: '1px solid #1E293B', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <img src="/logo.png" alt="Logo" style={{ width: '38px', height: '38px' }} />
             <div>
-              <div style={{ fontSize: '0.8rem', fontWeight: '800', color: '#FFF' }}>TRÌNH CHIẾU GIAO BAN</div>
-              <div style={{ fontSize: '0.7rem', color: '#6B7280' }}>{slides.length} slide • {date}</div>
+              <div style={{ fontSize: '0.85rem', fontWeight: '800', color: '#FFFFFF', letterSpacing: '0.5px' }}>TRÌNH CHIẾU GIAO BAN</div>
+              <div style={{ fontSize: '0.75rem', color: '#94A3B8', marginTop: '2px' }}>{slides.length} slide • {date}</div>
             </div>
           </div>
 
           {/* Slide list */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '0.5rem' }}>
-            {slides.map((s, i) => (
-              <button
-                key={i}
-                onClick={() => setCurrentSlide(i)}
-                style={{
-                  width: '100%', textAlign: 'left',
-                  padding: '0.55rem 0.75rem', marginBottom: '2px',
-                  backgroundColor: currentSlide === i ? '#1E40AF' : 'transparent',
-                  color: currentSlide === i ? '#FFF' : '#9CA3AF',
-                  border: 'none', borderRadius: '6px', cursor: 'pointer',
-                  fontSize: '0.78rem', fontWeight: currentSlide === i ? '700' : '400',
-                  display: 'flex', alignItems: 'center', gap: '0.5rem',
-                  transition: 'all 0.15s'
-                }}
-              >
-                <span style={{
-                  width: '20px', height: '20px', borderRadius: '4px', flexShrink: 0,
-                  backgroundColor: currentSlide === i ? 'rgba(255,255,255,0.2)' : '#1F2937',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '0.65rem', fontWeight: '700'
-                }}>
-                  {i + 1}
-                </span>
-                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {s.type === 'title' ? '🏥 Trang bìa'
-                    : s.type === 'transfer' ? `🚑 ${s.deptName ? s.deptName.substring(0, 16) : 'Ca chuyển viện'}`
-                    : `📋 Khoa ${s.title.length > 16 ? s.title.substring(0, 16) + '…' : s.title}`}
-                </span>
-              </button>
-            ))}
+          <div style={{ flex: 1, overflowY: 'auto', padding: '0.6rem' }}>
+            {slides.map((s, i) => {
+              const isActive = currentSlide === i;
+              return (
+                <button
+                  key={i}
+                  onClick={() => setCurrentSlide(i)}
+                  style={{
+                    width: '100%', textAlign: 'left',
+                    padding: '0.65rem 0.85rem', marginBottom: '4px',
+                    backgroundColor: isActive ? '#2563EB' : 'transparent',
+                    color: isActive ? '#FFFFFF' : '#CBD5E1',
+                    border: 'none', borderRadius: '8px', cursor: 'pointer',
+                    fontSize: '0.85rem', fontWeight: isActive ? '700' : '500',
+                    display: 'flex', alignItems: 'center', gap: '0.6rem',
+                    transition: 'all 0.15s',
+                    boxShadow: isActive ? '0 4px 12px rgba(37, 99, 235, 0.35)' : 'none'
+                  }}
+                  onMouseOver={(e) => { if (!isActive) e.currentTarget.style.backgroundColor = '#1E293B'; }}
+                  onMouseOut={(e) => { if (!isActive) e.currentTarget.style.backgroundColor = 'transparent'; }}
+                >
+                  <span style={{
+                    width: '22px', height: '22px', borderRadius: '5px', flexShrink: 0,
+                    backgroundColor: isActive ? 'rgba(255,255,255,0.25)' : '#334155',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '0.75rem', fontWeight: '800'
+                  }}>
+                    {i + 1}
+                  </span>
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                    {s.type === 'title' ? '🏥 Trang bìa giao ban'
+                      : s.type === 'transfer' ? `🚑 Chuyển viện: ${s.deptName ? s.deptName.replace('KHOA ', '') : ''} (Ca ${s.caseIndex})`
+                      : `📋 ${s.title}`}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
-          {/* Sidebar footer */}
-          <div style={{ padding: '0.75rem', borderTop: '1px solid #1F2937', display: 'flex', gap: '0.5rem' }}>
+          {/* Sidebar footer tools */}
+          <div style={{ padding: '0.85rem', borderTop: '1px solid #1E293B', display: 'flex', gap: '0.5rem', backgroundColor: '#0B132B' }}>
             <button
               onClick={() => window.print()}
               style={{
-                flex: 1, padding: '0.55rem', backgroundColor: '#1F2937', color: '#D1D5DB',
-                border: 'none', borderRadius: '6px', cursor: 'pointer',
+                flex: 1, padding: '0.6rem', backgroundColor: '#1E293B', color: '#E2E8F0',
+                border: '1px solid #334155', borderRadius: '6px', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
-                fontSize: '0.78rem', fontWeight: '600'
+                fontSize: '0.8rem', fontWeight: '600'
               }}
             >
-              <FaPrint /> In báo cáo
+              <FaPrint /> In Báo Cáo
             </button>
             <button
               onClick={toggleFullscreen}
               title="Toàn màn hình (F)"
-              style={{ padding: '0.55rem 0.75rem', backgroundColor: '#1E40AF', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+              style={{
+                padding: '0.6rem 0.9rem', backgroundColor: '#2563EB', color: 'white',
+                border: 'none', borderRadius: '6px', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}
             >
               <FaExpand />
-            </button>
-            <button
-              onClick={handleExit}
-              title="Thoát"
-              style={{ padding: '0.55rem 0.75rem', backgroundColor: '#1F2937', color: '#9CA3AF', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
-            >
-              <FaHome />
             </button>
           </div>
         </div>
@@ -360,127 +374,172 @@ const PresentationPage = () => {
       {/* ===================== MAIN STAGE ===================== */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100vh', position: 'relative' }}>
 
-        {/* Fullscreen floating controls */}
-        {isFullscreen && (
+        {/* Top Control Overlay (Font zoom + Fullscreen toggle) */}
+        <div style={{
+          position: 'absolute', top: '1rem', right: '1.5rem',
+          zIndex: 1000, display: 'flex', gap: '0.5rem', alignItems: 'center'
+        }}>
+          {/* Zoom font button for older doctors / low vision */}
           <div style={{
-            position: 'absolute', top: '1.25rem', right: '1.5rem',
-            zIndex: 1000, display: 'flex', gap: '0.6rem', opacity: 0.9
+            display: 'flex', background: 'rgba(15, 23, 42, 0.85)',
+            border: '1px solid rgba(255,255,255,0.15)',
+            borderRadius: '999px', padding: '2px', backdropFilter: 'blur(8px)'
           }}>
+            <button
+              onClick={() => setFontScale(p => Math.max(0.85, p - 0.15))}
+              title="Thu nhỏ chữ"
+              style={{
+                background: 'transparent', color: '#CBD5E1', border: 'none',
+                padding: '0.45rem 0.75rem', cursor: 'pointer', borderRadius: '999px',
+                display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.85rem'
+              }}
+            >
+              <FaSearchMinus />
+            </button>
+            <span style={{ color: '#94A3B8', fontSize: '0.75rem', display: 'flex', alignItems: 'center', padding: '0 0.3rem', fontWeight: '700' }}>
+              {Math.round(fontScale * 100)}%
+            </span>
+            <button
+              onClick={() => setFontScale(p => Math.min(1.45, p + 0.15))}
+              title="Phóng to chữ (dễ đọc hơn)"
+              style={{
+                background: 'transparent', color: '#38BDF8', border: 'none',
+                padding: '0.45rem 0.75rem', cursor: 'pointer', borderRadius: '999px',
+                display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.85rem', fontWeight: '700'
+              }}
+            >
+              <FaSearchPlus /> Chữ to
+            </button>
+          </div>
+
+          {isFullscreen ? (
             <button
               onClick={toggleFullscreen}
               style={{
-                background: 'rgba(15, 44, 89, 0.85)', color: 'white',
+                background: 'rgba(15, 23, 42, 0.85)', color: 'white',
                 border: '1px solid rgba(255,255,255,0.2)',
                 padding: '0.5rem 1rem', borderRadius: '999px', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', gap: '0.4rem',
-                fontSize: '0.85rem', fontWeight: '600', backdropFilter: 'blur(8px)'
+                fontSize: '0.85rem', fontWeight: '700', backdropFilter: 'blur(8px)'
               }}
             >
-              <FaCompress /> Thu Nhỏ
+              <FaCompress /> Thu Nhỏ (F)
             </button>
+          ) : (
             <button
-              onClick={handleExit}
+              onClick={toggleFullscreen}
               style={{
-                background: 'rgba(15, 44, 89, 0.85)', color: 'white',
+                background: 'rgba(37, 99, 235, 0.9)', color: 'white',
                 border: '1px solid rgba(255,255,255,0.2)',
                 padding: '0.5rem 1rem', borderRadius: '999px', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', gap: '0.4rem',
-                fontSize: '0.85rem', fontWeight: '600', backdropFilter: 'blur(8px)'
+                fontSize: '0.85rem', fontWeight: '700', backdropFilter: 'blur(8px)',
+                boxShadow: '0 4px 14px rgba(37, 99, 235, 0.4)'
               }}
             >
-              <FaSignOutAlt /> Thoát
+              <FaExpand /> Toàn màn hình (F)
             </button>
-          </div>
-        )}
+          )}
+        </div>
 
-        {/* Slide Canvas */}
+        {/* Slide Canvas Area */}
         <div style={{
-          flex: 1, padding: isFullscreen ? '2.5rem 3.5rem' : '1.5rem 2rem',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'auto'
+          flex: 1, padding: isFullscreen ? '2rem 3rem' : '1.5rem 2.5rem',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          overflowY: 'auto', overflowX: 'hidden'
         }}>
           <div style={{
             width: '100%',
-            maxWidth: isFullscreen ? '1500px' : '1100px',
-            minHeight: isFullscreen ? '80vh' : '500px',
+            maxWidth: isFullscreen ? '1560px' : '1200px',
+            minHeight: isFullscreen ? '82vh' : '520px',
             backgroundColor: '#FFFFFF', color: '#1E293B',
-            borderRadius: '20px',
-            padding: isFullscreen ? '3.5rem 5rem' : '2.5rem 3.5rem',
-            boxShadow: '0 40px 80px -20px rgba(0,0,0,0.7)',
+            borderRadius: '24px',
+            padding: isFullscreen ? '3.5rem 4.5rem' : '2.5rem 3.5rem',
+            boxShadow: '0 25px 60px -15px rgba(0,0,0,0.6)',
             animation: 'fadeIn 0.25s ease-out',
             display: 'flex', flexDirection: 'column',
-            position: 'relative', overflow: 'hidden'
+            position: 'relative', overflow: 'hidden',
+            fontSize: `${fontScale}rem`
           }}>
-            {/* Decorative top bar */}
+            {/* Top decorative gradient line */}
             <div style={{
-              position: 'absolute', top: 0, left: 0, right: 0, height: '6px',
+              position: 'absolute', top: 0, left: 0, right: 0, height: '8px',
               background: slide.type === 'title'
                 ? 'linear-gradient(90deg, #0F2C59, #D32F2F, #2E7D32)'
                 : slide.type === 'transfer'
-                ? 'linear-gradient(90deg, #D32F2F, #B71C1C)'
-                : 'linear-gradient(90deg, #0F2C59, #1565C0)'
+                ? 'linear-gradient(90deg, #DC2626, #EA580C)'
+                : 'linear-gradient(90deg, #1E40AF, #3B82F6, #0D9488)'
             }} />
 
-            {/* ========= TITLE SLIDE ========= */}
+            {/* ==================== 1. TITLE SLIDE ==================== */}
             {slide.type === 'title' && (
               <div style={{
                 height: '100%', display: 'flex', flexDirection: 'column',
                 alignItems: 'center', justifyContent: 'center', textAlign: 'center',
-                minHeight: isFullscreen ? '560px' : '440px', gap: '1.5rem'
+                minHeight: isFullscreen ? '580px' : '460px', gap: '2rem'
               }}>
                 <div style={{
-                  width: isFullscreen ? '140px' : '110px',
-                  height: isFullscreen ? '140px' : '110px',
+                  width: isFullscreen ? '150px' : '120px',
+                  height: isFullscreen ? '150px' : '120px',
                   borderRadius: '50%', backgroundColor: '#FFF',
-                  boxShadow: '0 15px 50px rgba(15,44,89,0.18)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px'
+                  boxShadow: '0 20px 45px rgba(15,44,89,0.18)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '15px'
                 }}>
                   <img src="/logo.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                 </div>
                 <div>
                   <div style={{
-                    fontSize: isFullscreen ? '1.2rem' : '0.9rem',
-                    color: '#D32F2F', fontWeight: '700', textTransform: 'uppercase',
-                    letterSpacing: '2px', marginBottom: '0.5rem'
+                    fontSize: isFullscreen ? '1.35rem' : '1.1rem',
+                    color: '#DC2626', fontWeight: '800', textTransform: 'uppercase',
+                    letterSpacing: '2.5px', marginBottom: '0.6rem'
                   }}>
                     TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG
                   </div>
                   <h1 style={{
-                    fontSize: isFullscreen ? '4rem' : '3rem',
-                    color: '#0F2C59', fontWeight: '900', margin: '0 0 1rem',
-                    letterSpacing: '-2px', lineHeight: 1.1
+                    fontSize: isFullscreen ? '4.2rem' : '3.2rem',
+                    color: '#0F2C59', fontWeight: '900', margin: '0 0 1.25rem',
+                    letterSpacing: '-1.5px', lineHeight: 1.15
                   }}>
                     BÁO CÁO GIAO BAN
                   </h1>
                   <div style={{
-                    display: 'inline-flex', alignItems: 'center', gap: '0.6rem',
-                    fontSize: isFullscreen ? '1.4rem' : '1.1rem',
-                    color: '#334155', fontWeight: '700',
-                    padding: '0.8rem 2.5rem',
+                    display: 'inline-flex', alignItems: 'center', gap: '0.75rem',
+                    fontSize: isFullscreen ? '1.6rem' : '1.25rem',
+                    color: '#1E293B', fontWeight: '800',
+                    padding: '0.85rem 2.75rem',
                     backgroundColor: '#EFF6FF', borderRadius: '999px',
-                    border: '2px solid #DBEAFE'
+                    border: '2px solid #BFDBFE',
+                    boxShadow: '0 4px 15px rgba(59,130,246,0.12)'
                   }}>
                     📅 {formatDate(date)}
                   </div>
                 </div>
+
                 {reports.length > 0 && (
                   <div style={{
-                    display: 'flex', gap: '2rem', marginTop: '1rem',
+                    display: 'flex', gap: '2.5rem', marginTop: '1.5rem',
                     flexWrap: 'wrap', justifyContent: 'center'
                   }}>
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: isFullscreen ? '2.5rem' : '2rem', fontWeight: '900', color: '#0F2C59' }}>
+                    <div style={{
+                      backgroundColor: '#F8FAFC', border: '2px solid #E2E8F0',
+                      borderRadius: '16px', padding: '1.25rem 2.5rem', minWidth: '200px'
+                    }}>
+                      <div style={{ fontSize: isFullscreen ? '3.2rem' : '2.4rem', fontWeight: '900', color: '#1E40AF', lineHeight: 1 }}>
                         {reports.length}
                       </div>
-                      <div style={{ fontSize: isFullscreen ? '0.9rem' : '0.75rem', color: '#64748B', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                        Khoa đã nộp
+                      <div style={{ fontSize: isFullscreen ? '1rem' : '0.85rem', color: '#64748B', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '0.4rem' }}>
+                        Khoa phòng đã nộp
                       </div>
                     </div>
-                    <div style={{ width: '1px', backgroundColor: '#E2E8F0' }} />
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: isFullscreen ? '2.5rem' : '2rem', fontWeight: '900', color: '#2E7D32' }}>
+
+                    <div style={{
+                      backgroundColor: '#FEF2F2', border: '2px solid #FECACA',
+                      borderRadius: '16px', padding: '1.25rem 2.5rem', minWidth: '200px'
+                    }}>
+                      <div style={{ fontSize: isFullscreen ? '3.2rem' : '2.4rem', fontWeight: '900', color: '#DC2626', lineHeight: 1 }}>
                         {reports.reduce((sum, r) => sum + (r.transferCases?.length || 0), 0)}
                       </div>
-                      <div style={{ fontSize: isFullscreen ? '0.9rem' : '0.75rem', color: '#64748B', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                      <div style={{ fontSize: isFullscreen ? '1rem' : '0.85rem', color: '#991B1B', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px', marginTop: '0.4rem' }}>
                         Ca chuyển viện
                       </div>
                     </div>
@@ -489,137 +548,246 @@ const PresentationPage = () => {
               </div>
             )}
 
-            {/* ========= DEPARTMENT SLIDE ========= */}
+            {/* ==================== 2. DEPARTMENT SLIDE ==================== */}
             {slide.type === 'department' && (() => {
-              const { dataRows } = renderReportTable(slide.report.report_data, isFullscreen);
+              const sections = parseDepartmentSections(slide.report.report_data);
               return (
-                <div style={{ flex: 1 }}>
-                  {/* Department header */}
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  {/* Department top banner */}
                   <div style={{
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
-                    paddingBottom: '1.25rem', marginBottom: isFullscreen ? '2rem' : '1.25rem',
-                    borderBottom: '4px solid #0F2C59'
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    paddingBottom: '1.5rem', marginBottom: '1.75rem',
+                    borderBottom: '4px solid #1E40AF'
                   }}>
                     <div>
                       <div style={{
-                        fontSize: isFullscreen ? '0.85rem' : '0.7rem',
-                        color: '#D32F2F', fontWeight: '700', textTransform: 'uppercase',
-                        letterSpacing: '1.5px', marginBottom: '0.35rem'
+                        fontSize: isFullscreen ? '1rem' : '0.85rem',
+                        color: '#DC2626', fontWeight: '800', textTransform: 'uppercase',
+                        letterSpacing: '2px', marginBottom: '0.35rem'
                       }}>
                         TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG
                       </div>
-                      <h2 style={{ fontSize: isFullscreen ? '2.2rem' : '1.7rem', color: '#0F2C59', fontWeight: '900', margin: 0 }}>
-                        KHOA {slide.title}
+                      <h2 style={{
+                        fontSize: isFullscreen ? '2.8rem' : '2.1rem',
+                        color: '#0F2C59', fontWeight: '900', margin: 0, lineHeight: 1.2
+                      }}>
+                        {slide.title}
                       </h2>
-                      <div style={{ marginTop: '0.5rem', fontSize: isFullscreen ? '1rem' : '0.85rem', color: '#475569', display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
-                        <span>👨‍⚕️ Bác sĩ trực: <strong style={{ color: '#0F2C59' }}>{slide.report.doctor_name}</strong></span>
-                        {slide.report.room && <span>🏥 Phòng: <strong>{slide.report.room}</strong></span>}
-                        {slide.report.shift_time && <span>⏰ Ca: <strong>{slide.report.shift_time}</strong></span>}
+                      <div style={{
+                        marginTop: '0.75rem',
+                        display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center'
+                      }}>
+                        <span style={{
+                          backgroundColor: '#EFF6FF', color: '#1E40AF',
+                          padding: '0.4rem 1rem', borderRadius: '999px', fontWeight: '700',
+                          fontSize: isFullscreen ? '1.15rem' : '0.95rem', border: '1px solid #BFDBFE'
+                        }}>
+                          👨‍⚕️ Bác sĩ trực: <strong>{slide.report.doctor_name}</strong>
+                        </span>
+                        {slide.report.room && (
+                          <span style={{
+                            backgroundColor: '#F1F5F9', color: '#334155',
+                            padding: '0.4rem 1rem', borderRadius: '999px', fontWeight: '600',
+                            fontSize: isFullscreen ? '1.05rem' : '0.9rem'
+                          }}>
+                            🏥 Phòng: <strong>{slide.report.room}</strong>
+                          </span>
+                        )}
+                        {slide.report.shift_time && (
+                          <span style={{
+                            backgroundColor: '#FEF3C7', color: '#92400E',
+                            padding: '0.4rem 1rem', borderRadius: '999px', fontWeight: '600',
+                            fontSize: isFullscreen ? '1.05rem' : '0.9rem', border: '1px solid #FDE68A'
+                          }}>
+                            ⏰ Ca: <strong>{slide.report.shift_time}</strong>
+                          </span>
+                        )}
                       </div>
                     </div>
-                    <img src="/logo.png" alt="Logo" style={{ width: isFullscreen ? '70px' : '50px', height: isFullscreen ? '70px' : '50px', flexShrink: 0 }} />
+                    <img src="/logo.png" alt="Logo" style={{ width: isFullscreen ? '80px' : '60px', height: isFullscreen ? '80px' : '60px', flexShrink: 0 }} />
                   </div>
 
-                  {/* Data grid */}
-                  {dataRows && dataRows.length > 0 ? (
-                    <div style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-                      gap: isFullscreen ? '0.65rem 2.5rem' : '0.45rem 2rem'
-                    }}>
-                      {dataRows.map((row, i) => (
-                        <div key={row.key} style={{
-                          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                          padding: isFullscreen ? '0.7rem 1rem' : '0.5rem 0.8rem',
-                          backgroundColor: i % 2 === 0 ? '#F8FAFC' : '#FFFFFF',
-                          borderRadius: '8px',
-                          borderLeft: '3px solid #DBEAFE'
-                        }}>
-                          <span style={{ color: '#475569', fontSize: isFullscreen ? '1rem' : '0.85rem', fontWeight: '500' }}>
-                            {row.label}
-                          </span>
-                          <span style={{ color: '#0F2C59', fontWeight: '900', fontSize: isFullscreen ? '1.3rem' : '1.05rem', marginLeft: '0.75rem' }}>
-                            {row.value}
-                          </span>
+                  {/* Section & Metric Grid */}
+                  {sections.length > 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+                      {sections.map((section, sIdx) => (
+                        <div key={sIdx}>
+                          {/* Section Title Header */}
+                          {sections.length > 1 && (
+                            <div style={{
+                              fontSize: isFullscreen ? '1.25rem' : '1.05rem',
+                              fontWeight: '800', color: '#0F2C59',
+                              backgroundColor: '#EFF6FF',
+                              padding: '0.6rem 1.2rem', borderRadius: '8px',
+                              borderLeft: '5px solid #2563EB',
+                              marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.5px'
+                            }}>
+                              {section.title}
+                            </div>
+                          )}
+
+                          {/* Metric Cards Grid */}
+                          <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: isFullscreen
+                              ? 'repeat(auto-fill, minmax(280px, 1fr))'
+                              : 'repeat(auto-fill, minmax(240px, 1fr))',
+                            gap: isFullscreen ? '1.1rem' : '0.85rem'
+                          }}>
+                            {section.items.map((item, iIdx) => {
+                              const style = getMetricStyle(item.key, item.value);
+                              return (
+                                <div
+                                  key={iIdx}
+                                  style={{
+                                    backgroundColor: style.bg,
+                                    border: `2px solid ${style.border}`,
+                                    borderRadius: '12px',
+                                    padding: isFullscreen ? '1rem 1.4rem' : '0.75rem 1.1rem',
+                                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                                    transition: 'transform 0.15s'
+                                  }}
+                                >
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                                    <span style={{
+                                      fontSize: isFullscreen ? '1.15rem' : '0.95rem',
+                                      fontWeight: '700', color: style.label
+                                    }}>
+                                      {item.label}
+                                    </span>
+                                    {style.badge && (
+                                      <span style={{ fontSize: '0.75rem', fontWeight: '800', color: '#DC2626' }}>
+                                        {style.badge}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <span style={{
+                                    fontSize: isFullscreen ? '2.4rem' : '1.8rem',
+                                    fontWeight: '900', color: style.text,
+                                    fontFamily: "'Roboto Mono', monospace",
+                                    marginLeft: '1rem'
+                                  }}>
+                                    {item.value}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div style={{ textAlign: 'center', color: '#94A3B8', fontSize: isFullscreen ? '1.2rem' : '1rem', paddingTop: '2rem' }}>
-                      Không có dữ liệu số liệu
+                    <div style={{ textAlign: 'center', color: '#94A3B8', fontSize: '1.4rem', paddingTop: '4rem' }}>
+                      Không có số liệu báo cáo nào trong ca trực
                     </div>
                   )}
                 </div>
               );
             })()}
 
-            {/* ========= TRANSFER CASE SLIDE ========= */}
+            {/* ==================== 3. TRANSFER CASE SLIDE ==================== */}
             {slide.type === 'transfer' && (
-              <div style={{ flex: 1 }}>
-                {/* Header */}
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                {/* Emergency Header */}
                 <div style={{
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  paddingBottom: '1.25rem', marginBottom: isFullscreen ? '1.5rem' : '1.25rem',
-                  borderBottom: '4px solid #D32F2F'
+                  paddingBottom: '1.25rem', marginBottom: '1.5rem',
+                  borderBottom: '4px solid #DC2626'
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
                     <div style={{
-                      width: isFullscreen ? '60px' : '48px', height: isFullscreen ? '60px' : '48px',
+                      width: isFullscreen ? '70px' : '56px', height: isFullscreen ? '70px' : '56px',
                       borderRadius: '50%', backgroundColor: '#FEE2E2',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center'
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      boxShadow: '0 8px 20px rgba(220, 38, 38, 0.25)'
                     }}>
-                      <FaAmbulance style={{ fontSize: isFullscreen ? '1.8rem' : '1.4rem', color: '#D32F2F' }} />
+                      <FaAmbulance style={{ fontSize: isFullscreen ? '2.4rem' : '1.8rem', color: '#DC2626' }} />
                     </div>
                     <div>
-                      <div style={{ fontSize: isFullscreen ? '0.85rem' : '0.7rem', color: '#64748B', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                        Khoa {slide.deptName} • Ca {slide.caseIndex}/{slide.totalCases}
+                      <div style={{
+                        fontSize: isFullscreen ? '1.1rem' : '0.9rem',
+                        color: '#991B1B', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1.5px'
+                      }}>
+                        🚑 {slide.deptName} • CA CHUYỂN VIỆN {slide.caseIndex}/{slide.totalCases}
                       </div>
-                      <h2 style={{ fontSize: isFullscreen ? '2rem' : '1.6rem', color: '#D32F2F', fontWeight: '900', margin: 0 }}>
-                        BỆNH CHUYỂN VIỆN
+                      <h2 style={{
+                        fontSize: isFullscreen ? '2.4rem' : '1.8rem',
+                        color: '#DC2626', fontWeight: '900', margin: 0, lineHeight: 1.15
+                      }}>
+                        THÔNG TIN BỆNH NHÂN CHUYỂN VIỆN
                       </h2>
                     </div>
                   </div>
-                  <img src="/logo.png" alt="Logo" style={{ width: isFullscreen ? '60px' : '45px', height: isFullscreen ? '60px' : '45px' }} />
+                  <img src="/logo.png" alt="Logo" style={{ width: isFullscreen ? '70px' : '50px', height: isFullscreen ? '70px' : '50px' }} />
                 </div>
 
-                {/* Patient info banner */}
+                {/* Patient Name Banner */}
                 {slide.transferCase.patient_name && (
                   <div style={{
-                    backgroundColor: '#FEF3C7', borderRadius: '12px',
-                    borderLeft: '5px solid #D97706',
-                    padding: isFullscreen ? '1.1rem 1.5rem' : '0.8rem 1.2rem',
-                    marginBottom: isFullscreen ? '1.25rem' : '1rem',
-                    display: 'flex', alignItems: 'center', gap: '0.75rem'
+                    backgroundColor: '#FEF2F2', borderRadius: '16px',
+                    border: '2px solid #FCA5A5',
+                    borderLeft: '8px solid #DC2626',
+                    padding: isFullscreen ? '1.25rem 2rem' : '0.9rem 1.4rem',
+                    marginBottom: '1.5rem',
+                    display: 'flex', alignItems: 'center', gap: '1rem',
+                    boxShadow: '0 4px 15px rgba(220,38,38,0.08)'
                   }}>
-                    <span style={{ fontSize: isFullscreen ? '1.6rem' : '1.3rem' }}>👤</span>
-                    <span style={{ fontWeight: '800', fontSize: isFullscreen ? '1.4rem' : '1.1rem', color: '#92400E' }}>
-                      {slide.transferCase.patient_name}
-                    </span>
+                    <span style={{ fontSize: isFullscreen ? '2.2rem' : '1.6rem' }}>👤</span>
+                    <div>
+                      <div style={{ fontSize: isFullscreen ? '0.9rem' : '0.75rem', color: '#991B1B', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        Họ tên • Tuổi • Địa chỉ bệnh nhân:
+                      </div>
+                      <div style={{
+                        fontWeight: '900',
+                        fontSize: isFullscreen ? '1.85rem' : '1.4rem',
+                        color: '#991B1B', lineHeight: 1.3
+                      }}>
+                        {slide.transferCase.patient_name}
+                      </div>
+                    </div>
                   </div>
                 )}
 
-                {/* Details */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: isFullscreen ? '0.75rem' : '0.6rem' }}>
+                {/* Clinical Details Structured Grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: isFullscreen ? '1rem' : '0.75rem' }}>
                   {[
-                    { icon: '⏰', label: 'Giờ / Ngày vào viện', value: slide.transferCase.admission_time },
-                    { icon: '📋', label: 'Lý do vào viện', value: slide.transferCase.reason },
-                    { icon: '🔬', label: 'Cận lâm sàng / X-Quang / Xét nghiệm', value: slide.transferCase.clinical_tests },
-                    { icon: '🏥', label: 'Chẩn đoán', value: slide.transferCase.diagnosis },
-                    { icon: '💊', label: 'Xử trí ban đầu', value: slide.transferCase.initial_treatment },
-                    { icon: '📝', label: 'Diễn biến / Hội chẩn / Tình trạng lúc chuyển', value: slide.transferCase.progress_notes },
+                    { icon: '⏰', label: 'Giờ / Ngày vào viện', value: slide.transferCase.admission_time, highlight: false },
+                    { icon: '📋', label: 'Lý do vào viện', value: slide.transferCase.reason, highlight: false },
+                    { icon: '🔬', label: 'Cận lâm sàng / X-Quang / Xét nghiệm', value: slide.transferCase.clinical_tests, highlight: false },
+                    { icon: '🏥', label: 'Chẩn đoán xác định', value: slide.transferCase.diagnosis, highlight: true },
+                    { icon: '💊', label: 'Xử trí ban đầu', value: slide.transferCase.initial_treatment, highlight: false },
+                    { icon: '📝', label: 'Diễn biến / Hội chẩn / Tình trạng lúc chuyển', value: slide.transferCase.progress_notes, highlight: true },
                   ].filter(item => item.value).map((item, idx) => (
-                    <div key={idx} style={{
-                      display: 'flex', alignItems: 'flex-start', gap: '0.75rem',
-                      padding: isFullscreen ? '0.85rem 1.1rem' : '0.65rem 0.9rem',
-                      backgroundColor: idx % 2 === 0 ? '#F8FAFC' : '#FFFFFF',
-                      borderRadius: '8px', borderLeft: '4px solid #D32F2F'
-                    }}>
-                      <span style={{ fontSize: isFullscreen ? '1.1rem' : '0.9rem', flexShrink: 0, marginTop: '2px' }}>{item.icon}</span>
-                      <div>
-                        <div style={{ fontWeight: '700', color: '#D32F2F', fontSize: isFullscreen ? '0.85rem' : '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '0.15rem' }}>
+                    <div
+                      key={idx}
+                      style={{
+                        backgroundColor: item.highlight ? '#FEF3C7' : '#F8FAFC',
+                        borderRadius: '12px',
+                        border: `1.5px solid ${item.highlight ? '#FCD34D' : '#E2E8F0'}`,
+                        borderLeft: `6px solid ${item.highlight ? '#D97706' : '#3B82F6'}`,
+                        padding: isFullscreen ? '1rem 1.5rem' : '0.75rem 1.1rem',
+                        display: 'flex', gap: '1rem', alignItems: 'flex-start'
+                      }}
+                    >
+                      <span style={{ fontSize: isFullscreen ? '1.5rem' : '1.2rem', marginTop: '2px' }}>
+                        {item.icon}
+                      </span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{
+                          fontWeight: '800',
+                          color: item.highlight ? '#92400E' : '#1E40AF',
+                          fontSize: isFullscreen ? '1.05rem' : '0.9rem',
+                          textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '0.25rem'
+                        }}>
                           {item.label}
                         </div>
-                        <div style={{ color: '#1E293B', lineHeight: '1.6', whiteSpace: 'pre-wrap', fontSize: isFullscreen ? '1.1rem' : '0.9rem', fontWeight: '500' }}>
+                        <div style={{
+                          color: '#0F172A',
+                          lineHeight: '1.6', whiteSpace: 'pre-wrap',
+                          fontSize: isFullscreen ? '1.35rem' : '1.1rem',
+                          fontWeight: '600'
+                        }}>
                           {item.value}
                         </div>
                       </div>
@@ -631,76 +799,75 @@ const PresentationPage = () => {
           </div>
         </div>
 
-        {/* ===================== BOTTOM CONTROL BAR ===================== */}
+        {/* ===================== BOTTOM NAVIGATION BAR ===================== */}
         <div className="no-print" style={{
-          padding: '0 1.5rem',
-          height: '60px',
+          padding: '0 2rem',
+          height: '65px',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          backgroundColor: isFullscreen ? 'rgba(11,25,44,0.95)' : '#111827',
-          borderTop: '1px solid #1F2937',
+          backgroundColor: '#0F172A',
+          borderTop: '1px solid #1E293B',
           position: 'relative'
         }}>
-          {/* Progress bar */}
+          {/* Top Progress bar */}
           <div style={{
-            position: 'absolute', top: 0, left: 0, right: 0, height: '3px',
-            backgroundColor: '#1F2937'
+            position: 'absolute', top: 0, left: 0, right: 0, height: '4px',
+            backgroundColor: '#1E293B'
           }}>
             <div style={{
-              height: '100%', backgroundColor: '#1D4ED8',
+              height: '100%', backgroundColor: '#3B82F6',
               width: `${progressPct}%`, transition: 'width 0.3s ease'
             }} />
           </div>
 
+          {/* Left: Previous button */}
           <button
             onClick={handlePrev}
             disabled={currentSlide === 0}
             style={{
-              padding: '0.5rem 1.5rem',
-              background: currentSlide === 0 ? 'transparent' : '#1F2937',
-              color: currentSlide === 0 ? '#374151' : '#D1D5DB',
-              border: 'none', borderRadius: '6px',
+              padding: '0.65rem 1.75rem',
+              backgroundColor: currentSlide === 0 ? 'transparent' : '#1E293B',
+              color: currentSlide === 0 ? '#475569' : '#F8FAFC',
+              border: `1px solid ${currentSlide === 0 ? 'transparent' : '#334155'}`,
+              borderRadius: '8px',
               cursor: currentSlide === 0 ? 'default' : 'pointer',
-              display: 'flex', alignItems: 'center', gap: '0.5rem',
-              fontSize: '0.9rem', fontWeight: '600'
+              display: 'flex', alignItems: 'center', gap: '0.6rem',
+              fontSize: '1rem', fontWeight: '700', transition: 'all 0.15s'
             }}
           >
-            <FaChevronLeft /> Trước
+            <FaChevronLeft /> Slide trước
           </button>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', color: '#9CA3AF', fontSize: '0.85rem' }}>
-            <span>
-              Slide <strong style={{ color: 'white', fontSize: '1rem' }}>{currentSlide + 1}</strong>
-              <span style={{ color: '#6B7280' }}> / {slides.length}</span>
+          {/* Center: Slide indicator */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#94A3B8', fontSize: '1rem' }}>
+            <span>Slide</span>
+            <span style={{
+              backgroundColor: '#2563EB', color: '#FFFFFF',
+              padding: '0.2rem 0.75rem', borderRadius: '6px',
+              fontWeight: '900', fontSize: '1.15rem'
+            }}>
+              {currentSlide + 1}
             </span>
-            {!isFullscreen && (
-              <button
-                onClick={handleExit}
-                style={{
-                  padding: '0.3rem 0.8rem', backgroundColor: '#1F2937',
-                  color: '#9CA3AF', border: 'none', borderRadius: '6px',
-                  cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem',
-                  fontSize: '0.78rem', fontWeight: '600'
-                }}
-              >
-                <FaSignOutAlt /> Thoát Trình Chiếu
-              </button>
-            )}
+            <span>/ {slides.length}</span>
           </div>
 
+          {/* Right: Next button */}
           <button
             onClick={handleNext}
             disabled={currentSlide === slides.length - 1}
             style={{
-              padding: '0.5rem 1.5rem',
-              background: currentSlide === slides.length - 1 ? 'transparent' : '#1D4ED8',
-              color: currentSlide === slides.length - 1 ? '#374151' : 'white',
-              border: 'none', borderRadius: '6px',
+              padding: '0.65rem 2rem',
+              backgroundColor: currentSlide === slides.length - 1 ? 'transparent' : '#2563EB',
+              color: currentSlide === slides.length - 1 ? '#475569' : '#FFFFFF',
+              border: `1px solid ${currentSlide === slides.length - 1 ? 'transparent' : '#3B82F6'}`,
+              borderRadius: '8px',
               cursor: currentSlide === slides.length - 1 ? 'default' : 'pointer',
-              display: 'flex', alignItems: 'center', gap: '0.5rem',
-              fontSize: '0.9rem', fontWeight: '600'
+              display: 'flex', alignItems: 'center', gap: '0.6rem',
+              fontSize: '1rem', fontWeight: '700',
+              boxShadow: currentSlide === slides.length - 1 ? 'none' : '0 4px 14px rgba(37, 99, 235, 0.4)',
+              transition: 'all 0.15s'
             }}
           >
-            Tiếp <FaChevronRight />
+            Slide tiếp <FaChevronRight />
           </button>
         </div>
       </div>
