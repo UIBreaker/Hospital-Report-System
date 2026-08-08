@@ -14,48 +14,52 @@
 ```
 Error: expect(locator).toContainText(expected) failed
 
-Locator: locator('.glass-card, body')
+Locator: locator('body')
+Timeout: 10000ms
 Expected pattern: /thất bại|không chính xác|⚠️|Invalid/i
-Error: strict mode violation: locator('.glass-card, body') resolved to 2 elements:
-    1) <body>…</body> aka locator('body')
-    2) <div class="glass-card login-card animate-slide-up">…</div> aka locator('div').nth(3)
+Received string:  "
+    TRUNG TÂM Y TẾ KHU VỰC BÌNH LONGHệ Thống Báo Cáo Giao BanĐăng nhập tài khoản khoa phòng hoặc quản trịTên đăng nhậpMật khẩuĐăng Nhập Phiên bản 1.0TTYT Bình Long© 2026 Trung Tâm Y Tế Khu Vực Bình Long.Trợ Lý Y Tế AIHỏi đáp & Lấy tài khoản khoa····
+"
 
 Call log:
   - Expect "toContainText" with timeout 10000ms
-  - waiting for locator('.glass-card, body')
+  - waiting for locator('body')
+    5 × locator resolved to <body>…</body>
+      - unexpected value "
+    TRUNG TÂM Y TẾ KHU VỰC BÌNH LONGHệ Thống Báo Cáo Giao BanĐăng nhập tài khoản khoa phòng hoặc quản trịTên đăng nhậpMật khẩu Đang kiểm tra... Phiên bản 1.0TTYT Bình Long© 2026 Trung Tâm Y Tế Khu Vực Bình Long.Trợ Lý Y Tế AIHỏi đáp & Lấy tài khoản khoa
+  
+
+"
+    18 × locator resolved to <body>…</body>
+       - unexpected value "
+    TRUNG TÂM Y TẾ KHU VỰC BÌNH LONGHệ Thống Báo Cáo Giao BanĐăng nhập tài khoản khoa phòng hoặc quản trịTên đăng nhậpMật khẩuĐăng Nhập Phiên bản 1.0TTYT Bình Long© 2026 Trung Tâm Y Tế Khu Vực Bình Long.Trợ Lý Y Tế AIHỏi đáp & Lấy tài khoản khoa
+  
+
+"
 
 ```
 
-# Page snapshot
-
 ```yaml
-- generic [ref=e3]:
-  - generic [ref=e4]:
-    - generic [ref=e5]:
-      - img "Logo TTYT Bình Long" [ref=e7]
-      - heading "TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG" [level=2] [ref=e8]
-      - heading "Hệ Thống Báo Cáo Giao Ban" [level=1] [ref=e9]
-      - paragraph [ref=e10]: Đăng nhập tài khoản khoa phòng hoặc quản trị
-    - generic [ref=e11]:
-      - generic [ref=e12]:
-        - generic [ref=e13]: Tên đăng nhập
-        - 'textbox "VD: Khnv hoặc noi.bvbl" [ref=e17]': user_khong_ton_tai
-      - generic [ref=e18]:
-        - generic [ref=e19]: Mật khẩu
-        - generic [ref=e20]:
-          - textbox "Nhập mật khẩu" [ref=e23]: pass_sai_123
-          - button [ref=e24] [cursor=pointer]
-      - button "Đang kiểm tra..." [disabled] [ref=e27] [cursor=pointer]
-    - generic [ref=e30]:
-      - generic [ref=e31]:
-        - text: Phiên bản
-        - strong [ref=e34]: "1.0"
-      - generic [ref=e35]: TTYT Bình Long
-  - generic [ref=e36]: © 2026 Trung Tâm Y Tế Khu Vực Bình Long.
-  - button "Trợ Lý Y Tế AI Hỏi đáp & Lấy tài khoản khoa" [ref=e38] [cursor=pointer]:
-    - generic [ref=e42]:
-      - generic [ref=e43]: Trợ Lý Y Tế AI
-      - generic [ref=e44]: Hỏi đáp & Lấy tài khoản khoa
+- img "Logo TTYT Bình Long"
+- heading "TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG" [level=2]
+- heading "Hệ Thống Báo Cáo Giao Ban" [level=1]
+- paragraph: Đăng nhập tài khoản khoa phòng hoặc quản trị
+- text: Tên đăng nhập
+- img
+- 'textbox "VD: Khnv hoặc noi.bvbl"'
+- text: Mật khẩu
+- img
+- textbox "Nhập mật khẩu"
+- button:
+  - img
+- button "Đăng Nhập" [disabled]
+- img
+- text: Phiên bản
+- strong: "1.0"
+- text: TTYT Bình Long © 2026 Trung Tâm Y Tế Khu Vực Bình Long.
+- button "Trợ Lý Y Tế AI Hỏi đáp & Lấy tài khoản khoa":
+  - img
+  - text: Trợ Lý Y Tế AI Hỏi đáp & Lấy tài khoản khoa
 ```
 
 # Test source
@@ -78,18 +82,18 @@ Call log:
   15 |   test('Đăng nhập thất bại khi nhập sai thông tin và hiển thị thông báo lỗi', async ({ page }) => {
   16 |     await page.goto('/');
   17 |     await page.fill('input[placeholder*="Khnv"]', 'user_khong_ton_tai');
-  18 |     await page.fill('input[placeholder*="mật khẩu"]', 'pass_sai_123');
+  18 |     await page.fill('input[type="password"]', 'pass_sai_123');
   19 |     await page.click('button[type="submit"]');
   20 | 
   21 |     // Chờ thông báo lỗi xuất hiện
-> 22 |     await expect(page.locator('.glass-card, body')).toContainText(/thất bại|không chính xác|⚠️|Invalid/i, { timeout: 10000 });
-     |                                                     ^ Error: expect(locator).toContainText(expected) failed
+> 22 |     await expect(page.locator('body')).toContainText(/thất bại|không chính xác|⚠️|Invalid/i, { timeout: 10000 });
+     |                                        ^ Error: expect(locator).toContainText(expected) failed
   23 |   });
   24 | 
   25 |   test('Đăng nhập thành công với tài khoản Khoa Nội (noi.bvbl) và chuyển hướng vào /report', async ({ page }) => {
   26 |     await page.goto('/');
   27 |     await page.fill('input[placeholder*="Khnv"]', 'noi.bvbl');
-  28 |     await page.fill('input[placeholder*="mật khẩu"]', '123');
+  28 |     await page.fill('input[type="password"]', '123');
   29 |     await page.click('button[type="submit"]');
   30 | 
   31 |     await expect(page).toHaveURL(/.*\/report/, { timeout: 15000 });
@@ -99,7 +103,7 @@ Call log:
   35 |   test('Đăng nhập thành công với tài khoản Quản trị KHNV (Khnv) và chuyển hướng vào /admin', async ({ page }) => {
   36 |     await page.goto('/');
   37 |     await page.fill('input[placeholder*="Khnv"]', 'Khnv');
-  38 |     await page.fill('input[placeholder*="mật khẩu"]', 'Khnv@2026');
+  38 |     await page.fill('input[type="password"]', 'Khnv@2026');
   39 |     await page.click('button[type="submit"]');
   40 | 
   41 |     await expect(page).toHaveURL(/.*\/admin/, { timeout: 15000 });
@@ -109,7 +113,7 @@ Call log:
   45 |   test('Đăng xuất thành công và quay trở lại màn hình đăng nhập', async ({ page }) => {
   46 |     await page.goto('/');
   47 |     await page.fill('input[placeholder*="Khnv"]', 'Khnv');
-  48 |     await page.fill('input[placeholder*="mật khẩu"]', 'Khnv@2026');
+  48 |     await page.fill('input[type="password"]', 'Khnv@2026');
   49 |     await page.click('button[type="submit"]');
   50 |     await expect(page).toHaveURL(/.*\/admin/, { timeout: 15000 });
   51 | 

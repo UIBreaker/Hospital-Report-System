@@ -25,7 +25,7 @@ test.describe('Hệ Thống Báo Cáo Giao Ban — 11 Khoa Dynamic Forms & Ca Ch
     }
 
     // Xác nhận Bước 2 đã tải xong
-    await expect(page.locator('body')).toContainText('Bệnh Cũ');
+    await expect(page.locator('body')).toContainText(/Bệnh cũ/i);
   });
 
   test('Tự động tính toán công thức Hiện còn = (Bệnh cũ + Bệnh mới) - Xuất viện - Chuyển khoa', async ({ page }) => {
@@ -69,9 +69,9 @@ test.describe('Hệ Thống Báo Cáo Giao Ban — 11 Khoa Dynamic Forms & Ca Ch
     const addTransferBtn = page.locator('button:has-text("Thêm Ca Chuyển Viện")');
     if (await addTransferBtn.isVisible()) {
       await addTransferBtn.click();
-      const patientNameInput = page.locator('input[placeholder*="Họ tên"]').first();
-      await expect(patientNameInput).toBeVisible({ timeout: 5000 });
-      await patientNameInput.fill('Bệnh nhân Nguyễn Văn Test');
+      const patientInput = page.locator('input[type="text"]').last();
+      await expect(patientInput).toBeVisible({ timeout: 5000 });
+      await patientInput.fill('Bệnh nhân Nguyễn Văn Test');
     }
   });
 

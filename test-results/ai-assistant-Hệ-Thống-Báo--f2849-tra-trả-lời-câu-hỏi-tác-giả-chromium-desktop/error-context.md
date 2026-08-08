@@ -20,25 +20,25 @@ Timeout: 10000ms
 + Received string     + 7
 
 - Nguyễn Vũ Nhật Nam
-+ Trợ Lý Y Tế AI OnlineTTYT Khu Vực Bình Long • Hỗ trợ trực tuyến👋 Xin chào quý Bác sĩ và Cán bộ y tế! Tôi là Trợ Lý AI của Hệ Thống Báo Cáo Giao Ban – TTYT Khu Vực Bình Long.Vừa xong💡 Bạn đang công tác tại Khoa/Phòng nào? Hãy chọn khoa bên dưới để tôi hướng dẫn và cấp tài khoản đăng nhập nhé! (Lưu ý: Trừ tài khoản Admin)🏥 Khoa Nội🏥 Hồi sức cấp cứu – Thận nhân tạo🏥 Chẩn đoán hình ảnh🏥 Y học cổ truyền – PHCN🏥 Ngoại tổng hợp🏥 Chấn thương chỉnh hình🏥 Khoa Nhi🏥 Khoa Nhiễm🏥 Gây mê Hồi sức🏥 Khoa Sản🏥 Khoa Xét nghiệmVừa xongAi là người phát triển phần mềm này?11:54 PM👨‍💻 TÁC GIẢ & NHÀ PHÁT TRIỂN PHẦN MỀM:
++ Trợ Lý Y Tế AI OnlineTTYT Khu Vực Bình Long • Hỗ trợ trực tuyến👋 Xin chào quý Bác sĩ và Cán bộ y tế! Tôi là Trợ Lý AI của Hệ Thống Báo Cáo Giao Ban – TTYT Khu Vực Bình Long.Vừa xong💡 Bạn đang công tác tại Khoa/Phòng nào? Hãy chọn khoa bên dưới để tôi hướng dẫn và cấp tài khoản đăng nhập nhé! (Lưu ý: Trừ tài khoản Admin)🏥 Khoa Nội🏥 Hồi sức cấp cứu – Thận nhân tạo🏥 Chẩn đoán hình ảnh🏥 Y học cổ truyền – PHCN🏥 Ngoại tổng hợp🏥 Chấn thương chỉnh hình🏥 Khoa Nhi🏥 Khoa Nhiễm🏥 Gây mê Hồi sức🏥 Khoa Sản🏥 Khoa Xét nghiệmVừa xongAi là người phát triển phần mềm này?11:55 PM👨‍💻 TÁC GIẢ & NHÀ PHÁT TRIỂN PHẦN MỀM:
 +
 + ✨ Họ và tên: NGUYỄN VŨ NHẬT NAM
 + 📅 Năm sinh: 2004
 + 🏥 Đơn vị phát triển: Hệ Thống Báo Cáo Giao Ban Trực Tuyến – Trung Tâm Y Tế Khu Vực Bình Long.
 +
-+ 🎯 Phần mềm được lập trình tối ưu hóa giúp các khoa phòng nhập báo cáo nhanh chóng, tự động hóa tổng hợp số liệu giao ban và hỗ trợ trình chiếu slide chuyên nghiệp cho Ban Giám Đốc!11:54 PM👨‍💻 Ai là tác giả phát triển phần mềm?🔑 Cấp tài khoản cho khoa của tôi📝 Hướng dẫn phím tắt "lorem + Enter"🚑 Hướng dẫn nhập ca Bệnh Chuyển Viện📺 Hướng dẫn Trình Chiếu Giao Ban🛡️ Tài khoản Quản trị viên (Admin)
++ 🎯 Phần mềm được lập trình tối ưu hóa giúp các khoa phòng nhập báo cáo nhanh chóng, tự động hóa tổng hợp số liệu giao ban và hỗ trợ trình chiếu slide chuyên nghiệp cho Ban Giám Đốc!11:55 PM👨‍💻 Ai là tác giả phát triển phần mềm?🔑 Cấp tài khoản cho khoa của tôi📝 Hướng dẫn phím tắt "lorem + Enter"🚑 Hướng dẫn nhập ca Bệnh Chuyển Viện📺 Hướng dẫn Trình Chiếu Giao Ban🛡️ Tài khoản Quản trị viên (Admin)
 
 Call log:
   - Expect "toContainText" with timeout 10000ms
   - waiting for locator('.ai-chatbox-window')
     23 × locator resolved to <div class="ai-chatbox-window">…</div>
-       - unexpected value "Trợ Lý Y Tế AI OnlineTTYT Khu Vực Bình Long • Hỗ trợ trực tuyến👋 Xin chào quý Bác sĩ và Cán bộ y tế! Tôi là Trợ Lý AI của Hệ Thống Báo Cáo Giao Ban – TTYT Khu Vực Bình Long.Vừa xong💡 Bạn đang công tác tại Khoa/Phòng nào? Hãy chọn khoa bên dưới để tôi hướng dẫn và cấp tài khoản đăng nhập nhé! (Lưu ý: Trừ tài khoản Admin)🏥 Khoa Nội🏥 Hồi sức cấp cứu – Thận nhân tạo🏥 Chẩn đoán hình ảnh🏥 Y học cổ truyền – PHCN🏥 Ngoại tổng hợp🏥 Chấn thương chỉnh hình🏥 Khoa Nhi🏥 Khoa Nhiễm🏥 Gây mê Hồi sức🏥 Khoa Sản🏥 Khoa Xét nghiệmVừa xongAi là người phát triển phần mềm này?11:54 PM👨‍💻 TÁC GIẢ & NHÀ PHÁT TRIỂN PHẦN MỀM:
+       - unexpected value "Trợ Lý Y Tế AI OnlineTTYT Khu Vực Bình Long • Hỗ trợ trực tuyến👋 Xin chào quý Bác sĩ và Cán bộ y tế! Tôi là Trợ Lý AI của Hệ Thống Báo Cáo Giao Ban – TTYT Khu Vực Bình Long.Vừa xong💡 Bạn đang công tác tại Khoa/Phòng nào? Hãy chọn khoa bên dưới để tôi hướng dẫn và cấp tài khoản đăng nhập nhé! (Lưu ý: Trừ tài khoản Admin)🏥 Khoa Nội🏥 Hồi sức cấp cứu – Thận nhân tạo🏥 Chẩn đoán hình ảnh🏥 Y học cổ truyền – PHCN🏥 Ngoại tổng hợp🏥 Chấn thương chỉnh hình🏥 Khoa Nhi🏥 Khoa Nhiễm🏥 Gây mê Hồi sức🏥 Khoa Sản🏥 Khoa Xét nghiệmVừa xongAi là người phát triển phần mềm này?11:55 PM👨‍💻 TÁC GIẢ & NHÀ PHÁT TRIỂN PHẦN MỀM:
 
 ✨ Họ và tên: NGUYỄN VŨ NHẬT NAM
 📅 Năm sinh: 2004
 🏥 Đơn vị phát triển: Hệ Thống Báo Cáo Giao Ban Trực Tuyến – Trung Tâm Y Tế Khu Vực Bình Long.
 
-🎯 Phần mềm được lập trình tối ưu hóa giúp các khoa phòng nhập báo cáo nhanh chóng, tự động hóa tổng hợp số liệu giao ban và hỗ trợ trình chiếu slide chuyên nghiệp cho Ban Giám Đốc!11:54 PM👨‍💻 Ai là tác giả phát triển phần mềm?🔑 Cấp tài khoản cho khoa của tôi📝 Hướng dẫn phím tắt "lorem + Enter"🚑 Hướng dẫn nhập ca Bệnh Chuyển Viện📺 Hướng dẫn Trình Chiếu Giao Ban🛡️ Tài khoản Quản trị viên (Admin)"
+🎯 Phần mềm được lập trình tối ưu hóa giúp các khoa phòng nhập báo cáo nhanh chóng, tự động hóa tổng hợp số liệu giao ban và hỗ trợ trình chiếu slide chuyên nghiệp cho Ban Giám Đốc!11:55 PM👨‍💻 Ai là tác giả phát triển phần mềm?🔑 Cấp tài khoản cho khoa của tôi📝 Hướng dẫn phím tắt "lorem + Enter"🚑 Hướng dẫn nhập ca Bệnh Chuyển Viện📺 Hướng dẫn Trình Chiếu Giao Ban🛡️ Tài khoản Quản trị viên (Admin)"
 
 ```
 
@@ -59,7 +59,7 @@ Call log:
 - button "🏥 Gây mê Hồi sức"
 - button "🏥 Khoa Sản"
 - button "🏥 Khoa Xét nghiệm"
-- text: "Vừa xong Ai là người phát triển phần mềm này? 11:54 PM 👨‍💻 TÁC GIẢ & NHÀ PHÁT TRIỂN PHẦN MỀM: ✨ Họ và tên: NGUYỄN VŨ NHẬT NAM 📅 Năm sinh: 2004 🏥 Đơn vị phát triển: Hệ Thống Báo Cáo Giao Ban Trực Tuyến – Trung Tâm Y Tế Khu Vực Bình Long. 🎯 Phần mềm được lập trình tối ưu hóa giúp các khoa phòng nhập báo cáo nhanh chóng, tự động hóa tổng hợp số liệu giao ban và hỗ trợ trình chiếu slide chuyên nghiệp cho Ban Giám Đốc! 11:54 PM"
+- text: "Vừa xong Ai là người phát triển phần mềm này? 11:55 PM 👨‍💻 TÁC GIẢ & NHÀ PHÁT TRIỂN PHẦN MỀM: ✨ Họ và tên: NGUYỄN VŨ NHẬT NAM 📅 Năm sinh: 2004 🏥 Đơn vị phát triển: Hệ Thống Báo Cáo Giao Ban Trực Tuyến – Trung Tâm Y Tế Khu Vực Bình Long. 🎯 Phần mềm được lập trình tối ưu hóa giúp các khoa phòng nhập báo cáo nhanh chóng, tự động hóa tổng hợp số liệu giao ban và hỗ trợ trình chiếu slide chuyên nghiệp cho Ban Giám Đốc! 11:55 PM"
 - button "👨‍💻 Ai là tác giả phát triển phần mềm?"
 - button "🔑 Cấp tài khoản cho khoa của tôi"
 - button "📝 Hướng dẫn phím tắt \"lorem + Enter\""

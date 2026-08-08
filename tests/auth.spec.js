@@ -15,17 +15,17 @@ test.describe('Hệ Thống Báo Cáo Giao Ban — Authentication & Access Contr
   test('Đăng nhập thất bại khi nhập sai thông tin và hiển thị thông báo lỗi', async ({ page }) => {
     await page.goto('/');
     await page.fill('input[placeholder*="Khnv"]', 'user_khong_ton_tai');
-    await page.fill('input[placeholder*="mật khẩu"]', 'pass_sai_123');
+    await page.fill('input[type="password"]', 'pass_sai_123');
     await page.click('button[type="submit"]');
 
     // Chờ thông báo lỗi xuất hiện
-    await expect(page.locator('.glass-card, body')).toContainText(/thất bại|không chính xác|⚠️|Invalid/i, { timeout: 10000 });
+    await expect(page.locator('body')).toContainText(/thất bại|không chính xác|⚠️|Invalid/i, { timeout: 10000 });
   });
 
   test('Đăng nhập thành công với tài khoản Khoa Nội (noi.bvbl) và chuyển hướng vào /report', async ({ page }) => {
     await page.goto('/');
     await page.fill('input[placeholder*="Khnv"]', 'noi.bvbl');
-    await page.fill('input[placeholder*="mật khẩu"]', '123');
+    await page.fill('input[type="password"]', '123');
     await page.click('button[type="submit"]');
 
     await expect(page).toHaveURL(/.*\/report/, { timeout: 15000 });
@@ -35,7 +35,7 @@ test.describe('Hệ Thống Báo Cáo Giao Ban — Authentication & Access Contr
   test('Đăng nhập thành công với tài khoản Quản trị KHNV (Khnv) và chuyển hướng vào /admin', async ({ page }) => {
     await page.goto('/');
     await page.fill('input[placeholder*="Khnv"]', 'Khnv');
-    await page.fill('input[placeholder*="mật khẩu"]', 'Khnv@2026');
+    await page.fill('input[type="password"]', 'Khnv@2026');
     await page.click('button[type="submit"]');
 
     await expect(page).toHaveURL(/.*\/admin/, { timeout: 15000 });
@@ -45,7 +45,7 @@ test.describe('Hệ Thống Báo Cáo Giao Ban — Authentication & Access Contr
   test('Đăng xuất thành công và quay trở lại màn hình đăng nhập', async ({ page }) => {
     await page.goto('/');
     await page.fill('input[placeholder*="Khnv"]', 'Khnv');
-    await page.fill('input[placeholder*="mật khẩu"]', 'Khnv@2026');
+    await page.fill('input[type="password"]', 'Khnv@2026');
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/.*\/admin/, { timeout: 15000 });
 
