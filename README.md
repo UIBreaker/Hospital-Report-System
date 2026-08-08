@@ -397,20 +397,37 @@ npm run dev
 
 ---
 
-## 16. 🧪 Testing
+## 16. 🧪 Testing (Playwright E2E & Unit Tests)
 
-### Kiểm thử Frontend Build
-```bash
-cd client
-npm run build
-```
-*(Kết quả build đảm bảo không có lỗi cú pháp hoặc cảnh báo thư viện).*
+Dự án được trang bị bộ kiểm thử tự động toàn diện **Playwright End-to-End Testing** với **48 test cases** chạy song song trên nhiều trình duyệt và thiết bị (Desktop Chrome, Mobile Pixel 7, iPhone 14):
 
-### Kiểm thử Health Check Endpoint
+### 16.1. Chạy toàn bộ Test Suites Playwright
 ```bash
-curl http://localhost:3001/api
-# Trả về: { "status": "online", "message": "Hospital Report System API is running smoothly." }
+npm test
 ```
+
+### 16.2. Chạy giao diện tương tác Playwright UI Mode
+```bash
+npm run test:ui
+```
+
+### 16.3. Chạy kiểm thử riêng cho thiết bị Di động (Mobile Viewport)
+```bash
+npm run test:mobile
+```
+
+### 16.4. Xem báo cáo trực quan HTML Report
+```bash
+npm run test:report
+```
+
+### 16.5. Danh mục các bộ kiểm thử tự động (Test Suites):
+* `tests/auth.spec.js`: Kiểm thử xác thực, phân quyền khoa phòng và tài khoản KHNV, xử lý lỗi đăng nhập.
+* `tests/report-form.spec.js`: Kiểm thử nhập liệu 11 khoa, tự động tính toán công thức Khoa Nội, thêm & xóa ca chuyển viện.
+* `tests/admin-dashboard.spec.js`: Kiểm thử bảng theo dõi 11 khoa, chế độ Trình Chiếu Giao Ban và công cụ phóng to chữ (Zoom).
+* `tests/ai-assistant.spec.js`: Kiểm thử Trợ lý Y Tế AI, tự động điền thông tin đăng nhập và câu hỏi tác giả.
+* `tests/mobile-responsive.spec.js`: Kiểm thử giao diện di động (iPhone 14 / Pixel 7), chống vỡ dòng và chống xung đột widget.
+* `tests/lorem-generator.spec.js`: Kiểm thử phím tắt thông minh `lorem + Enter` sinh dữ liệu mẫu tức thì.
 
 ---
 

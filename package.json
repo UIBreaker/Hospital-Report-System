@@ -5,7 +5,13 @@
   "main": "api/index.js",
   "scripts": {
     "build": "cd client && npm install && npm run build",
-    "start": "cd server && node server.js"
+    "start": "cd server && node server.js",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed",
+    "test:mobile": "playwright test --project=mobile-chrome",
+    "test:desktop": "playwright test --project=chromium-desktop",
+    "test:report": "playwright show-report"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -15,5 +21,8 @@
     "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.23.2",
     "router": "^2.2.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1"
   }
 }
