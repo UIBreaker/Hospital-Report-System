@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
-import { FaCalendarAlt, FaSignOutAlt, FaTv, FaCheck, FaTimes, FaSpinner, FaSync, FaEdit, FaSave, FaEye, FaPlus, FaTrash, FaAmbulance, FaExclamationTriangle } from 'react-icons/fa';
+import { FaCalendarAlt, FaSignOutAlt, FaTv, FaCheck, FaTimes, FaSpinner, FaSync, FaEdit, FaSave, FaEye, FaPlus, FaTrash, FaAmbulance, FaExclamationTriangle, FaCodeBranch } from 'react-icons/fa';
 import reportService from '../services/reportService';
+import AIAssistant from '../components/common/AIAssistant';
 
 const AdminDashboard = () => {
   const { logout } = useContext(AuthContext);
@@ -581,6 +582,24 @@ const AdminDashboard = () => {
           </div>
         </div>
       )}
+      {/* Bottom Left Version 1.0 Badge */}
+      <div style={{
+        position: 'fixed', bottom: '1.25rem', left: '1.5rem',
+        display: 'flex', alignItems: 'center', gap: '0.5rem',
+        backgroundColor: 'rgba(15, 44, 89, 0.9)', color: '#CBD5E1',
+        padding: '0.45rem 0.9rem', borderRadius: '999px',
+        border: '1px solid rgba(255, 255, 255, 0.15)',
+        backdropFilter: 'blur(8px)', fontSize: '0.75rem', fontWeight: '600',
+        zIndex: 1000, boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
+      }}>
+        <FaCodeBranch style={{ color: '#38BDF8' }} />
+        <span>Phiên bản <strong style={{ color: '#FFFFFF' }}>1.0</strong></span>
+        <span style={{ color: '#64748B' }}>•</span>
+        <span style={{ color: '#94A3B8' }}>Tác giả: <strong style={{ color: '#F1F5F9' }}>Nguyễn Vũ Nhật Nam (2004)</strong></span>
+      </div>
+
+      {/* Floating AI Assistant */}
+      <AIAssistant />
     </div>
   );
 };

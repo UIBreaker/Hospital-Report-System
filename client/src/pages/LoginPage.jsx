@@ -1,7 +1,8 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
-import { FaUser, FaLock, FaSpinner, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaUser, FaLock, FaSpinner, FaEye, FaEyeSlash, FaCodeBranch } from 'react-icons/fa';
+import AIAssistant from '../components/common/AIAssistant';
 
 const LoginPage = () => {
   const [username, setUsername] = useState('');
@@ -31,6 +32,12 @@ const LoginPage = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleAutoFillLogin = (autoUser, autoPass) => {
+    setUsername(autoUser);
+    setPassword(autoPass);
+    setError('');
   };
 
   return (
@@ -134,11 +141,32 @@ const LoginPage = () => {
         </form>
       </div>
       
+      {/* Bottom Center Copyright */}
       <div style={{ marginTop: '2rem', color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem', textAlign: 'center' }}>
         &copy; 2026 Trung Tâm Y Tế Khu Vực Bình Long. Tất cả quyền được bảo lưu.
       </div>
+
+      {/* Bottom Left Version 1.0 Badge */}
+      <div style={{
+        position: 'fixed', bottom: '1.25rem', left: '1.5rem',
+        display: 'flex', alignItems: 'center', gap: '0.5rem',
+        backgroundColor: 'rgba(15, 23, 42, 0.75)', color: '#CBD5E1',
+        padding: '0.45rem 0.9rem', borderRadius: '999px',
+        border: '1px solid rgba(255, 255, 255, 0.15)',
+        backdropFilter: 'blur(8px)', fontSize: '0.75rem', fontWeight: '600',
+        zIndex: 1000, boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
+      }}>
+        <FaCodeBranch style={{ color: '#38BDF8' }} />
+        <span>Phiên bản <strong style={{ color: '#FFFFFF' }}>1.0</strong></span>
+        <span style={{ color: '#64748B' }}>•</span>
+        <span style={{ color: '#94A3B8' }}>Tác giả: <strong style={{ color: '#F1F5F9' }}>Nguyễn Vũ Nhật Nam (2004)</strong></span>
+      </div>
+
+      {/* Bottom Right Floating AI Assistant */}
+      <AIAssistant onAutoFillLogin={handleAutoFillLogin} />
     </div>
   );
 };
 
 export default LoginPage;
+
