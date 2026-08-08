@@ -99,7 +99,7 @@ const LoginPage = () => {
               <FaUser style={{ position: 'absolute', top: '50%', left: '1rem', transform: 'translateY(-50%)', color: 'var(--brand-blue-light)' }} />
               <input 
                 type="text" 
-                placeholder="Nhập tài khoản khoa (VD: hscctnt.bvbl)" 
+                placeholder="Nhập tài khoản (VD: Khnv hoặc hscctnt.bvbl)" 
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 style={{ paddingLeft: '2.6rem' }}
