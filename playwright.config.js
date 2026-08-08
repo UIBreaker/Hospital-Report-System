@@ -8,18 +8,18 @@ export default defineConfig({
   testDir: './tests',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  retries: 0,
+  workers: 4,
   reporter: [
     ['html', { outputFolder: 'playwright-report', open: 'never' }],
     ['list']
   ],
   use: {
-    // Base URL for the web application (defaults to live Vercel deployment or local Vite server)
+    // Base URL for the web application
     baseURL: process.env.TEST_URL || 'https://hospital-report-system.vercel.app',
-    trace: 'on-first-retry',
+    trace: 'off',
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+    video: 'off',
     actionTimeout: 10000,
     navigationTimeout: 15000,
   },
@@ -43,9 +43,10 @@ export default defineConfig({
     {
       name: 'mobile-iphone',
       use: { 
-        ...devices['iPhone 14'],
+        defaultBrowserType: 'chromium',
         viewport: { width: 390, height: 844 },
-        isMobile: true
+        isMobile: true,
+        userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148'
       },
     }
   ],

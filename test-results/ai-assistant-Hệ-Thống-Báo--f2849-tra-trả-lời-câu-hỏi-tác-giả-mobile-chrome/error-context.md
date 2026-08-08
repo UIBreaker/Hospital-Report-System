@@ -12,22 +12,17 @@
 # Error details
 
 ```
-Error: expect(locator).toBeVisible() failed
+Error: expect(locator).toContainText(expected) failed
 
-Locator: locator('.ai-chatbox-window, div:has-text("Online")')
-Expected: visible
-Error: strict mode violation: locator('.ai-chatbox-window, div:has-text("Online")') resolved to 7 elements:
-    1) <div id="root">…</div> aka locator('#root')
-    2) <div class="login-wrapper">…</div> aka locator('div').nth(1)
-    3) <div class="ai-chatbox-window">…</div> aka getByText('Trợ Lý Y Tế AI OnlineTTYT Khu Vực Bình Long • Hỗ trợ trực tuyến👋 Xin chào quý')
-    4) <div>…</div> aka locator('div').filter({ hasText: 'Trợ Lý Y Tế AI OnlineTTYT Khu' }).nth(3)
-    5) <div>…</div> aka locator('div').filter({ hasText: 'Trợ Lý Y Tế AI OnlineTTYT Khu' }).nth(4)
-    6) <div>…</div> aka getByText('Trợ Lý Y Tế AI OnlineTTYT Khu')
-    7) <div>…</div> aka getByText('Trợ Lý Y Tế AI Online')
+Locator: locator('.ai-chatbox-window, body')
+Expected substring: "Nguyễn Vũ Nhật Nam"
+Error: strict mode violation: locator('.ai-chatbox-window, body') resolved to 2 elements:
+    1) <body>…</body> aka locator('body')
+    2) <div class="ai-chatbox-window">…</div> aka getByText('Trợ Lý Y Tế AI OnlineTTYT Khu Vực Bình Long • Hỗ trợ trực tuyến👋 Xin chào quý')
 
 Call log:
-  - Expect "toBeVisible" with timeout 5000ms
-  - waiting for locator('.ai-chatbox-window, div:has-text("Online")')
+  - Expect "toContainText" with timeout 5000ms
+  - waiting for locator('.ai-chatbox-window, body')
 
 ```
 
@@ -84,16 +79,22 @@ Call log:
           - button "🏥 Khoa Sản" [ref=e64] [cursor=pointer]
           - button "🏥 Khoa Xét nghiệm" [ref=e65] [cursor=pointer]
         - generic [ref=e66]: Vừa xong
-    - generic [ref=e67]:
-      - button "👨‍💻 Ai là tác giả phát triển phần mềm?" [ref=e68] [cursor=pointer]
-      - button "🔑 Cấp tài khoản cho khoa của tôi" [ref=e69] [cursor=pointer]
-      - button "📝 Hướng dẫn phím tắt \"lorem + Enter\"" [ref=e70] [cursor=pointer]
-      - button "🚑 Hướng dẫn nhập ca Bệnh Chuyển Viện" [ref=e71] [cursor=pointer]
-      - button "📺 Hướng dẫn Trình Chiếu Giao Ban" [ref=e72] [cursor=pointer]
-      - button "🛡️ Tài khoản Quản trị viên (Admin)" [ref=e73] [cursor=pointer]
-    - generic [ref=e74]:
-      - textbox "Nhập câu hỏi hoặc tên khoa phòng..." [ref=e75]
-      - button [disabled] [ref=e76]
+      - generic [ref=e67]:
+        - generic [ref=e68]: Ai là người phát triển phần mềm này?
+        - generic [ref=e69]: 11:53 PM
+      - generic [ref=e70]:
+        - generic [ref=e71]: "👨‍💻 TÁC GIẢ & NHÀ PHÁT TRIỂN PHẦN MỀM: ✨ Họ và tên: NGUYỄN VŨ NHẬT NAM 📅 Năm sinh: 2004 🏥 Đơn vị phát triển: Hệ Thống Báo Cáo Giao Ban Trực Tuyến – Trung Tâm Y Tế Khu Vực Bình Long. 🎯 Phần mềm được lập trình tối ưu hóa giúp các khoa phòng nhập báo cáo nhanh chóng, tự động hóa tổng hợp số liệu giao ban và hỗ trợ trình chiếu slide chuyên nghiệp cho Ban Giám Đốc!"
+        - generic [ref=e72]: 11:53 PM
+    - generic [ref=e73]:
+      - button "👨‍💻 Ai là tác giả phát triển phần mềm?" [active] [ref=e74] [cursor=pointer]
+      - button "🔑 Cấp tài khoản cho khoa của tôi" [ref=e75] [cursor=pointer]
+      - button "📝 Hướng dẫn phím tắt \"lorem + Enter\"" [ref=e76] [cursor=pointer]
+      - button "🚑 Hướng dẫn nhập ca Bệnh Chuyển Viện" [ref=e77] [cursor=pointer]
+      - button "📺 Hướng dẫn Trình Chiếu Giao Ban" [ref=e78] [cursor=pointer]
+      - button "🛡️ Tài khoản Quản trị viên (Admin)" [ref=e79] [cursor=pointer]
+    - generic [ref=e80]:
+      - textbox "Nhập câu hỏi hoặc tên khoa phòng..." [ref=e81]
+      - button [disabled] [ref=e82]
 ```
 
 # Test source
@@ -106,51 +107,39 @@ Call log:
   5  |   test('Mở hộp chat Trợ Lý Y Tế AI và kiểm tra trả lời câu hỏi tác giả', async ({ page }) => {
   6  |     await page.goto('/');
   7  |     
-  8  |     // Nút AI Assistant
-  9  |     const aiBtn = page.locator('.ai-floating-btn, button:has-text("Trợ Lý Y Tế AI"), button:has-text("Trợ lý AI")');
-  10 |     await expect(aiBtn).toBeVisible({ timeout: 10000 });
-  11 |     await aiBtn.click();
-  12 | 
-  13 |     // Hộp chat mở ra
-  14 |     const chatModal = page.locator('.ai-chatbox-window, div:has-text("Online")');
-> 15 |     await expect(chatModal).toBeVisible();
-     |                             ^ Error: expect(locator).toBeVisible() failed
-  16 | 
-  17 |     // Tìm câu hỏi có sẵn về tác giả
-  18 |     const authorQuestionBtn = page.locator('button:has-text("Ai là tác giả phát triển phần mềm?")');
-  19 |     if (await authorQuestionBtn.isVisible()) {
-  20 |       await authorQuestionBtn.click();
-  21 |       
-  22 |       // Kiểm tra câu trả lời xuất hiện tác giả Nguyễn Vũ Nhật Nam (2004)
-  23 |       await expect(page.locator('body')).toContainText('Nguyễn Vũ Nhật Nam');
-  24 |       await expect(page.locator('body')).toContainText('2004');
-  25 |     }
-  26 |   });
-  27 | 
-  28 |   test('Trợ lý AI hỗ trợ điền tự động tài khoản khoa vào form đăng nhập', async ({ page }) => {
-  29 |     await page.goto('/');
-  30 |     
-  31 |     const aiBtn = page.locator('.ai-floating-btn, button:has-text("Trợ Lý Y Tế AI"), button:has-text("Trợ lý AI")');
-  32 |     await expect(aiBtn).toBeVisible();
-  33 |     await aiBtn.click();
-  34 | 
-  35 |     // Tìm nút khoa phòng bất kỳ (ví dụ Khoa Nội hoặc Hồi sức)
-  36 |     const deptChip = page.locator('button:has-text("Khoa Nội"), button:has-text("Hồi sức")').first();
-  37 |     if (await deptChip.isVisible()) {
-  38 |       await deptChip.click();
-  39 |       
-  40 |       // Bấm nút điền tự động
-  41 |       const autoFillBtn = page.locator('button:has-text("Điền Tự Động Vào Ô Đăng Nhập")');
-  42 |       if (await autoFillBtn.isVisible()) {
-  43 |         await autoFillBtn.click();
-  44 |         
-  45 |         // Kiểm tra ô username được điền
-  46 |         const usernameVal = await page.locator('input[placeholder*="Khnv"]').inputValue();
-  47 |         expect(usernameVal.length).toBeGreaterThan(0);
-  48 |       }
-  49 |     }
-  50 |   });
-  51 | 
-  52 | });
-  53 | 
+  8  |     const aiBtn = page.locator('.ai-floating-btn, button:has-text("AI")').first();
+  9  |     await expect(aiBtn).toBeVisible({ timeout: 15000 });
+  10 |     await aiBtn.click();
+  11 | 
+  12 |     // Tìm câu hỏi có sẵn về tác giả
+  13 |     const authorBtn = page.locator('button:has-text("tác giả")').first();
+  14 |     if (await authorBtn.isVisible({ timeout: 5000 })) {
+  15 |       await authorBtn.click();
+> 16 |       await expect(page.locator('.ai-chatbox-window, body')).toContainText('Nguyễn Vũ Nhật Nam');
+     |                                                              ^ Error: expect(locator).toContainText(expected) failed
+  17 |     }
+  18 |   });
+  19 | 
+  20 |   test('Trợ lý AI hỗ trợ điền tự động tài khoản khoa vào form đăng nhập', async ({ page }) => {
+  21 |     await page.goto('/');
+  22 |     
+  23 |     const aiBtn = page.locator('.ai-floating-btn, button:has-text("AI")').first();
+  24 |     await expect(aiBtn).toBeVisible();
+  25 |     await aiBtn.click();
+  26 | 
+  27 |     const deptChip = page.locator('button:has-text("Khoa"), button:has-text("Nội"), button:has-text("Hồi sức")').first();
+  28 |     if (await deptChip.isVisible({ timeout: 5000 })) {
+  29 |       await deptChip.click();
+  30 |       
+  31 |       const autoFillBtn = page.locator('button:has-text("Điền"), button:has-text("Tự Động")').first();
+  32 |       if (await autoFillBtn.isVisible({ timeout: 5000 })) {
+  33 |         await autoFillBtn.click();
+  34 |         const usernameVal = await page.locator('input[placeholder*="Khnv"]').inputValue();
+  35 |         expect(usernameVal.length).toBeGreaterThan(0);
+  36 |       }
+  37 |     }
+  38 |   });
+  39 | 
+  40 | });
+  41 | 
 ```
