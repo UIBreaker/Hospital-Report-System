@@ -169,7 +169,7 @@ const PresentationPage = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [fontScale, setFontScale] = useState(1); // 1 = standard, 1.15 = large, 1.3 = extra large
+  const [fontScale, setFontScale] = useState(1); // 1 = 100%, 1.15 = 115%, 1.3 = 130%
 
   useEffect(() => {
     const fetchData = async () => {
@@ -374,91 +374,27 @@ const PresentationPage = () => {
       {/* ===================== MAIN STAGE ===================== */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100vh', position: 'relative' }}>
 
-        {/* Top Control Overlay (Font zoom + Fullscreen toggle) */}
+        {/* Slide Canvas Scroll Container - FIXED TOP CLIPPING */}
         <div style={{
-          position: 'absolute', top: '1rem', right: '1.5rem',
-          zIndex: 1000, display: 'flex', gap: '0.5rem', alignItems: 'center'
-        }}>
-          {/* Zoom font button for older doctors / low vision */}
-          <div style={{
-            display: 'flex', background: 'rgba(15, 23, 42, 0.85)',
-            border: '1px solid rgba(255,255,255,0.15)',
-            borderRadius: '999px', padding: '2px', backdropFilter: 'blur(8px)'
-          }}>
-            <button
-              onClick={() => setFontScale(p => Math.max(0.85, p - 0.15))}
-              title="Thu nhỏ chữ"
-              style={{
-                background: 'transparent', color: '#CBD5E1', border: 'none',
-                padding: '0.45rem 0.75rem', cursor: 'pointer', borderRadius: '999px',
-                display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.85rem'
-              }}
-            >
-              <FaSearchMinus />
-            </button>
-            <span style={{ color: '#94A3B8', fontSize: '0.75rem', display: 'flex', alignItems: 'center', padding: '0 0.3rem', fontWeight: '700' }}>
-              {Math.round(fontScale * 100)}%
-            </span>
-            <button
-              onClick={() => setFontScale(p => Math.min(1.45, p + 0.15))}
-              title="Phóng to chữ (dễ đọc hơn)"
-              style={{
-                background: 'transparent', color: '#38BDF8', border: 'none',
-                padding: '0.45rem 0.75rem', cursor: 'pointer', borderRadius: '999px',
-                display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.85rem', fontWeight: '700'
-              }}
-            >
-              <FaSearchPlus /> Chữ to
-            </button>
-          </div>
-
-          {isFullscreen ? (
-            <button
-              onClick={toggleFullscreen}
-              style={{
-                background: 'rgba(15, 23, 42, 0.85)', color: 'white',
-                border: '1px solid rgba(255,255,255,0.2)',
-                padding: '0.5rem 1rem', borderRadius: '999px', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: '0.4rem',
-                fontSize: '0.85rem', fontWeight: '700', backdropFilter: 'blur(8px)'
-              }}
-            >
-              <FaCompress /> Thu Nhỏ (F)
-            </button>
-          ) : (
-            <button
-              onClick={toggleFullscreen}
-              style={{
-                background: 'rgba(37, 99, 235, 0.9)', color: 'white',
-                border: '1px solid rgba(255,255,255,0.2)',
-                padding: '0.5rem 1rem', borderRadius: '999px', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: '0.4rem',
-                fontSize: '0.85rem', fontWeight: '700', backdropFilter: 'blur(8px)',
-                boxShadow: '0 4px 14px rgba(37, 99, 235, 0.4)'
-              }}
-            >
-              <FaExpand /> Toàn màn hình (F)
-            </button>
-          )}
-        </div>
-
-        {/* Slide Canvas Area */}
-        <div style={{
-          flex: 1, padding: isFullscreen ? '2rem 3rem' : '1.5rem 2.5rem',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          overflowY: 'auto', overflowX: 'hidden'
+          flex: 1,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          padding: isFullscreen ? '2rem 3rem 4rem' : '1.5rem 2rem 3rem',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'flex-start'
         }}>
           <div style={{
             width: '100%',
             maxWidth: isFullscreen ? '1560px' : '1200px',
-            minHeight: isFullscreen ? '82vh' : '520px',
+            margin: '0 auto',
             backgroundColor: '#FFFFFF', color: '#1E293B',
-            borderRadius: '24px',
-            padding: isFullscreen ? '3.5rem 4.5rem' : '2.5rem 3.5rem',
-            boxShadow: '0 25px 60px -15px rgba(0,0,0,0.6)',
+            borderRadius: '20px',
+            padding: isFullscreen ? '3rem 4rem' : '2.2rem 3rem',
+            boxShadow: '0 20px 50px -10px rgba(0,0,0,0.5)',
             animation: 'fadeIn 0.25s ease-out',
             display: 'flex', flexDirection: 'column',
-            position: 'relative', overflow: 'hidden',
+            position: 'relative',
             fontSize: `${fontScale}rem`
           }}>
             {/* Top decorative gradient line */}
@@ -474,9 +410,9 @@ const PresentationPage = () => {
             {/* ==================== 1. TITLE SLIDE ==================== */}
             {slide.type === 'title' && (
               <div style={{
-                height: '100%', display: 'flex', flexDirection: 'column',
+                display: 'flex', flexDirection: 'column',
                 alignItems: 'center', justifyContent: 'center', textAlign: 'center',
-                minHeight: isFullscreen ? '580px' : '460px', gap: '2rem'
+                padding: '2.5rem 1rem', gap: '2rem'
               }}>
                 <div style={{
                   width: isFullscreen ? '150px' : '120px',
@@ -806,7 +742,8 @@ const PresentationPage = () => {
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           backgroundColor: '#0F172A',
           borderTop: '1px solid #1E293B',
-          position: 'relative'
+          position: 'relative',
+          flexShrink: 0
         }}>
           {/* Top Progress bar */}
           <div style={{
@@ -837,17 +774,66 @@ const PresentationPage = () => {
             <FaChevronLeft /> Slide trước
           </button>
 
-          {/* Center: Slide indicator */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#94A3B8', fontSize: '1rem' }}>
-            <span>Slide</span>
-            <span style={{
-              backgroundColor: '#2563EB', color: '#FFFFFF',
-              padding: '0.2rem 0.75rem', borderRadius: '6px',
-              fontWeight: '900', fontSize: '1.15rem'
+          {/* Center: Slide indicator + Font Zoom + Fullscreen Toggle */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#94A3B8', fontSize: '1rem' }}>
+              <span>Slide</span>
+              <span style={{
+                backgroundColor: '#2563EB', color: '#FFFFFF',
+                padding: '0.2rem 0.75rem', borderRadius: '6px',
+                fontWeight: '900', fontSize: '1.15rem'
+              }}>
+                {currentSlide + 1}
+              </span>
+              <span>/ {slides.length}</span>
+            </div>
+
+            {/* Font Zoom Controls */}
+            <div style={{
+              display: 'flex', alignItems: 'center',
+              backgroundColor: '#1E293B', border: '1px solid #334155',
+              borderRadius: '8px', padding: '2px 4px'
             }}>
-              {currentSlide + 1}
-            </span>
-            <span>/ {slides.length}</span>
+              <button
+                onClick={() => setFontScale(p => Math.max(0.85, p - 0.15))}
+                title="Thu nhỏ chữ"
+                style={{
+                  background: 'transparent', color: '#CBD5E1', border: 'none',
+                  padding: '0.35rem 0.6rem', cursor: 'pointer', borderRadius: '6px',
+                  display: 'flex', alignItems: 'center', fontSize: '0.85rem'
+                }}
+              >
+                <FaSearchMinus />
+              </button>
+              <span style={{ color: '#94A3B8', fontSize: '0.75rem', padding: '0 0.3rem', fontWeight: '700' }}>
+                {Math.round(fontScale * 100)}%
+              </span>
+              <button
+                onClick={() => setFontScale(p => Math.min(1.45, p + 0.15))}
+                title="Phóng to chữ"
+                style={{
+                  background: 'transparent', color: '#38BDF8', border: 'none',
+                  padding: '0.35rem 0.6rem', cursor: 'pointer', borderRadius: '6px',
+                  display: 'flex', alignItems: 'center', fontSize: '0.85rem', fontWeight: '700'
+                }}
+              >
+                <FaSearchPlus /> Chữ to
+              </button>
+            </div>
+
+            {/* Fullscreen Button in bottom bar */}
+            <button
+              onClick={toggleFullscreen}
+              style={{
+                backgroundColor: '#1E293B', color: '#38BDF8',
+                border: '1px solid #334155', borderRadius: '8px',
+                padding: '0.45rem 0.9rem', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: '0.4rem',
+                fontSize: '0.85rem', fontWeight: '700'
+              }}
+            >
+              {isFullscreen ? <><FaCompress /> Thu nhỏ</> : <><FaExpand /> Toàn màn hình</>}
+            </button>
           </div>
 
           {/* Right: Next button */}
