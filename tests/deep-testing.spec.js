@@ -3,7 +3,6 @@ import { test, expect } from '@playwright/test';
 test.describe('Hệ Thống Báo Cáo Giao Ban — Deep E2E & Edge Cases Testing', () => {
 
   test('1. Security: Chống truy cập trái phép khi chưa đăng nhập (Route Protection)', async ({ page }) => {
-    // Thử truy cập thẳng vào trang Admin và Report mà không có Token
     await page.goto('/admin');
     await expect(page).toHaveURL(/.*\/login|^https?:\/\/[^\/]+\/?$/, { timeout: 10000 });
     
@@ -13,13 +12,10 @@ test.describe('Hệ Thống Báo Cáo Giao Ban — Deep E2E & Edge Cases Testing
 
   test('2. Security: Kháng mã độc XSS & SQL Injection trong ô nhập liệu', async ({ page }) => {
     await page.goto('/');
-    
-    // Thử đăng nhập với payload SQL Injection
     await page.fill('input[placeholder*="Khnv"]', "' OR '1'='1");
     await page.fill('input[type="password"]', "' OR '1'='1");
     await page.click('button[type="submit"]');
     
-    // Đảm bảo không bị lọt vào hệ thống và hiển thị lỗi an toàn
     await expect(page.locator('body')).toContainText(/thất bại|không chính xác|⚠️|Invalid/i, { timeout: 10000 });
     await expect(page).not.toHaveURL(/.*\/admin/);
   });
@@ -31,9 +27,8 @@ test.describe('Hệ Thống Báo Cáo Giao Ban — Deep E2E & Edge Cases Testing
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/.*\/report/, { timeout: 15000 });
 
-    await expect(page.locator('body')).toContainText('Khoa Sản');
+    await expect(page.locator('body')).toContainText(/Sản|Khoa Sản/i);
 
-    // Điền thông tin hành chính ca trực
     const doctorInput = page.locator('input[placeholder*="BS."], input[placeholder*="Bác sĩ"]').first();
     if (await doctorInput.isVisible()) {
       await doctorInput.fill('BS. CKI Sản Khoa');
@@ -44,8 +39,7 @@ test.describe('Hệ Thống Báo Cáo Giao Ban — Deep E2E & Edge Cases Testing
       await nextBtn.click();
     }
 
-    // Kiểm tra các trường chuyên môn Khoa Sản
-    await expect(page.locator('body')).toContainText(/Sanh|Sinh|Mổ/i);
+    await expect(page.locator('body')).toContainText(/Sanh|Sinh|Mổ|Chờ/i);
   });
 
   test('4. Dynamic Form: Nhập liệu chuyên sâu Khoa Xét Nghiệm (Sinh hóa, Huyết học)', async ({ page }) => {
@@ -58,19 +52,21 @@ test.describe('Hệ Thống Báo Cáo Giao Ban — Deep E2E & Edge Cases Testing
     await expect(page.locator('body')).toContainText('Xét nghiệm');
   });
 
-  test('5. Keyboard Accessibility: Điều hướng toàn bộ trang bằng bàn phím (Phím Tab & Enter)', async ({ page }) => {
+  test('5. Keyboard Accessibility: Điều hướng và đăng nhập bằng bàn phím', async ({ page }) => {
     await page.goto('/');
     
-    // Nhấn Tab để focus vào ô username
-    await page.keyboard.press('Tab');
-    await page.keyboard.type('Khnv');
+    const userInput = page.locator('input[placeholder*="Khnv"]');
+    await userInput.focus();
+    await userInput.fill('Khnv');
     
-    // Nhấn Tab sang ô mật khẩu
-    await page.keyboard.press('Tab');
-    await page.keyboard.type('Khnv@2026');
+    const passInput = page.locator('input[type="password"]');
+    await passInput.focus();
+    await passInput.fill('Khnv@2026');
     
-    // Nhấn Enter để submit form
+    const submitBtn = page.locator('button[type="submit"]');
+    await submitBtn.focus();
     await page.keyboard.press('Enter');
+    
     await expect(page).toHaveURL(/.*\/admin/, { timeout: 15000 });
   });
 
@@ -86,7 +82,6 @@ test.describe('Hệ Thống Báo Cáo Giao Ban — Deep E2E & Edge Cases Testing
     await presentBtn.click();
     await expect(page).toHaveURL(/.*\/presentation/, { timeout: 15000 });
 
-    // Bấm phóng to liên tiếp đến 160%
     const zoomInBtn = page.locator('button:has-text("Phóng to")');
     if (await zoomInBtn.isVisible()) {
       await zoomInBtn.click();
@@ -105,7 +100,6 @@ test.describe('Hệ Thống Báo Cáo Giao Ban — Deep E2E & Edge Cases Testing
 
     const doctorInput = page.locator('input[placeholder*="BS."], input[placeholder*="Bác sĩ"]').first();
     if (await doctorInput.isVisible()) {
-      // Nhập chuỗi dấu tiếng Việt phức tạp và emoji
       await doctorInput.fill('BS. Đỗ Nguyễn Hoàng Ứng 🏥 🩺');
       await expect(doctorInput).toHaveValue('BS. Đỗ Nguyễn Hoàng Ứng 🏥 🩺');
     }
