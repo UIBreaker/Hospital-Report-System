@@ -442,3 +442,257 @@ label {
 
 .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
 .animate-slide-up { animation: slideUp 0.4s ease-out forwards; }
+
+/* ============================================
+   MOBILE RESPONSIVE — Tối ưu thiết bị di động
+   ============================================ */
+
+/* ── Tablet (≤ 768px) ─────────────────────── */
+@media (max-width: 768px) {
+
+  /* Global spacing */
+  body {
+    font-size: 15px;
+  }
+
+  /* Form grids drop to 1 column */
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+
+  /* Full-width all form groups on mobile */
+  .form-group.full-width {
+    grid-column: 1;
+  }
+
+  /* Cards tighter padding */
+  .card {
+    padding: 1rem;
+    border-radius: var(--radius-md);
+  }
+
+  .form-section {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  /* Section titles smaller */
+  .section-title {
+    font-size: 0.85rem;
+  }
+
+  /* Data table — scroll horizontally */
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--radius-md);
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+
+  .data-table td input {
+    max-width: 70px;
+    padding: 0.3rem;
+    font-size: 0.8rem;
+  }
+
+  /* Buttons full width on mobile */
+  .btn {
+    font-size: 0.875rem;
+    padding: 0.6rem 1rem;
+  }
+
+  /* Login card */
+  .glass-card {
+    padding: 1.75rem 1.25rem;
+    border-radius: var(--radius-lg);
+  }
+
+  /* Badges */
+  .badge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+  }
+}
+
+/* ── Mobile (≤ 480px) ─────────────────────── */
+@media (max-width: 480px) {
+
+  /* Report Page wrapper */
+  .report-page-wrapper {
+    padding: 0.75rem;
+  }
+
+  /* Report header — stack logo + title + button vertically */
+  .report-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem !important;
+  }
+
+  .report-header-left {
+    gap: 0.75rem;
+  }
+
+  .report-header h4 {
+    font-size: 0.7rem !important;
+  }
+
+  .report-header h2 {
+    font-size: 1rem !important;
+  }
+
+  .report-header .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Step 1 — admin info card */
+  .header-step-row {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+  }
+
+  /* Summary info bar — stack vertically */
+  .summary-bar {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.4rem;
+    padding: 0.85rem 1rem !important;
+  }
+
+  .summary-bar-info {
+    flex-direction: column !important;
+    gap: 0.3rem !important;
+    font-size: 0.85rem !important;
+  }
+
+  .summary-bar .btn {
+    width: 100%;
+    justify-content: center;
+    margin-top: 0.5rem;
+  }
+
+  /* Submit button area */
+  .submit-area {
+    padding: 0.75rem 0 1.5rem !important;
+  }
+
+  .submit-area .btn {
+    width: 100%;
+    font-size: 1rem !important;
+    padding: 0.85rem !important;
+  }
+
+  /* Confirm dialog */
+  .confirm-card {
+    padding: 1.25rem !important;
+    max-width: 100% !important;
+  }
+
+  .confirm-card .btn-row {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+  }
+
+  .confirm-card .btn {
+    width: 100%;
+  }
+
+  /* Admin dashboard header */
+  .admin-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem !important;
+  }
+
+  .admin-header-actions {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .admin-header-actions .btn {
+    flex: 1;
+    min-width: 120px;
+    justify-content: center;
+  }
+
+  /* Admin date picker + refresh */
+  .admin-date-row {
+    flex-direction: column !important;
+    gap: 0.75rem;
+    align-items: stretch !important;
+  }
+
+  .admin-date-row input[type="date"] {
+    width: 100%;
+  }
+
+  .admin-date-row .btn {
+    width: 100%;
+  }
+
+  /* Status grid — 1 column */
+  .status-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Presentation slide font sizes */
+  .slide-title {
+    font-size: 1.1rem !important;
+  }
+
+  .slide-subtitle {
+    font-size: 0.8rem !important;
+  }
+
+  /* Section title text wrap OK */
+  .section-title {
+    flex-wrap: wrap;
+    word-break: break-word;
+  }
+
+  /* Transfer case form */
+  .transfer-case-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 0.5rem;
+  }
+
+  .transfer-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Logo sizes */
+  .logo-img {
+    width: 38px;
+    height: 38px;
+  }
+
+  .logo-img-lg {
+    width: 64px;
+    height: 64px;
+  }
+
+  /* Input font size on iOS prevents zoom */
+  input, textarea, select {
+    font-size: 16px;
+  }
+
+  /* Sub sections */
+  .sub-section {
+    padding: 0.75rem;
+  }
+}
+

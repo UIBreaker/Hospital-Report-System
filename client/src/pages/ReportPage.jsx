@@ -105,10 +105,10 @@ const ReportPage = () => {
   }
 
   return (
-    <div style={{ padding: '1.5rem 2rem', maxWidth: '1200px', margin: '0 auto' }}>
+    <div className="report-page-wrapper" style={{ maxWidth: '1200px', margin: '0 auto' }}>
       {/* Brand Header */}
-      <header className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', padding: '1rem 1.5rem', background: '#FFFFFF' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem' }}>
+      <header className="card report-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', padding: '1rem 1.5rem', background: '#FFFFFF' }}>
+        <div className="report-header-left" style={{ display: 'flex', alignItems: 'center', gap: '1.2rem' }}>
           <img src="/logo.png" alt="Logo TTYT Bình Long" className="logo-img" />
           <div>
             <h4 style={{ fontSize: '0.8rem', color: 'var(--brand-red)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
@@ -159,7 +159,7 @@ const ReportPage = () => {
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '1rem' }}>
+            <div className="header-step-row" style={{ display: 'flex', gap: '1rem' }}>
               <div className="form-group" style={{ flex: 1 }}>
                 <label>Phòng / Buồng trực (Không bắt buộc)</label>
                 <input 
@@ -195,8 +195,8 @@ const ReportPage = () => {
       ) : (
         <div className="animate-slide-up">
           {/* Header summary bar */}
-          <div className="card" style={{ marginBottom: '1.5rem', padding: '1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(135deg, #EFF6FF, #F8FAFC)', borderLeft: '4px solid var(--brand-blue)' }}>
-            <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', fontSize: '0.95rem' }}>
+          <div className="card summary-bar" style={{ marginBottom: '1.5rem', padding: '1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(135deg, #EFF6FF, #F8FAFC)', borderLeft: '4px solid var(--brand-blue)' }}>
+            <div className="summary-bar-info" style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap', fontSize: '0.9rem' }}>
               <div>📅 <strong>Ngày báo cáo:</strong> {headerData.reportDate}</div>
               <div>👨‍⚕️ <strong>Bác sĩ trực:</strong> {headerData.doctorName}</div>
               {headerData.room && <div>🏥 <strong>Phòng:</strong> {headerData.room}</div>}
@@ -235,7 +235,7 @@ const ReportPage = () => {
           )}
 
           {/* Submit button */}
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '1rem 0 2rem' }}>
+          <div className="submit-area" style={{ display: 'flex', justifyContent: 'center', padding: '1rem 0 2rem' }}>
             {!showConfirm ? (
               <button 
                 className="btn btn-primary"
@@ -245,11 +245,11 @@ const ReportPage = () => {
                 <FaPaperPlane /> Gửi Báo Cáo Giao Ban
               </button>
             ) : (
-              <div className="card" style={{ textAlign: 'center', padding: '2rem', maxWidth: '500px', border: '2px solid var(--warning)' }}>
-                <p style={{ marginBottom: '1.5rem', fontSize: '1.05rem', fontWeight: '600' }}>
+              <div className="card confirm-card" style={{ textAlign: 'center', padding: '2rem', maxWidth: '500px', border: '2px solid var(--warning)', width: '100%' }}>
+                <p style={{ marginBottom: '1.5rem', fontSize: '1rem', fontWeight: '600' }}>
                   ⚠️ Xác nhận gửi báo cáo ngày {headerData.reportDate} của khoa {user?.departmentName}?
                 </p>
-                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                <div className="btn-row" style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
                   <button 
                     className="btn btn-primary"
                     onClick={handleSubmit}

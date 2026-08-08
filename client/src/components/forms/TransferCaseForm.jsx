@@ -49,7 +49,7 @@ const TransferCaseForm = ({ transferCases = [], setTransferCases }) => {
       borderRadius: 'var(--radius-md)',
       background: '#FFFAFA'
     }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+      <div className="transfer-case-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
         <h3 className="section-title" style={{ margin: 0, padding: 0, border: 'none', color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <FaAmbulance />
           BỆNH CHUYỂN VIỆN {transferCases.length > 0 ? `(${transferCases.length} ca)` : ''}
