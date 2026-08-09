@@ -19,44 +19,61 @@ const DEPARTMENT_DISPLAY_NAMES = {
 
 // Vietnamese label map for presentation display
 const FIELD_LABELS = {
-  // Common
-  benhCu: 'Bệnh cũ', benhMoi: 'Bệnh mới', benhXuat: 'Bệnh xuất',
+  // Common metrics
+  benhCu: 'Bệnh cũ (Đang điều trị)', benhMoi: 'Bệnh mới nhập viện', benhXuat: 'Bệnh xuất viện',
   benhChuyenVien: 'Bệnh chuyển viện', benhChuyenKhoa: 'Bệnh chuyển khoa',
-  hienCon: 'Hiện còn', hienCo: 'Hiện còn', tuVong: 'Tử vong',
-  xuatVien: 'Xuất viện', chuyenVien: 'Chuyển viện', chuyenKhoa: 'Chuyển khoa',
-  tongSoKham: 'Tổng số khám', hauPhau: 'Hậu phẫu',
-  // Sản
+  hienCon: 'Hiện còn điều trị', hienCo: 'Hiện có tại khoa', tuVong: 'Tử vong',
+  xuatVien: 'Xuất viện', xuat: 'Xuất viện', chuyenVien: 'Chuyển viện', chuyenKhoa: 'Chuyển khoa',
+  tongSoKham: 'Tổng số lượt khám', hauPhau: 'Hậu phẫu',
+  tongSo: 'Tổng số lượt thực hiện', baoHiem: 'Bảo hiểm y tế (BHYT)',
+  noiTru: 'Bệnh nhân Nội trú', ngoaiTru: 'Bệnh nhân Ngoại trú',
+
+  // Khoa Sản
   sanhThuong: 'Sanh thường', sanhHut: 'Sanh hút', choSanh: 'Chờ sanh',
   sieuAm: 'Siêu âm', chuyenVienNgoaiTru: 'Chuyển viện ngoại trú', moLayThai: 'Mổ lấy thai',
-  // HSCC specific
-  keToa: 'Kê toa', ngoaiTru: 'Ngoại trú', truyenMau: 'Truyền máu',
-  tieuPhau: 'Tiểu phẫu', boBot: 'Bó bột', ccNgoaiVien: 'Cấp cứu ngoại viện',
-  bsTrucTNT: 'Bác sĩ trực TNT',
-  // TNT
+
+  // HSCC - TNT - PK21
+  keToa: 'Kê toa', truyenMau: 'Truyền máu', tieuPhau: 'Tiểu phẫu', boBot: 'Bó bột',
+  ccNgoaiVien: 'Cấp cứu ngoại viện', bsTrucTNT: 'Bác sĩ trực TNT',
   tnt_benhCu: 'Bệnh cũ (TNT)', tnt_benhMoi: 'Bệnh mới (TNT)',
   tnt_xuatVien: 'Xuất viện (TNT)', tnt_chuyenVien: 'Chuyển viện (TNT)',
   tnt_chuyenKhoa: 'Chuyển khoa (TNT)', tnt_hienCon: 'Hiện còn (TNT)',
   tnt_ctdk: 'Chạy thận định kỳ', tnt_noiTru: 'Nội trú (TNT)',
-  // PK21
   pk21_benhCu: 'Bệnh cũ (PK21)', pk21_benhMoi: 'Bệnh mới (PK21)',
   pk21_xuatVien: 'Xuất viện (PK21)', pk21_hienCon: 'Hiện còn (PK21)',
-  pk21_tongSo: 'Tổng số (PK21)', pk21_ngoaiTru: 'Ngoại trú (PK21)',
-  // YHCT
-  noiTru: 'Nội trú', dieuTriPhcn: 'Điều trị PHCN', phcn_benhCu: 'Bệnh cũ (PHCN)',
+  pk21_tongSo: 'Tổng số khám (PK21)', pk21_ngoaiTru: 'Ngoại trú (PK21)',
+
+  // YHCT - PHCN
+  dieuTriPhcn: 'Điều trị PHCN', phcn_benhCu: 'Bệnh cũ (PHCN)',
   phcn_benhMoi: 'Bệnh mới (PHCN)', phcn_xuatVien: 'Xuất viện (PHCN)',
   phcn_hienCon: 'Hiện còn (PHCN)',
-  // CTCH / NTH
+
+  // Ngoại TH / CTCH / GMHS
   daiPhau: 'Đại phẫu', trungPhau: 'Trung phẫu',
-  hauPhauNghiNgo: 'Hậu phẫu nghi ngờ',
-  // Nội
-  benhCu_noi: 'Bệnh cũ', benhMoi_noi: 'Bệnh mới',
-  // GMHS
+  hauPhauNghiNgo: 'Hậu phẫu nghi ngờ', chuyenVienTT: 'Chuyển viện tuyến trên',
+  tongSoCaMo: 'Tổng số ca phẫu thuật (Mổ)',
+  cc_ctch: 'Chấn thương chỉnh hình', cc_ngoaiTH: 'Ngoại tổng hợp', cc_san: 'Sản khoa',
+  ct_ctch: 'Chấn thương chỉnh hình', ct_ngoaiTH: 'Ngoại tổng hợp', ct_san: 'Sản khoa',
   phauThuat: 'Phẫu thuật', gayTe: 'Gây tê', gayMe: 'Gây mê',
-  gayMeNghinh: 'Gây mê nghỉnh',
-  // Xét nghiệm / CĐHA
+
+  // Khoa Nhi
+  benhMoi_pk: 'Bệnh mới (Phòng khám)', benhMoi_cc: 'Bệnh mới (Cấp cứu)',
+
+  // Khoa Nhiễm
+  chuyenKhoaSan: 'Chuyển khoa Sản', xinXuatVien: 'Xin xuất viện',
+
+  // Khoa Xét Nghiệm / CĐHA
   tongXetNghiem: 'Tổng số xét nghiệm', sinhHoa: 'Sinh hóa', huyetHoc: 'Huyết học',
   dongMau: 'Đông máu', nuocTieu: 'Nước tiểu', mienDich: 'Miễn dịch',
   xQuang: 'X-Quang', ctScanner: 'CT-Scanner', dienTim: 'Điện tim',
+
+  // Personnel & Notes
+  nhanSu: 'Thành phần nhân sự ca trực',
+  dieuDuongTruc: 'Điều dưỡng trực ca',
+  themGio: 'Diễn biến thêm giờ / Ca trực',
+  tinhHinhChung: 'Tình hình chung ca trực',
+  hienCoGhiChu: 'Ghi chú hiện có',
+  hienConGhiChu: 'Ghi chú hiện còn',
 };
 
 const getLabel = (key) => {
@@ -88,20 +105,20 @@ const getMetricStyle = (key, value) => {
       ? { bg: '#FEF3C7', border: '#D97706', text: '#B45309', label: '#92400E' }
       : { bg: '#F8FAFC', border: '#E2E8F0', text: '#64748B', label: '#475569' };
   }
-  if (key.toLowerCase().includes('benhmoi') || key.toLowerCase().includes('tongso') || key.toLowerCase().includes('tong_so')) {
+  if (key.toLowerCase().includes('benhmoi') || key.toLowerCase().includes('tongso') || key.toLowerCase().includes('tong_so') || key.toLowerCase().includes('tongsoca')) {
     return { bg: '#EFF6FF', border: '#3B82F6', text: '#1D4ED8', label: '#1E40AF' };
   }
-  if (key.toLowerCase().includes('xuatvien') || key.toLowerCase().includes('xuat_vien')) {
+  if (key.toLowerCase().includes('xuatvien') || key.toLowerCase().includes('xuat_vien') || key.toLowerCase().includes('xinxuatvien') || key === 'xuat') {
     return { bg: '#F0FDF4', border: '#22C55E', text: '#15803D', label: '#166534' };
   }
-  if (key.toLowerCase().includes('hiencon') || key.toLowerCase().includes('hien_con')) {
+  if (key.toLowerCase().includes('hiencon') || key.toLowerCase().includes('hien_con') || key.toLowerCase().includes('hienco') || key.toLowerCase().includes('hien_co')) {
     return { bg: '#FAF5FF', border: '#A855F7', text: '#7E22CE', label: '#6B21A8' };
   }
   return { bg: '#FFFFFF', border: '#E2E8F0', text: '#0F2C59', label: '#334155' };
 };
 
 // Parse structured sections from any department data
-const parseDepartmentSections = (reportData) => {
+const parseDepartmentSections = (reportData, deptCode = '') => {
   if (!reportData) return [];
   let data;
   try {
@@ -111,14 +128,149 @@ const parseDepartmentSections = (reportData) => {
   }
 
   const sections = [];
+  const normalizedDept = (deptCode || '').toLowerCase().replace(/[^a-z0-9_]/g, '');
 
-  // Special handling for Chẩn đoán hình ảnh (techniques table)
+  // ================= 1. GÂY MÊ HỒI SỨC (GMHS) =================
+  if (normalizedDept === 'gmhs' || data.nhanSu !== undefined || data.tongSoCaMo !== undefined || data.cc_ctch !== undefined) {
+    if (data.nhanSu) {
+      sections.push({
+        type: 'personnel',
+        title: 'THÀNH PHẦN NHÂN SỰ CA TRỰC',
+        value: data.nhanSu
+      });
+    }
+
+    // Hero metrics: Tổng số ca mổ & Hiện còn hồi tỉnh
+    const overviewItems = [];
+    if (data.tongSoCaMo !== undefined && data.tongSoCaMo !== '') {
+      overviewItems.push({ key: 'tongSoCaMo', label: 'Tổng số ca mổ (Cấp cứu + Kế hoạch)', value: String(data.tongSoCaMo) });
+    }
+    if (data.hienCon !== undefined && data.hienCon !== '') {
+      overviewItems.push({ key: 'hienCon', label: 'Bệnh nhân hiện còn theo dõi tại Hồi tỉnh', value: String(data.hienCon) });
+    }
+    if (overviewItems.length > 0) {
+      sections.push({
+        title: 'TỔNG QUAN PHẪU THUẬT & HỒI TỈNH',
+        items: overviewItems
+      });
+    }
+
+    // Emergency surgeries (Mổ cấp cứu)
+    const ccItems = [];
+    if (data.cc_ctch !== undefined && data.cc_ctch !== '') ccItems.push({ key: 'cc_ctch', label: 'Chấn thương chỉnh hình', value: String(data.cc_ctch) });
+    if (data.cc_ngoaiTH !== undefined && data.cc_ngoaiTH !== '') ccItems.push({ key: 'cc_ngoaiTH', label: 'Ngoại tổng hợp', value: String(data.cc_ngoaiTH) });
+    if (data.cc_san !== undefined && data.cc_san !== '') ccItems.push({ key: 'cc_san', label: 'Sản khoa', value: String(data.cc_san) });
+    if (ccItems.length > 0) {
+      sections.push({
+        title: '🚨 MỔ CẤP CỨU',
+        items: ccItems
+      });
+    }
+
+    // Planned surgeries (Mổ chương trình)
+    const ctItems = [];
+    if (data.ct_ctch !== undefined && data.ct_ctch !== '') ctItems.push({ key: 'ct_ctch', label: 'Chấn thương chỉnh hình', value: String(data.ct_ctch) });
+    if (data.ct_ngoaiTH !== undefined && data.ct_ngoaiTH !== '') ctItems.push({ key: 'ct_ngoaiTH', label: 'Ngoại tổng hợp', value: String(data.ct_ngoaiTH) });
+    if (data.ct_san !== undefined && data.ct_san !== '') ctItems.push({ key: 'ct_san', label: 'Sản khoa', value: String(data.ct_san) });
+    if (ctItems.length > 0) {
+      sections.push({
+        title: '📅 MỔ CHƯƠNG TRÌNH (KẾ HOẠCH)',
+        items: ctItems
+      });
+    }
+
+    if (data.themGio) {
+      sections.push({
+        type: 'note',
+        title: 'GHI CHÚ THÊM GIỜ & DIỄN BIẾN MỔ',
+        value: data.themGio
+      });
+    }
+
+    return sections;
+  }
+
+  // ================= 2. XÉT NGHIỆM (XN) =================
+  if (normalizedDept === 'xn' || (data.tongSo !== undefined && (data.baoHiem !== undefined || data.noiTru !== undefined) && !data.techniques)) {
+    const xnMetrics = [];
+    if (data.tongSo !== undefined && data.tongSo !== '') xnMetrics.push({ key: 'tongSo', label: 'Tổng số lượt xét nghiệm', value: String(data.tongSo) });
+    if (data.baoHiem !== undefined && data.baoHiem !== '') xnMetrics.push({ key: 'baoHiem', label: 'Bảo hiểm y tế (BHYT)', value: String(data.baoHiem) });
+    if (data.noiTru !== undefined && data.noiTru !== '') xnMetrics.push({ key: 'noiTru', label: 'Bệnh nhân Nội trú', value: String(data.noiTru) });
+    if (data.ngoaiTru !== undefined && data.ngoaiTru !== '') xnMetrics.push({ key: 'ngoaiTru', label: 'Bệnh nhân Ngoại trú', value: String(data.ngoaiTru) });
+
+    if (xnMetrics.length > 0) {
+      sections.push({
+        title: 'THỐNG KÊ XÉT NGHIỆM THỰC HIỆN',
+        items: xnMetrics
+      });
+    }
+
+    if (data.themGio) {
+      sections.push({
+        type: 'note',
+        title: 'GHI CHÚ THÊM GIỜ & CA TRỰC',
+        value: data.themGio
+      });
+    }
+
+    return sections;
+  }
+
+  // ================= 3. KHOA NHIỄM (NHIEM) =================
+  if (normalizedDept === 'nhiem' || data.chuyenKhoaSan !== undefined || data.xinXuatVien !== undefined) {
+    if (data.dieuDuongTruc) {
+      sections.push({
+        type: 'personnel',
+        title: 'ĐIỀU DƯỠNG TRỰC CA',
+        value: data.dieuDuongTruc
+      });
+    }
+
+    const nhiemMetrics = [];
+    if (data.benhCu !== undefined && data.benhCu !== '') nhiemMetrics.push({ key: 'benhCu', label: 'Bệnh cũ', value: String(data.benhCu) });
+    if (data.benhMoi !== undefined && data.benhMoi !== '') nhiemMetrics.push({ key: 'benhMoi', label: 'Bệnh mới nhập viện', value: String(data.benhMoi) });
+    if (data.hienCon !== undefined && data.hienCon !== '') nhiemMetrics.push({ key: 'hienCon', label: 'Hiện còn điều trị', value: String(data.hienCon) });
+    if (data.chuyenVien !== undefined && data.chuyenVien !== '') nhiemMetrics.push({ key: 'chuyenVien', label: 'Chuyển viện', value: String(data.chuyenVien) });
+    if (data.xinXuatVien !== undefined && data.xinXuatVien !== '') nhiemMetrics.push({ key: 'xinXuatVien', label: 'Xin xuất viện', value: String(data.xinXuatVien) });
+    if (data.chuyenKhoaSan !== undefined && data.chuyenKhoaSan !== '') nhiemMetrics.push({ key: 'chuyenKhoaSan', label: 'Chuyển khoa Sản', value: String(data.chuyenKhoaSan) });
+
+    if (nhiemMetrics.length > 0) {
+      sections.push({
+        title: 'THỐNG KÊ BỆNH NHÂN KHOA NHIỄM',
+        items: nhiemMetrics
+      });
+    }
+
+    if (data.themGio) {
+      sections.push({
+        type: 'note',
+        title: 'DIỄN BIẾN THÊM GIỜ',
+        value: data.themGio
+      });
+    }
+
+    if (data.tinhHinhChung) {
+      sections.push({
+        type: 'note',
+        title: 'TÌNH HÌNH CHUNG CA TRỰC',
+        value: data.tinhHinhChung
+      });
+    }
+
+    return sections;
+  }
+
+  // ================= 4. CHẨN ĐOÁN HÌNH ẢNH (CDHA) =================
   if (data.techniques && Array.isArray(data.techniques)) {
     const docItems = [];
     if (data.bsSieuAm) docItems.push({ key: 'bsSieuAm', label: 'BS trực Siêu âm', value: String(data.bsSieuAm) });
-    if (data.bsXquangCT) docItems.push({ key: 'bsXquangCT', label: 'BS trực Xquang – CT', value: String(data.bsXquangCT) });
+    if (data.bsXquangCT) docItems.push({ key: 'bsXquangCT', label: 'BS trực Xquang – CT Scan', value: String(data.bsXquangCT) });
     if (docItems.length > 0) {
-      sections.push({ title: 'PHÂN CÔNG BÁC SĨ TRỰC', items: docItems });
+      sections.push({
+        type: 'personnel',
+        title: 'PHÂN CÔNG BÁC SĨ TRỰC CHUYÊN KHOA',
+        value: docItems.map(d => `${d.label}: ${d.value}`).join(' | ')
+      });
     }
 
     const validRows = data.techniques.filter(t => t && (t.tongSo || t.baoHiem || t.noiTru || t.ngoaiTru || t.name));
@@ -132,17 +284,20 @@ const parseDepartmentSections = (reportData) => {
 
     if (data.themGio) {
       sections.push({
+        type: 'note',
         title: 'THÊM GIỜ & GHI CHÚ',
-        items: [{ key: 'themGio', label: 'Ghi chú thêm giờ', value: String(data.themGio) }]
+        value: data.themGio
       });
     }
 
     return sections;
   }
 
-  // Check if data is divided into named groups (e.g. hscc, tnt, pk21)
+  // ================= 5. UNIVERSAL / MULTI-BLOCK PARSER =================
   const topKeys = Object.keys(data).filter(k => k !== '_id');
   const hasNestedObjects = topKeys.some(k => data[k] && typeof data[k] === 'object' && !Array.isArray(data[k]));
+
+  const noteKeys = ['themGio', 'tinhHinhChung', 'ghiChu', 'hienConGhiChu', 'hienCoGhiChu', 'chuyenVienTT', 'nhanSu', 'dieuDuongTruc'];
 
   if (hasNestedObjects) {
     topKeys.forEach(k => {
@@ -166,26 +321,46 @@ const parseDepartmentSections = (reportData) => {
           sections.push({ title: sectionTitle, items });
         }
       } else if (val !== null && val !== undefined && val !== '' && !Array.isArray(val)) {
-        // Flat item in top level
-        let mainSec = sections.find(s => s.title === 'THÔNG TIN CHUNG');
-        if (!mainSec) {
-          mainSec = { title: 'THÔNG TIN CHUNG', items: [] };
-          sections.unshift(mainSec);
+        if (noteKeys.includes(k)) {
+          sections.push({
+            type: k === 'nhanSu' || k === 'dieuDuongTruc' ? 'personnel' : 'note',
+            title: getLabel(k),
+            value: String(val)
+          });
+        } else {
+          let mainSec = sections.find(s => s.title === 'THÔNG TIN CHUNG' && !s.type);
+          if (!mainSec) {
+            mainSec = { title: 'THÔNG TIN CHUNG', items: [] };
+            sections.unshift(mainSec);
+          }
+          mainSec.items.push({ key: k, label: getLabel(k), value: String(val) });
         }
-        mainSec.items.push({ key: k, label: getLabel(k), value: String(val) });
       }
     });
   } else {
     // Flat object
     const items = [];
+    const notes = [];
+
     Object.entries(data).forEach(([k, v]) => {
       if (v !== null && v !== undefined && v !== '' && k !== '_id' && !Array.isArray(v)) {
-        items.push({ key: k, label: getLabel(k), value: String(v) });
+        if (noteKeys.includes(k) || (typeof v === 'string' && (v.length > 25 || v.includes('\n')))) {
+          notes.push({
+            type: k === 'nhanSu' || k === 'dieuDuongTruc' ? 'personnel' : 'note',
+            title: getLabel(k),
+            value: String(v)
+          });
+        } else {
+          items.push({ key: k, label: getLabel(k), value: String(v) });
+        }
       }
     });
+
     if (items.length > 0) {
       sections.push({ title: 'CHỈ SỐ BÁO CÁO TRONG CA TRỰC', items });
     }
+
+    notes.forEach(n => sections.push(n));
   }
 
   return sections;
@@ -518,7 +693,7 @@ const PresentationPage = () => {
 
             {/* ==================== 2. DEPARTMENT SLIDE ==================== */}
             {slide.type === 'department' && (() => {
-              const sections = parseDepartmentSections(slide.report.report_data);
+              const sections = parseDepartmentSections(slide.report.report_data, slide.report.department_code);
               return (
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                   {/* Department top banner */}
@@ -577,127 +752,237 @@ const PresentationPage = () => {
 
                   {/* Section & Metric Grid */}
                   {sections.length > 0 ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
-                      {sections.map((section, sIdx) => (
-                        <div key={sIdx}>
-                          {/* Section Title Header */}
-                          {sections.length > 1 && (
-                            <div style={{
-                              fontSize: isFullscreen ? '1.25rem' : '1.05rem',
-                              fontWeight: '800', color: '#0F2C59',
-                              backgroundColor: '#EFF6FF',
-                              padding: '0.6rem 1.2rem', borderRadius: '8px',
-                              borderLeft: '5px solid #2563EB',
-                              marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.5px'
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                      {sections.map((section, sIdx) => {
+                        // 1. PERSONNEL BANNER VIEW
+                        if (section.type === 'personnel') {
+                          return (
+                            <div key={sIdx} style={{
+                              backgroundColor: '#F8FAFC',
+                              border: '2px solid #CBD5E1',
+                              borderLeft: '8px solid #0F2C59',
+                              borderRadius: '14px',
+                              padding: isFullscreen ? '1.25rem 1.75rem' : '0.9rem 1.3rem',
+                              boxShadow: '0 4px 12px rgba(15, 44, 89, 0.05)',
+                              display: 'flex',
+                              alignItems: 'flex-start',
+                              gap: '1.2rem',
                             }}>
-                              {section.title}
-                            </div>
-                          )}
-
-                          {/* Table Type Presentation View (Chẩn đoán hình ảnh) */}
-                          {section.tableType === 'techniques' && section.tableRows ? (
-                            <div style={{ overflowX: 'auto', marginTop: '0.5rem', marginBottom: '1rem' }}>
-                              <table style={{
-                                width: '100%',
-                                borderCollapse: 'separate',
-                                borderSpacing: '0',
-                                borderRadius: '12px',
-                                overflow: 'hidden',
-                                boxShadow: '0 4px 14px rgba(0,0,0,0.06)',
-                                border: '1.5px solid #CBD5E1'
+                              <div style={{
+                                width: isFullscreen ? '48px' : '38px',
+                                height: isFullscreen ? '48px' : '38px',
+                                borderRadius: '10px',
+                                backgroundColor: '#EFF6FF',
+                                color: '#1E40AF',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: isFullscreen ? '1.5rem' : '1.2rem',
+                                flexShrink: 0
                               }}>
-                                <thead>
-                                  <tr style={{ backgroundColor: '#0F2C59', color: '#FFFFFF' }}>
-                                    <th style={{ padding: isFullscreen ? '0.9rem 1.4rem' : '0.75rem 1rem', textAlign: 'left', fontWeight: '800', fontSize: isFullscreen ? '1.15rem' : '0.95rem', letterSpacing: '0.5px' }}>KỸ THUẬT</th>
-                                    <th style={{ padding: isFullscreen ? '0.9rem 1.4rem' : '0.75rem 1rem', textAlign: 'center', fontWeight: '800', fontSize: isFullscreen ? '1.15rem' : '0.95rem', letterSpacing: '0.5px' }}>TỔNG SỐ</th>
-                                    <th style={{ padding: isFullscreen ? '0.9rem 1.4rem' : '0.75rem 1rem', textAlign: 'center', fontWeight: '800', fontSize: isFullscreen ? '1.15rem' : '0.95rem', letterSpacing: '0.5px' }}>BẢO HIỂM</th>
-                                    <th style={{ padding: isFullscreen ? '0.9rem 1.4rem' : '0.75rem 1rem', textAlign: 'center', fontWeight: '800', fontSize: isFullscreen ? '1.15rem' : '0.95rem', letterSpacing: '0.5px' }}>NỘI TRÚ</th>
-                                    <th style={{ padding: isFullscreen ? '0.9rem 1.4rem' : '0.75rem 1rem', textAlign: 'center', fontWeight: '800', fontSize: isFullscreen ? '1.15rem' : '0.95rem', letterSpacing: '0.5px' }}>NGOẠI TRÚ</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {section.tableRows.map((tech, tIdx) => (
-                                    <tr 
-                                      key={tIdx} 
-                                      style={{ 
-                                        backgroundColor: tIdx % 2 === 0 ? '#FFFFFF' : '#F8FAFC',
-                                        borderBottom: '1px solid #E2E8F0'
+                                👥
+                              </div>
+                              <div style={{ flex: 1 }}>
+                                <div style={{
+                                  fontSize: isFullscreen ? '1.1rem' : '0.9rem',
+                                  fontWeight: '800',
+                                  color: '#64748B',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.5px',
+                                  marginBottom: '4px'
+                                }}>
+                                  {section.title}
+                                </div>
+                                <div style={{
+                                  fontSize: isFullscreen ? '1.4rem' : '1.15rem',
+                                  fontWeight: '700',
+                                  color: '#0F2C59',
+                                  lineHeight: 1.5,
+                                  whiteSpace: 'pre-line'
+                                }}>
+                                  {section.value}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        // 2. NOTE / REMARK VIEW
+                        if (section.type === 'note') {
+                          return (
+                            <div key={sIdx} style={{
+                              backgroundColor: '#FFFBEB',
+                              border: '2px solid #FDE68A',
+                              borderLeft: '8px solid #D97706',
+                              borderRadius: '14px',
+                              padding: isFullscreen ? '1.25rem 1.75rem' : '0.9rem 1.3rem',
+                              boxShadow: '0 4px 12px rgba(217, 119, 6, 0.06)'
+                            }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.4rem' }}>
+                                <span style={{ fontSize: isFullscreen ? '1.3rem' : '1.1rem' }}>📝</span>
+                                <span style={{
+                                  fontSize: isFullscreen ? '1.15rem' : '0.95rem',
+                                  fontWeight: '800',
+                                  color: '#92400E',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.5px'
+                                }}>
+                                  {section.title}
+                                </span>
+                              </div>
+                              <div style={{
+                                fontSize: isFullscreen ? '1.35rem' : '1.1rem',
+                                fontWeight: '600',
+                                color: '#78350F',
+                                lineHeight: '1.6',
+                                whiteSpace: 'pre-line',
+                                paddingLeft: isFullscreen ? '1.9rem' : '1.6rem'
+                              }}>
+                                {section.value}
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        // 3. TABLE TYPE (TECHNIQUES) VIEW
+                        if (section.tableType === 'techniques' && section.tableRows) {
+                          return (
+                            <div key={sIdx}>
+                              <div style={{
+                                fontSize: isFullscreen ? '1.25rem' : '1.05rem',
+                                fontWeight: '800', color: '#0F2C59',
+                                backgroundColor: '#EFF6FF',
+                                padding: '0.6rem 1.2rem', borderRadius: '8px',
+                                borderLeft: '5px solid #2563EB',
+                                marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.5px'
+                              }}>
+                                {section.title}
+                              </div>
+                              <div style={{ overflowX: 'auto', marginTop: '0.5rem', marginBottom: '0.5rem' }}>
+                                <table style={{
+                                  width: '100%',
+                                  borderCollapse: 'separate',
+                                  borderSpacing: '0',
+                                  borderRadius: '12px',
+                                  overflow: 'hidden',
+                                  boxShadow: '0 4px 14px rgba(0,0,0,0.06)',
+                                  border: '1.5px solid #CBD5E1'
+                                }}>
+                                  <thead>
+                                    <tr style={{ backgroundColor: '#0F2C59', color: '#FFFFFF' }}>
+                                      <th style={{ padding: isFullscreen ? '0.9rem 1.4rem' : '0.75rem 1rem', textAlign: 'left', fontWeight: '800', fontSize: isFullscreen ? '1.15rem' : '0.95rem', letterSpacing: '0.5px' }}>KỸ THUẬT</th>
+                                      <th style={{ padding: isFullscreen ? '0.9rem 1.4rem' : '0.75rem 1rem', textAlign: 'center', fontWeight: '800', fontSize: isFullscreen ? '1.15rem' : '0.95rem', letterSpacing: '0.5px' }}>TỔNG SỐ</th>
+                                      <th style={{ padding: isFullscreen ? '0.9rem 1.4rem' : '0.75rem 1rem', textAlign: 'center', fontWeight: '800', fontSize: isFullscreen ? '1.15rem' : '0.95rem', letterSpacing: '0.5px' }}>BẢO HIỂM</th>
+                                      <th style={{ padding: isFullscreen ? '0.9rem 1.4rem' : '0.75rem 1rem', textAlign: 'center', fontWeight: '800', fontSize: isFullscreen ? '1.15rem' : '0.95rem', letterSpacing: '0.5px' }}>NỘI TRÚ</th>
+                                      <th style={{ padding: isFullscreen ? '0.9rem 1.4rem' : '0.75rem 1rem', textAlign: 'center', fontWeight: '800', fontSize: isFullscreen ? '1.15rem' : '0.95rem', letterSpacing: '0.5px' }}>NGOẠI TRÚ</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {section.tableRows.map((tech, tIdx) => (
+                                      <tr 
+                                        key={tIdx} 
+                                        style={{ 
+                                          backgroundColor: tIdx % 2 === 0 ? '#FFFFFF' : '#F8FAFC',
+                                          borderBottom: '1px solid #E2E8F0'
+                                        }}
+                                      >
+                                        <td style={{ padding: isFullscreen ? '0.85rem 1.4rem' : '0.65rem 1rem', fontWeight: '800', color: '#0F2C59', borderBottom: '1px solid #E2E8F0', fontSize: isFullscreen ? '1.2rem' : '1rem' }}>
+                                          {tech.name}
+                                        </td>
+                                        <td style={{ padding: isFullscreen ? '0.85rem 1.4rem' : '0.65rem 1rem', textAlign: 'center', fontWeight: '900', color: '#1E40AF', fontSize: isFullscreen ? '1.45rem' : '1.2rem', borderBottom: '1px solid #E2E8F0', fontFamily: "'Roboto Mono', monospace" }}>
+                                          <span style={{ backgroundColor: '#EFF6FF', padding: '0.2rem 0.6rem', borderRadius: '6px', border: '1px solid #BFDBFE' }}>
+                                            {tech.tongSo || '0'}
+                                          </span>
+                                        </td>
+                                        <td style={{ padding: isFullscreen ? '0.85rem 1.4rem' : '0.65rem 1rem', textAlign: 'center', fontWeight: '800', color: '#059669', fontSize: isFullscreen ? '1.3rem' : '1.1rem', borderBottom: '1px solid #E2E8F0', fontFamily: "'Roboto Mono', monospace" }}>
+                                          {tech.baoHiem || '0'}
+                                        </td>
+                                        <td style={{ padding: isFullscreen ? '0.85rem 1.4rem' : '0.65rem 1rem', textAlign: 'center', fontWeight: '700', color: '#334155', fontSize: isFullscreen ? '1.2rem' : '1rem', borderBottom: '1px solid #E2E8F0', fontFamily: "'Roboto Mono', monospace" }}>
+                                          {tech.noiTru || '0'}
+                                        </td>
+                                        <td style={{ padding: isFullscreen ? '0.85rem 1.4rem' : '0.65rem 1rem', textAlign: 'center', fontWeight: '700', color: '#334155', fontSize: isFullscreen ? '1.2rem' : '1rem', borderBottom: '1px solid #E2E8F0', fontFamily: "'Roboto Mono', monospace" }}>
+                                          {tech.ngoaiTru || '0'}
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        // 4. METRICS CARDS GRID VIEW
+                        return (
+                          <div key={sIdx}>
+                            {/* Section Title Header */}
+                            {section.title && (
+                              <div style={{
+                                fontSize: isFullscreen ? '1.25rem' : '1.05rem',
+                                fontWeight: '800', color: '#0F2C59',
+                                backgroundColor: '#EFF6FF',
+                                padding: '0.6rem 1.2rem', borderRadius: '8px',
+                                borderLeft: '5px solid #2563EB',
+                                marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.5px'
+                              }}>
+                                {section.title}
+                              </div>
+                            )}
+
+                            {section.items && (
+                              <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: isFullscreen
+                                  ? 'repeat(auto-fit, minmax(280px, 1fr))'
+                                  : 'repeat(auto-fit, minmax(240px, 1fr))',
+                                gap: isFullscreen ? '1.1rem' : '0.85rem'
+                              }}>
+                                {section.items.map((item, iIdx) => {
+                                  const style = getMetricStyle(item.key, item.value);
+                                  return (
+                                    <div
+                                      key={iIdx}
+                                      style={{
+                                        backgroundColor: style.bg,
+                                        border: `2px solid ${style.border}`,
+                                        borderRadius: '12px',
+                                        padding: isFullscreen ? '1rem 1.4rem' : '0.75rem 1.1rem',
+                                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                        boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                                        transition: 'transform 0.15s',
+                                        minHeight: isFullscreen ? '90px' : '75px'
                                       }}
                                     >
-                                      <td style={{ padding: isFullscreen ? '0.85rem 1.4rem' : '0.65rem 1rem', fontWeight: '800', color: '#0F2C59', borderBottom: '1px solid #E2E8F0', fontSize: isFullscreen ? '1.2rem' : '1rem' }}>
-                                        {tech.name}
-                                      </td>
-                                      <td style={{ padding: isFullscreen ? '0.85rem 1.4rem' : '0.65rem 1rem', textAlign: 'center', fontWeight: '900', color: '#1E40AF', fontSize: isFullscreen ? '1.45rem' : '1.2rem', borderBottom: '1px solid #E2E8F0', fontFamily: "'Roboto Mono', monospace" }}>
-                                        <span style={{ backgroundColor: '#EFF6FF', padding: '0.2rem 0.6rem', borderRadius: '6px', border: '1px solid #BFDBFE' }}>
-                                          {tech.tongSo || '0'}
+                                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', paddingRight: '0.5rem' }}>
+                                        <span style={{
+                                          fontSize: isFullscreen ? '1.15rem' : '0.95rem',
+                                          fontWeight: '700', color: style.label,
+                                          lineHeight: 1.3
+                                        }}>
+                                          {item.label}
                                         </span>
-                                      </td>
-                                      <td style={{ padding: isFullscreen ? '0.85rem 1.4rem' : '0.65rem 1rem', textAlign: 'center', fontWeight: '800', color: '#059669', fontSize: isFullscreen ? '1.3rem' : '1.1rem', borderBottom: '1px solid #E2E8F0', fontFamily: "'Roboto Mono', monospace" }}>
-                                        {tech.baoHiem || '0'}
-                                      </td>
-                                      <td style={{ padding: isFullscreen ? '0.85rem 1.4rem' : '0.65rem 1rem', textAlign: 'center', fontWeight: '700', color: '#334155', fontSize: isFullscreen ? '1.2rem' : '1rem', borderBottom: '1px solid #E2E8F0', fontFamily: "'Roboto Mono', monospace" }}>
-                                        {tech.noiTru || '0'}
-                                      </td>
-                                      <td style={{ padding: isFullscreen ? '0.85rem 1.4rem' : '0.65rem 1rem', textAlign: 'center', fontWeight: '700', color: '#334155', fontSize: isFullscreen ? '1.2rem' : '1rem', borderBottom: '1px solid #E2E8F0', fontFamily: "'Roboto Mono', monospace" }}>
-                                        {tech.ngoaiTru || '0'}
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
-                          ) : section.items ? (
-                            /* Metric Cards Grid */
-                            <div style={{
-                              display: 'grid',
-                              gridTemplateColumns: isFullscreen
-                                ? 'repeat(auto-fill, minmax(280px, 1fr))'
-                                : 'repeat(auto-fill, minmax(240px, 1fr))',
-                              gap: isFullscreen ? '1.1rem' : '0.85rem'
-                            }}>
-                              {section.items.map((item, iIdx) => {
-                                const style = getMetricStyle(item.key, item.value);
-                                return (
-                                  <div
-                                    key={iIdx}
-                                    style={{
-                                      backgroundColor: style.bg,
-                                      border: `2px solid ${style.border}`,
-                                      borderRadius: '12px',
-                                      padding: isFullscreen ? '1rem 1.4rem' : '0.75rem 1.1rem',
-                                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                                      boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-                                      transition: 'transform 0.15s'
-                                    }}
-                                  >
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                                        {style.badge && (
+                                          <span style={{ fontSize: '0.75rem', fontWeight: '800', color: '#DC2626' }}>
+                                            {style.badge}
+                                          </span>
+                                        )}
+                                      </div>
                                       <span style={{
-                                        fontSize: isFullscreen ? '1.15rem' : '0.95rem',
-                                        fontWeight: '700', color: style.label
+                                        fontSize: isFullscreen ? '2.4rem' : '1.8rem',
+                                        fontWeight: '900', color: style.text,
+                                        fontFamily: "'Roboto Mono', monospace",
+                                        flexShrink: 0
                                       }}>
-                                        {item.label}
+                                        {item.value}
                                       </span>
-                                      {style.badge && (
-                                        <span style={{ fontSize: '0.75rem', fontWeight: '800', color: '#DC2626' }}>
-                                          {style.badge}
-                                        </span>
-                                      )}
                                     </div>
-                                    <span style={{
-                                      fontSize: isFullscreen ? '2.4rem' : '1.8rem',
-                                      fontWeight: '900', color: style.text,
-                                      fontFamily: "'Roboto Mono', monospace",
-                                      marginLeft: '1rem'
-                                    }}>
-                                      {item.value}
-                                    </span>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          ) : null}
-                        </div>
-                      ))}
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   ) : (
                     <div style={{ textAlign: 'center', color: '#94A3B8', fontSize: '1.4rem', paddingTop: '4rem' }}>
