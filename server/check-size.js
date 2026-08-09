@@ -1,5 +1,6 @@
 const mysql = require('mysql2/promise');
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
 async function checkDatabaseSize() {
     // Luôn sử dụng biến môi trường từ file .env để bảo mật
