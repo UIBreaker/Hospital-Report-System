@@ -25,7 +25,7 @@
 
 **Hệ Thống Báo Cáo Giao Ban Bệnh Viện** là giải pháp phần mềm chuyển đổi số y tế hiện đại, thay thế hoàn toàn phương thức báo cáo giao ban truyền thống bằng giấy tờ và file bảng tính rời rạc. 
 
-Phần mềm được thiết kế chuẩn nhận diện thương hiệu y tế **TTYT Khu Vực Bình Long**, cung cấp quy trình nhập liệu nhanh chóng cho các bác sĩ trực thuộc **11 khoa phòng**, đồng thời trang bị **Trợ lý Y Tế AI**, **cơ chế tự động sinh dữ liệu mẫu (`lorem`)**, **quản lý ca bệnh chuyển viện đa tầng**, và **chế độ trình chiếu giao ban toàn màn hình (Presentation Mode)** với khả năng phóng to chữ phục vụ họp giao ban Ban Giám Đốc.
+Phần mềm được thiết kế chuẩn nhận diện thương hiệu y tế **TTYT Khu Vực Bình Long**, cung cấp quy trình nhập liệu nhanh chóng cho các bác sĩ trực thuộc **11 khoa phòng**, đồng thời trang bị **Trợ lý Y Tế AI**, **cơ chế tự động sinh dữ liệu mẫu (`lorem`)**, **quản lý ca bệnh chuyển viện đa tầng**, **quản lý dung lượng cơ sở dữ liệu thời gian thực**, và **chế độ trình chiếu giao ban toàn màn hình (Presentation Mode)** với khả năng phóng to chữ phục vụ họp giao ban Ban Giám Đốc.
 
 ---
 
@@ -38,6 +38,7 @@ Phần mềm được thiết kế chuẩn nhận diện thương hiệu y tế 
 ![Node.js](https://img.shields.io/badge/Node.js-18.x-339933?style=flat-square&logo=nodedotjs&logoColor=white)
 ![Express.js](https://img.shields.io/badge/Express.js-4.x-000000?style=flat-square&logo=express&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-8.x%20%2F%20Aiven-4479A1?style=flat-square&logo=mysql&logoColor=white)
+![Playwright](https://img.shields.io/badge/Playwright-E2E%20Testing-45ba4b?style=flat-square&logo=playwright&logoColor=white)
 ![JWT](https://img.shields.io/badge/JWT-Secure%20Token-black?style=flat-square&logo=jsonwebtokens)
 ![Responsive](https://img.shields.io/badge/Mobile-Optimized-brightgreen?style=flat-square)
 ![Uptime](https://img.shields.io/badge/Vercel%20Serverless-100%25-success?style=flat-square)
@@ -51,8 +52,8 @@ Phần mềm được thiết kế chuẩn nhận diện thương hiệu y tế 
 | Trang Đăng Nhập & AI Assistant | Quản Trị KHNV (Admin Dashboard) |
 | :---: | :---: |
 | Trợ lý AI cấp tài khoản, điền tự động | Thống kê 11 khoa, chỉnh sửa & xóa báo cáo |
-| **Trình Chiếu Giao Ban (Presentation)** | **Ca Bệnh Chuyển Viện Cấp Cứu** |
-| Slide độ phân giải cao, hỗ trợ máy chiếu | Phân tích chi tiết chẩn đoán & diễn biến ca |
+| **Trình Chiếu Giao Ban (Presentation)** | **Quản Lý & Giám Sát Database** |
+| Slide độ phân giải cao, hỗ trợ máy chiếu | Theo dõi dung lượng MB/KB & bảng dữ liệu |
 
 > 🌐 **Trải nghiệm trực tiếp:** [https://hospital-report-system.vercel.app/](https://hospital-report-system.vercel.app/)
 
@@ -72,61 +73,87 @@ Phần mềm được thiết kế chuẩn nhận diện thương hiệu y tế 
 
 ---
 
-## 5. ⚡ Tính năng nổi bật
+## 5. ⚡ Tính năng nổi bật toàn diện
 
-### 5.1. 🔐 Đăng nhập phân quyền thông minh
-* Tách biệt tài khoản khoa phòng và tài khoản Quản trị (**`Khnv`**).
+### 5.1. 🔐 Đăng nhập phân quyền thông minh (Role-Based Access Control)
+* Tách biệt tài khoản khoa phòng (`department`) và tài khoản Quản trị (**`Khnv`**).
 * Mã hóa mật khẩu một chiều bằng thuật toán **Bcrypt** chuẩn công nghiệp.
 * Quản lý phiên làm việc thông qua **JSON Web Token (JWT)** với thời hạn 24 giờ.
+* Tự động chuyển hướng đúng trang tương ứng sau khi đăng nhập thành công.
 
-### 5.2. 🤖 Trợ lý Y Tế AI (AI Assistant)
+### 5.2. 🤖 Trợ lý Y Tế AI (AI Assistant Chatbot)
 * Tích hợp chatbot thông minh ở góc dưới bên phải màn hình.
 * Tự động nhận diện khoa phòng và cung cấp tài khoản đăng nhập tương ứng.
 * Tích hợp nút bấm **"Điền Tự Động Vào Ô Đăng Nhập"** giúp bác sĩ đăng nhập chỉ bằng 1 cú nhấp.
-* Cung cấp bộ câu hỏi hướng dẫn sử dụng, giới thiệu phần mềm và tác giả **Nguyễn Vũ Nhật Nam (2004)**.
+* Hướng dẫn giải đáp thắc mắc về các phím tắt, chức năng nhập liệu, kiểm thử Playwright UI Mode.
+* Cung cấp bộ câu hỏi hướng dẫn sử dụng và giới thiệu tác giả phát triển **Nguyễn Vũ Nhật Nam (2004)**.
 
 ### 5.3. 📋 Biểu mẫu nhập liệu động cho 11 Khoa Chuyên Môn
 * **Quy trình 2 bước khoa học:**
-  * *Bước 1:* Khai báo thông tin hành chính (Ngày trực mặc định hôm qua, Tên Bác sĩ trực chính, Phòng, Ca trực).
+  * *Bước 1:* Khai báo thông tin hành chính (Ngày báo cáo kèm lưu ý chọn đúng ngày, Tên Bác sĩ trực chính, Phòng/Buồng trực, Thời gian trực).
   * *Bước 2:* Nạp biểu mẫu số liệu chuyên biệt theo từng khoa.
 * **Hỗ trợ 11 khoa phòng đặc thù:**
   1. **Khoa Nội**: Tự động tính toán công thức `Hiện còn = (Bệnh cũ + Bệnh mới) - Xuất viện - Chuyển khoa`.
-  2. **Hồi sức cấp cứu – Thận nhân tạo (HSCC - TNT)**.
-  3. **Chẩn đoán hình ảnh (CĐHA)**: X-Quang, CT-Scanner, Siêu âm, Điện tim.
-  4. **Y học cổ truyền – Phục hồi chức năng (YHCT - PHCN)**.
-  5. **Ngoại tổng hợp**: Đại phẫu, trung phẫu, tiểu phẫu, hậu phẫu.
-  6. **Chấn thương chỉnh hình (CTCH)**.
-  7. **Khoa Nhi**.
-  8. **Khoa Nhiễm**.
-  9. **Gây mê Hồi sức (GMHS)**: Phẫu thuật, gây tê, gây mê, gây mê nghỉnh.
-  10. **Khoa Sản**: Sanh thường, sanh hút, mổ lấy thai, chờ sanh.
-  11. **Khoa Xét nghiệm**: Sinh hóa, huyết học, đông máu, nước tiểu, miễn dịch.
+  2. **Hồi sức cấp cứu – Thận nhân tạo (HSCC - TNT)**: Bảng HSCC, Bảng Thận nhân tạo, Bảng Phòng khám 21.
+  3. **Chẩn đoán hình ảnh (CĐHA)**: X-Quang, CT-Scanner, Siêu âm, Điện tim (trong giờ & ngoài giờ).
+  4. **Y học cổ truyền – Phục hồi chức năng (YHCT - PHCN)**: Nội trú, Ngoại trú, Kê toa, Châm cứu, Vật lý trị liệu.
+  5. **Ngoại tổng hợp**: Đại phẫu, trung phẫu, tiểu phẫu, khám cấp cứu, hậu phẫu.
+  6. **Chấn thương chỉnh hình (CTCH)**: Phẫu thuật kết hợp xương, bó bột, khám chuyên khoa.
+  7. **Khoa Nhi**: Khám nhi phòng khám, cấp cứu nhi, sốt xuất huyết, tay chân miệng.
+  8. **Khoa Nhiễm**: Truyền nhiễm, theo dõi dịch bệnh, khám cách ly.
+  9. **Gây mê Hồi sức (GMHS)**: Phẫu thuật cấp cứu, mổ phiên, gây tê, gây mê toàn thân.
+  10. **Khoa Sản**: Sanh thường, sanh hút, mổ lấy thai, hậu sản, theo dõi tim thai.
+  11. **Khoa Xét nghiệm**: Sinh hóa, huyết học, đông máu, nước tiểu, miễn dịch (trong giờ & thêm giờ).
 
-### 5.4. 📝 Phím tắt sinh dữ liệu mẫu (`lorem + Enter`)
-* Gõ chữ `lorem` và nhấn `Enter` trong bất kỳ ô nhập liệu nào để sinh đoạn văn bản mẫu (Dummy text).
-* Hỗ trợ số lượng từ tùy chỉnh: `lorem10`, `lorem25` + `Enter`.
+### 5.4. ⚡ Tự động tính toán công thức số liệu thông minh
+* Tự động áp dụng công thức y tế chuẩn:
+  $$\text{Hiện còn} = (\text{Bệnh cũ} + \text{Bệnh mới}) - \text{Xuất viện} - \text{Chuyển khoa}$$
+* Cập nhật tức thì (Real-time calculation) khi bác sĩ gõ số, giảm thiểu 100% sai sót tính nhẩm.
 
-### 5.5. 🚑 Quản lý Ca Bệnh Chuyển Viện Đa Tầng
-* Thêm/xóa không giới hạn số lượng ca chuyển viện trong ca trực.
-* Khai báo chi tiết: Họ tên, tuổi, địa chỉ, giờ vào viện, lý do, cận lâm sàng, chẩn đoán, xử trí ban đầu và diễn biến lúc chuyển viện.
+### 5.5. 📝 Phím tắt sinh dữ liệu mẫu (`lorem + Enter`)
+* Gõ chữ `lorem` và nhấn `Enter` trong bất kỳ ô nhập liệu văn bản nào để tự động sinh đoạn văn bản mẫu chuẩn y tế.
+* Hỗ trợ số lượng từ linh hoạt (`lorem10`, `lorem25` + `Enter`) giúp kiểm thử và nhập liệu mẫu siêu tốc.
 
-### 5.6. 📊 Bảng Theo Dõi Quản Trị (KHNV Dashboard)
-* Xem trạng thái nộp báo cáo thời gian thực của toàn bộ 11 khoa.
-* Xem chi tiết nội dung báo cáo, chỉnh sửa số liệu và chức năng xóa báo cáo (reset về Chưa nộp).
-* Điều hướng trực tiếp đến phiên trình chiếu giao ban.
+### 5.6. 🚑 Quản lý Ca Bệnh Chuyển Viện Đa Tầng
+* Thêm/xóa không giới hạn số lượng ca chuyển viện cấp cứu trong ca trực.
+* Khai báo đầy đủ 7 trường thông tin quan trọng: Họ tên bệnh nhân, Tuổi, Địa chỉ, Giờ vào viện, Lý do vào viện, Cận lâm sàng/XN, Chẩn đoán, Xử trí ban đầu và Diễn biến lúc chuyển viện.
 
-### 5.7. 📽️ Trình Chiếu Giao Ban Đỉnh Cao (Presentation Mode)
+### 5.7. 📊 Bảng Theo Dõi Quản Trị (KHNV Dashboard)
+* Xem trạng thái nộp báo cáo thời gian thực của toàn bộ 11 khoa (Đã nộp / Chưa nộp).
+* Bộ 3 thẻ thống kê trực quan: Tổng số khoa (11), Số khoa đã nộp, Số khoa chưa nộp.
+* Xem chi tiết nội dung báo cáo từng khoa, chỉnh sửa số liệu trực tiếp và chức năng xóa báo cáo (reset về trạng thái Chưa nộp).
+* Bộ lọc ngày báo cáo linh hoạt.
+
+### 5.8. 🗄️ Quản Lý & Giám Sát Dung Lượng Cơ Sở Dữ Liệu (Database Stats & Health Monitoring)
+* Tích hợp tab **"Quản Lý Database"** trực tiếp trong trang quản trị KHNV.
+* Theo dõi dung lượng thực tế của CSDL MySQL (Data size, Index size, Total size tính bằng MB & KB).
+* Thanh tiến trình dung lượng (Storage Progress Bar) so sánh với hạn mức lưu trữ (1024 MB).
+* Bảng chi tiết danh sách tất cả các bảng dữ liệu (`users`, `reports`, `transfer_cases`) cùng số lượng bản ghi (rows) và mô tả chức năng.
+* Nút "Làm Mới Dữ Liệu" (Live Refresh) gọi API tức thì với hiệu ứng loading spinner.
+* Phân quyền nghiêm ngặt: Chỉ tài khoản Admin `Khnv` mới có quyền truy cập.
+
+### 5.9. 📽️ Trình Chiếu Giao Ban Đỉnh Cao (Presentation Mode)
 * Mở trình chiếu ngay trong cùng tab, không mở tab mới gây rối trình duyệt.
-* Tự động dựng slide tổng hợp: Trang bìa, Slide từng khoa, Slide từng ca chuyển viện cấp cứu.
-* **Hỗ trợ người mắt kém / Máy chiếu phòng họp:**
+* Tự động dựng slide tổng hợp: Trang bìa, Slide từng khoa phòng, Slide từng ca bệnh chuyển viện cấp cứu.
+* **Hỗ trợ người mắt kém / Máy chiếu phòng họp lớn:**
   * Cỡ chữ siêu lớn (`2.8rem` tiêu đề, `2.4rem` số liệu in đậm).
-  * Công cụ điều chỉnh tỷ lệ chữ **`Phóng to (120% – 160%)`** và **`Thu nhỏ`** tích hợp ở thanh dưới.
+  * Công cụ điều chỉnh tỷ lệ chữ **`Phóng to (120% – 160%)`** và **`Thu nhỏ`** tích hợp ở thanh điều khiển.
   * Phím tắt điều khiển: Mũi tên `←` / `→`, phím `Space`, phím `F` (Toàn màn hình), phím `Esc` (Thoát).
 
-### 5.8. 📱 Tối ưu hóa 100% Giao diện Di động (Mobile-First Responsive)
-* Tự động co giãn 1 cột trên điện thoại thông minh và máy tính bảng.
+### 5.10. 📱 Tối ưu hóa 100% Giao diện Di động (Mobile-First Responsive)
+* Tự động co giãn 1 cột trên điện thoại thông minh và máy tính bảng (iPhone, Samsung, iPad).
 * Khắc phục hoàn toàn lỗi tự zoom trên iOS Safari với font chuẩn `16px`.
-* Hỗ trợ bảng dữ liệu cuộn ngang mượt mà.
+* Hỗ trợ bảng dữ liệu cuộn ngang mượt mà, không bị vỡ bố cục.
+
+### 5.11. 🚀 Khởi Động Nhanh 1-Click & Chạy Ngầm (Desktop Launcher)
+* File `PhanMemBaoCao.vbs`: Khởi chạy ngầm toàn bộ dịch vụ Node.js và MySQL mà không hiện cửa sổ đen (CMD), tự động mở trình duyệt web.
+* File `TatPhanMem.bat`: Tự động quét và tắt sạch các tiến trình khi kết thúc ca làm việc.
+
+### 5.12. 🧪 Hệ Thống Kiểm Thử Tự Động Toàn Diện (Playwright E2E Testing Suite)
+* Hơn **65+ bài kiểm thử tự động** đạt tỷ lệ **100% Passed**.
+* Kiểm thử đa thiết bị song song: Desktop Chromium, Google Pixel 7 (Android), Apple iPhone 14 (iOS).
+* Hỗ trợ Playwright UI Mode (quan sát từng click chuột và dòng thời gian), Headed mode, Mobile mode và HTML reports.
+* Kiểm thử bảo mật chuyên sâu (Deep Testing): Chống SQL/XSS Injection, Route Guarding, kiểm thử phím Tab điều hướng, kiểm thử máy chiếu 4K, kiểm thử biểu mẫu 11 khoa phòng.
 
 ---
 
@@ -146,6 +173,7 @@ Phần mềm được thiết kế chuẩn nhận diện thương hiệu y tế 
 | | Dotenv & CORS | Quản lý biến môi trường và chính sách bảo mật mạng |
 | **Database** | MySQL 8.x / MariaDB (utf8mb4) | Lưu trữ cơ sở dữ liệu quan hệ, tiếng Việt có dấu |
 | | Aiven Cloud MySQL | Đám mây CSDL trực tuyến phục vụ production |
+| **Testing** | Playwright Test | Kiểm thử tự động E2E đa nền tảng và thiết bị |
 | **Deployment** | Vercel Platform | Triển khai Serverless Functions và Frontend tĩnh |
 
 ---
@@ -153,100 +181,93 @@ Phần mềm được thiết kế chuẩn nhận diện thương hiệu y tế 
 ## 7. 🏗️ Kiến trúc hệ thống
 
 ```mermaid
-graph TD
-    A[Bác sĩ / Khoa phòng] -->|Nhập báo cáo & Ca chuyển viện| B(Frontend React SPA)
-    K[Phòng KHNV / Admin] -->|Quản trị & Trình chiếu slide| B
-    
-    B -->|RESTful API Calls + JWT Bearer| C[Backend Express API / Serverless]
-    
-    C -->|Auth Middleware| D{Kiểm tra JWT Token}
-    D -->|Hợp lệ| E[Controllers: Report / Admin / Auth]
-    D -->|Không hợp lệ| F[Trả mã lỗi 401 Unauthorized]
-    
-    E -->|Connection Pool with SSL| G[(MySQL Database: Local / Aiven Cloud)]
-    
-    G -->|CASCADE Truncation & UTF8MB4| E
-    E -->|JSON Response| B
+flowchart TD
+    subgraph Client["Frontend Client (React + Vite)"]
+        A[Bác Sĩ Trực Khoa] -->|Đăng nhập| B[Report Page]
+        B -->|Bước 1| C[Thông tin Hành chính]
+        C -->|Bước 2| D[11 Dynamic Forms]
+        D -->|Khai báo| E[Ca Bệnh Chuyển Viện]
+        
+        F[Phòng KHNV / Admin] -->|Đăng nhập Khnv| G[Admin Dashboard]
+        G -->|Tab 1| H[Báo Cáo Giao Ban]
+        G -->|Tab 2| I[Quản Lý Database Stats]
+        G -->|Trình chiếu| J[Presentation Mode 4K]
+        
+        K[Trợ Lý Y Tế AI] -->|Hỗ trợ trực tuyến| A
+    end
+
+    subgraph Server["Backend Server (Node.js / Express)"]
+        L[Auth Middleware JWT]
+        M[Report Controller]
+        N[Admin Controller]
+        O[Database Stats Controller]
+    end
+
+    subgraph Database["MySQL Database (Aiven Cloud / Local)"]
+        P[(users Table)]
+        Q[(reports Table - JSON)]
+        R[(transfer_cases Table)]
+    end
+
+    Client -->|RESTful API / JSON| Server
+    Server -->|Connection Pool| Database
 ```
 
 ---
 
-## 8. 📂 Cấu trúc thư mục
+## 8. 📁 Cấu trúc thư mục
 
 ```
 hospital-report-system/
-├── api/                             # Serverless Entry point cho Vercel
-│   └── index.js
-├── database/
-│   ├── schema.sql                   # Khởi tạo bảng CSDL & Khóa ngoại CASCADE
-│   └── seed.sql                     # Khởi tạo 11 tài khoản khoa & 1 tài khoản KHNV
-├── server/                          # Backend Node.js Express API
-│   ├── .env.example                 # Mẫu cấu hình môi trường
-│   ├── server.js                    # Local Dev Server Listener
-│   └── src/
-│       ├── app.js                   # Cấu hình Express App, Routes & Health check
-│       ├── config/db.js             # Kết nối MySQL Pool (Hỗ trợ SSL Aiven & Local)
-│       ├── controllers/
-│       │   ├── authController.js    # Xác thực, cấp token JWT, đổi mật khẩu Khnv
-│       │   ├── reportController.js  # CRUD Báo cáo khoa & ca chuyển viện
-│       │   └── adminController.js   # Tổng hợp dữ liệu & Trình chiếu giao ban
-│       ├── middleware/
-│       │   ├── auth.js              # Middleware xác thực JWT & Role Admin
-│       │   └── errorHandler.js      # Xử lý lỗi toàn cục
-│       └── routes/
-│           ├── authRoutes.js        # /api/auth
-│           ├── reportRoutes.js      # /api/reports
-│           └── adminRoutes.js       # /api/admin
-├── client/                          # Frontend React + Vite
-│   ├── index.html                   # HTML Entry & Favicon y tế
-│   ├── vite.config.js               # Cấu hình Proxy & Build
-│   ├── public/
-│   │   ├── logo.png                 # Logo TTYT Khu Vực Bình Long
-│   │   └── favicon.png
-│   └── src/
-│       ├── main.jsx                 # Entry React & Khởi tạo phím tắt lorem
-│       ├── App.jsx                  # React Router & AuthProvider
-│       ├── index.css                # Bộ CSS Design System & Mobile Media Queries
-│       ├── contexts/
-│       │   └── AuthContext.jsx      # Quản lý State Đăng nhập & Quyền hạn
-│       ├── services/
-│       │   ├── api.js               # Axios instance cấu hình baseURL /api
-│       │   ├── authService.js
-│       │   └── reportService.js
-│       ├── utils/
-│       │   └── loremHelper.js       # Bộ sinh văn bản giả tự động trên phím Enter
-│       ├── components/
-│       │   ├── common/
-│       │   │   ├── ProtectedRoute.jsx
-│       │   │   └── AIAssistant.jsx  # Widget Trợ lý Y Tế AI góc phải
-│       │   └── forms/
-│       │       ├── TransferCaseForm.jsx
-│       │       └── departments/     # 11 Biểu mẫu khoa phòng chuyên sâu
-│       │           ├── NoiForm.jsx
-│       │           ├── HoiSucCapCuuForm.jsx
-│       │           ├── ChuanDoanHinhAnhForm.jsx
-│       │           ├── YHocCoTruyenForm.jsx
-│       │           ├── NgoaiTongHopForm.jsx
-│       │           ├── ChanThuongChinhHinhForm.jsx
-│       │           ├── NhiForm.jsx
-│       │           ├── NhiemForm.jsx
-│       │           ├── GayMeHoiSucForm.jsx
-│       │           ├── SanForm.jsx
-│       │           └── XetNghiemForm.jsx
-│       └── pages/
-│           ├── LoginPage.jsx        # Đăng nhập + Badge Version 1.0
-│           ├── ReportPage.jsx       # Nhập báo cáo ca trực
-│           ├── AdminDashboard.jsx   # Quản trị & Điều phối KHNV
-│           └── PresentationPage.jsx # Trình chiếu giao ban toàn màn hình
-├── vercel.json                      # Cấu hình Serverless Routing & Rewrite Vercel
-└── README.md                        # Tài liệu hướng dẫn dự án chi tiết
+├── client/                           # React Frontend (Vite)
+│   ├── public/                       # Logo, ảnh bệnh viện, favicon
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── common/               # AIAssistant, ProtectedRoute...
+│   │   │   └── forms/departments/    # 11 biểu mẫu khoa phòng
+│   │   ├── contexts/                 # AuthContext
+│   │   ├── pages/                    # LoginPage, ReportPage, AdminDashboard, PresentationPage
+│   │   ├── services/                 # api.js, authService.js, reportService.js
+│   │   ├── App.jsx, index.css, main.jsx
+│   ├── package.json, vite.config.js
+│
+├── server/                           # Node.js Backend (Express)
+│   ├── src/
+│   │   ├── config/db.js              # MySQL pool kết nối Cloud & Local
+│   │   ├── controllers/              # authController, reportController, adminController
+│   │   ├── middleware/               # auth.js (JWT verify + adminOnly)
+│   │   ├── routes/                   # authRoutes, reportRoutes, adminRoutes
+│   │   └── app.js                    # Express app setup
+│   ├── check-size.js                 # Script tiện ích kiểm tra dung lượng DB qua terminal
+│   ├── server.js, package.json, .env
+│
+├── database/                         # Cơ sở dữ liệu
+│   ├── schema.sql                    # Khởi tạo DB & 3 bảng
+│   └── seed.sql                      # Dữ liệu mẫu 11 khoa + Admin Khnv
+│
+├── tests/                            # Bộ kiểm thử tự động Playwright E2E
+│   ├── all-accounts.spec.js          # Kiểm thử toàn bộ 12 tài khoản & 10 nhóm chức năng
+│   ├── db-stats.spec.js              # Kiểm thử tab Quản lý Database
+│   ├── deep-testing.spec.js          # Kiểm thử bảo mật, SQL injection & biên dữ liệu
+│   ├── auth.spec.js                  # Kiểm thử xác thực & phân quyền
+│   ├── report-form.spec.js           # Kiểm thử biểu mẫu khoa & ca chuyển viện
+│   ├── admin-dashboard.spec.js       # Kiểm thử Dashboard & Trình chiếu giao ban
+│   ├── ai-assistant.spec.js          # Kiểm thử Trợ lý AI
+│   ├── mobile-responsive.spec.js     # Kiểm thử giao diện di động
+│   └── lorem-generator.spec.js       # Kiểm thử phím tắt lorem
+│
+├── playwright.config.js              # Cấu hình Playwright Test Runner
+├── PhanMemBaoCao.vbs                 # File khởi động 1-click chạy ngầm
+├── TatPhanMem.bat                    # File tắt sạch phần mềm
+├── vercel.json                       # Cấu hình triển khai Vercel Serverless
+└── README.md                         # Tài liệu dự án chuyên nghiệp
 ```
 
 ---
 
-## 9. ⚙️ Yêu cầu hệ thống
+## 9. 📋 Yêu cầu hệ thống
 
-* **Node.js**: Phiên bản `v18.x` hoặc `v20.x` LTS trở lên.
+* **Node.js**: Phiên bản `v18.x` hoặc `v20.x` trở lên.
 * **NPM**: Phiên bản `v9.x` trở lên.
 * **Hệ quản trị CSDL**: MySQL `8.0+` hoặc MariaDB `10.4+` (qua XAMPP hoặc Cloud Aiven/TiDB).
 * **Trình duyệt**: Google Chrome, Microsoft Edge, Mozilla Firefox, Safari (phiên bản hiện đại).
@@ -275,6 +296,12 @@ npm install
 cd ..
 ```
 
+### Bước 4: Cài đặt Playwright Testing (Tùy chọn cho kiểm thử)
+```bash
+npm install
+npx playwright install chromium
+```
+
 ---
 
 ## 11. 🔧 Cấu hình Environment
@@ -286,17 +313,17 @@ Tạo file `.env` tại thư mục `server/` với nội dung:
 PORT=3001
 
 # Cấu hình CSDL MySQL cục bộ (XAMPP)
-DB_HOST=localhost
+DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=
 DB_NAME=hospital_report
 
-# (Tùy chọn) Cấu hình Cloud Database URL
-# DATABASE_URL=mysql://user:password@host:port/database?ssl-mode=REQUIRED
+# (Tùy chọn) Cấu hình Cloud Database URL (ví dụ: Aiven MySQL)
+# DATABASE_URL=mysql://avnadmin:password@host:port/defaultdb?ssl-mode=REQUIRED
 
 # Mã bí mật ký JWT Token
-JWT_SECRET=hospital_report_jwt_secret_key_2026
+JWT_SECRET=hospital_report_secret_key_2026
 ```
 
 ---
@@ -361,6 +388,7 @@ npm run dev
 ### 14.3. Quản trị KHNV (`/api/admin`)
 * `GET /api/admin/departments/:date`: Lấy trạng thái nộp báo cáo của 11 khoa phòng theo ngày.
 * `GET /api/admin/presentation/:date`: Lấy toàn bộ số liệu tổng hợp phục vụ trình chiếu slide.
+* `GET /api/admin/database-stats`: Lấy thống kê dung lượng CSDL (MB/KB), số lượng bản ghi và danh sách bảng chi tiết từ `information_schema.TABLES`.
 
 ---
 
@@ -397,37 +425,46 @@ npm run dev
 
 ---
 
-## 16. 🧪 Testing (Playwright E2E & Unit Tests)
+## 16. 🧪 Testing (Playwright E2E & Deep Testing)
 
-Dự án được trang bị bộ kiểm thử tự động toàn diện **Playwright End-to-End Testing** với **48 test cases** chạy song song trên nhiều trình duyệt và thiết bị (Desktop Chrome, Mobile Pixel 7, iPhone 14):
+Dự án được trang bị hệ thống kiểm thử tự động toàn diện **Playwright Test** với hơn **65+ bài test** chạy song song trên nhiều trình duyệt và thiết bị:
 
-### 16.1. Chạy toàn bộ Test Suites Playwright
-```bash
-npm test
-```
+### 16.1. Các lệnh kiểm thử chính:
 
-### 16.2. Chạy giao diện tương tác Playwright UI Mode
-```bash
-npm run test:ui
-```
+* **Chạy kiểm thử toàn bộ 12 tài khoản:**
+  ```bash
+  npm run test:all
+  ```
 
-### 16.3. Chạy kiểm thử riêng cho thiết bị Di động (Mobile Viewport)
-```bash
-npm run test:mobile
-```
+* **Chạy kiểm thử sâu (Bảo mật, SQL Injection, Phím Tab, Máy chiếu 4K):**
+  ```bash
+  npm run test:deep
+  ```
 
-### 16.4. Xem báo cáo trực quan HTML Report
-```bash
-npm run test:report
-```
+* **Chạy kiểm thử riêng tab Quản lý Database:**
+  ```bash
+  npm run test:db
+  ```
 
-### 16.5. Danh mục các bộ kiểm thử tự động (Test Suites):
-* `tests/auth.spec.js`: Kiểm thử xác thực, phân quyền khoa phòng và tài khoản KHNV, xử lý lỗi đăng nhập.
-* `tests/report-form.spec.js`: Kiểm thử nhập liệu 11 khoa, tự động tính toán công thức Khoa Nội, thêm & xóa ca chuyển viện.
-* `tests/admin-dashboard.spec.js`: Kiểm thử bảng theo dõi 11 khoa, chế độ Trình Chiếu Giao Ban và công cụ phóng to chữ (Zoom).
-* `tests/ai-assistant.spec.js`: Kiểm thử Trợ lý Y Tế AI, tự động điền thông tin đăng nhập và câu hỏi tác giả.
-* `tests/mobile-responsive.spec.js`: Kiểm thử giao diện di động (iPhone 14 / Pixel 7), chống vỡ dòng và chống xung đột widget.
-* `tests/lorem-generator.spec.js`: Kiểm thử phím tắt thông minh `lorem + Enter` sinh dữ liệu mẫu tức thì.
+* **Mở bảng điều khiển Playwright UI Mode (Xem chi tiết từng click chuột & Timeline):**
+  ```bash
+  npm run test:ui
+  ```
+
+* **Mở trực tiếp trình duyệt Chrome tự động thao tác:**
+  ```bash
+  npm run test:headed
+  ```
+
+* **Chạy kiểm thử trên thiết bị Di động (Mobile Viewport):**
+  ```bash
+  npm run test:mobile
+  ```
+
+* **Xem báo cáo HTML Report chi tiết:**
+  ```bash
+  npm run test:report
+  ```
 
 ---
 
@@ -444,8 +481,9 @@ Dự án được cấu hình sẵn sàng triển khai trên **Vercel** thông q
 
 ## 18. ⚡ Performance Optimizations
 
-* **Vite Bundle Optimization:** Phân tách nhỏ các bundle chunks, nén Gzip giảm kích thước tải ban đầu xuống dưới `120 kB`.
+* **Vite Bundle Optimization:** Phân tách nhỏ các bundle chunks, nén Gzip giảm kích thước tải ban đầu xuống dưới `125 kB`.
 * **Database Connection Pooling:** Tái sử dụng kết nối MySQL, ngăn ngừa tình trạng cạn kiệt tài nguyên trong giờ cao điểm nộp báo cáo.
+* **JSON Compression Storage:** Lưu trữ dữ liệu biểu mẫu dưới dạng JSON nén giúp mỗi bản ghi chỉ chiếm `2 - 5 KB`.
 * **CSS Hardware Acceleration:** Sử dụng CSS variables và transitions thân thiện GPU, mang lại hiệu ứng chuyển cảnh mượt mà 60 FPS.
 
 ---
@@ -453,15 +491,15 @@ Dự án được cấu hình sẵn sàng triển khai trên **Vercel** thông q
 ## 19. 🔒 Security & Privacy
 
 * **Password Security:** Mật khẩu được băm bằng thuật toán `bcryptjs` với salt round = 10.
-* **SQL Injection Prevention:** 100% các câu truy vấn cơ sở dữ liệu sử dụng Prepared Statements (`pool.execute`).
+* **SQL Injection Prevention:** 100% các câu truy vấn cơ sở dữ liệu sử dụng Prepared Statements (`pool.execute` / `pool.query`).
 * **Route Protection:** Bảo vệ route 2 tầng (Client ProtectedRoute & Server JWT Verification).
-* **Secret Scanning & Sanitization:** Tự động loại bỏ thông tin nhạy cảm khỏi mã nguồn công khai.
+* **Secret Scanning & Sanitization:** Tự động loại bỏ thông tin nhạy cảm khỏi mã nguồn công khai, tuân thủ GitHub Push Protection.
 
 ---
 
 ## 20. 🗺️ Roadmap phát triển tương lai
 
-- [x] Phiên bản 1.0: Hoàn thiện 11 biểu mẫu khoa, ca chuyển viện, trình chiếu slide và Trợ lý AI.
+- [x] Phiên bản 1.0: Hoàn thiện 11 biểu mẫu khoa, ca chuyển viện, trình chiếu slide, Trợ lý AI và Quản lý Database.
 - [ ] Phiên bản 1.1: Xuất báo cáo giao ban thành file **PDF** và file **Excel (.xlsx)** theo mẫu chuẩn Bộ Y Tế.
 - [ ] Phiên bản 1.2: Biểu đồ trực quan hóa dữ liệu khám chữa bệnh theo tuần/tháng/quý.
 
@@ -483,9 +521,11 @@ Mọi đóng góp nhằm hoàn thiện hệ thống y tế đều được hoan 
 ### Phiên bản 1.0.0 (Tháng 08/2026)
 * 🚀 Ra mắt chính thức hệ thống báo cáo giao ban trực tuyến cho TTYT Khu Vực Bình Long.
 * 🚑 Hoàn thiện biểu mẫu 11 khoa phòng và hệ thống quản lý ca bệnh chuyển viện.
+* 🗄️ Tích hợp Tab Quản Lý & Giám Sát Dung Lượng Database thời gian thực.
 * 📺 Tích hợp Trình chiếu giao ban toàn màn hình với bộ phóng to chữ chuyên dụng.
 * 🤖 Ra mắt Trợ lý Y Tế AI hỗ trợ cấp tài khoản và tra cứu nghiệp vụ.
 * 📱 Tối ưu hóa giao diện di động và phím tắt thông minh `lorem + Enter`.
+* 🧪 Trang bị bộ kiểm thử tự động Playwright E2E với hơn 65+ bài test.
 * 🔑 Nâng cấp tài khoản Quản trị viên sang `Khnv` / `Khnv@2026`.
 
 ---
