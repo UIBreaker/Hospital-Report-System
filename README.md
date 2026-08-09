@@ -520,7 +520,17 @@ Mọi đóng góp nhằm hoàn thiện hệ thống y tế đều được hoan 
 
 ---
 
-## 22. 📝 Changelog
+## 22. 📝 Changelog & Quy Chuẩn Đánh Số Phiên Bản (SemVer)
+
+### 📌 Quy tắc đánh số phiên bản (`MAJOR.MINOR.PATCH` — Ví dụ: `1.4.0`):
+* **Số thứ nhất (`X.0.0` - Major):** Bước nhảy vọt, thay đổi toàn bộ kiến trúc, cơ chế hoạt động hoặc thiết kế giao diện phần mềm.
+* **Số thứ hai (`X.Y.0` - Minor):** Bổ sung thêm tính năng mới hoặc nghiệp vụ phụ sau đợt cập nhật lớn.
+* **Số thứ ba (`X.Y.Z` - Patch):** Bản vá lỗi nhỏ, tinh chỉnh giao diện, sửa lỗi hiển thị và hotfix phát sinh.
+* **Ý nghĩa số `0`:**
+  * Số 0 thứ nhất (`X.0.0`): Bản mới tinh vừa ra mắt, sạch sẽ, chưa qua chỉnh sửa nhỏ lẻ.
+  * Số 0 thứ hai (`X.Y.0`): Chưa có lỗi nhỏ nào cần phải vá sau khi phát hành tính năng mới.
+
+---
 
 ### Phiên bản 1.4.0 (Tháng 08/2026) — *Phiên bản hiện tại*
 * 📺 **Nâng cấp Động cơ Trình Chiếu Giao Ban 2.0 (Presentation Engine 2.0):**
@@ -530,6 +540,7 @@ Mọi đóng góp nhằm hoàn thiện hệ thống y tế đều được hoan 
   * Bảng **Thống Kê Kỹ Thuật Chẩn Đoán Hình Ảnh** độ phân giải cao, hỗ trợ máy chiếu phòng họp Ban Giám Đốc.
 * 🛠️ Khắc phục triệt để lỗi hiển thị `[object Object]` ở Modal Quản trị & Slide trình chiếu.
 * 🗂️ Bố cục lưới cân xứng, hoàn hảo cho cả 11 khoa lâm sàng và cận lâm sàng.
+* 🏷️ Đồng bộ huy hiệu phiên bản **`v1.4.0`** trên giao diện đăng nhập (`LoginPage`), file cấu hình (`package.json`) và tài liệu.
 
 ### Phiên bản 1.3.0 (Tháng 08/2026)
 * 🗄️ Ra mắt Tab **Quản Lý & Giám Sát Dung Lượng Database** thời gian thực trong trang quản trị KHNV.

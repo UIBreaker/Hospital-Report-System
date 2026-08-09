@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 import { FaUser, FaLock, FaSpinner, FaEye, FaEyeSlash, FaCodeBranch } from 'react-icons/fa';
+import { APP_VERSION } from '../config/version';
 import AIAssistant from '../components/common/AIAssistant';
 
 const LoginPage = () => {
@@ -124,7 +125,7 @@ const LoginPage = () => {
         {/* In-card Footer info */}
         <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', color: '#64748B' }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-            <FaCodeBranch style={{ color: '#2563EB' }} /> Phiên bản <strong>1.0</strong>
+            <FaCodeBranch style={{ color: '#2563EB' }} /> Phiên bản <strong>{APP_VERSION}</strong>
           </span>
           <span>TTYT Bình Long</span>
         </div>
