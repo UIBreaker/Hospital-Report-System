@@ -201,6 +201,23 @@ const AdminDashboard = () => {
   const submittedCount = statusList.filter(s => s.status === 'submitted').length;
   const totalCount = statusList.length;
 
+  const ADMIN_FIELD_LABELS = {
+    bsSieuAm: 'Bác sĩ trực Siêu âm',
+    bsXquangCT: 'Bác sĩ trực Xquang – CT Scan',
+    themGio: 'Ghi chú thêm giờ',
+    techniques: 'Thống kê kỹ thuật',
+    noiTru: 'Điều trị nội trú',
+    ngoaiTru: 'Điều trị ngoại trú',
+    keToa: 'Kê toa',
+    hscc: 'Khối Hồi sức cấp cứu (HSCC)',
+    tnt: 'Khối Thận nhân tạo (TNT)',
+    pk21: 'Phòng khám 21'
+  };
+
+  const getAdminFieldLabel = (key) => {
+    return ADMIN_FIELD_LABELS[key] || key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ').replace(/^./, s => s.toUpperCase());
+  };
+
   const renderEditableFields = (obj, prefix = '') => {
     if (!obj || typeof obj !== 'object') return null;
     return Object.entries(obj).map(([key, value]) => {
@@ -208,17 +225,72 @@ const AdminDashboard = () => {
       if (value && typeof value === 'object' && !Array.isArray(value)) {
         return (
           <div key={fieldPath} style={{ gridColumn: '1 / -1', marginTop: '1rem', borderTop: '1px dashed var(--border)', paddingTop: '0.75rem' }}>
-            <h4 style={{ color: 'var(--brand-blue)', fontSize: '0.95rem', fontWeight: '700', textTransform: 'uppercase' }}>{key}</h4>
+            <h4 style={{ color: 'var(--brand-blue)', fontSize: '0.95rem', fontWeight: '700', textTransform: 'uppercase' }}>{getAdminFieldLabel(key)}</h4>
             <div className="form-grid" style={{ marginTop: '0.5rem' }}>
               {renderEditableFields(value, fieldPath)}
             </div>
           </div>
         );
       }
+
+      // Handle Array of Objects (e.g. techniques in Chẩn đoán hình ảnh)
+      if (Array.isArray(value)) {
+        return (
+          <div key={fieldPath} style={{ gridColumn: '1 / -1', marginTop: '1rem', borderTop: '1px dashed var(--border)', paddingTop: '0.75rem' }}>
+            <h4 style={{ color: 'var(--brand-blue)', fontSize: '0.95rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '0.6rem' }}>
+              {key === 'techniques' ? 'Thống Kê Kỹ Thuật (Chẩn Đoán Hình Ảnh)' : getAdminFieldLabel(key)}
+            </h4>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#F1F5F9', color: 'var(--brand-blue)' }}>
+                    <th style={{ padding: '8px 12px', border: '1px solid #E2E8F0', textAlign: 'left', fontWeight: '700' }}>Kỹ thuật</th>
+                    <th style={{ padding: '8px 12px', border: '1px solid #E2E8F0', textAlign: 'center', fontWeight: '700' }}>Tổng số</th>
+                    <th style={{ padding: '8px 12px', border: '1px solid #E2E8F0', textAlign: 'center', fontWeight: '700' }}>Bảo hiểm</th>
+                    <th style={{ padding: '8px 12px', border: '1px solid #E2E8F0', textAlign: 'center', fontWeight: '700' }}>Nội trú</th>
+                    <th style={{ padding: '8px 12px', border: '1px solid #E2E8F0', textAlign: 'center', fontWeight: '700' }}>Ngoại trú</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {value.map((item, idx) => (
+                    <tr key={idx} style={{ backgroundColor: idx % 2 === 0 ? '#FFFFFF' : '#F8FAFC' }}>
+                      <td style={{ padding: '8px 12px', border: '1px solid #E2E8F0', fontWeight: '700', color: 'var(--brand-blue)' }}>
+                        {item.name || `Mục ${idx + 1}`}
+                      </td>
+                      {['tongSo', 'baoHiem', 'noiTru', 'ngoaiTru'].map(col => (
+                        <td key={col} style={{ padding: '6px 8px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
+                          {isEditing ? (
+                            <input 
+                              type="number"
+                              min="0"
+                              value={item[col] ?? ''}
+                              onChange={(e) => {
+                                const newArray = JSON.parse(JSON.stringify(value));
+                                newArray[idx][col] = e.target.value;
+                                handleReportDataChange(fieldPath, newArray);
+                              }}
+                              style={{ width: '80px', padding: '4px 6px', textAlign: 'center', border: '1.5px solid var(--border)', borderRadius: '4px' }}
+                            />
+                          ) : (
+                            <span style={{ fontWeight: '700', color: col === 'tongSo' ? 'var(--brand-blue)' : 'var(--text-main)' }}>
+                              {item[col] || '0'}
+                            </span>
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      }
+
       return (
         <div key={fieldPath} className="form-group">
           <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-            {key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ').replace(/^./, s => s.toUpperCase())}
+            {getAdminFieldLabel(key)}
           </label>
           {isEditing ? (
             <input 

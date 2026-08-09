@@ -112,6 +112,34 @@ const parseDepartmentSections = (reportData) => {
 
   const sections = [];
 
+  // Special handling for Chẩn đoán hình ảnh (techniques table)
+  if (data.techniques && Array.isArray(data.techniques)) {
+    const docItems = [];
+    if (data.bsSieuAm) docItems.push({ key: 'bsSieuAm', label: 'BS trực Siêu âm', value: String(data.bsSieuAm) });
+    if (data.bsXquangCT) docItems.push({ key: 'bsXquangCT', label: 'BS trực Xquang – CT', value: String(data.bsXquangCT) });
+    if (docItems.length > 0) {
+      sections.push({ title: 'PHÂN CÔNG BÁC SĨ TRỰC', items: docItems });
+    }
+
+    const validRows = data.techniques.filter(t => t && (t.tongSo || t.baoHiem || t.noiTru || t.ngoaiTru || t.name));
+    if (validRows.length > 0) {
+      sections.push({
+        title: 'THỐNG KÊ KỸ THUẬT CHẨN ĐOÁN HÌNH ẢNH',
+        tableType: 'techniques',
+        tableRows: validRows
+      });
+    }
+
+    if (data.themGio) {
+      sections.push({
+        title: 'THÊM GIỜ & GHI CHÚ',
+        items: [{ key: 'themGio', label: 'Ghi chú thêm giờ', value: String(data.themGio) }]
+      });
+    }
+
+    return sections;
+  }
+
   // Check if data is divided into named groups (e.g. hscc, tnt, pk21)
   const topKeys = Object.keys(data).filter(k => k !== '_id');
   const hasNestedObjects = topKeys.some(k => data[k] && typeof data[k] === 'object' && !Array.isArray(data[k]));
@@ -124,6 +152,9 @@ const parseDepartmentSections = (reportData) => {
         if (k === 'hscc') sectionTitle = 'KHỐI HỒI SỨC CẤP CỨU (HSCC)';
         if (k === 'tnt') sectionTitle = 'KHỐI THẬN NHÂN TẠO (TNT)';
         if (k === 'pk21') sectionTitle = 'PHÒNG KHÁM 21';
+        if (k === 'noiTru') sectionTitle = 'ĐIỀU TRỊ NỘI TRÚ';
+        if (k === 'ngoaiTru') sectionTitle = 'ĐIỀU TRỊ NGOẠI TRÚ';
+        if (k === 'keToa') sectionTitle = 'KÊ TOA & BHYT';
 
         const items = [];
         Object.entries(val).forEach(([subK, subV]) => {
@@ -563,54 +594,108 @@ const PresentationPage = () => {
                             </div>
                           )}
 
-                          {/* Metric Cards Grid */}
-                          <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: isFullscreen
-                              ? 'repeat(auto-fill, minmax(280px, 1fr))'
-                              : 'repeat(auto-fill, minmax(240px, 1fr))',
-                            gap: isFullscreen ? '1.1rem' : '0.85rem'
-                          }}>
-                            {section.items.map((item, iIdx) => {
-                              const style = getMetricStyle(item.key, item.value);
-                              return (
-                                <div
-                                  key={iIdx}
-                                  style={{
-                                    backgroundColor: style.bg,
-                                    border: `2px solid ${style.border}`,
-                                    borderRadius: '12px',
-                                    padding: isFullscreen ? '1rem 1.4rem' : '0.75rem 1.1rem',
-                                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-                                    transition: 'transform 0.15s'
-                                  }}
-                                >
-                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                                    <span style={{
-                                      fontSize: isFullscreen ? '1.15rem' : '0.95rem',
-                                      fontWeight: '700', color: style.label
-                                    }}>
-                                      {item.label}
-                                    </span>
-                                    {style.badge && (
-                                      <span style={{ fontSize: '0.75rem', fontWeight: '800', color: '#DC2626' }}>
-                                        {style.badge}
+                          {/* Table Type Presentation View (Chẩn đoán hình ảnh) */}
+                          {section.tableType === 'techniques' && section.tableRows ? (
+                            <div style={{ overflowX: 'auto', marginTop: '0.5rem', marginBottom: '1rem' }}>
+                              <table style={{
+                                width: '100%',
+                                borderCollapse: 'separate',
+                                borderSpacing: '0',
+                                borderRadius: '12px',
+                                overflow: 'hidden',
+                                boxShadow: '0 4px 14px rgba(0,0,0,0.06)',
+                                border: '1.5px solid #CBD5E1'
+                              }}>
+                                <thead>
+                                  <tr style={{ backgroundColor: '#0F2C59', color: '#FFFFFF' }}>
+                                    <th style={{ padding: isFullscreen ? '0.9rem 1.4rem' : '0.75rem 1rem', textAlign: 'left', fontWeight: '800', fontSize: isFullscreen ? '1.15rem' : '0.95rem', letterSpacing: '0.5px' }}>KỸ THUẬT</th>
+                                    <th style={{ padding: isFullscreen ? '0.9rem 1.4rem' : '0.75rem 1rem', textAlign: 'center', fontWeight: '800', fontSize: isFullscreen ? '1.15rem' : '0.95rem', letterSpacing: '0.5px' }}>TỔNG SỐ</th>
+                                    <th style={{ padding: isFullscreen ? '0.9rem 1.4rem' : '0.75rem 1rem', textAlign: 'center', fontWeight: '800', fontSize: isFullscreen ? '1.15rem' : '0.95rem', letterSpacing: '0.5px' }}>BẢO HIỂM</th>
+                                    <th style={{ padding: isFullscreen ? '0.9rem 1.4rem' : '0.75rem 1rem', textAlign: 'center', fontWeight: '800', fontSize: isFullscreen ? '1.15rem' : '0.95rem', letterSpacing: '0.5px' }}>NỘI TRÚ</th>
+                                    <th style={{ padding: isFullscreen ? '0.9rem 1.4rem' : '0.75rem 1rem', textAlign: 'center', fontWeight: '800', fontSize: isFullscreen ? '1.15rem' : '0.95rem', letterSpacing: '0.5px' }}>NGOẠI TRÚ</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {section.tableRows.map((tech, tIdx) => (
+                                    <tr 
+                                      key={tIdx} 
+                                      style={{ 
+                                        backgroundColor: tIdx % 2 === 0 ? '#FFFFFF' : '#F8FAFC',
+                                        borderBottom: '1px solid #E2E8F0'
+                                      }}
+                                    >
+                                      <td style={{ padding: isFullscreen ? '0.85rem 1.4rem' : '0.65rem 1rem', fontWeight: '800', color: '#0F2C59', borderBottom: '1px solid #E2E8F0', fontSize: isFullscreen ? '1.2rem' : '1rem' }}>
+                                        {tech.name}
+                                      </td>
+                                      <td style={{ padding: isFullscreen ? '0.85rem 1.4rem' : '0.65rem 1rem', textAlign: 'center', fontWeight: '900', color: '#1E40AF', fontSize: isFullscreen ? '1.45rem' : '1.2rem', borderBottom: '1px solid #E2E8F0', fontFamily: "'Roboto Mono', monospace" }}>
+                                        <span style={{ backgroundColor: '#EFF6FF', padding: '0.2rem 0.6rem', borderRadius: '6px', border: '1px solid #BFDBFE' }}>
+                                          {tech.tongSo || '0'}
+                                        </span>
+                                      </td>
+                                      <td style={{ padding: isFullscreen ? '0.85rem 1.4rem' : '0.65rem 1rem', textAlign: 'center', fontWeight: '800', color: '#059669', fontSize: isFullscreen ? '1.3rem' : '1.1rem', borderBottom: '1px solid #E2E8F0', fontFamily: "'Roboto Mono', monospace" }}>
+                                        {tech.baoHiem || '0'}
+                                      </td>
+                                      <td style={{ padding: isFullscreen ? '0.85rem 1.4rem' : '0.65rem 1rem', textAlign: 'center', fontWeight: '700', color: '#334155', fontSize: isFullscreen ? '1.2rem' : '1rem', borderBottom: '1px solid #E2E8F0', fontFamily: "'Roboto Mono', monospace" }}>
+                                        {tech.noiTru || '0'}
+                                      </td>
+                                      <td style={{ padding: isFullscreen ? '0.85rem 1.4rem' : '0.65rem 1rem', textAlign: 'center', fontWeight: '700', color: '#334155', fontSize: isFullscreen ? '1.2rem' : '1rem', borderBottom: '1px solid #E2E8F0', fontFamily: "'Roboto Mono', monospace" }}>
+                                        {tech.ngoaiTru || '0'}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          ) : section.items ? (
+                            /* Metric Cards Grid */
+                            <div style={{
+                              display: 'grid',
+                              gridTemplateColumns: isFullscreen
+                                ? 'repeat(auto-fill, minmax(280px, 1fr))'
+                                : 'repeat(auto-fill, minmax(240px, 1fr))',
+                              gap: isFullscreen ? '1.1rem' : '0.85rem'
+                            }}>
+                              {section.items.map((item, iIdx) => {
+                                const style = getMetricStyle(item.key, item.value);
+                                return (
+                                  <div
+                                    key={iIdx}
+                                    style={{
+                                      backgroundColor: style.bg,
+                                      border: `2px solid ${style.border}`,
+                                      borderRadius: '12px',
+                                      padding: isFullscreen ? '1rem 1.4rem' : '0.75rem 1.1rem',
+                                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                      boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                                      transition: 'transform 0.15s'
+                                    }}
+                                  >
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                                      <span style={{
+                                        fontSize: isFullscreen ? '1.15rem' : '0.95rem',
+                                        fontWeight: '700', color: style.label
+                                      }}>
+                                        {item.label}
                                       </span>
-                                    )}
+                                      {style.badge && (
+                                        <span style={{ fontSize: '0.75rem', fontWeight: '800', color: '#DC2626' }}>
+                                          {style.badge}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <span style={{
+                                      fontSize: isFullscreen ? '2.4rem' : '1.8rem',
+                                      fontWeight: '900', color: style.text,
+                                      fontFamily: "'Roboto Mono', monospace",
+                                      marginLeft: '1rem'
+                                    }}>
+                                      {item.value}
+                                    </span>
                                   </div>
-                                  <span style={{
-                                    fontSize: isFullscreen ? '2.4rem' : '1.8rem',
-                                    fontWeight: '900', color: style.text,
-                                    fontFamily: "'Roboto Mono', monospace",
-                                    marginLeft: '1rem'
-                                  }}>
-                                    {item.value}
-                                  </span>
-                                </div>
-                              );
-                            })}
-                          </div>
+                                );
+                              })}
+                            </div>
+                          ) : null}
                         </div>
                       ))}
                     </div>
