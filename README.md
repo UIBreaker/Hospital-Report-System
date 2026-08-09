@@ -14,7 +14,7 @@
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel%20App-0070F3?style=for-the-badge&logo=vercel&logoColor=white)](https://hospital-report-system.vercel.app/)
 [![Author](https://img.shields.io/badge/Author-Nguyen%20Vu%20Nhat%20Nam%20(2004)-0F2C59?style=for-the-badge&logo=github)](https://github.com/UIBreaker/Hospital-Report-System)
-[![Version](https://img.shields.io/badge/Version-1.0.0-10B981?style=for-the-badge)](https://hospital-report-system.vercel.app/)
+[![Version](https://img.shields.io/badge/Version-1.4.0-10B981?style=for-the-badge)](https://hospital-report-system.vercel.app/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
 </div>
@@ -499,9 +499,13 @@ Dự án được cấu hình sẵn sàng triển khai trên **Vercel** thông q
 
 ## 20. 🗺️ Roadmap phát triển tương lai
 
-- [x] Phiên bản 1.0: Hoàn thiện 11 biểu mẫu khoa, ca chuyển viện, trình chiếu slide, Trợ lý AI và Quản lý Database.
-- [ ] Phiên bản 1.1: Xuất báo cáo giao ban thành file **PDF** và file **Excel (.xlsx)** theo mẫu chuẩn Bộ Y Tế.
-- [ ] Phiên bản 1.2: Biểu đồ trực quan hóa dữ liệu khám chữa bệnh theo tuần/tháng/quý.
+- [x] **Phiên bản 1.0.0:** 11 biểu mẫu khoa phòng, ca chuyển viện, Trình chiếu slide và Trợ lý AI.
+- [x] **Phiên bản 1.1.0:** Tối ưu hóa 100% Mobile Responsive, Công cụ phóng to chữ Zoom và phím tắt `lorem + Enter`.
+- [x] **Phiên bản 1.2.0:** Bộ kiểm thử tự động Playwright E2E 65+ tests, kiểm thử bảo mật & phím Tab.
+- [x] **Phiên bản 1.3.0:** Module Quản Lý & Giám Sát Dung Lượng Database thời gian thực (MB/KB) và công cụ `check-size.js`.
+- [x] **Phiên bản 1.4.0 (Hiện tại):** Động cơ Trình Chiếu Giao Ban 2.0 (Presentation Engine 2.0) với Personnel Banners, Note Cards, và Bảng kỹ thuật chuyên khoa.
+- [ ] **Phiên bản 2.0.0:** Xuất báo cáo giao ban thành file **PDF** và file **Excel (.xlsx)** theo mẫu chuẩn Bộ Y Tế.
+- [ ] **Phiên bản 2.1.0:** Biểu đồ trực quan hóa dữ liệu khám chữa bệnh theo tuần/tháng/quý.
 
 ---
 
@@ -518,15 +522,37 @@ Mọi đóng góp nhằm hoàn thiện hệ thống y tế đều được hoan 
 
 ## 22. 📝 Changelog
 
+### Phiên bản 1.4.0 (Tháng 08/2026) — *Phiên bản hiện tại*
+* 📺 **Nâng cấp Động cơ Trình Chiếu Giao Ban 2.0 (Presentation Engine 2.0):**
+  * Tách biệt hoàn toàn chỉ số định lượng (KPI Metric Cards) và văn bản thông tin/ghi chú dài.
+  * Tích hợp **Khung Nhân Sự Ca Trực (Personnel Banner)** chuyên nghiệp cho Khoa Gây Mê Hồi Sức, Nhiễm, Chẩn Đoán Hình Ảnh.
+  * Tích hợp **Khung Ghi Chú & Diễn Biến Thêm Giờ (Rich Note Card)** toàn chiều rộng (`Full Width`) với tông màu hổ phách trang nhã.
+  * Bảng **Thống Kê Kỹ Thuật Chẩn Đoán Hình Ảnh** độ phân giải cao, hỗ trợ máy chiếu phòng họp Ban Giám Đốc.
+* 🛠️ Khắc phục triệt để lỗi hiển thị `[object Object]` ở Modal Quản trị & Slide trình chiếu.
+* 🗂️ Bố cục lưới cân xứng, hoàn hảo cho cả 11 khoa lâm sàng và cận lâm sàng.
+
+### Phiên bản 1.3.0 (Tháng 08/2026)
+* 🗄️ Ra mắt Tab **Quản Lý & Giám Sát Dung Lượng Database** thời gian thực trong trang quản trị KHNV.
+* 📊 Thống kê dung lượng thực tế của CSDL MySQL (Data, Index, Total size MB/KB) và thanh tiến trình hạn mức 1024 MB.
+* 📡 Cung cấp API `GET /api/admin/database-stats` và công cụ Terminal `server/check-size.js`.
+* 🧪 Bổ sung bộ test Playwright chuyên sâu cho Database stats (`tests/db-stats.spec.js`).
+
+### Phiên bản 1.2.0 (Tháng 08/2026)
+* 🧪 Trang bị hệ thống kiểm thử tự động toàn diện **Playwright E2E Testing Suite** với hơn **65+ bài test** (100% Passed).
+* 🛡️ Thêm bộ kiểm thử bảo mật chuyên sâu (**Deep Testing**): Chống SQL Injection, XSS Injection, Route Guarding, kiểm thử phím Tab điều hướng, kiểm thử màn hình máy chiếu 4K.
+* 🖥️ Hỗ trợ Playwright UI Mode trực quan với timeline từng click chuột.
+
+### Phiên bản 1.1.0 (Tháng 08/2026)
+* 📱 Tối ưu hóa 100% giao diện di động (Mobile-First Responsive) không bị tràn ngang hay xung đột widget.
+* 🔍 Tích hợp bộ công cụ phóng to chữ chuyên dụng **Zoom (120% – 160%)** trên slide trình chiếu.
+* 📝 Ra mắt phím tắt thông minh **`lorem + Enter`** sinh dữ liệu mẫu y tế tức thì.
+* 🖼️ Bổ sung ảnh thực tế bệnh viện làm OpenGraph Social Preview Banner.
+
 ### Phiên bản 1.0.0 (Tháng 08/2026)
 * 🚀 Ra mắt chính thức hệ thống báo cáo giao ban trực tuyến cho TTYT Khu Vực Bình Long.
-* 🚑 Hoàn thiện biểu mẫu 11 khoa phòng và hệ thống quản lý ca bệnh chuyển viện.
-* 🗄️ Tích hợp Tab Quản Lý & Giám Sát Dung Lượng Database thời gian thực.
-* 📺 Tích hợp Trình chiếu giao ban toàn màn hình với bộ phóng to chữ chuyên dụng.
-* 🤖 Ra mắt Trợ lý Y Tế AI hỗ trợ cấp tài khoản và tra cứu nghiệp vụ.
-* 📱 Tối ưu hóa giao diện di động và phím tắt thông minh `lorem + Enter`.
-* 🧪 Trang bị bộ kiểm thử tự động Playwright E2E với hơn 65+ bài test.
-* 🔑 Nâng cấp tài khoản Quản trị viên sang `Khnv` / `Khnv@2026`.
+* 🚑 Hoàn thiện biểu mẫu 11 khoa phòng và hệ thống quản lý ca bệnh chuyển viện đa tầng.
+* 🤖 Ra mắt Trợ lý Y Tế AI hỗ trợ cấp tài khoản khoa phòng và hướng dẫn nghiệp vụ.
+* 🔑 Thiết lập tài khoản Quản trị viên `Khnv` / `Khnv@2026`.
 
 ---
 
