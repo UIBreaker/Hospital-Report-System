@@ -14,7 +14,7 @@
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel%20App-0070F3?style=for-the-badge&logo=vercel&logoColor=white)](https://hospital-report-system.vercel.app/)
 [![Author](https://img.shields.io/badge/Author-Nguyen%20Vu%20Nhat%20Nam%20(2004)-0F2C59?style=for-the-badge&logo=github)](https://github.com/UIBreaker/Hospital-Report-System)
-[![Version](https://img.shields.io/badge/Version-1.4.0-10B981?style=for-the-badge)](https://hospital-report-system.vercel.app/)
+[![Version](https://img.shields.io/badge/Version-1.4.1-10B981?style=for-the-badge)](https://hospital-report-system.vercel.app/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
 </div>
@@ -532,7 +532,14 @@ Mọi đóng góp nhằm hoàn thiện hệ thống y tế đều được hoan 
 
 ---
 
-### Phiên bản 1.4.0 (Tháng 08/2026) — *Phiên bản hiện tại*
+### Phiên bản 1.4.1 (Tháng 08/2026) — *Phiên bản hiện tại*
+* 👨‍💻 **Cập nhật & Đồng bộ Hồ sơ Tác giả Phát triển Phần mềm:**
+  * Bổ sung chức danh: **Kỹ sư / Lập trình viên Frontend & Fullstack**.
+  * Ghi nhận đơn vị công tác: **Phòng Kế hoạch - Nghiệp vụ (KHNV) – Trung Tâm Y Tế Khu Vực Bình Long**.
+  * Cập nhật phản hồi tự động trong **Trợ lý Y Tế AI** và toàn bộ tài liệu dự án.
+* 🏷️ Đồng bộ huy hiệu phiên bản **`v1.4.1`** trên giao diện đăng nhập (`LoginPage`), file cấu hình (`package.json`, `version.js`) và kho mã nguồn.
+
+### Phiên bản 1.4.0 (Tháng 08/2026)
 * 📺 **Nâng cấp Động cơ Trình Chiếu Giao Ban 2.0 (Presentation Engine 2.0):**
   * Tách biệt hoàn toàn chỉ số định lượng (KPI Metric Cards) và văn bản thông tin/ghi chú dài.
   * Tích hợp **Khung Nhân Sự Ca Trực (Personnel Banner)** chuyên nghiệp cho Khoa Gây Mê Hồi Sức, Nhiễm, Chẩn Đoán Hình Ảnh.
@@ -540,7 +547,6 @@ Mọi đóng góp nhằm hoàn thiện hệ thống y tế đều được hoan 
   * Bảng **Thống Kê Kỹ Thuật Chẩn Đoán Hình Ảnh** độ phân giải cao, hỗ trợ máy chiếu phòng họp Ban Giám Đốc.
 * 🛠️ Khắc phục triệt để lỗi hiển thị `[object Object]` ở Modal Quản trị & Slide trình chiếu.
 * 🗂️ Bố cục lưới cân xứng, hoàn hảo cho cả 11 khoa lâm sàng và cận lâm sàng.
-* 🏷️ Đồng bộ huy hiệu phiên bản **`v1.4.0`** trên giao diện đăng nhập (`LoginPage`), file cấu hình (`package.json`) và tài liệu.
 
 ### Phiên bản 1.3.0 (Tháng 08/2026)
 * 🗄️ Ra mắt Tab **Quản Lý & Giám Sát Dung Lượng Database** thời gian thực trong trang quản trị KHNV.
@@ -576,12 +582,15 @@ Dự án được phân phối dưới giấy phép **MIT License**. Xem chi ti�
 ## 24. 👨‍💻 Author & Contact
 
 * **Tác giả & Nhà phát triển chính:** **Nguyễn Vũ Nhật Nam** (Sinh năm 2004)
-* **GitHub:** [@UIBreaker](https://github.com/UIBreaker)
-* **Dự án Repository:** [https://github.com/UIBreaker/Hospital-Report-System](https://github.com/UIBreaker/Hospital-Report-System)
-* **Đơn vị ứng dụng:** **Trung Tâm Y Tế Khu Vực Bình Long**
+* **Chức danh chuyên môn:** Kỹ sư / Lập trình viên Frontend & Fullstack
+* **Đơn vị công tác:** **Phòng Kế hoạch - Nghiệp vụ (KHNV) – Trung Tâm Y Tế Khu Vực Bình Long**
+* **Đơn vị phát triển phần mềm:** **Hệ Thống Báo Cáo Giao Ban Trực Tuyến – Trung Tâm Y Tế Khu Vực Bình Long**
+* **GitHub Profile:** [@UIBreaker](https://github.com/UIBreaker)
+* **Kho mã nguồn GitHub:** [https://github.com/UIBreaker/Hospital-Report-System](https://github.com/UIBreaker/Hospital-Report-System)
+* **Sứ mệnh:** Chuyển đổi số toàn diện quy trình báo cáo giao ban, tối ưu hóa thời gian bàn giao ca trực và nâng cao chất lượng khám chữa bệnh tại TTYT Khu Vực Bình Long.
 
 ---
 
 <div align="center">
-  <sub>© 2026 Trung Tâm Y Tế Khu Vực Bình Long. Được xây dựng với niềm tự hào và tâm huyết y đức bởi Nguyễn Vũ Nhật Nam.</sub>
+  <sub>© 2026 Trung Tâm Y Tế Khu Vực Bình Long. Được xây dựng với niềm tự hào và tâm huyết y đức bởi Kỹ sư Nguyễn Vũ Nhật Nam (Phòng KHNV).</sub>
 </div>

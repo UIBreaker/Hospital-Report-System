@@ -75,7 +75,7 @@ const AIAssistant = ({ onAutoFillLogin }) => {
 
     if (qId === 'author') {
       userText = 'Ai là người phát triển phần mềm này?';
-      aiResponse = '👨‍💻 TÁC GIẢ & NHÀ PHÁT TRIỂN PHẦN MỀM:\n\n✨ Họ và tên: NGUYỄN VŨ NHẬT NAM\n📅 Năm sinh: 2004\n🏥 Đơn vị phát triển: Hệ Thống Báo Cáo Giao Ban Trực Tuyến – Trung Tâm Y Tế Khu Vực Bình Long.\n\n🎯 Phần mềm được lập trình tối ưu hóa giúp các khoa phòng nhập báo cáo nhanh chóng, tự động hóa tổng hợp số liệu giao ban và hỗ trợ trình chiếu slide chuyên nghiệp cho Ban Giám Đốc!';
+      aiResponse = '👨‍💻 THÔNG TIN TÁC GIẢ & NHÀ PHÁT TRIỂN PHẦN MỀM:\n\n✨ Họ và tên: NGUYỄN VŨ NHẬT NAM\n🎓 Chức danh: Kỹ sư / Lập trình viên Frontend & Fullstack\n📅 Năm sinh: 2004\n🏥 Đơn vị công tác: Phòng Kế hoạch - Nghiệp vụ (KHNV) – Trung Tâm Y Tế Khu Vực Bình Long\n💻 Đơn vị phát triển phần mềm: Hệ Thống Báo Cáo Giao Ban Trực Tuyến – Trung Tâm Y Tế Khu Vực Bình Long\n\n🚀 Sứ mệnh & Đóng góp chuyển đổi số y tế:\n• Trực tiếp thiết kế kiến trúc và lập trình toàn bộ Hệ Thống Báo Cáo Giao Ban Trực Tuyến (React 18, Node.js Express, CSDL Cloud MySQL).\n• Tự động hóa quy trình nộp và tổng hợp số liệu cho toàn bộ 11 khoa lâm sàng và cận lâm sàng.\n• Xây dựng Động cơ Trình Chiếu Giao Ban Slide 4K chuyên dụng phục vụ các phiên họp giao ban định kỳ của Ban Giám Đốc.\n• Tích hợp Trợ Lý AI thông minh và Hệ thống kiểm thử tự động Playwright E2E đảm bảo phần mềm vận hành ổn định 24/7.';
     } else if (qId === 'dept_account') {
       userText = 'Cấp tài khoản đăng nhập cho khoa của tôi';
       aiResponse = '🔑 Bạn đang trực tại khoa nào dưới đây? Hãy nhấp vào tên khoa để nhận tài khoản và mật khẩu tương ứng:';
@@ -122,7 +122,7 @@ const AIAssistant = ({ onAutoFillLogin }) => {
     }
     // Check if query mentions author
     else if (query.includes('tác giả') || query.includes('ai tạo') || query.includes('ai làm') || query.includes('phát triển') || query.includes('nhật nam') || query.includes('nguyễn vũ')) {
-      aiReply = '👨‍💻 Tác giả phát triển phần mềm này là NGUYỄN VŨ NHẬT NAM (Sinh năm 2004) – Lập trình viên xây dựng toàn bộ Hệ Thống Báo Cáo Giao Ban Trực Tuyến cho Trung Tâm Y Tế Khu Vực Bình Long.';
+      aiReply = '👨‍💻 THÔNG TIN TÁC GIẢ & NHÀ PHÁT TRIỂN PHẦN MỀM:\n\n✨ Họ và tên: NGUYỄN VŨ NHẬT NAM\n🎓 Chức danh: Kỹ sư / Lập trình viên Frontend & Fullstack\n📅 Năm sinh: 2004\n🏥 Đơn vị công tác: Phòng Kế hoạch - Nghiệp vụ (KHNV) – Trung Tâm Y Tế Khu Vực Bình Long\n💻 Đơn vị phát triển phần mềm: Hệ Thống Báo Cáo Giao Ban Trực Tuyến – Trung Tâm Y Tế Khu Vực Bình Long\n\n🚀 Sứ mệnh & Đóng góp chuyển đổi số y tế:\n• Trực tiếp thiết kế kiến trúc và lập trình toàn bộ Hệ Thống Báo Cáo Giao Ban Trực Tuyến.\n• Tự động hóa quy trình nộp và tổng hợp số liệu cho toàn bộ 11 khoa lâm sàng và cận lâm sàng.\n• Xây dựng Động cơ Trình Chiếu Giao Ban Slide 4K chuyên dụng phục vụ các phiên họp giao ban định kỳ của Ban Giám Đốc.\n• Tích hợp Trợ Lý AI thông minh và Hệ thống kiểm thử tự động Playwright E2E đảm bảo phần mềm vận hành ổn định 24/7.';
     }
     // Check if query matches a department
     else {
