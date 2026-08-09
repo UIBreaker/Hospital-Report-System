@@ -14,7 +14,7 @@
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel%20App-0070F3?style=for-the-badge&logo=vercel&logoColor=white)](https://hospital-report-system.vercel.app/)
 [![Author](https://img.shields.io/badge/Author-Nguyen%20Vu%20Nhat%20Nam%20(2004)-0F2C59?style=for-the-badge&logo=github)](https://github.com/UIBreaker/Hospital-Report-System)
-[![Version](https://img.shields.io/badge/Version-1.4.1-10B981?style=for-the-badge)](https://hospital-report-system.vercel.app/)
+[![Version](https://img.shields.io/badge/Version-1.4.2-10B981?style=for-the-badge)](https://hospital-report-system.vercel.app/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
 </div>
@@ -532,12 +532,17 @@ Mọi đóng góp nhằm hoàn thiện hệ thống y tế đều được hoan 
 
 ---
 
-### Phiên bản 1.4.1 (Tháng 08/2026) — *Phiên bản hiện tại*
+### Phiên bản 1.4.2 (Tháng 08/2026) — *Phiên bản hiện tại*
+* 🎯 **Tối ưu hóa Trải nghiệm Người Dùng (UI/UX Cleanliness):**
+  * Ẩn hoàn toàn huy hiệu phiên bản nổi ở các màn hình làm việc bên trong (Báo cáo khoa phòng `ReportPage`, Quản trị `AdminDashboard`, Trình chiếu `PresentationPage`).
+  * Chỉ hiển thị duy nhất thông tin phiên bản **`Phiên bản 1.4.2`** gọn gàng tại chân thẻ Đăng nhập (`LoginPage`).
+* 🏷️ Đồng bộ version **`v1.4.2`** trên toàn bộ hệ thống ([version.js](file:///C:/Users/Nhật Nam/.gemini/antigravity/scratch/hospital-report-system/client/src/config/version.js), [package.json](file:///C:/Users/Nhật Nam/.gemini/antigravity/scratch/hospital-report-system/package.json), [README.md](file:///C:/Users/Nhật Nam/.gemini/antigravity/scratch/hospital-report-system/README.md)).
+
+### Phiên bản 1.4.1 (Tháng 08/2026)
 * 👨‍💻 **Cập nhật & Đồng bộ Hồ sơ Tác giả Phát triển Phần mềm:**
   * Bổ sung chức danh: **Kỹ sư / Lập trình viên Frontend & Fullstack**.
   * Ghi nhận đơn vị công tác: **Phòng Kế hoạch - Nghiệp vụ (KHNV) – Trung Tâm Y Tế Khu Vực Bình Long**.
   * Cập nhật phản hồi tự động trong **Trợ lý Y Tế AI** và toàn bộ tài liệu dự án.
-* 🏷️ Đồng bộ huy hiệu phiên bản **`v1.4.1`** trên giao diện đăng nhập (`LoginPage`), file cấu hình (`package.json`, `version.js`) và kho mã nguồn.
 
 ### Phiên bản 1.4.0 (Tháng 08/2026)
 * 📺 **Nâng cấp Động cơ Trình Chiếu Giao Ban 2.0 (Presentation Engine 2.0):**

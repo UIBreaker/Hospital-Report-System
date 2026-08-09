@@ -936,20 +936,6 @@ const AdminDashboard = () => {
           </div>
         </div>
       )}
-      {/* Bottom Left Version 1.0 Badge */}
-      <div style={{
-        position: 'fixed', bottom: '1.25rem', left: '1.5rem',
-        display: 'flex', alignItems: 'center', gap: '0.45rem',
-        backgroundColor: 'rgba(15, 44, 89, 0.9)', color: '#CBD5E1',
-        padding: '0.45rem 0.9rem', borderRadius: '999px',
-        border: '1px solid rgba(255, 255, 255, 0.15)',
-        backdropFilter: 'blur(8px)', fontSize: '0.75rem', fontWeight: '600',
-        zIndex: 1000, boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
-      }}>
-        <FaCodeBranch style={{ color: '#38BDF8' }} />
-        <span>Phiên bản <strong style={{ color: '#FFFFFF' }}>1.0</strong></span>
-      </div>
-
       {/* Floating AI Assistant */}
       <AIAssistant />
     </div>
