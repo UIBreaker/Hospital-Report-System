@@ -134,7 +134,7 @@ const ReportPage = () => {
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '2rem' }}>
             <div className="form-group">
-              <label>Ngày báo cáo (Mặc định: Ngày hôm qua)</label>
+              <label>Ngày báo cáo <span style={{ color: 'var(--brand-red)' }}>*</span> ( lưu ý chọn đúng ngày )</label>
               <div style={{ position: 'relative' }}>
                 <FaCalendarAlt style={{ position: 'absolute', top: '50%', left: '1rem', transform: 'translateY(-50%)', color: 'var(--text-muted)', zIndex: 1 }} />
                 <input 
