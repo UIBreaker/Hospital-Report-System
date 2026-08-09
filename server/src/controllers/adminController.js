@@ -62,4 +62,51 @@ const getDepartmentStatus = async (req, res, next) => {
   }
 };
 
-module.exports = { getPresentationData, getDepartmentStatus };
+const getDatabaseStats = async (req, res, next) => {
+  try {
+    let dbName = process.env.DB_NAME || 'hospital_report';
+    if (process.env.DATABASE_URL) {
+      try {
+        const url = new URL(process.env.DATABASE_URL);
+        dbName = url.pathname.replace('/', '') || dbName;
+      } catch (e) {
+        // keep fallback dbName
+      }
+    }
+
+    const [tables] = await pool.query(
+      `SELECT 
+         table_name AS tableName, 
+         table_rows AS rowsCount,
+         ROUND(((data_length + index_length) / 1024 / 1024), 3) AS sizeMb,
+         ROUND(((data_length + index_length) / 1024), 2) AS sizeKb,
+         ROUND((data_length / 1024), 2) AS dataSizeKb,
+         ROUND((index_length / 1024), 2) AS indexSizeKb
+       FROM information_schema.TABLES 
+       WHERE table_schema = ? 
+       ORDER BY (data_length + index_length) DESC`,
+      [dbName]
+    );
+
+    const totalSizeMb = tables.reduce((acc, t) => acc + (parseFloat(t.sizeMb) || 0), 0);
+    const totalRows = tables.reduce((acc, t) => acc + (parseInt(t.rowsCount, 10) || 0), 0);
+    const maxLimitMb = 1024; // 1024 MB (1GB default limit)
+
+    res.json({
+      success: true,
+      data: {
+        databaseName: dbName,
+        totalSizeMb: parseFloat(totalSizeMb.toFixed(3)),
+        totalRows,
+        maxLimitMb,
+        usagePercentage: parseFloat(((totalSizeMb / maxLimitMb) * 100).toFixed(2)),
+        tablesCount: tables.length,
+        tables
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { getPresentationData, getDepartmentStatus, getDatabaseStats };

@@ -24,6 +24,10 @@ const reportService = {
   deleteReport: async (departmentCode, date) => {
     const response = await api.delete(`/reports/${departmentCode}/${date}`);
     return response.data;
+  },
+  getDatabaseStats: async () => {
+    const response = await api.get('/admin/database-stats');
+    return response.data;
   }
 };
 

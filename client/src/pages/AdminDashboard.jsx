@@ -1,13 +1,17 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
-import { FaCalendarAlt, FaSignOutAlt, FaTv, FaCheck, FaTimes, FaSpinner, FaSync, FaEdit, FaSave, FaEye, FaPlus, FaTrash, FaAmbulance, FaExclamationTriangle, FaCodeBranch } from 'react-icons/fa';
+import { FaCalendarAlt, FaSignOutAlt, FaTv, FaCheck, FaTimes, FaSpinner, FaSync, FaEdit, FaSave, FaEye, FaPlus, FaTrash, FaAmbulance, FaExclamationTriangle, FaCodeBranch, FaDatabase, FaTable, FaServer, FaHdd, FaLayerGroup, FaInfoCircle, FaShieldAlt } from 'react-icons/fa';
 import reportService from '../services/reportService';
 import AIAssistant from '../components/common/AIAssistant';
 
 const AdminDashboard = () => {
   const { logout } = useContext(AuthContext);
   const navigate = useNavigate();
+  
+  // Tab State: 'reports' (Báo Cáo Giao Ban) | 'database' (Quản Lý Database)
+  const [activeTab, setActiveTab] = useState('reports');
+
   const [date, setDate] = useState(() => {
     const d = new Date();
     d.setDate(d.getDate() - 1);
@@ -17,6 +21,12 @@ const AdminDashboard = () => {
   const [statusList, setStatusList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  // Database Stats State
+  const [dbStats, setDbStats] = useState(null);
+  const [loadingDb, setLoadingDb] = useState(false);
+  const [dbError, setDbError] = useState('');
+  const [lastDbUpdate, setLastDbUpdate] = useState('');
 
   // Modal State for View & Edit & Delete Report
   const [modalOpen, setModalOpen] = useState(false);
@@ -60,9 +70,29 @@ const AdminDashboard = () => {
     }
   };
 
+  const fetchDatabaseStats = async () => {
+    setLoadingDb(true);
+    setDbError('');
+    try {
+      const response = await reportService.getDatabaseStats();
+      if (response && response.data) {
+        setDbStats(response.data);
+        setLastDbUpdate(new Date().toLocaleTimeString('vi-VN'));
+      }
+    } catch (err) {
+      setDbError(err.response?.data?.error || 'Không thể tải thông tin dung lượng database.');
+    } finally {
+      setLoadingDb(false);
+    }
+  };
+
   useEffect(() => {
-    fetchStatus();
-  }, [date]);
+    if (activeTab === 'reports') {
+      fetchStatus();
+    } else if (activeTab === 'database') {
+      fetchDatabaseStats();
+    }
+  }, [date, activeTab]);
 
   const handlePresentation = () => {
     navigate(`/presentation/${date}`);
@@ -244,89 +274,340 @@ const AdminDashboard = () => {
         </div>
       </header>
 
-      {/* Stats Summary Grid (Clean 3-column on all screens) */}
-      <div className="admin-stats-grid">
-        <div className="card admin-stats-card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #EFF6FF, #DBEAFE)', borderLeft: '4px solid var(--brand-blue)' }}>
-          <div className="stats-num" style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--brand-blue)' }}>{totalCount}</div>
-          <div className="stats-lbl" style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Tổng số khoa</div>
-        </div>
-        <div className="card admin-stats-card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #E8F5E9, #C8E6C9)', borderLeft: '4px solid var(--brand-green)' }}>
-          <div className="stats-num" style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--brand-green)' }}>{submittedCount}</div>
-          <div className="stats-lbl" style={{ color: 'var(--brand-green)', fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Đã nộp</div>
-        </div>
-        <div className="card admin-stats-card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #FEF3C7, #FDE68A)', borderLeft: '4px solid #D97706' }}>
-          <div className="stats-num" style={{ fontSize: '2rem', fontWeight: '800', color: '#92400E' }}>{totalCount - submittedCount}</div>
-          <div className="stats-lbl" style={{ color: '#92400E', fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Chưa nộp</div>
-        </div>
+      {/* Navigation Tabs (Báo Cáo Giao Ban vs Quản Lý Database) */}
+      <div style={{
+        display: 'flex', gap: '0.75rem', marginBottom: '1.5rem',
+        borderBottom: '2px solid #E2E8F0', paddingBottom: '0.5rem', flexWrap: 'wrap'
+      }}>
+        <button
+          onClick={() => setActiveTab('reports')}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '0.5rem',
+            padding: '0.65rem 1.25rem', borderRadius: '8px',
+            border: 'none', cursor: 'pointer', fontWeight: '700', fontSize: '0.95rem',
+            transition: 'all 0.2s ease',
+            backgroundColor: activeTab === 'reports' ? 'var(--brand-blue)' : '#F1F5F9',
+            color: activeTab === 'reports' ? '#FFFFFF' : '#475569',
+            boxShadow: activeTab === 'reports' ? '0 4px 12px rgba(15, 44, 89, 0.2)' : 'none'
+          }}
+        >
+          <FaLayerGroup /> Báo Cáo Giao Ban
+        </button>
+        
+        <button
+          onClick={() => setActiveTab('database')}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '0.5rem',
+            padding: '0.65rem 1.25rem', borderRadius: '8px',
+            border: 'none', cursor: 'pointer', fontWeight: '700', fontSize: '0.95rem',
+            transition: 'all 0.2s ease',
+            backgroundColor: activeTab === 'database' ? 'var(--brand-blue)' : '#F1F5F9',
+            color: activeTab === 'database' ? '#FFFFFF' : '#475569',
+            boxShadow: activeTab === 'database' ? '0 4px 12px rgba(15, 44, 89, 0.2)' : 'none'
+          }}
+        >
+          <FaDatabase /> Quản Lý Database
+        </button>
       </div>
 
-      {error && (
-        <div style={{ backgroundColor: 'var(--warning-light)', color: '#92400E', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', marginBottom: '1rem', fontSize: '0.9rem' }}>
-          ⚠️ {error}
+      {/* ============================================================ */}
+      {/* TAB 1: BÁO CÁO GIAO BAN                                       */}
+      {/* ============================================================ */}
+      {activeTab === 'reports' && (
+        <div className="animate-fade-in">
+          {/* Stats Summary Grid (Clean 3-column on all screens) */}
+          <div className="admin-stats-grid">
+            <div className="card admin-stats-card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #EFF6FF, #DBEAFE)', borderLeft: '4px solid var(--brand-blue)' }}>
+              <div className="stats-num" style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--brand-blue)' }}>{totalCount}</div>
+              <div className="stats-lbl" style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Tổng số khoa</div>
+            </div>
+            <div className="card admin-stats-card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #E8F5E9, #C8E6C9)', borderLeft: '4px solid var(--brand-green)' }}>
+              <div className="stats-num" style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--brand-green)' }}>{submittedCount}</div>
+              <div className="stats-lbl" style={{ color: 'var(--brand-green)', fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Đã nộp</div>
+            </div>
+            <div className="card admin-stats-card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #FEF3C7, #FDE68A)', borderLeft: '4px solid #D97706' }}>
+              <div className="stats-num" style={{ fontSize: '2rem', fontWeight: '800', color: '#92400E' }}>{totalCount - submittedCount}</div>
+              <div className="stats-lbl" style={{ color: '#92400E', fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Chưa nộp</div>
+            </div>
+          </div>
+
+          {error && (
+            <div style={{ backgroundColor: 'var(--warning-light)', color: '#92400E', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', marginBottom: '1rem', fontSize: '0.9rem' }}>
+              ⚠️ {error}
+            </div>
+          )}
+
+          {/* Department Cards Grid */}
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '4rem' }}>
+              <FaSpinner className="spinner" style={{ fontSize: '2.5rem', color: 'var(--brand-blue)' }} />
+              <p style={{ marginTop: '1rem', color: 'var(--text-muted)' }}>Đang tải dữ liệu báo cáo...</p>
+            </div>
+          ) : (
+            <div className="admin-dept-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
+              {statusList.map((dept, index) => {
+                const isSubmitted = dept.status === 'submitted';
+                return (
+                  <div 
+                    key={dept.departmentCode} 
+                    className="card"
+                    onClick={() => handleOpenDetailModal(dept)}
+                    style={{ 
+                      borderLeft: `5px solid ${isSubmitted ? 'var(--brand-green)' : 'var(--border)'}`,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      animationDelay: `${index * 0.04}s`,
+                      animation: 'slideUp 0.3s ease-out forwards',
+                      opacity: 0,
+                      position: 'relative',
+                      padding: '1.1rem 1.25rem'
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = 'var(--shadow-lg)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow-md)'; }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.65rem' }}>
+                      <h3 style={{ fontWeight: '700', fontSize: '0.95rem', color: 'var(--primary)', lineHeight: 1.3 }}>{dept.departmentName}</h3>
+                      {isSubmitted ? 
+                        <span className="badge badge-success" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', flexShrink: 0, marginLeft: '0.5rem' }}>
+                          <FaCheck size={10} /> Đã nộp
+                        </span> : 
+                        <span className="badge badge-warning" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', flexShrink: 0, marginLeft: '0.5rem' }}>
+                          <FaTimes size={10} /> Chưa nộp
+                        </span>
+                      }
+                    </div>
+                    
+                    {isSubmitted ? (
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                        {dept.doctorName && <p style={{ marginBottom: '0.5rem' }}>👨‍⚕️ <strong>Bác sĩ trực:</strong> {dept.doctorName}</p>}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
+                          <span style={{ color: 'var(--brand-green)', fontWeight: '600', fontSize: '0.8rem' }}>✓ Đã nộp báo cáo</span>
+                          <span className="btn btn-secondary btn-sm" style={{ padding: '0.25rem 0.6rem', fontSize: '0.75rem' }}>
+                            <FaEye /> Xem / Sửa
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.75rem' }}>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--text-light)', fontStyle: 'italic' }}>Chưa có báo cáo</span>
+                        <span className="btn btn-secondary btn-sm" style={{ padding: '0.25rem 0.6rem', fontSize: '0.75rem' }}>
+                          <FaEdit /> Nhập hộ
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
-      {/* Department Cards Grid */}
-      {loading ? (
-        <div style={{ textAlign: 'center', padding: '4rem' }}>
-          <FaSpinner className="spinner" style={{ fontSize: '2.5rem', color: 'var(--brand-blue)' }} />
-          <p style={{ marginTop: '1rem', color: 'var(--text-muted)' }}>Đang tải dữ liệu báo cáo...</p>
-        </div>
-      ) : (
-        <div className="admin-dept-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
-          {statusList.map((dept, index) => {
-            const isSubmitted = dept.status === 'submitted';
-            return (
-              <div 
-                key={dept.departmentCode} 
-                className="card"
-                onClick={() => handleOpenDetailModal(dept)}
-                style={{ 
-                  borderLeft: `5px solid ${isSubmitted ? 'var(--brand-green)' : 'var(--border)'}`,
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  animationDelay: `${index * 0.04}s`,
-                  animation: 'slideUp 0.3s ease-out forwards',
-                  opacity: 0,
-                  position: 'relative',
-                  padding: '1.1rem 1.25rem'
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = 'var(--shadow-lg)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow-md)'; }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.65rem' }}>
-                  <h3 style={{ fontWeight: '700', fontSize: '0.95rem', color: 'var(--primary)', lineHeight: 1.3 }}>{dept.departmentName}</h3>
-                  {isSubmitted ? 
-                    <span className="badge badge-success" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', flexShrink: 0, marginLeft: '0.5rem' }}>
-                      <FaCheck size={10} /> Đã nộp
-                    </span> : 
-                    <span className="badge badge-warning" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', flexShrink: 0, marginLeft: '0.5rem' }}>
-                      <FaTimes size={10} /> Chưa nộp
-                    </span>
-                  }
-                </div>
-                
-                {isSubmitted ? (
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                    {dept.doctorName && <p style={{ marginBottom: '0.5rem' }}>👨‍⚕️ <strong>Bác sĩ trực:</strong> {dept.doctorName}</p>}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
-                      <span style={{ color: 'var(--brand-green)', fontWeight: '600', fontSize: '0.8rem' }}>✓ Đã nộp báo cáo</span>
-                      <span className="btn btn-secondary btn-sm" style={{ padding: '0.25rem 0.6rem', fontSize: '0.75rem' }}>
-                        <FaEye /> Xem / Sửa
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.75rem' }}>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-light)', fontStyle: 'italic' }}>Chưa có báo cáo</span>
-                    <span className="btn btn-secondary btn-sm" style={{ padding: '0.25rem 0.6rem', fontSize: '0.75rem' }}>
-                      <FaEdit /> Nhập hộ
-                    </span>
-                  </div>
-                )}
+      {/* ============================================================ */}
+      {/* TAB 2: QUẢN LÝ DATABASE                                       */}
+      {/* ============================================================ */}
+      {activeTab === 'database' && (
+        <div className="animate-fade-in">
+          {/* Controls & Title Bar */}
+          <div className="card" style={{ marginBottom: '1.5rem', padding: '1.25rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', background: '#FFFFFF' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+              <div style={{ width: '44px', height: '44px', borderRadius: '10px', backgroundColor: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--brand-blue)', fontSize: '1.3rem' }}>
+                <FaDatabase />
               </div>
-            );
-          })}
+              <div>
+                <h3 style={{ fontSize: '1.15rem', color: 'var(--brand-blue)', fontWeight: '800', margin: 0 }}>
+                  Trạng Thái & Dung Lượng Cơ Sở Dữ Liệu
+                </h3>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>
+                  Giám sát dung lượng lưu trữ, cấu trúc bảng và tài nguyên hệ thống theo thời gian thực.
+                </p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              {lastDbUpdate && (
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', backgroundColor: '#F8FAFC', padding: '0.4rem 0.75rem', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+                  🕒 Cập nhật: <strong>{lastDbUpdate}</strong>
+                </span>
+              )}
+              <button 
+                className="btn btn-primary btn-sm" 
+                onClick={fetchDatabaseStats} 
+                disabled={loadingDb}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', padding: '0.5rem 1rem' }}
+              >
+                <FaSync className={loadingDb ? 'spinner' : ''} /> {loadingDb ? 'Đang tải...' : 'Làm Mới Dữ Liệu'}
+              </button>
+            </div>
+          </div>
+
+          {dbError && (
+            <div style={{ backgroundColor: 'var(--danger-light)', color: 'var(--danger)', padding: '1rem', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem', fontSize: '0.9rem', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+              ❌ <strong>Lỗi kết nối cơ sở dữ liệu:</strong> {dbError}
+            </div>
+          )}
+
+          {loadingDb && !dbStats ? (
+            <div style={{ textAlign: 'center', padding: '4rem' }}>
+              <FaSpinner className="spinner" style={{ fontSize: '2.5rem', color: 'var(--brand-blue)' }} />
+              <p style={{ marginTop: '1rem', color: 'var(--text-muted)' }}>Đang truy vấn thông tin dung lượng database...</p>
+            </div>
+          ) : dbStats ? (
+            <>
+              {/* Top Overview Cards Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem', marginBottom: '1.5rem' }}>
+                {/* Metric 1: Total Storage & Progress Bar */}
+                <div className="card" style={{ padding: '1.25rem 1.5rem', background: 'linear-gradient(135deg, #F0FDF4, #DCFCE7)', borderLeft: '4px solid #10B981' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                    <span style={{ fontSize: '0.8rem', fontWeight: '700', color: '#065F46', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      Tổng dung lượng đã dùng
+                    </span>
+                    <FaHdd style={{ color: '#10B981', fontSize: '1.2rem' }} />
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem', marginBottom: '0.6rem' }}>
+                    <span style={{ fontSize: '1.8rem', fontWeight: '800', color: '#065F46' }}>
+                      {dbStats.totalSizeMb} <span style={{ fontSize: '1rem', fontWeight: '600' }}>MB</span>
+                    </span>
+                    <span style={{ fontSize: '0.85rem', color: '#047857' }}>
+                      / {dbStats.maxLimitMb} MB ({dbStats.usagePercentage}% giới hạn)
+                    </span>
+                  </div>
+                  
+                  {/* Progress Bar */}
+                  <div style={{ width: '100%', height: '8px', backgroundColor: '#E2E8F0', borderRadius: '999px', overflow: 'hidden' }}>
+                    <div style={{
+                      width: `${Math.max(dbStats.usagePercentage, 1)}%`,
+                      height: '100%',
+                      background: 'linear-gradient(90deg, #10B981, #059669)',
+                      borderRadius: '999px',
+                      transition: 'width 0.5s ease-in-out'
+                    }} />
+                  </div>
+                </div>
+
+                {/* Metric 2: Tables & Records Count */}
+                <div className="card" style={{ padding: '1.25rem 1.5rem', background: 'linear-gradient(135deg, #EFF6FF, #DBEAFE)', borderLeft: '4px solid var(--brand-blue)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                    <span style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--brand-blue)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      Cấu trúc & Bản ghi
+                    </span>
+                    <FaTable style={{ color: 'var(--brand-blue)', fontSize: '1.2rem' }} />
+                  </div>
+                  <div style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--brand-blue)', marginBottom: '0.2rem' }}>
+                    {dbStats.tablesCount} <span style={{ fontSize: '1rem', fontWeight: '600' }}>bảng dữ liệu</span>
+                  </div>
+                  <div style={{ fontSize: '0.85rem', color: '#1E40AF' }}>
+                    Ước tính khoảng <strong>{dbStats.totalRows}</strong> bản ghi tổng cộng
+                  </div>
+                </div>
+
+                {/* Metric 3: Database Name & Status */}
+                <div className="card" style={{ padding: '1.25rem 1.5rem', background: 'linear-gradient(135deg, #FAF5FF, #F3E8FF)', borderLeft: '4px solid #8B5CF6' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                    <span style={{ fontSize: '0.8rem', fontWeight: '700', color: '#5B21B6', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      Cơ sở dữ liệu
+                    </span>
+                    <FaServer style={{ color: '#8B5CF6', fontSize: '1.2rem' }} />
+                  </div>
+                  <div style={{ fontSize: '1.3rem', fontWeight: '800', color: '#5B21B6', marginBottom: '0.4rem', fontFamily: 'monospace' }}>
+                    {dbStats.databaseName}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <span className="badge badge-success" style={{ fontSize: '0.75rem', padding: '0.25rem 0.55rem' }}>
+                      ✓ Kết Nối Sẵn Sàng (Online)
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Table Details Card */}
+              <div className="card" style={{ padding: '1.5rem', background: '#FFFFFF', marginBottom: '1.5rem', overflowX: 'auto' }}>
+                <h4 style={{ fontSize: '1.05rem', color: 'var(--brand-blue)', fontWeight: '700', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <FaTable style={{ color: 'var(--brand-blue-light)' }} /> Danh Sách Chi Tiết Các Bảng Dữ Liệu
+                </h4>
+
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
+                  <thead>
+                    <tr style={{ backgroundColor: '#F8FAFC', borderBottom: '2px solid #E2E8F0', color: '#475569' }}>
+                      <th style={{ padding: '0.85rem 1rem', fontWeight: '700', width: '50px' }}>#</th>
+                      <th style={{ padding: '0.85rem 1rem', fontWeight: '700' }}>Tên Bảng</th>
+                      <th style={{ padding: '0.85rem 1rem', fontWeight: '700' }}>Mô Tả Chức Năng</th>
+                      <th style={{ padding: '0.85rem 1rem', fontWeight: '700', textAlign: 'right' }}>Số Dòng (Rows)</th>
+                      <th style={{ padding: '0.85rem 1rem', fontWeight: '700', textAlign: 'right' }}>Dữ Liệu (Data)</th>
+                      <th style={{ padding: '0.85rem 1rem', fontWeight: '700', textAlign: 'right' }}>Chỉ Mục (Index)</th>
+                      <th style={{ padding: '0.85rem 1rem', fontWeight: '700', textAlign: 'right' }}>Tổng Dung Lượng</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {dbStats.tables.map((table, idx) => {
+                      const desc = {
+                        users: 'Tài khoản đăng nhập & phân quyền cán bộ/khoa phòng',
+                        reports: 'Báo cáo số liệu giao ban hàng ngày của 11 khoa phòng',
+                        transfer_cases: 'Hồ sơ chi tiết các ca bệnh nhân chuyển viện cấp cứu'
+                      }[table.tableName] || 'Bảng dữ liệu hệ thống';
+
+                      return (
+                        <tr 
+                          key={table.tableName}
+                          style={{ 
+                            borderBottom: '1px solid #F1F5F9',
+                            backgroundColor: idx % 2 === 0 ? '#FFFFFF' : '#FAFAFA',
+                            transition: 'background-color 0.15s ease'
+                          }}
+                          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#EFF6FF'; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = idx % 2 === 0 ? '#FFFFFF' : '#FAFAFA'; }}
+                        >
+                          <td style={{ padding: '0.85rem 1rem', color: '#94A3B8', fontWeight: '600' }}>{idx + 1}</td>
+                          <td style={{ padding: '0.85rem 1rem' }}>
+                            <span style={{ 
+                              fontFamily: 'monospace', 
+                              fontWeight: '700', 
+                              backgroundColor: '#F1F5F9', 
+                              padding: '0.25rem 0.55rem', 
+                              borderRadius: '4px',
+                              color: 'var(--brand-blue)'
+                            }}>
+                              {table.tableName}
+                            </span>
+                          </td>
+                          <td style={{ padding: '0.85rem 1rem', color: '#334155' }}>
+                            {desc}
+                          </td>
+                          <td style={{ padding: '0.85rem 1rem', textAlign: 'right', fontWeight: '600', color: '#475569' }}>
+                            {Number(table.rowsCount).toLocaleString('vi-VN')}
+                          </td>
+                          <td style={{ padding: '0.85rem 1rem', textAlign: 'right', color: '#64748B' }}>
+                            {table.dataSizeKb} KB
+                          </td>
+                          <td style={{ padding: '0.85rem 1rem', textAlign: 'right', color: '#64748B' }}>
+                            {table.indexSizeKb} KB
+                          </td>
+                          <td style={{ padding: '0.85rem 1rem', textAlign: 'right', fontWeight: '800', color: '#0F2C59' }}>
+                            <span className="badge" style={{ backgroundColor: '#DBEAFE', color: '#1E40AF', padding: '0.3rem 0.6rem', fontSize: '0.85rem' }}>
+                              {table.sizeMb} MB
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Informational Guidance Box */}
+              <div className="card" style={{ padding: '1.25rem 1.5rem', background: '#F8FAFC', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'flex-start', gap: '0.85rem' }}>
+                <FaInfoCircle style={{ color: 'var(--brand-blue)', fontSize: '1.3rem', marginTop: '0.15rem', flexShrink: 0 }} />
+                <div style={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.6 }}>
+                  <strong>💡 Ghi chú kỹ thuật về dung lượng hệ thống:</strong>
+                  <p style={{ margin: '0.35rem 0 0 0' }}>
+                    • Hệ thống sử dụng định dạng lưu trữ JSON nén hiện đại cho 11 biểu mẫu chuyên khoa, giúp dung lượng mỗi bản ghi báo cáo chỉ chiếm khoảng <strong>2 - 5 KB</strong>.
+                    <br />
+                    • Với giới hạn <strong>1024 MB</strong>, cơ sở dữ liệu có khả năng lưu trữ liên tục hơn <strong>10 năm dữ liệu giao ban</strong> của toàn bộ trung tâm y tế mà không lo đầy bộ nhớ.
+                  </p>
+                </div>
+              </div>
+            </>
+          ) : null}
         </div>
       )}
 

@@ -7,6 +7,7 @@
     "build": "cd client && npm install && npm run build",
     "start": "cd server && node server.js",
     "test": "playwright test",
+    "test:db": "playwright test tests/db-stats.spec.js --project=chromium-desktop",
     "test:all": "playwright test tests/all-accounts.spec.js --project=chromium-desktop",
     "test:all:full": "playwright test tests/all-accounts.spec.js",
     "test:deep": "playwright test tests/deep-testing.spec.js",
