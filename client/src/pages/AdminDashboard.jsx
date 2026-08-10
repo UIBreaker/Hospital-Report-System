@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 import { FaCalendarAlt, FaSignOutAlt, FaTv, FaCheck, FaTimes, FaSpinner, FaSync, FaEdit, FaSave, FaEye, FaPlus, FaTrash, FaAmbulance, FaExclamationTriangle, FaCodeBranch, FaDatabase, FaTable, FaServer, FaHdd, FaLayerGroup, FaInfoCircle, FaShieldAlt } from 'react-icons/fa';
 import reportService from '../services/reportService';
-import AIAssistant from '../components/common/AIAssistant';
 
 const AdminDashboard = () => {
   const { logout } = useContext(AuthContext);
@@ -987,8 +986,6 @@ const AdminDashboard = () => {
           </div>
         </div>
       )}
-      {/* Floating AI Assistant */}
-      <AIAssistant />
     </div>
   );
 };

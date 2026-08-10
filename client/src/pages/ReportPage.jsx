@@ -2,7 +2,6 @@ import React, { useState, useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 import { FaCalendarAlt, FaUserMd, FaChevronRight, FaSignOutAlt, FaSpinner, FaPaperPlane, FaCheckCircle, FaCodeBranch } from 'react-icons/fa';
 import reportService from '../services/reportService';
-import AIAssistant from '../components/common/AIAssistant';
 
 import HoiSucCapCuuForm from '../components/forms/departments/HoiSucCapCuuForm';
 import ChuanDoanHinhAnhForm from '../components/forms/departments/ChuanDoanHinhAnhForm';
@@ -274,9 +273,6 @@ const ReportPage = () => {
           </div>
         </div>
       )}
-
-      {/* Floating AI Assistant */}
-      <AIAssistant />
     </div>
   );
 };

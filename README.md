@@ -14,7 +14,7 @@
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel%20App-0070F3?style=for-the-badge&logo=vercel&logoColor=white)](https://hospital-report-system.vercel.app/)
 [![Author](https://img.shields.io/badge/Author-Nguyen%20Vu%20Nhat%20Nam%20(2004)-0F2C59?style=for-the-badge&logo=github)](https://github.com/UIBreaker/Hospital-Report-System)
-[![Version](https://img.shields.io/badge/Version-1.5.0-10B981?style=for-the-badge)](https://hospital-report-system.vercel.app/)
+[![Version](https://img.shields.io/badge/Version-1.5.1-10B981?style=for-the-badge)](https://hospital-report-system.vercel.app/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
 </div>
@@ -531,9 +531,13 @@ Mọi đóng góp nhằm hoàn thiện hệ thống y tế đều được hoan 
   * Số 0 thứ nhất (`X.0.0`): Bản mới tinh vừa ra mắt, sạch sẽ, chưa qua chỉnh sửa nhỏ lẻ.
   * Số 0 thứ hai (`X.Y.0`): Chưa có lỗi nhỏ nào cần phải vá sau khi phát hành tính năng mới.
 
----
+### Phiên bản 1.5.1 (Tháng 08/2026) — *Phiên bản hiện tại*
+* 🤖 **Tối ưu hóa Không gian Làm Việc (Workplace Cleanliness):**
+  * Ẩn hoàn toàn Trợ lý Y Tế AI (`AIAssistant`) khi người dùng đã đăng nhập vào hệ thống (ở cả giao diện Báo cáo Khoa phòng `ReportPage` và Bảng Quản trị KHNV `AdminDashboard`).
+  * Trợ lý Y Tế AI chỉ xuất hiện duy nhất tại màn hình Đăng nhập (`LoginPage`) nhằm hỗ trợ cấp danh sách tài khoản, mật khẩu và điền nhanh thông tin đăng nhập.
+* 🏷️ Nâng cấp phiên bản lên **`v1.5.1`** theo quy chuẩn Semantic Versioning.
 
-### Phiên bản 1.5.0 (Tháng 08/2026) — *Phiên bản hiện tại*
+### Phiên bản 1.5.0 (Tháng 08/2026)
 * 🏥 **Thêm mới Khoa Liên Chuyên Khoa (Khoa thứ 12):**
   * Cấp tài khoản đăng nhập chuyên dụng: **`lck.bvbl`** / Mật khẩu: **`123`**.
   * Xây dựng biểu mẫu nhập liệu chuyên môn đầy đủ 4 chuyên khoa: **Tai Mũi Họng (TMH)**, **Mắt**, **Răng Hàm Mặt + Nội (RHM+Nội)**, **Da Liễu**, **Nhập viện**, **Chuyển viện** và khối **Tổng 4CK** (tự động tính tổng kèm chuyển đổi tính thủ công).
