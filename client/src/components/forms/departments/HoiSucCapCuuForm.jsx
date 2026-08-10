@@ -51,7 +51,17 @@ const HoiSucCapCuuForm = ({ doctorName, formData, setFormData, transferCases, se
         <div className="sub-section" style={{ marginTop: '15px', padding: '10px', backgroundColor: '#f9f9f9', borderRadius: '5px' }}>
           <h4>Chi tiết thêm</h4>
           <div className="form-grid">
-            <div className="form-group"><label>Tử vong</label><input type="number" min="0" step="1" value={hscc.tuVong || ''} onChange={(e) => handleHsccChange('tuVong', e.target.value)} /></div>
+            <div className="form-group" style={{ backgroundColor: '#FEF2F2', padding: '6px 10px', borderRadius: '6px', border: '1px solid #FCA5A5' }}>
+              <label style={{ color: '#DC2626', fontWeight: '800' }}>🚨 Tử vong</label>
+              <input 
+                type="number" 
+                min="0" 
+                step="1" 
+                value={hscc.tuVong || ''} 
+                onChange={(e) => handleHsccChange('tuVong', e.target.value)} 
+                style={{ borderColor: '#DC2626', color: '#DC2626', fontWeight: '800' }}
+              />
+            </div>
             <div className="form-group"><label>Kê toa</label><input type="number" min="0" step="1" value={hscc.keToa || ''} onChange={(e) => handleHsccChange('keToa', e.target.value)} /></div>
             <div className="form-group"><label>Ngoại trú</label><input type="number" min="0" step="1" value={hscc.ngoaiTru || ''} onChange={(e) => handleHsccChange('ngoaiTru', e.target.value)} /></div>
             <div className="form-group"><label>Truyền máu</label><input type="number" min="0" step="1" value={hscc.truyenMau || ''} onChange={(e) => handleHsccChange('truyenMau', e.target.value)} /></div>

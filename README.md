@@ -10,11 +10,11 @@
 
 ### **HỆ THỐNG QUẢN LÝ, TỔNG HỢP VÀ TRÌNH CHIẾU BÁO CÁO GIAO BAN Y TẾ CHUYÊN NGHIỆP**
 
-*Ứng dụng Web toàn diện hỗ trợ 11 Khoa/Phòng chuyên môn & Phòng Kế Hoạch Nghiệp Vụ (KHNV) Trung Tâm Y Tế Khu Vực Bình Long.*
+*Ứng dụng Web toàn diện hỗ trợ 12 Khoa/Phòng chuyên môn & Phòng Kế Hoạch Nghiệp Vụ (KHNV) Trung Tâm Y Tế Khu Vực Bình Long.*
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel%20App-0070F3?style=for-the-badge&logo=vercel&logoColor=white)](https://hospital-report-system.vercel.app/)
 [![Author](https://img.shields.io/badge/Author-Nguyen%20Vu%20Nhat%20Nam%20(2004)-0F2C59?style=for-the-badge&logo=github)](https://github.com/UIBreaker/Hospital-Report-System)
-[![Version](https://img.shields.io/badge/Version-1.4.2-10B981?style=for-the-badge)](https://hospital-report-system.vercel.app/)
+[![Version](https://img.shields.io/badge/Version-1.5.0-10B981?style=for-the-badge)](https://hospital-report-system.vercel.app/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
 </div>
@@ -25,7 +25,7 @@
 
 **Hệ Thống Báo Cáo Giao Ban Bệnh Viện** là giải pháp phần mềm chuyển đổi số y tế hiện đại, thay thế hoàn toàn phương thức báo cáo giao ban truyền thống bằng giấy tờ và file bảng tính rời rạc. 
 
-Phần mềm được thiết kế chuẩn nhận diện thương hiệu y tế **TTYT Khu Vực Bình Long**, cung cấp quy trình nhập liệu nhanh chóng cho các bác sĩ trực thuộc **11 khoa phòng**, đồng thời trang bị **Trợ lý Y Tế AI**, **cơ chế tự động sinh dữ liệu mẫu (`lorem`)**, **quản lý ca bệnh chuyển viện đa tầng**, **quản lý dung lượng cơ sở dữ liệu thời gian thực**, và **chế độ trình chiếu giao ban toàn màn hình (Presentation Mode)** với khả năng phóng to chữ phục vụ họp giao ban Ban Giám Đốc.
+Phần mềm được thiết kế chuẩn nhận diện thương hiệu y tế **TTYT Khu Vực Bình Long**, cung cấp quy trình nhập liệu nhanh chóng cho các bác sĩ trực thuộc **12 khoa phòng**, đồng thời trang bị **Trợ lý Y Tế AI**, **cơ chế tự động sinh dữ liệu mẫu (`lorem`)**, **quản lý ca bệnh chuyển viện đa tầng**, **quản lý dung lượng cơ sở dữ liệu thời gian thực**, và **chế độ trình chiếu giao ban toàn màn hình (Presentation Mode)** với khả năng phóng to chữ phục vụ họp giao ban Ban Giám Đốc.
 
 ---
 
@@ -503,7 +503,8 @@ Dự án được cấu hình sẵn sàng triển khai trên **Vercel** thông q
 - [x] **Phiên bản 1.1.0:** Tối ưu hóa 100% Mobile Responsive, Công cụ phóng to chữ Zoom và phím tắt `lorem + Enter`.
 - [x] **Phiên bản 1.2.0:** Bộ kiểm thử tự động Playwright E2E 65+ tests, kiểm thử bảo mật & phím Tab.
 - [x] **Phiên bản 1.3.0:** Module Quản Lý & Giám Sát Dung Lượng Database thời gian thực (MB/KB) và công cụ `check-size.js`.
-- [x] **Phiên bản 1.4.0 (Hiện tại):** Động cơ Trình Chiếu Giao Ban 2.0 (Presentation Engine 2.0) với Personnel Banners, Note Cards, và Bảng kỹ thuật chuyên khoa.
+- [x] **Phiên bản 1.4.0:** Động cơ Trình Chiếu Giao Ban 2.0 (Presentation Engine 2.0) với Personnel Banners, Note Cards, và Bảng kỹ thuật chuyên khoa.
+- [x] **Phiên bản 1.5.0 (Hiện tại):** Bổ sung **Khoa Liên Chuyên Khoa (Khoa thứ 12)** (`lck.bvbl` / `123`), sắp xếp chuẩn 12 khoa giao ban, khắc phục triệt để lỗi kẹt cuộn slide, tách trang chuyển viện độc lập và đổi màu đỏ cảnh báo tử vong.
 - [ ] **Phiên bản 2.0.0:** Xuất báo cáo giao ban thành file **PDF** và file **Excel (.xlsx)** theo mẫu chuẩn Bộ Y Tế.
 - [ ] **Phiên bản 2.1.0:** Biểu đồ trực quan hóa dữ liệu khám chữa bệnh theo tuần/tháng/quý.
 
@@ -522,7 +523,7 @@ Mọi đóng góp nhằm hoàn thiện hệ thống y tế đều được hoan 
 
 ## 22. 📝 Changelog & Quy Chuẩn Đánh Số Phiên Bản (SemVer)
 
-### 📌 Quy tắc đánh số phiên bản (`MAJOR.MINOR.PATCH` — Ví dụ: `1.4.0`):
+### 📌 Quy tắc đánh số phiên bản (`MAJOR.MINOR.PATCH` — Ví dụ: `1.5.0`):
 * **Số thứ nhất (`X.0.0` - Major):** Bước nhảy vọt, thay đổi toàn bộ kiến trúc, cơ chế hoạt động hoặc thiết kế giao diện phần mềm.
 * **Số thứ hai (`X.Y.0` - Minor):** Bổ sung thêm tính năng mới hoặc nghiệp vụ phụ sau đợt cập nhật lớn.
 * **Số thứ ba (`X.Y.Z` - Patch):** Bản vá lỗi nhỏ, tinh chỉnh giao diện, sửa lỗi hiển thị và hotfix phát sinh.
@@ -532,17 +533,34 @@ Mọi đóng góp nhằm hoàn thiện hệ thống y tế đều được hoan 
 
 ---
 
-### Phiên bản 1.4.2 (Tháng 08/2026) — *Phiên bản hiện tại*
-* 🎯 **Tối ưu hóa Trải nghiệm Người Dùng (UI/UX Cleanliness):**
-  * Ẩn hoàn toàn huy hiệu phiên bản nổi ở các màn hình làm việc bên trong (Báo cáo khoa phòng `ReportPage`, Quản trị `AdminDashboard`, Trình chiếu `PresentationPage`).
-  * Chỉ hiển thị duy nhất thông tin phiên bản **`Phiên bản 1.4.2`** gọn gàng tại chân thẻ Đăng nhập (`LoginPage`).
-* 🏷️ Đồng bộ version **`v1.4.2`** trên toàn bộ hệ thống ([version.js](file:///C:/Users/Nhật Nam/.gemini/antigravity/scratch/hospital-report-system/client/src/config/version.js), [package.json](file:///C:/Users/Nhật Nam/.gemini/antigravity/scratch/hospital-report-system/package.json), [README.md](file:///C:/Users/Nhật Nam/.gemini/antigravity/scratch/hospital-report-system/README.md)).
-
-### Phiên bản 1.4.1 (Tháng 08/2026)
-* 👨‍💻 **Cập nhật & Đồng bộ Hồ sơ Tác giả Phát triển Phần mềm:**
-  * Bổ sung chức danh: **Kỹ sư / Lập trình viên Frontend & Fullstack**.
-  * Ghi nhận đơn vị công tác: **Phòng Kế hoạch - Nghiệp vụ (KHNV) – Trung Tâm Y Tế Khu Vực Bình Long**.
-  * Cập nhật phản hồi tự động trong **Trợ lý Y Tế AI** và toàn bộ tài liệu dự án.
+### Phiên bản 1.5.0 (Tháng 08/2026) — *Phiên bản hiện tại*
+* 🏥 **Thêm mới Khoa Liên Chuyên Khoa (Khoa thứ 12):**
+  * Cấp tài khoản đăng nhập chuyên dụng: **`lck.bvbl`** / Mật khẩu: **`123`**.
+  * Xây dựng biểu mẫu nhập liệu chuyên môn đầy đủ 4 chuyên khoa: **Tai Mũi Họng (TMH)**, **Mắt**, **Răng Hàm Mặt + Nội (RHM+Nội)**, **Da Liễu**, **Nhập viện**, **Chuyển viện** và khối **Tổng 4CK** (tự động tính tổng kèm chuyển đổi tính thủ công).
+  * Tích hợp ca chuyển viện động (`TransferCaseForm`) và ghi chú thêm giờ ca trực.
+* 🔢 **Chuẩn hóa Thứ tự Trình chiếu & Giám sát 12 Khoa:**
+  * Sắp xếp đồng bộ từ máy chủ Backend (`adminController.js`) đến Bảng điều khiển KHNV (`AdminDashboard.jsx`) và Trình chiếu Giao ban (`PresentationPage.jsx`) theo đúng 12 khoa:
+    1. Liên chuyên khoa (`lck`)
+    2. Xét nghiệm (`xn`)
+    3. Chẩn đoán hình ảnh (`cdha`)
+    4. Hồi sức cấp cứu – Thận nhân tạo (`hscc_tnt`)
+    5. Khoa Nội (`noi`)
+    6. Khoa Nhi (`nhi`)
+    7. Khoa Nhiễm (`nhiem`)
+    8. Khoa Sản (`san`)
+    9. Y học cổ truyền – PHCN (`yhct_phcn`)
+    10. Ngoại tổng hợp (`ngoai_th`)
+    11. Chấn thương chỉnh hình (`ctch`)
+    12. Gây mê hồi sức (`gmhs`)
+* 🔄 **Khắc phục lỗi thanh cuộn khi trình chiếu (Auto-Scroll Reset):**
+  * Tự động đưa vị trí cuộn về đầu trang (`scrollTop = 0`) ngay khi chuyển sang slide mới, ngăn chặn hiện tượng slide bị kẹt ở chân trang cũ.
+* 🚑 **Tách độc lập Slide Bệnh nhân Chuyển viện:**
+  * Mỗi ca bệnh chuyển viện được chia thành 2 slide rõ ràng:
+    * **Phần 1 (Tiếp nhận & Xử trí):** Họ tên, tuổi, địa chỉ, giờ vào, lý do, cận lâm sàng, chẩn đoán, xử trí ban đầu.
+    * **Phần 2 (Diễn biến & Tình trạng chuyển viện):** Banner thông tin tóm tắt và Khung diễn biến/hội chẩn chiếm toàn màn hình với cỡ chữ lớn và định dạng nhiều dòng sắc nét.
+* 🚨 **Tối ưu màu sắc cảnh báo Tử vong (Mortality Alert):**
+  * Đổi màu nền đỏ hồng (`#FEE2E2`), viền đỏ (`#DC2626`) và chữ đỏ đậm (`#DC2626`) cho tất cả các chỉ số tử vong trong Form nhập liệu, Quản trị viên và Slide giao ban.
+* 🏷️ Nâng cấp toàn diện lên **`v1.5.0`** theo quy chuẩn Semantic Versioning.
 
 ### Phiên bản 1.4.0 (Tháng 08/2026)
 * 📺 **Nâng cấp Động cơ Trình Chiếu Giao Ban 2.0 (Presentation Engine 2.0):**

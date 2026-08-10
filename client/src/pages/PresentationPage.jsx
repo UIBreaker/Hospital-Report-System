@@ -4,21 +4,35 @@ import { FaExpand, FaCompress, FaPrint, FaChevronLeft, FaChevronRight, FaSpinner
 import reportService from '../services/reportService';
 
 const DEPARTMENT_DISPLAY_NAMES = {
-  hscc_tnt: 'HỒI SỨC CẤP CỨU – THẬN NHÂN TẠO',
+  lck: 'KHOA LIÊN CHUYÊN KHOA',
+  xn: 'XÉT NGHIỆM',
   cdha: 'CHẨN ĐOÁN HÌNH ẢNH',
+  hscc_tnt: 'HỒI SỨC CẤP CỨU – THẬN NHÂN TẠO',
+  noi: 'KHOA NỘI',
+  nhi: 'NHI',
+  nhiem: 'NHIỄM',
+  san: 'SẢN',
   yhct_phcn: 'Y HỌC CỔ TRUYỀN – PHCN',
   ngoai_th: 'NGOẠI TỔNG HỢP',
   ctch: 'CHẤN THƯƠNG CHỈNH HÌNH',
-  nhi: 'NHI',
-  nhiem: 'NHIỄM',
   gmhs: 'GÂY MÊ HỒI SỨC',
-  san: 'SẢN',
-  xn: 'XÉT NGHIỆM',
-  noi: 'KHOA NỘI',
 };
 
 // Vietnamese label map for presentation display
 const FIELD_LABELS = {
+  // Khoa Liên Chuyên Khoa
+  tmh_tongSo: 'Tai Mũi Họng (Tổng số khám)',
+  tmh_thuThuat: 'Tai Mũi Họng (Thủ thuật)',
+  mat_tongSo: 'Mắt (Tổng số khám)',
+  mat_thuThuat: 'Mắt (Thủ thuật)',
+  rhm_noi_tongSo: 'RHM + Nội (Tổng số khám)',
+  rhm_noi_thuThuat: 'RHM + Nội (Thủ thuật)',
+  daLieu_tongSo: 'Da liễu (Tổng số khám)',
+  nhapVien_tongSo: 'Số ca nhập viện',
+  chuyenVien_tongSo: 'Số ca chuyển viện',
+  tong4ck_tongSo: 'TỔNG SỐ 4 CHUYÊN KHOA',
+  tong4ck_thuThuat: 'TỔNG THỦ THUẬT 4CK',
+
   // Common metrics
   benhCu: 'Bệnh cũ (Đang điều trị)', benhMoi: 'Bệnh mới nhập viện', benhXuat: 'Bệnh xuất viện',
   benhChuyenVien: 'Bệnh chuyển viện', benhChuyenKhoa: 'Bệnh chuyển khoa',
@@ -95,17 +109,18 @@ const getMetricStyle = (key, value) => {
   const numVal = Number(value);
   const isPositive = !isNaN(numVal) && numVal > 0;
 
-  if (key.toLowerCase().includes('tuvong') || key.toLowerCase().includes('tu_vong')) {
+  // Highlight all mortality (Tử vong) in alert red
+  if (key.toLowerCase().includes('tuvong') || key.toLowerCase().includes('tu_vong') || key.toLowerCase().includes('tử vong')) {
     return isPositive
-      ? { bg: '#FEE2E2', border: '#DC2626', text: '#991B1B', label: '#B91C1C', badge: '⚠️ Chú ý' }
-      : { bg: '#F8FAFC', border: '#E2E8F0', text: '#64748B', label: '#475569' };
+      ? { bg: '#FEE2E2', border: '#DC2626', text: '#DC2626', label: '#991B1B', badge: '🚨 TỬ VONG' }
+      : { bg: '#FEF2F2', border: '#FCA5A5', text: '#DC2626', label: '#B91C1C', badge: '' };
   }
   if (key.toLowerCase().includes('chuyenvien') || key.toLowerCase().includes('chuyen_vien')) {
     return isPositive
       ? { bg: '#FEF3C7', border: '#D97706', text: '#B45309', label: '#92400E' }
       : { bg: '#F8FAFC', border: '#E2E8F0', text: '#64748B', label: '#475569' };
   }
-  if (key.toLowerCase().includes('benhmoi') || key.toLowerCase().includes('tongso') || key.toLowerCase().includes('tong_so') || key.toLowerCase().includes('tongsoca')) {
+  if (key.toLowerCase().includes('benhmoi') || key.toLowerCase().includes('tongso') || key.toLowerCase().includes('tong_so') || key.toLowerCase().includes('tongsoca') || key.toLowerCase().includes('tong4ck')) {
     return { bg: '#EFF6FF', border: '#3B82F6', text: '#1D4ED8', label: '#1E40AF' };
   }
   if (key.toLowerCase().includes('xuatvien') || key.toLowerCase().includes('xuat_vien') || key.toLowerCase().includes('xinxuatvien') || key === 'xuat') {
@@ -129,6 +144,53 @@ const parseDepartmentSections = (reportData, deptCode = '') => {
 
   const sections = [];
   const normalizedDept = (deptCode || '').toLowerCase().replace(/[^a-z0-9_]/g, '');
+
+  // ================= 0. KHOA LIÊN CHUYÊN KHOA (LCK) =================
+  if (normalizedDept === 'lck' || data.tmh_tongSo !== undefined || data.tong4ck_tongSo !== undefined) {
+    // Top summary: TỔNG SỐ 4 CHUYÊN KHOA
+    const sumMetrics = [];
+    if (data.tong4ck_tongSo !== undefined && data.tong4ck_tongSo !== '') {
+      sumMetrics.push({ key: 'tong4ck_tongSo', label: 'TỔNG SỐ 4 CHUYÊN KHOA (TMH + Mắt + RHM/Nội + Da liễu)', value: String(data.tong4ck_tongSo) });
+    }
+    if (data.tong4ck_thuThuat !== undefined && data.tong4ck_thuThuat !== '') {
+      sumMetrics.push({ key: 'tong4ck_thuThuat', label: 'TỔNG THỦ THUẬT 4 CHUYÊN KHOA', value: String(data.tong4ck_thuThuat) });
+    }
+    if (sumMetrics.length > 0) {
+      sections.push({
+        title: '📊 TỔNG QUAN 4 CHUYÊN KHOA (4CK)',
+        items: sumMetrics
+      });
+    }
+
+    // Detail by specialties
+    const detailMetrics = [];
+    if (data.tmh_tongSo !== undefined && data.tmh_tongSo !== '') detailMetrics.push({ key: 'tmh_tongSo', label: '👂 Tai Mũi Họng (Tổng số)', value: String(data.tmh_tongSo) });
+    if (data.tmh_thuThuat !== undefined && data.tmh_thuThuat !== '') detailMetrics.push({ key: 'tmh_thuThuat', label: '👂 Tai Mũi Họng (Thủ thuật)', value: String(data.tmh_thuThuat) });
+    if (data.mat_tongSo !== undefined && data.mat_tongSo !== '') detailMetrics.push({ key: 'mat_tongSo', label: '👁️ Mắt (Tổng số)', value: String(data.mat_tongSo) });
+    if (data.mat_thuThuat !== undefined && data.mat_thuThuat !== '') detailMetrics.push({ key: 'mat_thuThuat', label: '👁️ Mắt (Thủ thuật)', value: String(data.mat_thuThuat) });
+    if (data.rhm_noi_tongSo !== undefined && data.rhm_noi_tongSo !== '') detailMetrics.push({ key: 'rhm_noi_tongSo', label: '🦷 RHM + Nội (Tổng số)', value: String(data.rhm_noi_tongSo) });
+    if (data.rhm_noi_thuThuat !== undefined && data.rhm_noi_thuThuat !== '') detailMetrics.push({ key: 'rhm_noi_thuThuat', label: '🦷 RHM + Nội (Thủ thuật)', value: String(data.rhm_noi_thuThuat) });
+    if (data.daLieu_tongSo !== undefined && data.daLieu_tongSo !== '') detailMetrics.push({ key: 'daLieu_tongSo', label: '🩺 Da Liễu (Tổng số)', value: String(data.daLieu_tongSo) });
+    if (data.nhapVien_tongSo !== undefined && data.nhapVien_tongSo !== '') detailMetrics.push({ key: 'nhapVien_tongSo', label: '🏥 Nhập viện', value: String(data.nhapVien_tongSo) });
+    if (data.chuyenVien_tongSo !== undefined && data.chuyenVien_tongSo !== '') detailMetrics.push({ key: 'chuyenVien_tongSo', label: '🚑 Chuyển viện', value: String(data.chuyenVien_tongSo) });
+
+    if (detailMetrics.length > 0) {
+      sections.push({
+        title: '📋 CHI TIẾT THEO TỪNG PHÒNG CHUYÊN KHOA',
+        items: detailMetrics
+      });
+    }
+
+    if (data.themGio) {
+      sections.push({
+        type: 'note',
+        title: '📝 GHI CHÚ THÊM GIỜ & DIỄN BIẾN CA TRỰC',
+        value: data.themGio
+      });
+    }
+
+    return sections;
+  }
 
   // ================= 1. GÂY MÊ HỒI SỨC (GMHS) =================
   if (normalizedDept === 'gmhs' || data.nhanSu !== undefined || data.tongSoCaMo !== undefined || data.cc_ctch !== undefined) {
@@ -370,6 +432,7 @@ const PresentationPage = () => {
   const { date } = useParams();
   const navigate = useNavigate();
   const containerRef = useRef(null);
+  const scrollContainerRef = useRef(null);
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -401,17 +464,63 @@ const PresentationPage = () => {
     };
   }, []);
 
-  // Build slides
+  // Reset scroll container to top whenever slide changes (Fixed scroll stuck bug)
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0;
+    }
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [currentSlide]);
+
+  const DEPARTMENT_ORDER = [
+    'lck',
+    'xn',
+    'cdha',
+    'hscc_tnt',
+    'noi',
+    'nhi',
+    'nhiem',
+    'san',
+    'yhct_phcn',
+    'ngoai_th',
+    'ctch',
+    'gmhs'
+  ];
+
+  // Build slides with official 12-department order & split transfer case slides
   const slides = useMemo(() => {
     const s = [{ type: 'title', title: 'BÁO CÁO GIAO BAN' }];
-    reports.forEach(report => {
+
+    // Sort reports strictly according to the 12-department sequence
+    const sortedReports = [...reports].sort((a, b) => {
+      const idxA = DEPARTMENT_ORDER.indexOf(a.department_code);
+      const idxB = DEPARTMENT_ORDER.indexOf(b.department_code);
+      return (idxA !== -1 ? idxA : 999) - (idxB !== -1 ? idxB : 999);
+    });
+
+    sortedReports.forEach(report => {
       const deptName = DEPARTMENT_DISPLAY_NAMES[report.department_code] || report.department_name || report.department_code;
       s.push({ type: 'department', title: deptName, report });
+
       if (report.transferCases && report.transferCases.length > 0) {
         report.transferCases.forEach((tc, idx) => {
+          // Slide Part 1: Tiếp nhận, lâm sàng & xử trí ban đầu
           s.push({
             type: 'transfer',
+            part: 1,
             title: `CA CHUYỂN VIỆN – ${deptName}`,
+            transferCase: tc,
+            caseIndex: idx + 1,
+            totalCases: report.transferCases.length,
+            deptName,
+            report,
+          });
+
+          // Slide Part 2: Tách riêng Diễn biến, Hội chẩn & Tình trạng lúc chuyển viện
+          s.push({
+            type: 'transfer_progress',
+            part: 2,
+            title: `DIỄN BIẾN CHUYỂN VIỆN – ${deptName}`,
             transferCase: tc,
             caseIndex: idx + 1,
             totalCases: report.transferCases.length,
@@ -541,7 +650,8 @@ const PresentationPage = () => {
                   </span>
                   <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
                     {s.type === 'title' ? '🏥 Trang bìa giao ban'
-                      : s.type === 'transfer' ? `🚑 Chuyển viện: ${s.deptName ? s.deptName.replace('KHOA ', '') : ''} (Ca ${s.caseIndex})`
+                      : s.type === 'transfer' ? `🚑 CV (Ca ${s.caseIndex} - P1: Tiếp nhận)`
+                      : s.type === 'transfer_progress' ? `📝 CV (Ca ${s.caseIndex} - P2: Diễn biến)`
                       : `📋 ${s.title}`}
                   </span>
                 </button>
@@ -580,16 +690,19 @@ const PresentationPage = () => {
       {/* ===================== MAIN STAGE ===================== */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100vh', position: 'relative' }}>
 
-        {/* Slide Canvas Scroll Container - FIXED TOP CLIPPING */}
-        <div style={{
-          flex: 1,
-          overflowY: 'auto',
-          overflowX: 'hidden',
-          padding: isFullscreen ? '2rem 3rem 4rem' : '1.5rem 2rem 3rem',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'flex-start'
-        }}>
+        {/* Slide Canvas Scroll Container - FIXED TOP CLIPPING & AUTO SCROLL RESET */}
+        <div 
+          ref={scrollContainerRef}
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            padding: isFullscreen ? '2rem 3rem 4rem' : '1.5rem 2rem 3rem',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'flex-start'
+          }}
+        >
           <div style={{
             width: '100%',
             maxWidth: isFullscreen ? '1560px' : '1200px',
@@ -993,7 +1106,7 @@ const PresentationPage = () => {
               );
             })()}
 
-            {/* ==================== 3. TRANSFER CASE SLIDE ==================== */}
+            {/* ==================== 3. TRANSFER CASE SLIDE (PART 1: TIẾP NHẬN & XỬ TRÍ) ==================== */}
             {slide.type === 'transfer' && (
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                 {/* Emergency Header */}
@@ -1016,13 +1129,13 @@ const PresentationPage = () => {
                         fontSize: isFullscreen ? '1.1rem' : '0.9rem',
                         color: '#991B1B', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1.5px'
                       }}>
-                        🚑 {slide.deptName} • CA CHUYỂN VIỆN {slide.caseIndex}/{slide.totalCases}
+                        🚑 {slide.deptName} • CA CHUYỂN VIỆN {slide.caseIndex}/{slide.totalCases} (PHẦN 1: TIẾP NHẬN & XỬ TRÍ)
                       </div>
                       <h2 style={{
                         fontSize: isFullscreen ? '2.4rem' : '1.8rem',
                         color: '#DC2626', fontWeight: '900', margin: 0, lineHeight: 1.15
                       }}>
-                        THÔNG TIN BỆNH NHÂN CHUYỂN VIỆN
+                        THÔNG TIN TIẾP NHẬN BỆNH NHÂN CHUYỂN VIỆN
                       </h2>
                     </div>
                   </div>
@@ -1056,15 +1169,14 @@ const PresentationPage = () => {
                   </div>
                 )}
 
-                {/* Clinical Details Structured Grid */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: isFullscreen ? '1rem' : '0.75rem' }}>
+                {/* Clinical Details Structured Grid (Excluding progress_notes which is on Part 2) */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: isFullscreen ? '1.1rem' : '0.85rem' }}>
                   {[
                     { icon: '⏰', label: 'Giờ / Ngày vào viện', value: slide.transferCase.admission_time, highlight: false },
                     { icon: '📋', label: 'Lý do vào viện', value: slide.transferCase.reason, highlight: false },
                     { icon: '🔬', label: 'Cận lâm sàng / X-Quang / Xét nghiệm', value: slide.transferCase.clinical_tests, highlight: false },
                     { icon: '🏥', label: 'Chẩn đoán xác định', value: slide.transferCase.diagnosis, highlight: true },
                     { icon: '💊', label: 'Xử trí ban đầu', value: slide.transferCase.initial_treatment, highlight: false },
-                    { icon: '📝', label: 'Diễn biến / Hội chẩn / Tình trạng lúc chuyển', value: slide.transferCase.progress_notes, highlight: true },
                   ].filter(item => item.value).map((item, idx) => (
                     <div
                       key={idx}
@@ -1073,7 +1185,7 @@ const PresentationPage = () => {
                         borderRadius: '12px',
                         border: `1.5px solid ${item.highlight ? '#FCD34D' : '#E2E8F0'}`,
                         borderLeft: `6px solid ${item.highlight ? '#D97706' : '#3B82F6'}`,
-                        padding: isFullscreen ? '1rem 1.5rem' : '0.75rem 1.1rem',
+                        padding: isFullscreen ? '1rem 1.5rem' : '0.8rem 1.2rem',
                         display: 'flex', gap: '1rem', alignItems: 'flex-start'
                       }}
                     >
@@ -1100,6 +1212,103 @@ const PresentationPage = () => {
                       </div>
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* ==================== 4. TRANSFER CASE SLIDE (PART 2: DIỄN BIẾN & TÌNH TRẠNG CHUYỂN) ==================== */}
+            {slide.type === 'transfer_progress' && (
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                {/* Header */}
+                <div style={{
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  paddingBottom: '1.25rem', marginBottom: '1.5rem',
+                  borderBottom: '4px solid #D97706'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+                    <div style={{
+                      width: isFullscreen ? '70px' : '56px', height: isFullscreen ? '70px' : '56px',
+                      borderRadius: '50%', backgroundColor: '#FEF3C7',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      boxShadow: '0 8px 20px rgba(217, 119, 6, 0.25)'
+                    }}>
+                      <span style={{ fontSize: isFullscreen ? '2.4rem' : '1.8rem' }}>📝</span>
+                    </div>
+                    <div>
+                      <div style={{
+                        fontSize: isFullscreen ? '1.1rem' : '0.9rem',
+                        color: '#B45309', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1.5px'
+                      }}>
+                        🚑 {slide.deptName} • CA CHUYỂN VIỆN {slide.caseIndex}/{slide.totalCases} (PHẦN 2: DIỄN BIẾN & HỘI CHẨN)
+                      </div>
+                      <h2 style={{
+                        fontSize: isFullscreen ? '2.4rem' : '1.8rem',
+                        color: '#92400E', fontWeight: '900', margin: 0, lineHeight: 1.15
+                      }}>
+                        DIỄN BIẾN • HỘI CHẨN • TÌNH TRẠNG LÚC CHUYỂN
+                      </h2>
+                    </div>
+                  </div>
+                  <img src="/logo.png" alt="Logo" style={{ width: isFullscreen ? '70px' : '50px', height: isFullscreen ? '70px' : '50px' }} />
+                </div>
+
+                {/* Patient Summary Quick Bar */}
+                <div style={{
+                  backgroundColor: '#EFF6FF', borderRadius: '12px',
+                  border: '1.5px solid #BFDBFE',
+                  borderLeft: '6px solid #2563EB',
+                  padding: isFullscreen ? '0.9rem 1.5rem' : '0.75rem 1.1rem',
+                  marginBottom: '1.5rem',
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem'
+                }}>
+                  <div style={{ fontSize: isFullscreen ? '1.25rem' : '1.05rem', fontWeight: '800', color: '#1E40AF' }}>
+                    👤 Bệnh nhân: <span style={{ color: '#0F2C59' }}>{slide.transferCase.patient_name || 'Bệnh nhân'}</span>
+                  </div>
+                  {slide.transferCase.diagnosis && (
+                    <div style={{ fontSize: isFullscreen ? '1.15rem' : '0.95rem', fontWeight: '700', color: '#92400E' }}>
+                      🏥 Chẩn đoán: <span style={{ color: '#78350F' }}>{slide.transferCase.diagnosis}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Full-width Dedicated Progress Notes Big Box */}
+                <div style={{
+                  flex: 1,
+                  backgroundColor: '#FFFBEB',
+                  borderRadius: '16px',
+                  border: '2px solid #FDE68A',
+                  borderLeft: '10px solid #D97706',
+                  padding: isFullscreen ? '2rem 2.5rem' : '1.5rem 2rem',
+                  display: 'flex', flexDirection: 'column', gap: '1rem',
+                  boxShadow: '0 8px 30px rgba(217, 119, 6, 0.1)'
+                }}>
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: '0.6rem',
+                    fontSize: isFullscreen ? '1.35rem' : '1.1rem',
+                    fontWeight: '900', color: '#92400E',
+                    textTransform: 'uppercase', letterSpacing: '0.75px',
+                    borderBottom: '2px solid #FDE68A', paddingBottom: '0.75rem'
+                  }}>
+                    <span>📋</span>
+                    <span>NỘI DUNG DIỄN BIẾN, HỘI CHẨN & TÌNH TRẠNG CHUYỂN VIỆN:</span>
+                  </div>
+
+                  <div style={{
+                    fontSize: isFullscreen ? '1.5rem' : '1.25rem',
+                    lineHeight: '1.8',
+                    color: '#0F172A',
+                    fontWeight: '600',
+                    whiteSpace: 'pre-wrap',
+                    overflowY: 'auto'
+                  }}>
+                    {slide.transferCase.progress_notes ? (
+                      slide.transferCase.progress_notes
+                    ) : (
+                      <span style={{ color: '#94A3B8', fontStyle: 'italic' }}>
+                        (Không có ghi chú diễn biến bổ sung cho ca bệnh này)
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             )}

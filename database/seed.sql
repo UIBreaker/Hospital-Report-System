@@ -12,4 +12,5 @@ INSERT INTO users (username, password_hash, department_code, department_name, ro
 ('san.bvbl', '$2b$10$P6qiqatgseZ31AOk6DdQe.iosBVo0IL6yiQEvnJtdPxA/pOczEjWa', 'san', 'Sản', 'department'),
 ('xn.bvbl', '$2b$10$P6qiqatgseZ31AOk6DdQe.iosBVo0IL6yiQEvnJtdPxA/pOczEjWa', 'xn', 'Xét nghiệm', 'department'),
 ('noi.bvbl', '$2b$10$P6qiqatgseZ31AOk6DdQe.iosBVo0IL6yiQEvnJtdPxA/pOczEjWa', 'noi', 'Khoa Nội', 'department'),
+('lck.bvbl', '$2b$10$P6qiqatgseZ31AOk6DdQe.iosBVo0IL6yiQEvnJtdPxA/pOczEjWa', 'lck', 'Khoa Liên Chuyên Khoa', 'department'),
 ('Khnv', '$2b$10$mRZNcXHD3MUb0dJ0HTLfrOQnxZO2zvGbky1aCzGn/Tmw4LuBxAjSi', 'admin', 'Phòng Kế Hoạch Nghiệp Vụ', 'admin');

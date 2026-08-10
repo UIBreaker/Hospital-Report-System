@@ -2,17 +2,18 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FaRobot, FaTimes, FaPaperPlane, FaUserShield, FaKey, FaQuestionCircle, FaHospital, FaCode, FaCheck, FaInfoCircle } from 'react-icons/fa';
 
 const DEPARTMENTS = [
-  { code: 'noi.bvbl', name: 'Khoa Nội', key: 'noi', pass: '123' },
-  { code: 'hscctnt.bvbl', name: 'Hồi sức cấp cứu – Thận nhân tạo', key: 'hscc_tnt', pass: '123' },
+  { code: 'lck.bvbl', name: 'Khoa Liên Chuyên Khoa', key: 'lck', pass: '123' },
+  { code: 'xn.bvbl', name: 'Khoa Xét nghiệm', key: 'xn', pass: '123' },
   { code: 'cdha.bvbl', name: 'Chẩn đoán hình ảnh', key: 'cdha', pass: '123' },
+  { code: 'hscctnt.bvbl', name: 'Hồi sức cấp cứu – Thận nhân tạo', key: 'hscc_tnt', pass: '123' },
+  { code: 'noi.bvbl', name: 'Khoa Nội', key: 'noi', pass: '123' },
+  { code: 'nhi.bvbl', name: 'Khoa Nhi', key: 'nhi', pass: '123' },
+  { code: 'nhiem.bvbl', name: 'Khoa Nhiễm', key: 'nhiem', pass: '123' },
+  { code: 'san.bvbl', name: 'Khoa Sản', key: 'san', pass: '123' },
   { code: 'yhctphcn.bvbl', name: 'Y học cổ truyền – PHCN', key: 'yhct_phcn', pass: '123' },
   { code: 'nth.bvbl', name: 'Ngoại tổng hợp', key: 'ngoai_th', pass: '123' },
   { code: 'ctch.bvbl', name: 'Chấn thương chỉnh hình', key: 'ctch', pass: '123' },
-  { code: 'nhi.bvbl', name: 'Khoa Nhi', key: 'nhi', pass: '123' },
-  { code: 'nhiem.bvbl', name: 'Khoa Nhiễm', key: 'nhiem', pass: '123' },
   { code: 'gmhs.bvbl', name: 'Gây mê Hồi sức', key: 'gmhs', pass: '123' },
-  { code: 'san.bvbl', name: 'Khoa Sản', key: 'san', pass: '123' },
-  { code: 'xn.bvbl', name: 'Khoa Xét nghiệm', key: 'xn', pass: '123' },
 ];
 
 const INITIAL_MESSAGES = [

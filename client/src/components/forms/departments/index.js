@@ -9,3 +9,4 @@ export { default as GayMeHoiSucForm } from './GayMeHoiSucForm';
 export { default as SanForm } from './SanForm';
 export { default as XetNghiemForm } from './XetNghiemForm';
 export { default as NoiForm } from './NoiForm';
+export { default as LienChuyenKhoaForm } from './LienChuyenKhoaForm';

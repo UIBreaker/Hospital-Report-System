@@ -1,5 +1,20 @@
 const pool = require('../config/db');
 
+const DEPARTMENT_ORDER = [
+  'lck',
+  'xn',
+  'cdha',
+  'hscc_tnt',
+  'noi',
+  'nhi',
+  'nhiem',
+  'san',
+  'yhct_phcn',
+  'ngoai_th',
+  'ctch',
+  'gmhs'
+];
+
 const getPresentationData = async (req, res, next) => {
   try {
     const { date } = req.params;
@@ -25,6 +40,13 @@ const getPresentationData = async (req, res, next) => {
         transferCases
       });
     }
+
+    // Sort by official 12-department sequence
+    presentationData.sort((a, b) => {
+      const idxA = DEPARTMENT_ORDER.indexOf(a.department_code);
+      const idxB = DEPARTMENT_ORDER.indexOf(b.department_code);
+      return (idxA !== -1 ? idxA : 999) - (idxB !== -1 ? idxB : 999);
+    });
 
     res.json({ success: true, data: presentationData });
   } catch (error) {
@@ -55,6 +77,13 @@ const getDepartmentStatus = async (req, res, next) => {
       departmentName: user.department_name,
       status: reportMap[user.department_code] || 'not_submitted'
     }));
+
+    // Sort by official 12-department sequence
+    statusData.sort((a, b) => {
+      const idxA = DEPARTMENT_ORDER.indexOf(a.departmentCode);
+      const idxB = DEPARTMENT_ORDER.indexOf(b.departmentCode);
+      return (idxA !== -1 ? idxA : 999) - (idxB !== -1 ? idxB : 999);
+    });
 
     res.json({ success: true, data: statusData });
   } catch (error) {

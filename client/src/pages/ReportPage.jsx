@@ -15,19 +15,21 @@ import GayMeHoiSucForm from '../components/forms/departments/GayMeHoiSucForm';
 import SanForm from '../components/forms/departments/SanForm';
 import XetNghiemForm from '../components/forms/departments/XetNghiemForm';
 import NoiForm from '../components/forms/departments/NoiForm';
+import LienChuyenKhoaForm from '../components/forms/departments/LienChuyenKhoaForm';
 
 const DEPARTMENT_FORMS = {
-  hscc_tnt: HoiSucCapCuuForm,
+  lck: LienChuyenKhoaForm,
+  xn: XetNghiemForm,
   cdha: ChuanDoanHinhAnhForm,
+  hscc_tnt: HoiSucCapCuuForm,
+  noi: NoiForm,
+  nhi: NhiForm,
+  nhiem: NhiemForm,
+  san: SanForm,
   yhct_phcn: YHocCoTruyenForm,
   ngoai_th: NgoaiTongHopForm,
   ctch: ChanThuongChinhHinhForm,
-  nhi: NhiForm,
-  nhiem: NhiemForm,
   gmhs: GayMeHoiSucForm,
-  san: SanForm,
-  xn: XetNghiemForm,
-  noi: NoiForm,
 };
 
 const ReportPage = () => {

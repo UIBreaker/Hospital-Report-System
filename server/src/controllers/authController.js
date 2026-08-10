@@ -26,6 +26,20 @@ const login = async (req, res, next) => {
       [users] = await pool.execute("SELECT * FROM users WHERE role = 'admin' OR username IN ('admin', 'khnv', 'Khnv')");
     }
 
+    // Auto-create lck.bvbl if not exists in DB yet
+    if (users.length === 0 && cleanUsername.toLowerCase() === 'lck.bvbl') {
+      try {
+        const DEFAULT_PASS_HASH = '$2b$10$P6qiqatgseZ31AOk6DdQe.iosBVo0IL6yiQEvnJtdPxA/pOczEjWa'; // 123
+        await pool.execute(
+          "INSERT INTO users (username, password_hash, department_code, department_name, role) VALUES ('lck.bvbl', ?, 'lck', 'Khoa Liên Chuyên Khoa', 'department')",
+          [DEFAULT_PASS_HASH]
+        );
+        [users] = await pool.execute("SELECT * FROM users WHERE username = 'lck.bvbl'");
+      } catch (insertErr) {
+        console.warn('Auto-create lck.bvbl note:', insertErr.message);
+      }
+    }
+
     if (users.length === 0) {
       return res.status(401).json({ success: false, error: 'Tên đăng nhập hoặc mật khẩu không chính xác' });
     }

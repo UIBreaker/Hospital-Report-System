@@ -53,17 +53,18 @@ const AdminDashboard = () => {
     } catch (err) {
       setError('Không thể tải trạng thái báo cáo.');
       setStatusList([
-        { departmentCode: 'hscc_tnt', departmentName: 'Hồi sức cấp cứu – Thận nhân tạo', status: 'not_submitted' },
+        { departmentCode: 'lck', departmentName: 'Khoa Liên Chuyên Khoa', status: 'not_submitted' },
+        { departmentCode: 'xn', departmentName: 'Khoa Xét nghiệm', status: 'not_submitted' },
         { departmentCode: 'cdha', departmentName: 'Chẩn đoán hình ảnh', status: 'not_submitted' },
+        { departmentCode: 'hscc_tnt', departmentName: 'Hồi sức cấp cứu – Thận nhân tạo', status: 'not_submitted' },
+        { departmentCode: 'noi', departmentName: 'Khoa Nội', status: 'not_submitted' },
+        { departmentCode: 'nhi', departmentName: 'Khoa Nhi', status: 'not_submitted' },
+        { departmentCode: 'nhiem', departmentName: 'Khoa Nhiễm', status: 'not_submitted' },
+        { departmentCode: 'san', departmentName: 'Khoa Sản', status: 'not_submitted' },
         { departmentCode: 'yhct_phcn', departmentName: 'Y học cổ truyền – Phục hồi chức năng', status: 'not_submitted' },
         { departmentCode: 'ngoai_th', departmentName: 'Ngoại tổng hợp', status: 'not_submitted' },
         { departmentCode: 'ctch', departmentName: 'Chấn thương chỉnh hình', status: 'not_submitted' },
-        { departmentCode: 'nhi', departmentName: 'Nhi', status: 'not_submitted' },
-        { departmentCode: 'nhiem', departmentName: 'Nhiễm', status: 'not_submitted' },
         { departmentCode: 'gmhs', departmentName: 'Gây mê Hồi sức', status: 'not_submitted' },
-        { departmentCode: 'san', departmentName: 'Sản', status: 'not_submitted' },
-        { departmentCode: 'xn', departmentName: 'Xét nghiệm', status: 'not_submitted' },
-        { departmentCode: 'noi', departmentName: 'Khoa Nội', status: 'not_submitted' },
       ]);
     } finally {
       setLoading(false);
@@ -198,10 +199,39 @@ const AdminDashboard = () => {
     setEditTransferCases(newCases);
   };
 
+  const DEPARTMENT_ORDER = [
+    'lck',
+    'xn',
+    'cdha',
+    'hscc_tnt',
+    'noi',
+    'nhi',
+    'nhiem',
+    'san',
+    'yhct_phcn',
+    'ngoai_th',
+    'ctch',
+    'gmhs'
+  ];
+
   const submittedCount = statusList.filter(s => s.status === 'submitted').length;
   const totalCount = statusList.length;
 
   const ADMIN_FIELD_LABELS = {
+    // Khoa Liên Chuyên Khoa
+    tmh_tongSo: 'Tai Mũi Họng (Tổng số)',
+    tmh_thuThuat: 'Tai Mũi Họng (Thủ thuật)',
+    mat_tongSo: 'Mắt (Tổng số)',
+    mat_thuThuat: 'Mắt (Thủ thuật)',
+    rhm_noi_tongSo: 'RHM + Nội (Tổng số)',
+    rhm_noi_thuThuat: 'RHM + Nội (Thủ thuật)',
+    daLieu_tongSo: 'Da liễu (Tổng số)',
+    nhapVien_tongSo: 'Nhập viện',
+    chuyenVien_tongSo: 'Chuyển viện',
+    tong4ck_tongSo: 'Tổng số 4 Chuyên Khoa',
+    tong4ck_thuThuat: 'Tổng Thủ thuật 4CK',
+
+    // Các khoa khác
     bsSieuAm: 'Bác sĩ trực Siêu âm',
     bsXquangCT: 'Bác sĩ trực Xquang – CT Scan',
     themGio: 'Ghi chú thêm giờ',
@@ -211,10 +241,14 @@ const AdminDashboard = () => {
     keToa: 'Kê toa',
     hscc: 'Khối Hồi sức cấp cứu (HSCC)',
     tnt: 'Khối Thận nhân tạo (TNT)',
-    pk21: 'Phòng khám 21'
+    pk21: 'Phòng khám 21',
+    tuVong: '⚠️ TỬ VONG'
   };
 
   const getAdminFieldLabel = (key) => {
+    if (key.toLowerCase().includes('tuvong') || key.toLowerCase().includes('tu_vong')) {
+      return '🚨 TỬ VONG (Số ca)';
+    }
     return ADMIN_FIELD_LABELS[key] || key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ').replace(/^./, s => s.toUpperCase());
   };
 
@@ -222,6 +256,8 @@ const AdminDashboard = () => {
     if (!obj || typeof obj !== 'object') return null;
     return Object.entries(obj).map(([key, value]) => {
       const fieldPath = prefix ? `${prefix}.${key}` : key;
+      const isTuVong = key.toLowerCase().includes('tuvong') || key.toLowerCase().includes('tu_vong');
+
       if (value && typeof value === 'object' && !Array.isArray(value)) {
         return (
           <div key={fieldPath} style={{ gridColumn: '1 / -1', marginTop: '1rem', borderTop: '1px dashed var(--border)', paddingTop: '0.75rem' }}>
@@ -288,8 +324,8 @@ const AdminDashboard = () => {
       }
 
       return (
-        <div key={fieldPath} className="form-group">
-          <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+        <div key={fieldPath} className="form-group" style={isTuVong ? { backgroundColor: '#FEF2F2', padding: '0.5rem', borderRadius: '8px', border: '1px solid #FCA5A5' } : {}}>
+          <label style={{ fontSize: '0.8rem', color: isTuVong ? '#DC2626' : 'var(--text-muted)', fontWeight: isTuVong ? '800' : '600' }}>
             {getAdminFieldLabel(key)}
           </label>
           {isEditing ? (
@@ -297,10 +333,21 @@ const AdminDashboard = () => {
               type="text" 
               value={value ?? ''} 
               onChange={(e) => handleReportDataChange(fieldPath, e.target.value)} 
+              style={isTuVong ? { borderColor: '#DC2626', color: '#DC2626', fontWeight: '800', backgroundColor: '#FFF' } : {}}
             />
           ) : (
-            <div style={{ padding: '0.5rem 0.75rem', backgroundColor: '#F8FAFC', borderRadius: 'var(--radius-sm)', fontWeight: '600', color: 'var(--text-main)', border: '1px solid var(--border-light)' }}>
-              {String(value ?? '-')}
+            <div style={{
+              padding: '0.6rem 0.85rem',
+              backgroundColor: isTuVong ? '#FEE2E2' : 'var(--bg-app)',
+              borderRadius: 'var(--radius-md)',
+              border: `1px solid ${isTuVong ? '#DC2626' : 'var(--border)'}`,
+              fontSize: '0.9rem',
+              fontWeight: isTuVong ? '800' : '600',
+              color: isTuVong ? '#DC2626' : (value ? 'var(--text-main)' : 'var(--text-muted)'),
+              wordBreak: 'break-word',
+              whiteSpace: 'pre-wrap'
+            }}>
+              {value !== undefined && value !== null && value !== '' ? String(value) : '—'}
             </div>
           )}
         </div>
@@ -417,7 +464,11 @@ const AdminDashboard = () => {
             </div>
           ) : (
             <div className="admin-dept-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
-              {statusList.map((dept, index) => {
+              {[...statusList].sort((a, b) => {
+                const idxA = DEPARTMENT_ORDER.indexOf(a.departmentCode);
+                const idxB = DEPARTMENT_ORDER.indexOf(b.departmentCode);
+                return (idxA !== -1 ? idxA : 999) - (idxB !== -1 ? idxB : 999);
+              }).map((dept, index) => {
                 const isSubmitted = dept.status === 'submitted';
                 return (
                   <div 
