@@ -38,6 +38,173 @@ import reportService from '../services/reportService';
 import staffService from '../services/staffService';
 import MedicalPrintView from '../components/common/MedicalPrintView';
 
+import {
+  HoiSucCapCuuForm,
+  ChuanDoanHinhAnhForm,
+  YHocCoTruyenForm,
+  NgoaiTongHopForm,
+  ChanThuongChinhHinhForm,
+  NhiForm,
+  NhiemForm,
+  GayMeHoiSucForm,
+  SanForm,
+  XetNghiemForm,
+  NoiForm,
+  LienChuyenKhoaForm
+} from '../components/forms/departments';
+
+const DEPARTMENT_FORMS = {
+  lck: LienChuyenKhoaForm,
+  xn: XetNghiemForm,
+  cdha: ChuanDoanHinhAnhForm,
+  hscc_tnt: HoiSucCapCuuForm,
+  noi: NoiForm,
+  nhi: NhiForm,
+  nhiem: NhiemForm,
+  san: SanForm,
+  yhct_phcn: YHocCoTruyenForm,
+  ngoai_th: NgoaiTongHopForm,
+  ctch: ChanThuongChinhHinhForm,
+  gmhs: GayMeHoiSucForm,
+};
+
+const FIELD_LABELS = {
+  tongSoKham: 'Tổng số khám',
+  benhCu: 'Bệnh cũ',
+  benhMoi: 'Bệnh mới',
+  xuatVien: 'Xuất viện',
+  chuyenVien: 'Chuyển viện',
+  chuyenKhoa: 'Chuyển khoa',
+  hienCon: 'Hiện còn',
+  tuVong: 'Tử vong',
+  nangXinVe: 'Nặng xin về',
+  thoMay: 'Thở máy',
+  cpap: 'Thở CPAP',
+  oxy: 'Thở Oxy',
+  phauThuat: 'Phẫu thuật',
+  thuThuat: 'Thủ thuật',
+  sinhThuong: 'Sinh thường',
+  moDe: 'Mổ đẻ',
+  capCuu: 'Cấp cứu',
+  chanDoan: 'Chẩn đoán',
+  ghiChu: 'Ghi chú',
+  noiDung: 'Nội dung',
+  dienBien: 'Diễn biến',
+  soCaChayThan: 'Số ca chạy thận',
+  soCaLocMau: 'Số ca lọc máu',
+  bsTrucTNT: 'BS trực TNT',
+  tongSoSieuAm: 'Tổng số siêu âm',
+  tongSoXquang: 'Tổng số X-quang',
+  tongSoCT: 'Tổng số CT Scanner',
+  tongSoXetNghiem: 'Tổng số xét nghiệm',
+  huyetHoc: 'Huyết học',
+  sinhHoa: 'Sinh hóa',
+  viSinh: 'Vi sinh',
+  dongMau: 'Đông máu',
+  nuocTieu: 'Nước tiểu',
+  khamNgoaiTru: 'Khám ngoại trú',
+  dieuTriNoiTru: 'Điều trị nội trú',
+  chamCuu: 'Châm cứu',
+  xoaBop: 'Xoa bóp / Bấm huyệt',
+  vatLyTriLieu: 'Vật lý trị liệu',
+  soCaMo: 'Số ca mổ',
+  soCaGayMe: 'Số ca gây mê',
+  soCaTienMe: 'Số ca tiền mê',
+  soCaHoiTinh: 'Số ca hồi tỉnh'
+};
+
+const SECTION_LABELS = {
+  hscc: 'Khối Hồi Sức Cấp Cứu (HSCC)',
+  tnt: 'Khối Thận Nhân Tạo (TNT)',
+  pk21: 'Phòng Khám 21 (Cấp Cứu Ngoại Viện)',
+  mat: 'Chuyên Khoa Mắt',
+  tmh: 'Chuyên Khoa Tai Mũi Họng',
+  rhm: 'Chuyên Khoa Răng Hàm Mặt',
+  khuA: 'Khu A',
+  khuB: 'Khu B',
+  noiA: 'Khu Nội Tổng Hợp',
+  noiB: 'Khu Nội Tim Mạch'
+};
+
+// Component hiển thị dữ liệu chuyên môn dạng cây trực quan, không bị mất dữ liệu lồng nhau
+const ReportDataViewer = ({ data }) => {
+  if (!data || Object.keys(data).length === 0) {
+    return (
+      <div style={{ padding: '1rem', backgroundColor: '#F8FAFC', borderRadius: '8px', border: '1px dashed #CBD5E1', color: '#64748B', fontStyle: 'italic', textAlign: 'center' }}>
+        Chưa có số liệu chuyên môn được nhập từ khoa phòng.
+      </div>
+    );
+  }
+
+  const flatFields = [];
+  const nestedSections = [];
+
+  Object.entries(data).forEach(([key, val]) => {
+    if (val === null || val === undefined || val === '') return;
+    if (typeof val === 'object' && !Array.isArray(val)) {
+      nestedSections.push({ key, val });
+    } else {
+      flatFields.push({ key, val });
+    }
+  });
+
+  if (flatFields.length === 0 && nestedSections.length === 0) {
+    return (
+      <div style={{ padding: '1rem', backgroundColor: '#F8FAFC', borderRadius: '8px', border: '1px dashed #CBD5E1', color: '#64748B', fontStyle: 'italic', textAlign: 'center' }}>
+        Chưa có số liệu chuyên môn được nhập từ khoa phòng.
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      {/* Các trường số liệu phẳng */}
+      {flatFields.length > 0 && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: '0.75rem' }}>
+          {flatFields.map(({ key, val }) => (
+            <div key={key} style={{ padding: '0.65rem 0.85rem', backgroundColor: '#F8FAFC', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+              <span style={{ fontSize: '0.75rem', color: '#64748B', display: 'block', fontWeight: '600' }}>
+                {FIELD_LABELS[key] || key}
+              </span>
+              <span style={{ fontSize: '1.15rem', fontWeight: '800', color: '#0F2C59' }}>
+                {String(val)}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Các khối chuyên khoa lồng nhau */}
+      {nestedSections.map(({ key, val }) => {
+        const title = SECTION_LABELS[key] || `Khối / Phần: ${key.toUpperCase()}`;
+        const subFields = Object.entries(val).filter(([_, v]) => v !== null && v !== undefined && v !== '');
+
+        if (subFields.length === 0) return null;
+
+        return (
+          <div key={key} style={{ padding: '0.85rem 1rem', backgroundColor: '#F0F9FF', borderRadius: '8px', border: '1px solid #BAE6FD' }}>
+            <h5 style={{ margin: '0 0 0.65rem 0', color: '#0369A1', fontWeight: '700', fontSize: '0.875rem', textTransform: 'uppercase' }}>
+              {title}
+            </h5>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '0.6rem' }}>
+              {subFields.map(([subKey, subVal]) => (
+                <div key={subKey} style={{ padding: '0.5rem 0.75rem', backgroundColor: '#FFFFFF', borderRadius: '6px', border: '1px solid #E0F2FE' }}>
+                  <span style={{ fontSize: '0.72rem', color: '#64748B', display: 'block', fontWeight: '600' }}>
+                    {FIELD_LABELS[subKey] || subKey}
+                  </span>
+                  <span style={{ fontSize: '1.05rem', fontWeight: '800', color: '#0284C7' }}>
+                    {String(subVal)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 const DEPARTMENT_MAP = {
   lck: 'Khoa Liên Chuyên Khoa',
   xn: 'Khoa Xét nghiệm',
@@ -326,6 +493,7 @@ const AdminDashboard = () => {
           try { overtime = JSON.parse(overtime); } catch (e) { overtime = []; }
         }
         setEditHeader({
+          reportDate: report.report_date ? report.report_date.split('T')[0] : date,
           doctorName: report.doctor_name || '',
           nurseName: report.nurse_name || '',
           overtimeStaff: Array.isArray(overtime) ? overtime : [],
@@ -339,7 +507,7 @@ const AdminDashboard = () => {
         setEditDeathCases(report.deathCases || []);
       } else {
         setHasReport(false);
-        setEditHeader({ doctorName: '', nurseName: '', overtimeStaff: [], room: '', shiftTime: '' });
+        setEditHeader({ reportDate: date, doctorName: '', nurseName: '', overtimeStaff: [], room: '', shiftTime: '' });
         setEditReportData({});
         setEditTransferCases([]);
         setEditSurgeryCases([]);
@@ -356,9 +524,10 @@ const AdminDashboard = () => {
     setSaving(true);
     setSaveSuccess('');
     try {
+      const targetDate = editHeader.reportDate || date;
       await reportService.createOrUpdateReport({
         departmentCode: modalDept.departmentCode,
-        reportDate: date,
+        reportDate: targetDate,
         doctorName: editHeader.doctorName,
         nurseName: editHeader.nurseName,
         overtimeStaff: editHeader.overtimeStaff,
@@ -369,7 +538,17 @@ const AdminDashboard = () => {
         surgeryCases: editSurgeryCases,
         deathCases: editDeathCases
       });
-      setSaveSuccess('Đã lưu thay đổi báo cáo thành công!');
+
+      // Nếu Admin đổi ngày báo cáo so với ngày đang xem, xóa bản ghi ở ngày cũ để tránh trùng lặp
+      if (targetDate !== date && hasReport) {
+        try {
+          await reportService.deleteReport(modalDept.departmentCode, date);
+        } catch (delErr) {
+          console.warn('Không thể xóa bản ghi cũ khi đổi ngày:', delErr);
+        }
+      }
+
+      setSaveSuccess(`Đã lưu thay đổi báo cáo thành công (Ngày báo cáo: ${targetDate})!`);
       setIsEditing(false);
       setHasReport(true);
       fetchStatus();
@@ -1276,7 +1455,7 @@ const AdminDashboard = () => {
                     {modalDept.departmentName}
                   </h3>
                   <p style={{ fontSize: '0.8rem', color: '#DBEAFE', margin: '0.2rem 0 0 0' }}>
-                    Báo cáo giao ban ngày {date}
+                    Báo cáo giao ban ngày: <strong>{editHeader.reportDate || date}</strong>
                   </p>
                 </div>
               </div>
@@ -1310,6 +1489,22 @@ const AdminDashboard = () => {
                     </h4>
                     {isEditing ? (
                       <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        {/* Admin chỉnh ngày báo cáo */}
+                        <div className="form-group full-width" style={{ gridColumn: '1 / -1', backgroundColor: '#EFF6FF', padding: '0.85rem', borderRadius: '8px', border: '1px solid #BFDBFE' }}>
+                          <label style={{ color: '#1E40AF', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.35rem' }}>
+                            <FaCalendarAlt /> Ngày Báo Cáo Giao Ban (Admin có thể sửa ngày)
+                          </label>
+                          <input 
+                            type="date" 
+                            value={editHeader.reportDate || date} 
+                            onChange={(e) => setEditHeader({...editHeader, reportDate: e.target.value})} 
+                            style={{ fontWeight: '700', color: '#1E40AF', width: '100%' }}
+                          />
+                          <small style={{ fontSize: '0.75rem', color: '#3B82F6', marginTop: '4px', display: 'block' }}>
+                            💡 Gợi ý: Nếu khoa nộp nhầm ngày, Admin chọn lại ngày chuẩn tại đây để tự động dời báo cáo.
+                          </small>
+                        </div>
+
                         <div className="form-group">
                           <label>Bác sĩ trực chính</label>
                           <input 
@@ -1319,11 +1514,12 @@ const AdminDashboard = () => {
                           />
                         </div>
                         <div className="form-group">
-                          <label>Điều dưỡng trực chính</label>
+                          <label>Điều dưỡng trực ca</label>
                           <input 
                             type="text" 
                             value={editHeader.nurseName} 
                             onChange={(e) => setEditHeader({...editHeader, nurseName: e.target.value})} 
+                            placeholder="VD: ĐD. An, ĐD. Thanh"
                           />
                         </div>
                         <div className="form-group">
@@ -1345,8 +1541,9 @@ const AdminDashboard = () => {
                       </div>
                     ) : (
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', backgroundColor: '#F8FAFC', padding: '1rem', borderRadius: 'var(--radius-md)' }}>
-                        <div><strong>Bác sĩ trực chính:</strong> <p style={{ color: 'var(--brand-blue)', fontWeight: '600', margin: '0.25rem 0 0 0' }}>{editHeader.doctorName || '—'}</p></div>
-                        <div><strong>Điều dưỡng trực:</strong> <p style={{ color: 'var(--brand-blue)', fontWeight: '600', margin: '0.25rem 0 0 0' }}>{editHeader.nurseName || '—'}</p></div>
+                        <div><strong>📅 Ngày báo cáo:</strong> <p style={{ color: 'var(--brand-blue)', fontWeight: '700', margin: '0.25rem 0 0 0' }}>{editHeader.reportDate || date}</p></div>
+                        <div><strong>👨‍⚕️ Bác sĩ trực chính:</strong> <p style={{ color: 'var(--brand-blue)', fontWeight: '600', margin: '0.25rem 0 0 0' }}>{editHeader.doctorName || '—'}</p></div>
+                        <div><strong>👩‍⚕️ Điều dưỡng trực:</strong> <p style={{ color: 'var(--brand-blue)', fontWeight: '600', margin: '0.25rem 0 0 0' }}>{editHeader.nurseName || '—'}</p></div>
                         <div><strong>Phòng / Buồng:</strong> <p style={{ margin: '0.25rem 0 0 0' }}>{editHeader.room || '—'}</p></div>
                         <div><strong>Thời gian trực:</strong> <p style={{ margin: '0.25rem 0 0 0' }}>{editHeader.shiftTime || '—'}</p></div>
                       </div>
@@ -1371,37 +1568,43 @@ const AdminDashboard = () => {
                       📊 Dữ Liệu Báo Cáo Chuyên Môn
                     </h4>
                     {isEditing ? (
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.75rem' }}>
-                        {Object.entries(editReportData).map(([key, val]) => {
-                          if (typeof val === 'object' && val !== null) return null;
-                          return (
-                            <div key={key} className="form-group">
-                              <label style={{ fontSize: '0.8rem' }}>{key}</label>
-                              <input 
-                                type="text" 
-                                value={val === null || val === undefined ? '' : String(val)} 
-                                onChange={(e) => handleDataChange(key, e.target.value)} 
-                              />
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.75rem' }}>
-                        {Object.entries(editReportData).length === 0 ? (
-                          <p style={{ color: 'var(--text-light)', fontStyle: 'italic' }}>Chưa có dữ liệu chuyên môn.</p>
-                        ) : (
-                          Object.entries(editReportData).map(([key, val]) => {
-                            if (typeof val === 'object' && val !== null) return null;
+                      <div>
+                        {(() => {
+                          const DeptFormComponent = modalDept ? DEPARTMENT_FORMS[modalDept.departmentCode] : null;
+                          if (DeptFormComponent) {
                             return (
-                              <div key={key} style={{ padding: '0.6rem 0.8rem', backgroundColor: '#F8FAFC', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
-                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block' }}>{key}</span>
-                                <span style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--primary)' }}>{String(val ?? '—')}</span>
+                              <div style={{ backgroundColor: '#FFFFFF', padding: '1rem', borderRadius: '8px', border: '1px solid #CBD5E1' }}>
+                                <DeptFormComponent
+                                  doctorName={editHeader.doctorName}
+                                  formData={editReportData}
+                                  setFormData={setEditReportData}
+                                  transferCases={editTransferCases}
+                                  setTransferCases={setEditTransferCases}
+                                />
                               </div>
                             );
-                          })
-                        )}
+                          }
+                          return (
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.75rem' }}>
+                              {Object.entries(editReportData).map(([key, val]) => {
+                                if (typeof val === 'object' && val !== null) return null;
+                                return (
+                                  <div key={key} className="form-group">
+                                    <label style={{ fontSize: '0.8rem' }}>{FIELD_LABELS[key] || key}</label>
+                                    <input 
+                                      type="text" 
+                                      value={val === null || val === undefined ? '' : String(val)} 
+                                      onChange={(e) => handleDataChange(key, e.target.value)} 
+                                    />
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          );
+                        })()}
                       </div>
+                    ) : (
+                      <ReportDataViewer data={editReportData} />
                     )}
                   </div>
 
