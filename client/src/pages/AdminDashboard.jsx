@@ -5,6 +5,7 @@ import {
   FaCalendarAlt, 
   FaSignOutAlt, 
   FaTv, 
+  FaPrint,
   FaCheck, 
   FaTimes, 
   FaSpinner, 
@@ -29,10 +30,13 @@ import {
   FaFilter, 
   FaIdCard, 
   FaVenusMars, 
-  FaClock 
+  FaClock,
+  FaHeartbeat,
+  FaProcedures
 } from 'react-icons/fa';
 import reportService from '../services/reportService';
 import staffService from '../services/staffService';
+import MedicalPrintView from '../components/common/MedicalPrintView';
 
 const DEPARTMENT_MAP = {
   lck: 'Khoa Liên Chuyên Khoa',
@@ -136,7 +140,14 @@ const AdminDashboard = () => {
   });
   const [editReportData, setEditReportData] = useState({});
   const [editTransferCases, setEditTransferCases] = useState([]);
+  const [editSurgeryCases, setEditSurgeryCases] = useState([]);
+  const [editDeathCases, setEditDeathCases] = useState([]);
   const [hasReport, setHasReport] = useState(false);
+
+  // Print Modal State
+  const [showPrintModal, setShowPrintModal] = useState(false);
+  const [printReports, setPrintReports] = useState([]);
+  const [loadingPrint, setLoadingPrint] = useState(false);
 
   // -------------------------------------------------------------------------
   // FETCH FUNCTIONS
@@ -283,6 +294,21 @@ const AdminDashboard = () => {
     navigate(`/presentation/${date}`);
   };
 
+  const handleOpenPrint = async () => {
+    setLoadingPrint(true);
+    try {
+      const res = await reportService.getPresentationData(date);
+      if (res.success) {
+        setPrintReports(res.data || []);
+        setShowPrintModal(true);
+      }
+    } catch (err) {
+      alert('Không thể tải dữ liệu in báo cáo: ' + (err.response?.data?.error || err.message));
+    } finally {
+      setLoadingPrint(false);
+    }
+  };
+
   const handleOpenDetailModal = async (dept) => {
     setModalDept(dept);
     setModalOpen(true);
@@ -309,11 +335,15 @@ const AdminDashboard = () => {
         const parsedData = typeof report.report_data === 'string' ? JSON.parse(report.report_data) : (report.report_data || {});
         setEditReportData(parsedData);
         setEditTransferCases(report.transferCases || []);
+        setEditSurgeryCases(report.surgeryCases || []);
+        setEditDeathCases(report.deathCases || []);
       } else {
         setHasReport(false);
         setEditHeader({ doctorName: '', nurseName: '', overtimeStaff: [], room: '', shiftTime: '' });
         setEditReportData({});
         setEditTransferCases([]);
+        setEditSurgeryCases([]);
+        setEditDeathCases([]);
       }
     } catch (err) {
       console.error('Lỗi khi tải chi tiết báo cáo:', err);
@@ -335,7 +365,9 @@ const AdminDashboard = () => {
         room: editHeader.room,
         shiftTime: editHeader.shiftTime,
         reportData: editReportData,
-        transferCases: editTransferCases
+        transferCases: editTransferCases,
+        surgeryCases: editSurgeryCases,
+        deathCases: editDeathCases
       });
       setSaveSuccess('Đã lưu thay đổi báo cáo thành công!');
       setIsEditing(false);
@@ -366,6 +398,7 @@ const AdminDashboard = () => {
     setEditReportData(prev => ({ ...prev, [key]: value }));
   };
 
+  // Transfer cases helpers
   const handleTransferCaseChange = (idx, field, value) => {
     const updated = [...editTransferCases];
     updated[idx][field] = value;
@@ -391,6 +424,64 @@ const AdminDashboard = () => {
 
   const handleRemoveTransferCase = (idx) => {
     setEditTransferCases(editTransferCases.filter((_, i) => i !== idx));
+  };
+
+  // Surgery cases helpers
+  const handleSurgeryCaseChange = (idx, field, value) => {
+    const updated = [...editSurgeryCases];
+    updated[idx][field] = value;
+    setEditSurgeryCases(updated);
+  };
+
+  const handleAddSurgeryCase = () => {
+    setEditSurgeryCases([
+      ...editSurgeryCases,
+      {
+        patientName: '',
+        birthYear: '',
+        address: '',
+        admissionTime: '',
+        reason: '',
+        preoperativeDiagnosis: '',
+        consultationOrder: '',
+        postoperativeDiagnosis: '',
+        currentStatus: ''
+      }
+    ]);
+  };
+
+  const handleRemoveSurgeryCase = (idx) => {
+    setEditSurgeryCases(editSurgeryCases.filter((_, i) => i !== idx));
+  };
+
+  // Death cases helpers
+  const handleDeathCaseChange = (idx, field, value) => {
+    const updated = [...editDeathCases];
+    updated[idx][field] = value;
+    setEditDeathCases(updated);
+  };
+
+  const handleAddDeathCase = () => {
+    setEditDeathCases([
+      ...editDeathCases,
+      {
+        patientName: '',
+        age: '',
+        address: '',
+        admissionTime: '',
+        reason: '',
+        admissionStatus: '',
+        medicalHistory: '',
+        clinicalTests: '',
+        diagnosis: '',
+        emergencyTreatment: '',
+        finalOutcome: ''
+      }
+    ]);
+  };
+
+  const handleRemoveDeathCase = (idx) => {
+    setEditDeathCases(editDeathCases.filter((_, i) => i !== idx));
   };
 
   // -------------------------------------------------------------------------
@@ -433,9 +524,27 @@ const AdminDashboard = () => {
           )}
 
           {activeTab === 'reports' && (
-            <button className="btn btn-primary" onClick={handlePresentation} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <FaTv /> Trình Chiếu Giao Ban
-            </button>
+            <>
+              <button 
+                className="btn btn-secondary" 
+                onClick={handleOpenPrint} 
+                disabled={loadingPrint} 
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.5rem', 
+                  backgroundColor: '#059669', 
+                  color: '#FFFFFF', 
+                  borderColor: '#047857' 
+                }}
+              >
+                <FaPrint /> {loadingPrint ? <><FaSpinner className="spinner" /> Đang nạp...</> : 'Xuất / In Báo Cáo Y Tế'}
+              </button>
+
+              <button className="btn btn-primary" onClick={handlePresentation} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <FaTv /> Trình Chiếu Giao Ban
+              </button>
+            </>
           )}
 
           <button onClick={logout} className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -1368,6 +1477,165 @@ const AdminDashboard = () => {
                       ))
                     )}
                   </div>
+
+                  {/* Section 4: Bệnh phẫu thuật (Bệnh mổ) */}
+                  <div className="sub-section" style={{ marginTop: '1.5rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                      <h4 style={{ fontSize: '1rem', color: '#0284C7', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
+                        <FaProcedures /> Bệnh Phẫu Thuật (Mổ) ({editSurgeryCases.length} ca)
+                      </h4>
+                      {isEditing && (
+                        <button type="button" className="btn btn-secondary btn-sm" onClick={handleAddSurgeryCase} style={{ backgroundColor: '#E0F2FE', color: '#0369A1', borderColor: '#BAE6FD' }}>
+                          <FaPlus /> Thêm ca mổ
+                        </button>
+                      )}
+                    </div>
+
+                    {editSurgeryCases.length === 0 ? (
+                      <p style={{ color: 'var(--text-light)', fontStyle: 'italic' }}>Không có ca phẫu thuật.</p>
+                    ) : (
+                      editSurgeryCases.map((sc, idx) => (
+                        <div key={idx} className="sub-section" style={{ marginBottom: '1rem', borderLeft: '3px solid #0284C7' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                            <h5 style={{ color: '#0369A1', fontWeight: '700', margin: 0 }}>
+                              Ca Mổ #{idx + 1} {sc.patient_name || sc.patientName ? `— ${sc.patient_name || sc.patientName}` : ''}
+                            </h5>
+                            {isEditing && (
+                              <button type="button" className="btn btn-danger btn-sm" onClick={() => handleRemoveSurgeryCase(idx)}>
+                                <FaTrash /> Xóa
+                              </button>
+                            )}
+                          </div>
+                          {isEditing ? (
+                            <div className="form-grid">
+                              <div className="form-group">
+                                <label>Họ tên</label>
+                                <input type="text" value={sc.patientName || sc.patient_name || ''} onChange={(e) => handleSurgeryCaseChange(idx, 'patientName', e.target.value)} />
+                              </div>
+                              <div className="form-group">
+                                <label>Năm sinh / Tuổi</label>
+                                <input type="text" value={sc.birthYear || sc.birth_year || sc.age || ''} onChange={(e) => handleSurgeryCaseChange(idx, 'birthYear', e.target.value)} />
+                              </div>
+                              <div className="form-group">
+                                <label>Giờ vào viện</label>
+                                <input type="text" value={sc.admissionTime || sc.admission_time || ''} onChange={(e) => handleSurgeryCaseChange(idx, 'admissionTime', e.target.value)} />
+                              </div>
+                              <div className="form-group full-width">
+                                <label>Địa chỉ</label>
+                                <input type="text" value={sc.address || ''} onChange={(e) => handleSurgeryCaseChange(idx, 'address', e.target.value)} />
+                              </div>
+                              <div className="form-group full-width">
+                                <label>Chẩn đoán trước mổ</label>
+                                <input type="text" value={sc.preoperativeDiagnosis || sc.preoperative_diagnosis || ''} onChange={(e) => handleSurgeryCaseChange(idx, 'preoperativeDiagnosis', e.target.value)} />
+                              </div>
+                              <div className="form-group full-width">
+                                <label>Lệnh mổ / Hội chẩn</label>
+                                <input type="text" value={sc.consultationOrder || sc.consultation_order || ''} onChange={(e) => handleSurgeryCaseChange(idx, 'consultationOrder', e.target.value)} />
+                              </div>
+                              <div className="form-group full-width">
+                                <label>Chẩn đoán sau mổ</label>
+                                <input type="text" value={sc.postoperativeDiagnosis || sc.postoperative_diagnosis || ''} onChange={(e) => handleSurgeryCaseChange(idx, 'postoperativeDiagnosis', e.target.value)} />
+                              </div>
+                              <div className="form-group full-width">
+                                <label>Tình trạng hiện tại</label>
+                                <input type="text" value={sc.currentStatus || sc.current_status || ''} onChange={(e) => handleSurgeryCaseChange(idx, 'currentStatus', e.target.value)} />
+                              </div>
+                            </div>
+                          ) : (
+                            <div style={{ fontSize: '0.875rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                              <div><strong>Bệnh nhân:</strong> {sc.patient_name || sc.patientName || '—'} ({sc.birth_year || sc.birthYear || sc.age || '—'})</div>
+                              <div><strong>Giờ vào:</strong> {sc.admission_time || sc.admissionTime || '—'}</div>
+                              <div><strong>CĐ trước mổ:</strong> {sc.preoperative_diagnosis || sc.preoperativeDiagnosis || '—'}</div>
+                              <div><strong>Lệnh mổ:</strong> {sc.consultation_order || sc.consultationOrder || '—'}</div>
+                              <div><strong>CĐ sau mổ:</strong> {sc.postoperative_diagnosis || sc.postoperativeDiagnosis || '—'}</div>
+                              <div><strong>Hiện tại:</strong> {sc.current_status || sc.currentStatus || '—'}</div>
+                            </div>
+                          )}
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Section 5: Bệnh tử vong */}
+                  <div className="sub-section" style={{ marginTop: '1.5rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                      <h4 style={{ fontSize: '1rem', color: '#DC2626', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
+                        <FaHeartbeat /> Bệnh Nhân Tử Vong ({editDeathCases.length} ca)
+                      </h4>
+                      {isEditing && (
+                        <button type="button" className="btn btn-danger btn-sm" onClick={handleAddDeathCase} style={{ backgroundColor: '#DC2626' }}>
+                          <FaPlus /> Thêm ca tử vong
+                        </button>
+                      )}
+                    </div>
+
+                    {editDeathCases.length === 0 ? (
+                      <p style={{ color: 'var(--text-light)', fontStyle: 'italic' }}>Không có ca tử vong.</p>
+                    ) : (
+                      editDeathCases.map((dc, idx) => (
+                        <div key={idx} className="sub-section" style={{ marginBottom: '1rem', borderLeft: '3px solid #DC2626', backgroundColor: '#FEF2F2' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                            <h5 style={{ color: '#991B1B', fontWeight: '700', margin: 0 }}>
+                              Hồ Sơ Tử Vong #{idx + 1} {dc.patient_name || dc.patientName ? `— ${dc.patient_name || dc.patientName}` : ''}
+                            </h5>
+                            {isEditing && (
+                              <button type="button" className="btn btn-danger btn-sm" onClick={() => handleRemoveDeathCase(idx)}>
+                                <FaTrash /> Xóa
+                              </button>
+                            )}
+                          </div>
+                          {isEditing ? (
+                            <div className="form-grid">
+                              <div className="form-group">
+                                <label>Họ tên</label>
+                                <input type="text" value={dc.patientName || dc.patient_name || ''} onChange={(e) => handleDeathCaseChange(idx, 'patientName', e.target.value)} />
+                              </div>
+                              <div className="form-group">
+                                <label>Tuổi</label>
+                                <input type="text" value={dc.age || ''} onChange={(e) => handleDeathCaseChange(idx, 'age', e.target.value)} />
+                              </div>
+                              <div className="form-group">
+                                <label>Giờ vào viện</label>
+                                <input type="text" value={dc.admissionTime || dc.admission_time || ''} onChange={(e) => handleDeathCaseChange(idx, 'admissionTime', e.target.value)} />
+                              </div>
+                              <div className="form-group full-width">
+                                <label>Tình trạng lúc vào khoa</label>
+                                <textarea rows={2} value={dc.admissionStatus || dc.admission_status || ''} onChange={(e) => handleDeathCaseChange(idx, 'admissionStatus', e.target.value)} />
+                              </div>
+                              <div className="form-group full-width">
+                                <label>Tiền sử bệnh</label>
+                                <textarea rows={2} value={dc.medicalHistory || dc.medical_history || ''} onChange={(e) => handleDeathCaseChange(idx, 'medicalHistory', e.target.value)} />
+                              </div>
+                              <div className="form-group full-width">
+                                <label>Cận lâm sàng / ECG</label>
+                                <textarea rows={2} value={dc.clinicalTests || dc.clinical_tests || ''} onChange={(e) => handleDeathCaseChange(idx, 'clinicalTests', e.target.value)} />
+                              </div>
+                              <div className="form-group full-width">
+                                <label>Chẩn đoán</label>
+                                <input type="text" value={dc.diagnosis || ''} onChange={(e) => handleDeathCaseChange(idx, 'diagnosis', e.target.value)} />
+                              </div>
+                              <div className="form-group full-width">
+                                <label>Xử trí cấp cứu</label>
+                                <textarea rows={2} value={dc.emergencyTreatment || dc.emergency_treatment || ''} onChange={(e) => handleDeathCaseChange(idx, 'emergencyTreatment', e.target.value)} />
+                              </div>
+                              <div className="form-group full-width">
+                                <label>Kết quả & Hướng xử lý</label>
+                                <textarea rows={2} value={dc.finalOutcome || dc.final_outcome || ''} onChange={(e) => handleDeathCaseChange(idx, 'finalOutcome', e.target.value)} />
+                              </div>
+                            </div>
+                          ) : (
+                            <div style={{ fontSize: '0.875rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                              <div><strong>Bệnh nhân:</strong> {dc.patient_name || dc.patientName || '—'} ({dc.age || '—'} tuổi)</div>
+                              <div><strong>Giờ vào:</strong> {dc.admission_time || dc.admissionTime || '—'} | <strong>Lý do:</strong> {dc.reason || '—'}</div>
+                              <div><strong>Chẩn đoán:</strong> <span style={{ color: '#DC2626', fontWeight: 'bold' }}>{dc.diagnosis || '—'}</span></div>
+                              <div><strong>Xử trí:</strong> {dc.emergency_treatment || dc.emergencyTreatment || '—'}</div>
+                              <div><strong>Kết quả:</strong> {dc.final_outcome || dc.finalOutcome || '—'}</div>
+                            </div>
+                          )}
+                        </div>
+                      ))
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -1435,6 +1703,15 @@ const AdminDashboard = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Medical Print Report Modal View */}
+      {showPrintModal && (
+        <MedicalPrintView
+          date={date}
+          reports={printReports}
+          onClose={() => setShowPrintModal(false)}
+        />
       )}
     </div>
   );

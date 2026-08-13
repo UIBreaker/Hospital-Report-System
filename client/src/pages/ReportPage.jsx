@@ -29,6 +29,8 @@ import SanForm from '../components/forms/departments/SanForm';
 import XetNghiemForm from '../components/forms/departments/XetNghiemForm';
 import NoiForm from '../components/forms/departments/NoiForm';
 import LienChuyenKhoaForm from '../components/forms/departments/LienChuyenKhoaForm';
+import SurgeryCaseForm from '../components/forms/SurgeryCaseForm';
+import DeathCaseForm from '../components/forms/DeathCaseForm';
 
 const DEPARTMENT_FORMS = {
   lck: LienChuyenKhoaForm,
@@ -79,6 +81,8 @@ const ReportPage = () => {
 
   const [formData, setFormData] = useState({});
   const [transferCases, setTransferCases] = useState([]);
+  const [surgeryCases, setSurgeryCases] = useState([]);
+  const [deathCases, setDeathCases] = useState([]);
 
   // Fetch danh sách nhân sự của khoa khi đăng nhập
   useEffect(() => {
@@ -166,6 +170,8 @@ const ReportPage = () => {
         shiftTime: headerData.shiftTime,
         reportData: formData,
         transferCases: transferCases,
+        surgeryCases: surgeryCases,
+        deathCases: deathCases
       });
       setSubmitted(true);
       setShowConfirm(false);
@@ -195,6 +201,8 @@ const ReportPage = () => {
                 setStep(1); 
                 setFormData({}); 
                 setTransferCases([]); 
+                setSurgeryCases([]);
+                setDeathCases([]);
                 setHeaderData({
                   ...headerData, 
                   selectedDoctor: '', 
@@ -513,6 +521,12 @@ const ReportPage = () => {
                 Không tìm thấy biểu mẫu cho khoa: {user?.departmentCode}
               </div>
             )}
+
+            {/* Module Bệnh Phẫu Thuật (Bệnh Mổ) */}
+            <SurgeryCaseForm surgeryCases={surgeryCases} setSurgeryCases={setSurgeryCases} />
+
+            {/* Module Bệnh Tử Vong */}
+            <DeathCaseForm deathCases={deathCases} setDeathCases={setDeathCases} />
           </div>
 
           {/* Submit error */}

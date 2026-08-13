@@ -53,3 +53,6 @@ db-cleaner.js
 query.js
 init-staff.js
 server/src/config/init-staff.js
+import-hospital-staff.js
+init-modules.js
+verify-modules.js

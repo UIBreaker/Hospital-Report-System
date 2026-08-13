@@ -34,6 +34,14 @@ const getPresentationData = async (req, res, next) => {
         'SELECT * FROM transfer_cases WHERE report_id = ?',
         [report.id]
       );
+      const [surgeryCases] = await pool.execute(
+        'SELECT * FROM surgery_cases WHERE report_id = ?',
+        [report.id]
+      );
+      const [deathCases] = await pool.execute(
+        'SELECT * FROM death_cases WHERE report_id = ?',
+        [report.id]
+      );
 
       let overtimeStaff = report.overtime_staff;
       if (typeof overtimeStaff === 'string') {
@@ -43,7 +51,9 @@ const getPresentationData = async (req, res, next) => {
       presentationData.push({
         ...report,
         overtime_staff: overtimeStaff,
-        transferCases
+        transferCases,
+        surgeryCases,
+        deathCases
       });
     }
 

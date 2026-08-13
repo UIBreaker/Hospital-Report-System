@@ -14,7 +14,9 @@ const createOrUpdateReport = async (req, res, next) => {
       shiftTime,
       reportData,
       status,
-      transferCases
+      transferCases,
+      surgeryCases,
+      deathCases
     } = req.body;
 
     // Helper: convert undefined/empty string to null for mysql2 (used for all inserts)
@@ -46,8 +48,10 @@ const createOrUpdateReport = async (req, res, next) => {
         ]
       );
       
-      // Delete old transfer cases before re-inserting
+      // Delete old sub-records before re-inserting
       await connection.execute('DELETE FROM transfer_cases WHERE report_id = ?', [reportId]);
+      await connection.execute('DELETE FROM surgery_cases WHERE report_id = ?', [reportId]);
+      await connection.execute('DELETE FROM death_cases WHERE report_id = ?', [reportId]);
     } else {
       const [result] = await connection.execute(
         `INSERT INTO reports (department_code, report_date, doctor_name, nurse_name, overtime_staff, room, shift_time, report_data, status)
@@ -67,28 +71,83 @@ const createOrUpdateReport = async (req, res, next) => {
       reportId = result.insertId;
     }
 
-    // Insert new transfer cases (safe: skip _id, handle all fields)
+    // Insert new transfer cases
     if (transferCases && Array.isArray(transferCases) && transferCases.length > 0) {
-      // Helper: convert undefined/empty string to null for mysql2
       for (const tc of transferCases) {
         const patientName = safeVal(tc.patientName || tc.patient_name);
-        await connection.execute(
-          `INSERT INTO transfer_cases 
-           (report_id, patient_name, age, address, admission_time, reason, clinical_tests, diagnosis, initial_treatment, progress_notes)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [
-            reportId,
-            patientName,
-            safeVal(tc.age),
-            safeVal(tc.address),
-            safeVal(tc.admissionTime || tc.admission_time),
-            safeVal(tc.reason),
-            safeVal(tc.clinicalTests || tc.clinical_tests),
-            safeVal(tc.diagnosis),
-            safeVal(tc.initialTreatment || tc.initial_treatment),
-            safeVal(tc.progressNotes || tc.progress_notes)
-          ]
-        );
+        if (patientName || tc.admissionTime || tc.diagnosis) {
+          await connection.execute(
+            `INSERT INTO transfer_cases 
+             (report_id, patient_name, age, address, admission_time, reason, clinical_tests, diagnosis, initial_treatment, progress_notes)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+              reportId,
+              patientName,
+              safeVal(tc.age),
+              safeVal(tc.address),
+              safeVal(tc.admissionTime || tc.admission_time),
+              safeVal(tc.reason),
+              safeVal(tc.clinicalTests || tc.clinical_tests),
+              safeVal(tc.diagnosis),
+              safeVal(tc.initialTreatment || tc.initial_treatment),
+              safeVal(tc.progressNotes || tc.progress_notes)
+            ]
+          );
+        }
+      }
+    }
+
+    // Insert new surgery cases (Bệnh mổ)
+    if (surgeryCases && Array.isArray(surgeryCases) && surgeryCases.length > 0) {
+      for (const sc of surgeryCases) {
+        const patientName = safeVal(sc.patientName || sc.patient_name);
+        if (patientName || sc.admissionTime || sc.preoperativeDiagnosis || sc.preoperative_diagnosis) {
+          await connection.execute(
+            `INSERT INTO surgery_cases 
+             (report_id, patient_name, birth_year, address, admission_time, reason, preoperative_diagnosis, consultation_order, postoperative_diagnosis, current_status)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+              reportId,
+              patientName,
+              safeVal(sc.birthYear || sc.birth_year || sc.age),
+              safeVal(sc.address),
+              safeVal(sc.admissionTime || sc.admission_time),
+              safeVal(sc.reason),
+              safeVal(sc.preoperativeDiagnosis || sc.preoperative_diagnosis),
+              safeVal(sc.consultationOrder || sc.consultation_order),
+              safeVal(sc.postoperativeDiagnosis || sc.postoperative_diagnosis),
+              safeVal(sc.currentStatus || sc.current_status)
+            ]
+          );
+        }
+      }
+    }
+
+    // Insert new death cases (Bệnh tử vong)
+    if (deathCases && Array.isArray(deathCases) && deathCases.length > 0) {
+      for (const dc of deathCases) {
+        const patientName = safeVal(dc.patientName || dc.patient_name);
+        if (patientName || dc.admissionTime || dc.diagnosis) {
+          await connection.execute(
+            `INSERT INTO death_cases 
+             (report_id, patient_name, age, address, admission_time, reason, admission_status, medical_history, clinical_tests, diagnosis, emergency_treatment, final_outcome)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+              reportId,
+              patientName,
+              safeVal(dc.age),
+              safeVal(dc.address),
+              safeVal(dc.admissionTime || dc.admission_time),
+              safeVal(dc.reason),
+              safeVal(dc.admissionStatus || dc.admission_status),
+              safeVal(dc.medicalHistory || dc.medical_history),
+              safeVal(dc.clinicalTests || dc.clinical_tests),
+              safeVal(dc.diagnosis),
+              safeVal(dc.emergencyTreatment || dc.emergency_treatment),
+              safeVal(dc.finalOutcome || dc.final_outcome)
+            ]
+          );
+        }
       }
     }
 
@@ -125,12 +184,22 @@ const getReport = async (req, res, next) => {
       'SELECT * FROM transfer_cases WHERE report_id = ?',
       [report.id]
     );
+    const [surgeryCases] = await pool.execute(
+      'SELECT * FROM surgery_cases WHERE report_id = ?',
+      [report.id]
+    );
+    const [deathCases] = await pool.execute(
+      'SELECT * FROM death_cases WHERE report_id = ?',
+      [report.id]
+    );
 
     res.json({
       success: true,
       data: {
         ...report,
-        transferCases
+        transferCases,
+        surgeryCases,
+        deathCases
       }
     });
   } catch (error) {
