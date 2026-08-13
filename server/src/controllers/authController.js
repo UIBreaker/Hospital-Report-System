@@ -71,8 +71,8 @@ const login = async (req, res, next) => {
 
     const token = jwt.sign(
       { userId: user.id, departmentCode: user.department_code, role: user.role },
-      process.env.JWT_SECRET || 'fallback_secret_jwt_2026',
-      { expiresIn: '24h' }
+      process.env.JWT_SECRET || 'hospital_report_secret_key_2026',
+      { expiresIn: '30d' }
     );
 
     res.json({

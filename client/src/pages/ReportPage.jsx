@@ -171,10 +171,70 @@ const ReportPage = () => {
             ? JSON.parse(report.report_data) 
             : (report.report_data || {});
           
+          const normalizedTransfers = (report.transferCases || []).map((tc, idx) => ({
+            _id: tc._id || tc.id || `tc_${Date.now()}_${idx}`,
+            patientName: tc.patientName || tc.patient_name || '',
+            patient_name: tc.patientName || tc.patient_name || '',
+            age: tc.age || '',
+            address: tc.address || '',
+            admissionTime: tc.admissionTime || tc.admission_time || '',
+            admission_time: tc.admissionTime || tc.admission_time || '',
+            reason: tc.reason || '',
+            clinicalTests: tc.clinicalTests || tc.clinical_tests || '',
+            clinical_tests: tc.clinicalTests || tc.clinical_tests || '',
+            diagnosis: tc.diagnosis || '',
+            initialTreatment: tc.initialTreatment || tc.initial_treatment || '',
+            initial_treatment: tc.initialTreatment || tc.initial_treatment || '',
+            progressNotes: tc.progressNotes || tc.progress_notes || '',
+            progress_notes: tc.progressNotes || tc.progress_notes || ''
+          }));
+
+          const normalizedSurgeries = (report.surgeryCases || []).map((sc, idx) => ({
+            _id: sc._id || sc.id || `sc_${Date.now()}_${idx}`,
+            patientName: sc.patientName || sc.patient_name || '',
+            patient_name: sc.patientName || sc.patient_name || '',
+            birthYear: sc.birthYear || sc.birth_year || sc.age || '',
+            birth_year: sc.birthYear || sc.birth_year || sc.age || '',
+            address: sc.address || '',
+            admissionTime: sc.admissionTime || sc.admission_time || '',
+            admission_time: sc.admissionTime || sc.admission_time || '',
+            reason: sc.reason || '',
+            preoperativeDiagnosis: sc.preoperativeDiagnosis || sc.preoperative_diagnosis || '',
+            preoperative_diagnosis: sc.preoperativeDiagnosis || sc.preoperative_diagnosis || '',
+            consultationOrder: sc.consultationOrder || sc.consultation_order || '',
+            consultation_order: sc.consultationOrder || sc.consultation_order || '',
+            postoperativeDiagnosis: sc.postoperativeDiagnosis || sc.postoperative_diagnosis || '',
+            postoperative_diagnosis: sc.postoperativeDiagnosis || sc.postoperative_diagnosis || '',
+            currentStatus: sc.currentStatus || sc.current_status || '',
+            current_status: sc.currentStatus || sc.current_status || ''
+          }));
+
+          const normalizedDeaths = (report.deathCases || []).map((dc, idx) => ({
+            _id: dc._id || dc.id || `dc_${Date.now()}_${idx}`,
+            patientName: dc.patientName || dc.patient_name || '',
+            patient_name: dc.patientName || dc.patient_name || '',
+            age: dc.age || '',
+            address: dc.address || '',
+            admissionTime: dc.admissionTime || dc.admission_time || '',
+            admission_time: dc.admissionTime || dc.admission_time || '',
+            reason: dc.reason || '',
+            admissionStatus: dc.admissionStatus || dc.admission_status || '',
+            admission_status: dc.admissionStatus || dc.admission_status || '',
+            medicalHistory: dc.medicalHistory || dc.medical_history || '',
+            medical_history: dc.medicalHistory || dc.medical_history || '',
+            clinicalTests: dc.clinicalTests || dc.clinical_tests || '',
+            clinical_tests: dc.clinicalTests || dc.clinical_tests || '',
+            diagnosis: dc.diagnosis || '',
+            emergencyTreatment: dc.emergencyTreatment || dc.emergency_treatment || '',
+            emergency_treatment: dc.emergencyTreatment || dc.emergency_treatment || '',
+            finalOutcome: dc.finalOutcome || dc.final_outcome || '',
+            final_outcome: dc.finalOutcome || dc.final_outcome || ''
+          }));
+
           setFormData(parsedData);
-          setTransferCases(report.transferCases || []);
-          setSurgeryCases(report.surgeryCases || []);
-          setDeathCases(report.deathCases || []);
+          setTransferCases(normalizedTransfers);
+          setSurgeryCases(normalizedSurgeries);
+          setDeathCases(normalizedDeaths);
           setExistingReportLoaded(true);
         } else {
           // Ngày này chưa có báo cáo -> reset form về trống để nhập mới

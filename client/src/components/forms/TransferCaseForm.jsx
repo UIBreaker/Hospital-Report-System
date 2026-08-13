@@ -11,7 +11,22 @@ const TransferCaseForm = ({ transferCases = [], setTransferCases }) => {
   // IMPORTANT: use functional updater to avoid stale closure bug with multiple cases
   const handleChange = useCallback((id, field, value) => {
     setTransferCases(prev =>
-      prev.map(tc => tc._id === id ? { ...tc, [field]: value } : tc)
+      prev.map(tc => {
+        const itemKey = tc._id || tc.id;
+        if (itemKey === id) {
+          return { 
+            ...tc, 
+            [field]: value,
+            // Đồng bộ cả snake_case để tránh mất dữ liệu
+            ...(field === 'patientName' ? { patient_name: value } : {}),
+            ...(field === 'admissionTime' ? { admission_time: value } : {}),
+            ...(field === 'clinicalTests' ? { clinical_tests: value } : {}),
+            ...(field === 'initialTreatment' ? { initial_treatment: value } : {}),
+            ...(field === 'progressNotes' ? { progress_notes: value } : {})
+          };
+        }
+        return tc;
+      })
     );
   }, [setTransferCases]);
 
@@ -22,19 +37,24 @@ const TransferCaseForm = ({ transferCases = [], setTransferCases }) => {
       {
         _id: newId,
         patientName: '',   // Họ tên, tuổi, địa chỉ (combined)
+        patient_name: '',
         admissionTime: '',
+        admission_time: '',
         reason: '',
         clinicalTests: '',
+        clinical_tests: '',
         diagnosis: '',
         initialTreatment: '',
-        progressNotes: ''
+        initial_treatment: '',
+        progressNotes: '',
+        progress_notes: ''
       }
     ]);
     setExpanded(prev => ({ ...prev, [newId]: true }));
   }, [setTransferCases]);
 
   const removeCase = useCallback((id) => {
-    setTransferCases(prev => prev.filter(tc => tc._id !== id));
+    setTransferCases(prev => prev.filter(tc => (tc._id || tc.id) !== id));
     setExpanded(prev => {
       const next = { ...prev };
       delete next[id];
@@ -76,8 +96,9 @@ const TransferCaseForm = ({ transferCases = [], setTransferCases }) => {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {transferCases.map((tCase, index) => {
-            const id = tCase._id || `legacy_${index}`;
+            const id = tCase._id || tCase.id || `legacy_${index}`;
             const isExpanded = expanded[id] !== false; // default expanded
+            const displayName = tCase.patientName || tCase.patient_name || '';
             return (
               <div
                 key={id}
@@ -104,8 +125,8 @@ const TransferCaseForm = ({ transferCases = [], setTransferCases }) => {
                 >
                   <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: '700', color: isExpanded ? '#B91C1C' : 'var(--primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     🚑 Ca #{index + 1}
-                    {tCase.patientName && (
-                      <span style={{ fontWeight: '500', color: '#64748B', fontSize: '0.9rem' }}>— {tCase.patientName}</span>
+                    {displayName && (
+                      <span style={{ fontWeight: '500', color: '#64748B', fontSize: '0.9rem' }}>— {displayName}</span>
                     )}
                   </h4>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -134,7 +155,7 @@ const TransferCaseForm = ({ transferCases = [], setTransferCases }) => {
                         <label>Họ tên, tuổi, địa chỉ</label>
                         <input
                           type="text"
-                          value={tCase.patientName || ''}
+                          value={tCase.patientName || tCase.patient_name || ''}
                           onChange={(e) => handleChange(id, 'patientName', e.target.value)}
                           placeholder="VD: Nguyễn Văn A, 45 tuổi, Bình Long, Bình Phước"
                         />
@@ -143,7 +164,7 @@ const TransferCaseForm = ({ transferCases = [], setTransferCases }) => {
                         <label>Giờ / Ngày vào viện</label>
                         <input
                           type="text"
-                          value={tCase.admissionTime || ''}
+                          value={tCase.admissionTime || tCase.admission_time || ''}
                           onChange={(e) => handleChange(id, 'admissionTime', e.target.value)}
                           placeholder="08:30 ngày 06/08/2026"
                         />
@@ -163,7 +184,7 @@ const TransferCaseForm = ({ transferCases = [], setTransferCases }) => {
                     <div className="form-group" style={{ marginBottom: '0.75rem' }}>
                       <label>Cận lâm sàng / X-Quang / Xét nghiệm</label>
                       <textarea
-                        value={tCase.clinicalTests || ''}
+                        value={tCase.clinicalTests || tCase.clinical_tests || ''}
                         onChange={(e) => handleChange(id, 'clinicalTests', e.target.value)}
                         placeholder="Kết quả xét nghiệm, hình ảnh X-Quang..."
                         rows={2}
@@ -184,7 +205,7 @@ const TransferCaseForm = ({ transferCases = [], setTransferCases }) => {
                     <div className="form-group" style={{ marginBottom: '0.75rem' }}>
                       <label>Xử trí ban đầu</label>
                       <textarea
-                        value={tCase.initialTreatment || ''}
+                        value={tCase.initialTreatment || tCase.initial_treatment || ''}
                         onChange={(e) => handleChange(id, 'initialTreatment', e.target.value)}
                         placeholder="Các biện pháp xử trí đã thực hiện..."
                         rows={2}
@@ -195,7 +216,7 @@ const TransferCaseForm = ({ transferCases = [], setTransferCases }) => {
                     <div className="form-group">
                       <label>Diễn biến / Hội chẩn / Tình trạng lúc chuyển</label>
                       <textarea
-                        value={tCase.progressNotes || ''}
+                        value={tCase.progressNotes || tCase.progress_notes || ''}
                         onChange={(e) => handleChange(id, 'progressNotes', e.target.value)}
                         placeholder="Tình trạng bệnh nhân, kết quả hội chẩn, lý do chuyển viện..."
                         rows={3}
