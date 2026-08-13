@@ -105,6 +105,8 @@ const ReportPage = () => {
   const [transferCases, setTransferCases] = useState([]);
   const [surgeryCases, setSurgeryCases] = useState([]);
   const [deathCases, setDeathCases] = useState([]);
+  const [loadingExistingReport, setLoadingExistingReport] = useState(false);
+  const [existingReportLoaded, setExistingReportLoaded] = useState(false);
 
   // Fetch danh sách nhân sự của khoa khi đăng nhập
   useEffect(() => {
@@ -129,6 +131,77 @@ const ReportPage = () => {
 
     fetchStaff();
   }, [user?.departmentCode]);
+
+  // Tự động tải lại toàn bộ dữ liệu báo cáo đã nộp của khoa theo ngày được chọn
+  useEffect(() => {
+    let isMounted = true;
+    const fetchExistingReport = async () => {
+      if (!user?.departmentCode || !headerData.reportDate) return;
+      setLoadingExistingReport(true);
+      try {
+        const res = await reportService.getReport(user.departmentCode, headerData.reportDate);
+        if (!isMounted) return;
+
+        if (res?.data) {
+          const report = res.data;
+          let overtime = report.overtime_staff;
+          if (typeof overtime === 'string') {
+            try { overtime = JSON.parse(overtime); } catch (e) { overtime = []; }
+          }
+
+          // Parse danh sách điều dưỡng nếu lưu dạng chuỗi phân cách bởi dấu phẩy
+          let nurses = [''];
+          if (report.nurse_name) {
+            const splitNurses = report.nurse_name.split(',').map(s => s.trim()).filter(Boolean);
+            if (splitNurses.length > 0) {
+              nurses = splitNurses;
+            }
+          }
+
+          setHeaderData(prev => ({
+            ...prev,
+            selectedDoctor: report.doctor_name || '',
+            selectedNurses: nurses,
+            overtimeStaff: Array.isArray(overtime) ? overtime : [],
+            room: report.room || '',
+            shiftTime: report.shift_time || ''
+          }));
+
+          const parsedData = typeof report.report_data === 'string' 
+            ? JSON.parse(report.report_data) 
+            : (report.report_data || {});
+          
+          setFormData(parsedData);
+          setTransferCases(report.transferCases || []);
+          setSurgeryCases(report.surgeryCases || []);
+          setDeathCases(report.deathCases || []);
+          setExistingReportLoaded(true);
+        } else {
+          // Ngày này chưa có báo cáo -> reset form về trống để nhập mới
+          setExistingReportLoaded(false);
+          setFormData({});
+          setTransferCases([]);
+          setSurgeryCases([]);
+          setDeathCases([]);
+          setHeaderData(prev => ({
+            ...prev,
+            selectedDoctor: '',
+            selectedNurses: [''],
+            overtimeStaff: [],
+            room: '',
+            shiftTime: ''
+          }));
+        }
+      } catch (err) {
+        console.error('Lỗi khi kiểm tra báo cáo cũ:', err);
+      } finally {
+        if (isMounted) setLoadingExistingReport(false);
+      }
+    };
+
+    fetchExistingReport();
+    return () => { isMounted = false; };
+  }, [user?.departmentCode, headerData.reportDate]);
 
   // Tạo danh sách datalist có số thứ tự tự động cho Bác sĩ
   const doctorOptions = useMemo(() => {
@@ -326,6 +399,20 @@ const ReportPage = () => {
             Thông Tin Hành Chính Ca Trực
           </h3>
           
+          {/* Thông báo tải lại báo cáo cũ */}
+          {loadingExistingReport ? (
+            <div style={{ backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', padding: '0.65rem 1rem', borderRadius: '8px', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#475569' }}>
+              <FaSpinner className="spinner" style={{ color: 'var(--brand-blue)' }} /> Đang kiểm tra dữ liệu ngày {headerData.reportDate}...
+            </div>
+          ) : existingReportLoaded ? (
+            <div style={{ backgroundColor: '#EFF6FF', border: '1px solid #BFDBFE', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.85rem', color: '#1E40AF' }}>
+              <FaCheckCircle style={{ color: '#2563EB', fontSize: '1.1rem', flexShrink: 0 }} />
+              <div>
+                <strong>Đã nạp dữ liệu báo cáo ngày {headerData.reportDate}:</strong> Toàn bộ thông tin ca trực và số liệu chuyên môn đã nộp trước đó đã được tải sẵn. Bạn có thể tiếp tục chỉnh sửa hoặc nộp bổ sung.
+              </div>
+            </div>
+          ) : null}
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '2rem' }}>
             {/* 1. Ngày báo cáo */}
             <div className="form-group">
