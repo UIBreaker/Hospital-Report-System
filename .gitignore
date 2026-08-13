@@ -47,3 +47,4 @@ backup.js
 check-db.js
 restore.js
 populate-data.js
+fix-dates.js
