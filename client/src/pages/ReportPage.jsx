@@ -95,7 +95,7 @@ const ReportPage = () => {
   const [headerData, setHeaderData] = useState({
     reportDate: formattedYesterday,
     selectedDoctor: '',
-    selectedNurse: '',
+    selectedNurses: [''], // Hỗ trợ nhiều điều dưỡng trực
     overtimeStaff: [], // Danh sách: [{ id, staffName, time }]
     room: '',
     shiftTime: ''
@@ -163,12 +163,39 @@ const ReportPage = () => {
 
   // Tính toán tên bác sĩ và điều dưỡng thực tế (chuẩn hóa tên sạch)
   const cleanDoctorName = extractCleanStaffName(headerData.selectedDoctor, staffList.allStaff);
-  const cleanNurseName = extractCleanStaffName(headerData.selectedNurse, staffList.allStaff);
+  const cleanNurseNames = headerData.selectedNurses
+    .map(n => extractCleanStaffName(n, staffList.allStaff))
+    .filter(Boolean);
+  const finalNurseNameStr = cleanNurseNames.join(', ');
 
   const handleNext = () => {
     if (cleanDoctorName) {
       setStep(2);
     }
+  };
+
+  // Thêm dòng điều dưỡng trực
+  const handleAddNurse = () => {
+    setHeaderData({
+      ...headerData,
+      selectedNurses: [...headerData.selectedNurses, '']
+    });
+  };
+
+  // Cập nhật điều dưỡng trực
+  const handleNurseChange = (index, value) => {
+    const updated = [...headerData.selectedNurses];
+    updated[index] = value;
+    setHeaderData({ ...headerData, selectedNurses: updated });
+  };
+
+  // Xóa điều dưỡng trực
+  const handleRemoveNurse = (index) => {
+    const updated = headerData.selectedNurses.filter((_, i) => i !== index);
+    setHeaderData({
+      ...headerData,
+      selectedNurses: updated.length > 0 ? updated : ['']
+    });
   };
 
   // Thêm dòng nhân sự tăng cường thêm giờ
@@ -212,7 +239,7 @@ const ReportPage = () => {
         departmentCode: user.departmentCode,
         reportDate: headerData.reportDate,
         doctorName: cleanDoctorName,
-        nurseName: cleanNurseName || null,
+        nurseName: finalNurseNameStr || null,
         overtimeStaff: formattedOvertime.length > 0 ? formattedOvertime : null,
         room: headerData.room,
         shiftTime: headerData.shiftTime,
@@ -254,9 +281,7 @@ const ReportPage = () => {
                 setHeaderData({
                   ...headerData, 
                   selectedDoctor: '', 
-                  customDoctor: '', 
-                  selectedNurse: '', 
-                  customNurse: '', 
+                  selectedNurses: [''], 
                   overtimeStaff: [], 
                   room: '', 
                   shiftTime: ''
@@ -333,21 +358,54 @@ const ReportPage = () => {
               />
             </div>
 
-            {/* 3. Điều dưỡng trực chính (Combobox tìm kiếm thông minh cao cấp) */}
+            {/* 3. Điều dưỡng trực ca (Hỗ trợ nhiều điều dưỡng ca trực) */}
             <div className="form-group">
-              <StaffSelectCombobox
-                label="Điều dưỡng trực chính (Tùy chọn)"
-                required={false}
-                placeholder="Gõ số (1, 2...) hoặc gõ tên Điều dưỡng..."
-                value={headerData.selectedNurse}
-                onChange={(val) => setHeaderData({ ...headerData, selectedNurse: val })}
-                doctors={staffList.doctors}
-                nurses={staffList.nurses}
-                allStaff={staffList.allStaff}
-                type="nurse"
-                loading={loadingStaff}
-                helpText="💡 Gợi ý: Bấm số hoặc gõ tên để chọn nhanh điều dưỡng trực."
-              />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.45rem' }}>
+                <label style={{ margin: 0, fontWeight: '600', fontSize: '0.9rem', color: '#1E293B', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <FaUserNurse style={{ color: '#059669' }} /> Điều dưỡng trực ca ({cleanNurseNames.length || 0})
+                </label>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={handleAddNurse}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.8rem', padding: '0.3rem 0.75rem', borderColor: '#BBF7D0', color: '#166534', backgroundColor: '#F0FDF4' }}
+                >
+                  <FaPlus /> Thêm điều dưỡng
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                {headerData.selectedNurses.map((nurseVal, idx) => (
+                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <div style={{ flex: 1 }}>
+                      <StaffSelectCombobox
+                        placeholder={idx === 0 ? "Gõ số (1, 2...) hoặc tên Điều dưỡng 1..." : `Gõ số hoặc tên Điều dưỡng ${idx + 1}...`}
+                        value={nurseVal}
+                        onChange={(val) => handleNurseChange(idx, val)}
+                        doctors={staffList.doctors}
+                        nurses={staffList.nurses}
+                        allStaff={staffList.allStaff}
+                        type="nurse"
+                        loading={loadingStaff}
+                      />
+                    </div>
+                    {headerData.selectedNurses.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveNurse(idx)}
+                        className="btn btn-danger btn-sm"
+                        style={{ padding: '0.45rem 0.65rem', height: '44px', borderRadius: '8px', flexShrink: 0 }}
+                        title="Xóa điều dưỡng này"
+                      >
+                        <FaTrash />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <small style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '4px', display: 'block' }}>
+                💡 Gợi ý: Bấm nút <strong>"+ Thêm điều dưỡng"</strong> nếu ca trực có từ 2 điều dưỡng trở lên.
+              </small>
             </div>
 
             {/* 4. Phần: Nhân sự trực thêm giờ / Tăng cường */}
@@ -470,7 +528,7 @@ const ReportPage = () => {
             <div className="summary-bar-info" style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap', fontSize: '0.9rem' }}>
               <div>📅 <strong>Ngày báo cáo:</strong> {headerData.reportDate}</div>
               <div>👨‍⚕️ <strong>Bác sĩ trực:</strong> {cleanDoctorName}</div>
-              {cleanNurseName && <div>👩‍⚕️ <strong>Điều dưỡng:</strong> {cleanNurseName}</div>}
+              {finalNurseNameStr && <div>👩‍⚕️ <strong>Điều dưỡng ({cleanNurseNames.length}):</strong> {finalNurseNameStr}</div>}
               {headerData.overtimeStaff.length > 0 && (
                 <div>
                   ⏰ <strong>Tăng cường:</strong> {headerData.overtimeStaff.map(s => `${extractCleanStaffName(s.staffName, staffList.allStaff)} (${s.time})`).join(', ')}
