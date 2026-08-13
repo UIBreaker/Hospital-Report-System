@@ -154,4 +154,74 @@ const getDatabaseStats = async (req, res, next) => {
   }
 };
 
-module.exports = { getPresentationData, getDepartmentStatus, getDatabaseStats };
+const { generateHospitalExcelReport } = require('../services/excelExportService');
+
+const exportReports = async (req, res, next) => {
+  try {
+    const date = req.query.date || req.params.date;
+    if (!date) {
+      return res.status(400).json({ success: false, error: 'Thiếu tham số ngày báo cáo (date=YYYY-MM-DD)' });
+    }
+
+    const [deptUsers] = await pool.execute(
+      "SELECT department_code, department_name FROM users WHERE role = 'department'"
+    );
+
+    const [reports] = await pool.execute(
+      `SELECT r.*, u.department_name 
+       FROM reports r
+       JOIN users u ON r.department_code = u.department_code
+       WHERE r.report_date = ?`,
+      [date]
+    );
+
+    const detailedReports = [];
+    for (const report of reports) {
+      const [transferCases] = await pool.execute(
+        'SELECT * FROM transfer_cases WHERE report_id = ? ORDER BY id ASC',
+        [report.id]
+      );
+      const [surgeryCases] = await pool.execute(
+        'SELECT * FROM surgery_cases WHERE report_id = ? ORDER BY id ASC',
+        [report.id]
+      );
+      const [deathCases] = await pool.execute(
+        'SELECT * FROM death_cases WHERE report_id = ? ORDER BY id ASC',
+        [report.id]
+      );
+
+      let overtimeStaff = report.overtime_staff;
+      if (typeof overtimeStaff === 'string') {
+        try { overtimeStaff = JSON.parse(overtimeStaff); } catch (e) { overtimeStaff = []; }
+      }
+
+      let reportData = report.report_data;
+      if (typeof reportData === 'string') {
+        try { reportData = JSON.parse(reportData); } catch (e) { reportData = {}; }
+      }
+
+      detailedReports.push({
+        ...report,
+        report_data: reportData,
+        overtime_staff: overtimeStaff,
+        transferCases,
+        surgeryCases,
+        deathCases
+      });
+    }
+
+    const workbook = await generateHospitalExcelReport(date, deptUsers, detailedReports);
+    const filename = `Tong_Hop_Bao_Cao_${date}.xlsx`;
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { getPresentationData, getDepartmentStatus, getDatabaseStats, exportReports };

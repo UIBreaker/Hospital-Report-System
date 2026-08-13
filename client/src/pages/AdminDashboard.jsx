@@ -6,6 +6,8 @@ import {
   FaSignOutAlt, 
   FaTv, 
   FaPrint,
+  FaFileExcel,
+  FaDownload,
   FaCheck, 
   FaTimes, 
   FaSpinner, 
@@ -546,6 +548,30 @@ const AdminDashboard = () => {
     }
   };
 
+  const [exportingExcel, setExportingExcel] = useState(false);
+
+  const handleExportExcel = async () => {
+    setExportingExcel(true);
+    try {
+      const response = await reportService.exportHospitalReportExcel(date);
+      const blob = new Blob([response.data], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.setAttribute('download', `Tong_Hop_Bao_Cao_${date}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (err) {
+      alert('Không thể xuất file Excel: ' + (err.response?.data?.error || err.message || 'Lỗi hệ thống'));
+    } finally {
+      setExportingExcel(false);
+    }
+  };
+
   const handleOpenDetailModal = async (dept) => {
     setModalDept(dept);
     setModalOpen(true);
@@ -774,6 +800,29 @@ const AdminDashboard = () => {
 
           {activeTab === 'reports' && (
             <>
+              <button 
+                className="btn btn-secondary" 
+                onClick={handleExportExcel} 
+                disabled={exportingExcel} 
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.5rem', 
+                  backgroundColor: '#107C41', // Microsoft Excel Green
+                  color: '#FFFFFF', 
+                  borderColor: '#0B5C30',
+                  boxShadow: '0 2px 6px rgba(16, 124, 65, 0.25)',
+                  fontWeight: '700'
+                }}
+                title="Xuất file Excel tổng hợp toàn viện gồm 3 Sheet: Tổng hợp, Chi tiết Ca trực, Chi tiết Bệnh lý"
+              >
+                {exportingExcel ? (
+                  <><FaSpinner className="spinner" /> Đang tạo Excel...</>
+                ) : (
+                  <><FaFileExcel style={{ fontSize: '1.05rem' }} /> Xuất Báo Cáo Excel</>
+                )}
+              </button>
+
               <button 
                 className="btn btn-secondary" 
                 onClick={handleOpenPrint} 

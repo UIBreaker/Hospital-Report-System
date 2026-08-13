@@ -28,6 +28,12 @@ const reportService = {
   getDatabaseStats: async () => {
     const response = await api.get('/admin/database-stats');
     return response.data;
+  },
+  exportHospitalReportExcel: async (date) => {
+    const response = await api.get(`/admin/export-reports?date=${date}`, {
+      responseType: 'blob',
+    });
+    return response;
   }
 };
 
