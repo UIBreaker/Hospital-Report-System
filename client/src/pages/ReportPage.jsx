@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useMemo } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 import { 
   FaCalendarAlt, 
@@ -47,6 +47,29 @@ const DEPARTMENT_FORMS = {
   gmhs: GayMeHoiSucForm,
 };
 
+// Helper: Trích xuất tên sạch của nhân sự (bỏ số thứ tự và chức vụ trong datalist)
+const extractCleanStaffName = (inputVal, allStaff = []) => {
+  if (!inputVal || typeof inputVal !== 'string') return '';
+  const trimmed = inputVal.trim();
+  if (!trimmed) return '';
+
+  // Khớp mẫu: "1. Lý Thị An - Bác sĩ (3939/BP-CCHN)" hoặc "1. Lý Thị An (3939/BP-CCHN)"
+  const match = trimmed.match(/^\d+\.\s*([^\-(]+?)(?:\s*-\s*[^\(]+)?(?:\s*\([^)]*\))?$/);
+  if (match && match[1] && match[1].trim()) {
+    return match[1].trim();
+  }
+
+  // Khớp trực tiếp với danh sách nhân sự nếu có tên trong database
+  const found = allStaff.find(s => 
+    trimmed.includes(s.full_name) || s.full_name.toLowerCase() === trimmed.toLowerCase()
+  );
+  if (found) return found.full_name;
+
+  // Trường hợp nhập có số thứ tự đơn giản "1. Lý Thị An"
+  const simple = trimmed.replace(/^\d+\.\s*/, '').trim();
+  return simple || trimmed;
+};
+
 const ReportPage = () => {
   const { user, logout } = useContext(AuthContext);
   const [step, setStep] = useState(1);
@@ -71,10 +94,8 @@ const ReportPage = () => {
   const [headerData, setHeaderData] = useState({
     reportDate: formattedYesterday,
     selectedDoctor: '',
-    customDoctor: '',
     selectedNurse: '',
-    customNurse: '',
-    overtimeStaff: [], // Danh sách: [{ id, staffName, customName, time }]
+    overtimeStaff: [], // Danh sách: [{ id, staffName, time }]
     room: '',
     shiftTime: ''
   });
@@ -108,17 +129,43 @@ const ReportPage = () => {
     fetchStaff();
   }, [user?.departmentCode]);
 
-  // Tính toán tên bác sĩ và điều dưỡng thực tế
-  const finalDoctorName = headerData.selectedDoctor === '__CUSTOM__' 
-    ? headerData.customDoctor.trim() 
-    : headerData.selectedDoctor;
+  // Tạo danh sách datalist có số thứ tự tự động cho Bác sĩ
+  const doctorOptions = useMemo(() => {
+    const docs = staffList.doctors || [];
+    const others = (staffList.nurses || []).filter(n => !docs.some(d => d.id === n.id));
+    const list = [...docs, ...others];
+    return list.map((s, idx) => ({
+      value: `${idx + 1}. ${s.full_name} - ${s.position || 'Bác sĩ'}${s.certificate ? ` (${s.certificate})` : ''}`,
+      rawName: s.full_name
+    }));
+  }, [staffList]);
 
-  const finalNurseName = headerData.selectedNurse === '__CUSTOM__'
-    ? headerData.customNurse.trim()
-    : headerData.selectedNurse;
+  // Tạo danh sách datalist có số thứ tự tự động cho Điều dưỡng
+  const nurseOptions = useMemo(() => {
+    const nurs = staffList.nurses || [];
+    const others = (staffList.doctors || []).filter(d => !nurs.some(n => n.id === d.id));
+    const list = [...nurs, ...others];
+    return list.map((s, idx) => ({
+      value: `${idx + 1}. ${s.full_name} - ${s.position || 'Điều dưỡng'}${s.certificate ? ` (${s.certificate})` : ''}`,
+      rawName: s.full_name
+    }));
+  }, [staffList]);
+
+  // Tạo danh sách datalist toàn bộ nhân sự khoa cho Trực thêm giờ
+  const allStaffOptions = useMemo(() => {
+    const list = staffList.allStaff || [];
+    return list.map((s, idx) => ({
+      value: `${idx + 1}. ${s.full_name} - ${s.position || 'Nhân viên'}${s.certificate ? ` (${s.certificate})` : ''}`,
+      rawName: s.full_name
+    }));
+  }, [staffList]);
+
+  // Tính toán tên bác sĩ và điều dưỡng thực tế (chuẩn hóa tên sạch)
+  const cleanDoctorName = extractCleanStaffName(headerData.selectedDoctor, staffList.allStaff);
+  const cleanNurseName = extractCleanStaffName(headerData.selectedNurse, staffList.allStaff);
 
   const handleNext = () => {
-    if (finalDoctorName) {
+    if (cleanDoctorName) {
       setStep(2);
     }
   };
@@ -129,7 +176,7 @@ const ReportPage = () => {
       ...headerData,
       overtimeStaff: [
         ...headerData.overtimeStaff,
-        { id: Date.now(), staffName: '', customName: '', time: '' }
+        { id: Date.now(), staffName: '', time: '' }
       ]
     });
   };
@@ -154,8 +201,8 @@ const ReportPage = () => {
     // Chuẩn hóa danh sách nhân sự thêm giờ
     const formattedOvertime = headerData.overtimeStaff
       .map(item => ({
-        staffName: item.staffName === '__CUSTOM__' ? item.customName.trim() : item.staffName,
-        time: item.time.trim()
+        staffName: extractCleanStaffName(item.staffName, staffList.allStaff),
+        time: (item.time || '').trim()
       }))
       .filter(item => item.staffName || item.time);
 
@@ -163,8 +210,8 @@ const ReportPage = () => {
       await reportService.createOrUpdateReport({
         departmentCode: user.departmentCode,
         reportDate: headerData.reportDate,
-        doctorName: finalDoctorName,
-        nurseName: finalNurseName || null,
+        doctorName: cleanDoctorName,
+        nurseName: cleanNurseName || null,
         overtimeStaff: formattedOvertime.length > 0 ? formattedOvertime : null,
         room: headerData.room,
         shiftTime: headerData.shiftTime,
@@ -268,7 +315,7 @@ const ReportPage = () => {
               </div>
             </div>
 
-            {/* 2. Bác sĩ trực chính (Dropdown) */}
+            {/* 2. Bác sĩ trực chính (Thanh tìm kiếm Datalist thông minh có số thứ tự) */}
             <div className="form-group">
               <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span>Tên Bác sĩ trực chính <span style={{ color: 'var(--brand-red)' }}>*</span></span>
@@ -276,84 +323,49 @@ const ReportPage = () => {
               </label>
               <div style={{ position: 'relative' }}>
                 <FaUserMd style={{ position: 'absolute', top: '50%', left: '1rem', transform: 'translateY(-50%)', color: 'var(--text-muted)', zIndex: 1 }} />
-                <select
+                <input
+                  type="text"
+                  list="doctor-options-list"
+                  placeholder="Gõ số (1, 2...) hoặc gõ tên Bác sĩ để tìm kiếm..."
                   value={headerData.selectedDoctor}
                   onChange={(e) => setHeaderData({ ...headerData, selectedDoctor: e.target.value })}
                   style={{ paddingLeft: '2.6rem', width: '100%' }}
-                >
-                  <option value="">-- Chọn Bác sĩ trực chính --</option>
-                  {staffList.doctors.map(doc => (
-                    <option key={doc.id} value={doc.full_name}>
-                      👨‍⚕️ {doc.full_name} {doc.certificate ? `(${doc.certificate})` : ''}
-                    </option>
+                  autoComplete="off"
+                />
+                <datalist id="doctor-options-list">
+                  {doctorOptions.map((opt, i) => (
+                    <option key={i} value={opt.value} />
                   ))}
-                  {/* Trường hợp các nhân sự khác trong khoa cũng có thể trực */}
-                  {staffList.nurses.length > 0 && (
-                    <optgroup label="Nhân sự khác trong khoa">
-                      {staffList.nurses.map(s => (
-                        <option key={s.id} value={s.full_name}>
-                          {s.full_name} ({s.position})
-                        </option>
-                      ))}
-                    </optgroup>
-                  )}
-                  <option value="__CUSTOM__">✏️ Nhập tên Bác sĩ khác...</option>
-                </select>
+                </datalist>
               </div>
-
-              {headerData.selectedDoctor === '__CUSTOM__' && (
-                <div style={{ marginTop: '0.65rem' }}>
-                  <input 
-                    type="text" 
-                    placeholder="Nhập họ tên Bác sĩ trực chính..."
-                    value={headerData.customDoctor}
-                    onChange={(e) => setHeaderData({...headerData, customDoctor: e.target.value})}
-                    autoFocus
-                  />
-                </div>
-              )}
+              <small style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px', display: 'block' }}>
+                💡 Gợi ý: Gõ <strong>số thứ tự</strong> (1, 2, 3...) hoặc <strong>chữ cái tên</strong> để tìm nhanh, hoặc gõ tên mới tự do.
+              </small>
             </div>
 
-            {/* 3. Điều dưỡng trực chính (Dropdown) */}
+            {/* 3. Điều dưỡng trực chính (Thanh tìm kiếm Datalist thông minh có số thứ tự) */}
             <div className="form-group">
               <label>Điều dưỡng trực chính (Tùy chọn)</label>
               <div style={{ position: 'relative' }}>
                 <FaUserNurse style={{ position: 'absolute', top: '50%', left: '1rem', transform: 'translateY(-50%)', color: 'var(--text-muted)', zIndex: 1 }} />
-                <select
+                <input
+                  type="text"
+                  list="nurse-options-list"
+                  placeholder="Gõ số (1, 2...) hoặc gõ tên Điều dưỡng để tìm kiếm..."
                   value={headerData.selectedNurse}
                   onChange={(e) => setHeaderData({ ...headerData, selectedNurse: e.target.value })}
                   style={{ paddingLeft: '2.6rem', width: '100%' }}
-                >
-                  <option value="">-- Chọn Điều dưỡng trực (Không bắt buộc) --</option>
-                  {staffList.nurses.map(nur => (
-                    <option key={nur.id} value={nur.full_name}>
-                      👩‍⚕️ {nur.full_name} ({nur.position}{nur.certificate ? ` - ${nur.certificate}` : ''})
-                    </option>
+                  autoComplete="off"
+                />
+                <datalist id="nurse-options-list">
+                  {nurseOptions.map((opt, i) => (
+                    <option key={i} value={opt.value} />
                   ))}
-                  {staffList.doctors.length > 0 && (
-                    <optgroup label="Bác sĩ trong khoa">
-                      {staffList.doctors.map(d => (
-                        <option key={d.id} value={d.full_name}>
-                          {d.full_name} ({d.position})
-                        </option>
-                      ))}
-                    </optgroup>
-                  )}
-                  <option value="__CUSTOM__">✏️ Nhập tên Điều dưỡng khác...</option>
-                </select>
+                </datalist>
               </div>
-
-              {headerData.selectedNurse === '__CUSTOM__' && (
-                <div style={{ marginTop: '0.65rem' }}>
-                  <input 
-                    type="text" 
-                    placeholder="Nhập họ tên Điều dưỡng trực..."
-                    value={headerData.customNurse}
-                    onChange={(e) => setHeaderData({...headerData, customNurse: e.target.value})}
-                    autoFocus
-                  />
-                </div>
-              )}
+              <small style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px', display: 'block' }}>
+                💡 Gợi ý: Gõ <strong>số thứ tự</strong> hoặc <strong>chữ cái tên</strong> để chọn nhanh.
+              </small>
             </div>
 
             {/* 4. Phần: Nhân sự trực thêm giờ / Tăng cường */}
@@ -383,7 +395,7 @@ const ReportPage = () => {
                       key={ot.id || idx} 
                       style={{ 
                         display: 'grid', 
-                        gridTemplateColumns: '1fr 1fr auto', 
+                        gridTemplateColumns: '1.2fr 1fr auto', 
                         gap: '0.5rem', 
                         alignItems: 'center',
                         background: '#FFFFFF',
@@ -392,30 +404,22 @@ const ReportPage = () => {
                         border: '1px solid #CBD5E1'
                       }}
                     >
-                      {/* Chọn nhân sự */}
+                      {/* Chọn nhân sự với input list & datalist */}
                       <div>
-                        <select
+                        <input
+                          type="text"
+                          list={`overtime-options-list-${idx}`}
+                          placeholder="Gõ số (1, 2...) hoặc tên..."
                           value={ot.staffName}
                           onChange={(e) => handleOvertimeChange(idx, 'staffName', e.target.value)}
                           style={{ width: '100%', fontSize: '0.85rem' }}
-                        >
-                          <option value="">-- Chọn nhân sự --</option>
-                          {staffList.allStaff.map(s => (
-                            <option key={s.id} value={s.full_name}>
-                              {s.full_name} ({s.position})
-                            </option>
+                          autoComplete="off"
+                        />
+                        <datalist id={`overtime-options-list-${idx}`}>
+                          {allStaffOptions.map((opt, i) => (
+                            <option key={i} value={opt.value} />
                           ))}
-                          <option value="__CUSTOM__">✏️ Nhập tên khác...</option>
-                        </select>
-                        {ot.staffName === '__CUSTOM__' && (
-                          <input
-                            type="text"
-                            placeholder="Nhập tên nhân sự..."
-                            value={ot.customName || ''}
-                            onChange={(e) => handleOvertimeChange(idx, 'customName', e.target.value)}
-                            style={{ marginTop: '0.35rem', fontSize: '0.85rem' }}
-                          />
-                        )}
+                        </datalist>
                       </div>
 
                       {/* Nhập thời gian trực thêm giờ */}
@@ -475,7 +479,7 @@ const ReportPage = () => {
             <button 
               className="btn btn-primary"
               onClick={handleNext}
-              disabled={!finalDoctorName}
+              disabled={!cleanDoctorName}
               style={{ fontSize: '1rem', padding: '0.75rem 2rem' }}
             >
               Tiếp tục nhập báo cáo <FaChevronRight />
@@ -488,11 +492,11 @@ const ReportPage = () => {
           <div className="card summary-bar" style={{ marginBottom: '1.5rem', padding: '1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(135deg, #EFF6FF, #F8FAFC)', borderLeft: '4px solid var(--brand-blue)' }}>
             <div className="summary-bar-info" style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap', fontSize: '0.9rem' }}>
               <div>📅 <strong>Ngày báo cáo:</strong> {headerData.reportDate}</div>
-              <div>👨‍⚕️ <strong>Bác sĩ trực:</strong> {finalDoctorName}</div>
-              {finalNurseName && <div>👩‍⚕️ <strong>Điều dưỡng:</strong> {finalNurseName}</div>}
+              <div>👨‍⚕️ <strong>Bác sĩ trực:</strong> {cleanDoctorName}</div>
+              {cleanNurseName && <div>👩‍⚕️ <strong>Điều dưỡng:</strong> {cleanNurseName}</div>}
               {headerData.overtimeStaff.length > 0 && (
                 <div>
-                  ⏰ <strong>Tăng cường:</strong> {headerData.overtimeStaff.map(s => `${s.staffName === '__CUSTOM__' ? s.customName : s.staffName} (${s.time})`).join(', ')}
+                  ⏰ <strong>Tăng cường:</strong> {headerData.overtimeStaff.map(s => `${extractCleanStaffName(s.staffName, staffList.allStaff)} (${s.time})`).join(', ')}
                 </div>
               )}
               {headerData.room && <div>🏥 <strong>Phòng:</strong> {headerData.room}</div>}
@@ -508,7 +512,7 @@ const ReportPage = () => {
             {FormComponent ? (
               <FormComponent 
                 reportDate={headerData.reportDate}
-                doctorName={finalDoctorName}
+                doctorName={cleanDoctorName}
                 room={headerData.room}
                 shiftTime={headerData.shiftTime}
                 formData={formData}
