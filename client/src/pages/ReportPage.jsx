@@ -31,6 +31,7 @@ import NoiForm from '../components/forms/departments/NoiForm';
 import LienChuyenKhoaForm from '../components/forms/departments/LienChuyenKhoaForm';
 import SurgeryCaseForm from '../components/forms/SurgeryCaseForm';
 import DeathCaseForm from '../components/forms/DeathCaseForm';
+import StaffSelectCombobox from '../components/common/StaffSelectCombobox';
 
 const DEPARTMENT_FORMS = {
   lck: LienChuyenKhoaForm,
@@ -315,57 +316,38 @@ const ReportPage = () => {
               </div>
             </div>
 
-            {/* 2. Bác sĩ trực chính (Thanh tìm kiếm Datalist thông minh có số thứ tự) */}
+            {/* 2. Bác sĩ trực chính (Combobox tìm kiếm thông minh cao cấp) */}
             <div className="form-group">
-              <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span>Tên Bác sĩ trực chính <span style={{ color: 'var(--brand-red)' }}>*</span></span>
-                {loadingStaff && <span style={{ fontSize: '0.75rem', color: 'var(--brand-blue)' }}><FaSpinner className="spinner" /> Đang tải nhân sự...</span>}
-              </label>
-              <div style={{ position: 'relative' }}>
-                <FaUserMd style={{ position: 'absolute', top: '50%', left: '1rem', transform: 'translateY(-50%)', color: 'var(--text-muted)', zIndex: 1 }} />
-                <input
-                  type="text"
-                  list="doctor-options-list"
-                  placeholder="Gõ số (1, 2...) hoặc gõ tên Bác sĩ để tìm kiếm..."
-                  value={headerData.selectedDoctor}
-                  onChange={(e) => setHeaderData({ ...headerData, selectedDoctor: e.target.value })}
-                  style={{ paddingLeft: '2.6rem', width: '100%' }}
-                  autoComplete="off"
-                />
-                <datalist id="doctor-options-list">
-                  {doctorOptions.map((opt, i) => (
-                    <option key={i} value={opt.value} />
-                  ))}
-                </datalist>
-              </div>
-              <small style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px', display: 'block' }}>
-                💡 Gợi ý: Gõ <strong>số thứ tự</strong> (1, 2, 3...) hoặc <strong>chữ cái tên</strong> để tìm nhanh, hoặc gõ tên mới tự do.
-              </small>
+              <StaffSelectCombobox
+                label="Tên Bác sĩ trực chính"
+                required={true}
+                placeholder="Gõ số (1, 2...) hoặc gõ tên Bác sĩ để chọn nhanh..."
+                value={headerData.selectedDoctor}
+                onChange={(val) => setHeaderData({ ...headerData, selectedDoctor: val })}
+                doctors={staffList.doctors}
+                nurses={staffList.nurses}
+                allStaff={staffList.allStaff}
+                type="doctor"
+                loading={loadingStaff}
+                helpText="💡 Gợi ý: Bấm số (1, 2...) hoặc gõ tên chữ cái để chọn nhanh bác sĩ trực."
+              />
             </div>
 
-            {/* 3. Điều dưỡng trực chính (Thanh tìm kiếm Datalist thông minh có số thứ tự) */}
+            {/* 3. Điều dưỡng trực chính (Combobox tìm kiếm thông minh cao cấp) */}
             <div className="form-group">
-              <label>Điều dưỡng trực chính (Tùy chọn)</label>
-              <div style={{ position: 'relative' }}>
-                <FaUserNurse style={{ position: 'absolute', top: '50%', left: '1rem', transform: 'translateY(-50%)', color: 'var(--text-muted)', zIndex: 1 }} />
-                <input
-                  type="text"
-                  list="nurse-options-list"
-                  placeholder="Gõ số (1, 2...) hoặc gõ tên Điều dưỡng để tìm kiếm..."
-                  value={headerData.selectedNurse}
-                  onChange={(e) => setHeaderData({ ...headerData, selectedNurse: e.target.value })}
-                  style={{ paddingLeft: '2.6rem', width: '100%' }}
-                  autoComplete="off"
-                />
-                <datalist id="nurse-options-list">
-                  {nurseOptions.map((opt, i) => (
-                    <option key={i} value={opt.value} />
-                  ))}
-                </datalist>
-              </div>
-              <small style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px', display: 'block' }}>
-                💡 Gợi ý: Gõ <strong>số thứ tự</strong> hoặc <strong>chữ cái tên</strong> để chọn nhanh.
-              </small>
+              <StaffSelectCombobox
+                label="Điều dưỡng trực chính (Tùy chọn)"
+                required={false}
+                placeholder="Gõ số (1, 2...) hoặc gõ tên Điều dưỡng..."
+                value={headerData.selectedNurse}
+                onChange={(val) => setHeaderData({ ...headerData, selectedNurse: val })}
+                doctors={staffList.doctors}
+                nurses={staffList.nurses}
+                allStaff={staffList.allStaff}
+                type="nurse"
+                loading={loadingStaff}
+                helpText="💡 Gợi ý: Bấm số hoặc gõ tên để chọn nhanh điều dưỡng trực."
+              />
             </div>
 
             {/* 4. Phần: Nhân sự trực thêm giờ / Tăng cường */}
@@ -395,7 +377,7 @@ const ReportPage = () => {
                       key={ot.id || idx} 
                       style={{ 
                         display: 'grid', 
-                        gridTemplateColumns: '1.2fr 1fr auto', 
+                        gridTemplateColumns: '1.4fr 1fr auto', 
                         gap: '0.5rem', 
                         alignItems: 'center',
                         background: '#FFFFFF',
@@ -404,22 +386,17 @@ const ReportPage = () => {
                         border: '1px solid #CBD5E1'
                       }}
                     >
-                      {/* Chọn nhân sự với input list & datalist */}
+                      {/* Chọn nhân sự với StaffSelectCombobox */}
                       <div>
-                        <input
-                          type="text"
-                          list={`overtime-options-list-${idx}`}
+                        <StaffSelectCombobox
                           placeholder="Gõ số (1, 2...) hoặc tên..."
                           value={ot.staffName}
-                          onChange={(e) => handleOvertimeChange(idx, 'staffName', e.target.value)}
-                          style={{ width: '100%', fontSize: '0.85rem' }}
-                          autoComplete="off"
+                          onChange={(val) => handleOvertimeChange(idx, 'staffName', val)}
+                          doctors={staffList.doctors}
+                          nurses={staffList.nurses}
+                          allStaff={staffList.allStaff}
+                          type="all"
                         />
-                        <datalist id={`overtime-options-list-${idx}`}>
-                          {allStaffOptions.map((opt, i) => (
-                            <option key={i} value={opt.value} />
-                          ))}
-                        </datalist>
                       </div>
 
                       {/* Nhập thời gian trực thêm giờ */}
