@@ -48,3 +48,6 @@ check-db.js
 restore.js
 populate-data.js
 fix-dates.js
+verify-database.js
+db-cleaner.js
+query.js
