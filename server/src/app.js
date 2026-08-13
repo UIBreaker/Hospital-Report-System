@@ -3,6 +3,9 @@ const cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const staffRoutes = require('./routes/staffRoutes');
+const { auth } = require('./middleware/auth');
+const { getStaffByDepartment } = require('./controllers/staffController');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -19,7 +22,8 @@ app.get('/', (req, res) => {
     endpoints: {
       auth: '/api/auth/login',
       reports: '/api/reports',
-      admin: '/api/admin/dashboard'
+      admin: '/api/admin/dashboard',
+      staff: '/api/staff'
     }
   });
 });
@@ -36,6 +40,8 @@ app.get('/api', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/staff', staffRoutes);
+app.get('/api/staff-by-department', auth, getStaffByDepartment);
 
 // Error Handler
 app.use(errorHandler);

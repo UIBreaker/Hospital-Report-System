@@ -14,7 +14,7 @@
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel%20App-0070F3?style=for-the-badge&logo=vercel&logoColor=white)](https://hospital-report-system.vercel.app/)
 [![Author](https://img.shields.io/badge/Author-Nguyen%20Vu%20Nhat%20Nam%20(2004)-0F2C59?style=for-the-badge&logo=github)](https://github.com/UIBreaker/Hospital-Report-System)
-[![Version](https://img.shields.io/badge/Version-1.5.2-10B981?style=for-the-badge)](https://hospital-report-system.vercel.app/)
+[![Version](https://img.shields.io/badge/Version-1.6.0-10B981?style=for-the-badge)](https://hospital-report-system.vercel.app/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
 </div>
@@ -531,7 +531,27 @@ Mọi đóng góp nhằm hoàn thiện hệ thống y tế đều được hoan 
   * Số 0 thứ nhất (`X.0.0`): Bản mới tinh vừa ra mắt, sạch sẽ, chưa qua chỉnh sửa nhỏ lẻ.
   * Số 0 thứ hai (`X.Y.0`): Chưa có lỗi nhỏ nào cần phải vá sau khi phát hành tính năng mới.
 
-### Phiên bản 1.5.2 (Tháng 08/2026) — *Phiên bản hiện tại*
+### Phiên bản 1.6.0 (Tháng 08/2026) — *Phiên bản hiện tại*
+* 👨‍⚕️ **Nâng Cấp Toàn Diện Tính Năng "Thông Tin Hành Chính Ca Trực":**
+  * Chuyển đổi ô nhập text thủ công của **Bác sĩ trực chính** và **Điều dưỡng trực chính** thành thẻ chọn `<select>` thông minh, tự động gọi API `/api/staff-by-department` để chỉ hiển thị nhân sự thuộc đúng khoa của tài khoản đang đăng nhập.
+  * Tích hợp tùy chọn linh hoạt **"✏️ Nhập tên khác..."** khi ca trực có bác sĩ / nhân sự ngoài danh mục hoặc bác sĩ tăng cường từ đơn vị khác.
+* ⏰ **Ra mắt Tính Năng "Nhân Sự Trực Thêm Giờ / Tăng Cường":**
+  * Hỗ trợ nút bấm **`+ Thêm nhân sự tăng cường`** sinh động các dòng chọn nhân sự từ khoa kèm khung nhập thời gian trực tăng cường (ví dụ: `17h - 21h`, `4h MRT (00h - 03h)`).
+  * Cho phép thêm/xóa không giới hạn số lượng nhân sự tăng cường trong ca trực.
+* 👥 **Xây dựng Phân Hệ "Quản Lý Nhân Sự (Staff Management)" Dành Cho Admin/KHNV:**
+  * Bổ sung Tab thứ 3 **"Quản Lý Nhân Sự"** trên thanh điều hướng `AdminDashboard`.
+  * Bảng dữ liệu thống kê tổng nhân sự, số lượng Bác sĩ, Điều dưỡng / Kỹ thuật viên toàn viện.
+  * Bộ lọc đa năng theo **12 khoa phòng**, **Chức danh** (Bác sĩ, Điều dưỡng, Hộ sinh, Kỹ thuật viên, Khác) và ô tìm kiếm tức thì theo Họ tên / Số CCHN.
+  * Form Modal chuyên nghiệp cho phép Admin thêm mới, chỉnh sửa thông tin và xóa nhân viên với cơ chế xác thực an toàn.
+* ☁️ **Khởi Tạo CSDL & Chuẩn Hóa Múi Giờ GMT+7:**
+  * Tạo bảng MySQL `staff_members` (id, full_name, position, department, certificate, gender, created_at) trên Aiven Cloud.
+  * Bổ sung trường `nurse_name` và `overtime_staff` (JSON) vào bảng `reports`.
+  * Khóa cứng múi giờ `timezone: '+07:00'` và `dateStrings: true` trong cấu hình pool MySQL connection.
+* 📺 **Đồng bộ Hiển Thị Trình Chiếu Slide & Modal Chi Tiết:**
+  * Banner slide giao ban hiển thị trực quan: Bác sĩ trực chính, Điều dưỡng trực chính, Huy hiệu ca trực thêm giờ, Phòng trực và Thời gian trực.
+* 🏷️ Nâng cấp phiên bản lên **`v1.6.0`** theo quy chuẩn Semantic Versioning.
+
+### Phiên bản 1.5.2 (Tháng 08/2026)
 * ☁️ **Cập nhật Cấu hình Kết Nối CSDL Đám Mây Aiven MySQL Mới:**
   * Đồng bộ thông số kết nối Database mới: Host `mysql-1123ebf7-nhatnam171217-29a7.i.aivencloud.com`, Port `23760`, User `avnadmin`, Database `hospital_report`.
   * Tự động kích hoạt cơ chế mã hóa SSL (`rejectUnauthorized: false`) khi kết nối đến cụm máy chủ đám mây Aiven.

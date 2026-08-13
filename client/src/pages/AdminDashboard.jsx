@@ -1,14 +1,74 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
-import { FaCalendarAlt, FaSignOutAlt, FaTv, FaCheck, FaTimes, FaSpinner, FaSync, FaEdit, FaSave, FaEye, FaPlus, FaTrash, FaAmbulance, FaExclamationTriangle, FaCodeBranch, FaDatabase, FaTable, FaServer, FaHdd, FaLayerGroup, FaInfoCircle, FaShieldAlt } from 'react-icons/fa';
+import { 
+  FaCalendarAlt, 
+  FaSignOutAlt, 
+  FaTv, 
+  FaCheck, 
+  FaTimes, 
+  FaSpinner, 
+  FaSync, 
+  FaEdit, 
+  FaSave, 
+  FaEye, 
+  FaPlus, 
+  FaTrash, 
+  FaAmbulance, 
+  FaExclamationTriangle, 
+  FaDatabase, 
+  FaTable, 
+  FaServer, 
+  FaHdd, 
+  FaLayerGroup, 
+  FaInfoCircle, 
+  FaUsers, 
+  FaUserMd, 
+  FaUserNurse, 
+  FaSearch, 
+  FaFilter, 
+  FaIdCard, 
+  FaVenusMars, 
+  FaClock 
+} from 'react-icons/fa';
 import reportService from '../services/reportService';
+import staffService from '../services/staffService';
+
+const DEPARTMENT_MAP = {
+  lck: 'Khoa Liên Chuyên Khoa',
+  xn: 'Khoa Xét nghiệm',
+  cdha: 'Chẩn đoán hình ảnh',
+  hscc_tnt: 'Hồi sức cấp cứu – Thận nhân tạo',
+  noi: 'Khoa Nội',
+  nhi: 'Khoa Nhi',
+  nhiem: 'Khoa Nhiễm',
+  san: 'Khoa Sản',
+  yhct_phcn: 'Y học cổ truyền – Phục hồi chức năng',
+  ngoai_th: 'Ngoại tổng hợp',
+  ctch: 'Chấn thương chỉnh hình',
+  gmhs: 'Gây mê Hồi sức',
+};
+
+const DEPARTMENT_ORDER = [
+  'lck',
+  'xn',
+  'cdha',
+  'hscc_tnt',
+  'noi',
+  'nhi',
+  'nhiem',
+  'san',
+  'yhct_phcn',
+  'ngoai_th',
+  'ctch',
+  'gmhs'
+];
 
 const AdminDashboard = () => {
   const { logout } = useContext(AuthContext);
   const navigate = useNavigate();
   
-  // Tab State: 'reports' (Báo Cáo Giao Ban) | 'database' (Quản Lý Database)
+  // Tab State: 'reports' | 'staff' | 'database'
   const [activeTab, setActiveTab] = useState('reports');
 
   const [date, setDate] = useState(() => {
@@ -21,13 +81,42 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Database Stats State
+  // -------------------------------------------------------------------------
+  // STAFF MANAGEMENT STATE
+  // -------------------------------------------------------------------------
+  const [staffList, setStaffList] = useState([]);
+  const [loadingStaff, setLoadingStaff] = useState(false);
+  const [staffError, setStaffError] = useState('');
+  const [staffSearch, setStaffSearch] = useState('');
+  const [staffDeptFilter, setStaffDeptFilter] = useState('all');
+  const [staffPosFilter, setStaffPosFilter] = useState('all');
+
+  // Staff Add/Edit Modal State
+  const [staffModalOpen, setStaffModalOpen] = useState(false);
+  const [editingStaffId, setEditingStaffId] = useState(null);
+  const [staffFormData, setStaffFormData] = useState({
+    full_name: '',
+    position: 'Bác sĩ',
+    department: 'lck',
+    certificate: '',
+    gender: 'Nam'
+  });
+  const [savingStaff, setSavingStaff] = useState(false);
+  const [staffActionMsg, setStaffActionMsg] = useState({ type: '', text: '' });
+  const [staffToDelete, setStaffToDelete] = useState(null);
+  const [deletingStaff, setDeletingStaff] = useState(false);
+
+  // -------------------------------------------------------------------------
+  // DATABASE STATS STATE
+  // -------------------------------------------------------------------------
   const [dbStats, setDbStats] = useState(null);
   const [loadingDb, setLoadingDb] = useState(false);
   const [dbError, setDbError] = useState('');
   const [lastDbUpdate, setLastDbUpdate] = useState('');
 
-  // Modal State for View & Edit & Delete Report
+  // -------------------------------------------------------------------------
+  // REPORT DETAIL MODAL STATE
+  // -------------------------------------------------------------------------
   const [modalOpen, setModalOpen] = useState(false);
   const [modalDept, setModalDept] = useState(null);
   const [loadingReport, setLoadingReport] = useState(false);
@@ -38,11 +127,20 @@ const AdminDashboard = () => {
   const [saveSuccess, setSaveSuccess] = useState('');
 
   // Editable Form Data inside Modal
-  const [editHeader, setEditHeader] = useState({ doctorName: '', room: '', shiftTime: '' });
+  const [editHeader, setEditHeader] = useState({ 
+    doctorName: '', 
+    nurseName: '', 
+    overtimeStaff: [], 
+    room: '', 
+    shiftTime: '' 
+  });
   const [editReportData, setEditReportData] = useState({});
   const [editTransferCases, setEditTransferCases] = useState([]);
   const [hasReport, setHasReport] = useState(false);
 
+  // -------------------------------------------------------------------------
+  // FETCH FUNCTIONS
+  // -------------------------------------------------------------------------
   const fetchStatus = async () => {
     setLoading(true);
     setError('');
@@ -51,22 +149,33 @@ const AdminDashboard = () => {
       setStatusList(response.data || []);
     } catch (err) {
       setError('Không thể tải trạng thái báo cáo.');
-      setStatusList([
-        { departmentCode: 'lck', departmentName: 'Khoa Liên Chuyên Khoa', status: 'not_submitted' },
-        { departmentCode: 'xn', departmentName: 'Khoa Xét nghiệm', status: 'not_submitted' },
-        { departmentCode: 'cdha', departmentName: 'Chẩn đoán hình ảnh', status: 'not_submitted' },
-        { departmentCode: 'hscc_tnt', departmentName: 'Hồi sức cấp cứu – Thận nhân tạo', status: 'not_submitted' },
-        { departmentCode: 'noi', departmentName: 'Khoa Nội', status: 'not_submitted' },
-        { departmentCode: 'nhi', departmentName: 'Khoa Nhi', status: 'not_submitted' },
-        { departmentCode: 'nhiem', departmentName: 'Khoa Nhiễm', status: 'not_submitted' },
-        { departmentCode: 'san', departmentName: 'Khoa Sản', status: 'not_submitted' },
-        { departmentCode: 'yhct_phcn', departmentName: 'Y học cổ truyền – Phục hồi chức năng', status: 'not_submitted' },
-        { departmentCode: 'ngoai_th', departmentName: 'Ngoại tổng hợp', status: 'not_submitted' },
-        { departmentCode: 'ctch', departmentName: 'Chấn thương chỉnh hình', status: 'not_submitted' },
-        { departmentCode: 'gmhs', departmentName: 'Gây mê Hồi sức', status: 'not_submitted' },
-      ]);
+      setStatusList(DEPARTMENT_ORDER.map(code => ({
+        departmentCode: code,
+        departmentName: DEPARTMENT_MAP[code] || code,
+        status: 'not_submitted'
+      })));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchStaff = async () => {
+    setLoadingStaff(true);
+    setStaffError('');
+    try {
+      const params = {};
+      if (staffDeptFilter !== 'all') params.department = staffDeptFilter;
+      if (staffPosFilter !== 'all') params.position = staffPosFilter;
+      if (staffSearch.trim()) params.search = staffSearch.trim();
+
+      const res = await staffService.getAllStaff(params);
+      if (res.success) {
+        setStaffList(res.data || []);
+      }
+    } catch (err) {
+      setStaffError('Không thể tải danh sách nhân sự.');
+    } finally {
+      setLoadingStaff(false);
     }
   };
 
@@ -89,11 +198,87 @@ const AdminDashboard = () => {
   useEffect(() => {
     if (activeTab === 'reports') {
       fetchStatus();
+    } else if (activeTab === 'staff') {
+      fetchStaff();
     } else if (activeTab === 'database') {
       fetchDatabaseStats();
     }
-  }, [date, activeTab]);
+  }, [date, activeTab, staffDeptFilter, staffPosFilter]);
 
+  // -------------------------------------------------------------------------
+  // STAFF ACTIONS
+  // -------------------------------------------------------------------------
+  const handleOpenAddStaff = () => {
+    setEditingStaffId(null);
+    setStaffFormData({
+      full_name: '',
+      position: 'Bác sĩ',
+      department: 'lck',
+      certificate: '',
+      gender: 'Nam'
+    });
+    setStaffActionMsg({ type: '', text: '' });
+    setStaffModalOpen(true);
+  };
+
+  const handleOpenEditStaff = (staff) => {
+    setEditingStaffId(staff.id);
+    setStaffFormData({
+      full_name: staff.full_name,
+      position: staff.position || 'Bác sĩ',
+      department: staff.department || 'lck',
+      certificate: staff.certificate || '',
+      gender: staff.gender || 'Nam'
+    });
+    setStaffActionMsg({ type: '', text: '' });
+    setStaffModalOpen(true);
+  };
+
+  const handleSaveStaff = async (e) => {
+    e.preventDefault();
+    if (!staffFormData.full_name.trim()) {
+      setStaffActionMsg({ type: 'error', text: 'Vui lòng nhập họ và tên nhân sự.' });
+      return;
+    }
+
+    setSavingStaff(true);
+    setStaffActionMsg({ type: '', text: '' });
+    try {
+      if (editingStaffId) {
+        await staffService.updateStaff(editingStaffId, staffFormData);
+        setStaffActionMsg({ type: 'success', text: 'Cập nhật thông tin nhân sự thành công!' });
+      } else {
+        await staffService.createStaff(staffFormData);
+        setStaffActionMsg({ type: 'success', text: 'Thêm nhân sự mới thành công!' });
+      }
+      setTimeout(() => {
+        setStaffModalOpen(false);
+        fetchStaff();
+      }, 700);
+    } catch (err) {
+      setStaffActionMsg({ type: 'error', text: err.response?.data?.error || 'Có lỗi xảy ra khi lưu nhân sự.' });
+    } finally {
+      setSavingStaff(false);
+    }
+  };
+
+  const handleDeleteStaffConfirm = async () => {
+    if (!staffToDelete) return;
+    setDeletingStaff(true);
+    try {
+      await staffService.deleteStaff(staffToDelete.id);
+      setStaffToDelete(null);
+      fetchStaff();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Lỗi khi xóa nhân sự');
+    } finally {
+      setDeletingStaff(false);
+    }
+  };
+
+  // -------------------------------------------------------------------------
+  // REPORT DETAIL MODAL HANDLERS
+  // -------------------------------------------------------------------------
   const handlePresentation = () => {
     navigate(`/presentation/${date}`);
   };
@@ -110,8 +295,14 @@ const AdminDashboard = () => {
       const report = res.data;
       if (report) {
         setHasReport(true);
+        let overtime = report.overtime_staff;
+        if (typeof overtime === 'string') {
+          try { overtime = JSON.parse(overtime); } catch (e) { overtime = []; }
+        }
         setEditHeader({
           doctorName: report.doctor_name || '',
+          nurseName: report.nurse_name || '',
+          overtimeStaff: Array.isArray(overtime) ? overtime : [],
           room: report.room || '',
           shiftTime: report.shift_time || ''
         });
@@ -120,7 +311,7 @@ const AdminDashboard = () => {
         setEditTransferCases(report.transferCases || []);
       } else {
         setHasReport(false);
-        setEditHeader({ doctorName: '', room: '', shiftTime: '' });
+        setEditHeader({ doctorName: '', nurseName: '', overtimeStaff: [], room: '', shiftTime: '' });
         setEditReportData({});
         setEditTransferCases([]);
       }
@@ -139,6 +330,8 @@ const AdminDashboard = () => {
         departmentCode: modalDept.departmentCode,
         reportDate: date,
         doctorName: editHeader.doctorName,
+        nurseName: editHeader.nurseName,
+        overtimeStaff: editHeader.overtimeStaff,
         room: editHeader.room,
         shiftTime: editHeader.shiftTime,
         reportData: editReportData,
@@ -149,7 +342,7 @@ const AdminDashboard = () => {
       setHasReport(true);
       fetchStatus();
     } catch (err) {
-      alert('Không thể lưu báo cáo: ' + (err.response?.data?.error || err.message));
+      alert('Lỗi khi lưu báo cáo: ' + (err.response?.data?.error || err.message));
     } finally {
       setSaving(false);
     }
@@ -160,243 +353,99 @@ const AdminDashboard = () => {
     try {
       await reportService.deleteReport(modalDept.departmentCode, date);
       setModalOpen(false);
-      setShowDeleteConfirm(false);
       fetchStatus();
     } catch (err) {
-      alert('Không thể xóa báo cáo: ' + (err.response?.data?.error || err.message));
+      alert('Lỗi khi xóa báo cáo: ' + (err.response?.data?.error || err.message));
     } finally {
       setDeleting(false);
+      setShowDeleteConfirm(false);
     }
   };
 
-  const handleReportDataChange = (path, val) => {
-    const keys = path.split('.');
-    const newData = JSON.parse(JSON.stringify(editReportData));
-    let curr = newData;
-    for (let i = 0; i < keys.length - 1; i++) {
-      if (!curr[keys[i]]) curr[keys[i]] = {};
-      curr = curr[keys[i]];
-    }
-    curr[keys[keys.length - 1]] = val;
-    setEditReportData(newData);
+  const handleDataChange = (key, value) => {
+    setEditReportData(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleTransferCaseChange = (idx, field, value) => {
+    const updated = [...editTransferCases];
+    updated[idx][field] = value;
+    setEditTransferCases(updated);
   };
 
   const handleAddTransferCase = () => {
     setEditTransferCases([
       ...editTransferCases,
-      { patientName: '', age: '', address: '', admissionTime: '', reason: '', clinicalTests: '', diagnosis: '', initialTreatment: '', progressNotes: '' }
+      {
+        patientName: '',
+        age: '',
+        address: '',
+        admissionTime: '',
+        reason: '',
+        clinicalTests: '',
+        diagnosis: '',
+        initialTreatment: '',
+        progressNotes: ''
+      }
     ]);
   };
 
-  const handleRemoveTransferCase = (index) => {
-    setEditTransferCases(editTransferCases.filter((_, i) => i !== index));
+  const handleRemoveTransferCase = (idx) => {
+    setEditTransferCases(editTransferCases.filter((_, i) => i !== idx));
   };
 
-  const handleTransferCaseChange = (index, field, val) => {
-    const newCases = [...editTransferCases];
-    newCases[index] = { ...newCases[index], [field]: val };
-    setEditTransferCases(newCases);
-  };
-
-  const DEPARTMENT_ORDER = [
-    'lck',
-    'xn',
-    'cdha',
-    'hscc_tnt',
-    'noi',
-    'nhi',
-    'nhiem',
-    'san',
-    'yhct_phcn',
-    'ngoai_th',
-    'ctch',
-    'gmhs'
-  ];
-
-  const submittedCount = statusList.filter(s => s.status === 'submitted').length;
+  // -------------------------------------------------------------------------
+  // STATS COUNTERS
+  // -------------------------------------------------------------------------
   const totalCount = statusList.length;
+  const submittedCount = statusList.filter(s => s.status === 'submitted').length;
 
-  const ADMIN_FIELD_LABELS = {
-    // Khoa Liên Chuyên Khoa
-    tmh_tongSo: 'Tai Mũi Họng (Tổng số)',
-    tmh_thuThuat: 'Tai Mũi Họng (Thủ thuật)',
-    mat_tongSo: 'Mắt (Tổng số)',
-    mat_thuThuat: 'Mắt (Thủ thuật)',
-    rhm_noi_tongSo: 'RHM + Nội (Tổng số)',
-    rhm_noi_thuThuat: 'RHM + Nội (Thủ thuật)',
-    daLieu_tongSo: 'Da liễu (Tổng số)',
-    nhapVien_tongSo: 'Nhập viện',
-    chuyenVien_tongSo: 'Chuyển viện',
-    tong4ck_tongSo: 'Tổng số 4 Chuyên Khoa',
-    tong4ck_thuThuat: 'Tổng Thủ thuật 4CK',
-
-    // Các khoa khác
-    bsSieuAm: 'Bác sĩ trực Siêu âm',
-    bsXquangCT: 'Bác sĩ trực Xquang – CT Scan',
-    themGio: 'Ghi chú thêm giờ',
-    techniques: 'Thống kê kỹ thuật',
-    noiTru: 'Điều trị nội trú',
-    ngoaiTru: 'Điều trị ngoại trú',
-    keToa: 'Kê toa',
-    hscc: 'Khối Hồi sức cấp cứu (HSCC)',
-    tnt: 'Khối Thận nhân tạo (TNT)',
-    pk21: 'Phòng khám 21',
-    tuVong: '⚠️ TỬ VONG'
-  };
-
-  const getAdminFieldLabel = (key) => {
-    if (key.toLowerCase().includes('tuvong') || key.toLowerCase().includes('tu_vong')) {
-      return '🚨 TỬ VONG (Số ca)';
-    }
-    return ADMIN_FIELD_LABELS[key] || key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ').replace(/^./, s => s.toUpperCase());
-  };
-
-  const renderEditableFields = (obj, prefix = '') => {
-    if (!obj || typeof obj !== 'object') return null;
-    return Object.entries(obj).map(([key, value]) => {
-      const fieldPath = prefix ? `${prefix}.${key}` : key;
-      const isTuVong = key.toLowerCase().includes('tuvong') || key.toLowerCase().includes('tu_vong');
-
-      if (value && typeof value === 'object' && !Array.isArray(value)) {
-        return (
-          <div key={fieldPath} style={{ gridColumn: '1 / -1', marginTop: '1rem', borderTop: '1px dashed var(--border)', paddingTop: '0.75rem' }}>
-            <h4 style={{ color: 'var(--brand-blue)', fontSize: '0.95rem', fontWeight: '700', textTransform: 'uppercase' }}>{getAdminFieldLabel(key)}</h4>
-            <div className="form-grid" style={{ marginTop: '0.5rem' }}>
-              {renderEditableFields(value, fieldPath)}
-            </div>
-          </div>
-        );
-      }
-
-      // Handle Array of Objects (e.g. techniques in Chẩn đoán hình ảnh)
-      if (Array.isArray(value)) {
-        return (
-          <div key={fieldPath} style={{ gridColumn: '1 / -1', marginTop: '1rem', borderTop: '1px dashed var(--border)', paddingTop: '0.75rem' }}>
-            <h4 style={{ color: 'var(--brand-blue)', fontSize: '0.95rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '0.6rem' }}>
-              {key === 'techniques' ? 'Thống Kê Kỹ Thuật (Chẩn Đoán Hình Ảnh)' : getAdminFieldLabel(key)}
-            </h4>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
-                <thead>
-                  <tr style={{ backgroundColor: '#F1F5F9', color: 'var(--brand-blue)' }}>
-                    <th style={{ padding: '8px 12px', border: '1px solid #E2E8F0', textAlign: 'left', fontWeight: '700' }}>Kỹ thuật</th>
-                    <th style={{ padding: '8px 12px', border: '1px solid #E2E8F0', textAlign: 'center', fontWeight: '700' }}>Tổng số</th>
-                    <th style={{ padding: '8px 12px', border: '1px solid #E2E8F0', textAlign: 'center', fontWeight: '700' }}>Bảo hiểm</th>
-                    <th style={{ padding: '8px 12px', border: '1px solid #E2E8F0', textAlign: 'center', fontWeight: '700' }}>Nội trú</th>
-                    <th style={{ padding: '8px 12px', border: '1px solid #E2E8F0', textAlign: 'center', fontWeight: '700' }}>Ngoại trú</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {value.map((item, idx) => (
-                    <tr key={idx} style={{ backgroundColor: idx % 2 === 0 ? '#FFFFFF' : '#F8FAFC' }}>
-                      <td style={{ padding: '8px 12px', border: '1px solid #E2E8F0', fontWeight: '700', color: 'var(--brand-blue)' }}>
-                        {item.name || `Mục ${idx + 1}`}
-                      </td>
-                      {['tongSo', 'baoHiem', 'noiTru', 'ngoaiTru'].map(col => (
-                        <td key={col} style={{ padding: '6px 8px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
-                          {isEditing ? (
-                            <input 
-                              type="number"
-                              min="0"
-                              value={item[col] ?? ''}
-                              onChange={(e) => {
-                                const newArray = JSON.parse(JSON.stringify(value));
-                                newArray[idx][col] = e.target.value;
-                                handleReportDataChange(fieldPath, newArray);
-                              }}
-                              style={{ width: '80px', padding: '4px 6px', textAlign: 'center', border: '1.5px solid var(--border)', borderRadius: '4px' }}
-                            />
-                          ) : (
-                            <span style={{ fontWeight: '700', color: col === 'tongSo' ? 'var(--brand-blue)' : 'var(--text-main)' }}>
-                              {item[col] || '0'}
-                            </span>
-                          )}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        );
-      }
-
-      return (
-        <div key={fieldPath} className="form-group" style={isTuVong ? { backgroundColor: '#FEF2F2', padding: '0.5rem', borderRadius: '8px', border: '1px solid #FCA5A5' } : {}}>
-          <label style={{ fontSize: '0.8rem', color: isTuVong ? '#DC2626' : 'var(--text-muted)', fontWeight: isTuVong ? '800' : '600' }}>
-            {getAdminFieldLabel(key)}
-          </label>
-          {isEditing ? (
-            <input 
-              type="text" 
-              value={value ?? ''} 
-              onChange={(e) => handleReportDataChange(fieldPath, e.target.value)} 
-              style={isTuVong ? { borderColor: '#DC2626', color: '#DC2626', fontWeight: '800', backgroundColor: '#FFF' } : {}}
-            />
-          ) : (
-            <div style={{
-              padding: '0.6rem 0.85rem',
-              backgroundColor: isTuVong ? '#FEE2E2' : 'var(--bg-app)',
-              borderRadius: 'var(--radius-md)',
-              border: `1px solid ${isTuVong ? '#DC2626' : 'var(--border)'}`,
-              fontSize: '0.9rem',
-              fontWeight: isTuVong ? '800' : '600',
-              color: isTuVong ? '#DC2626' : (value ? 'var(--text-main)' : 'var(--text-muted)'),
-              wordBreak: 'break-word',
-              whiteSpace: 'pre-wrap'
-            }}>
-              {value !== undefined && value !== null && value !== '' ? String(value) : '—'}
-            </div>
-          )}
-        </div>
-      );
-    });
-  };
+  const totalStaffCount = staffList.length;
+  const doctorCount = staffList.filter(s => s.position === 'Bác sĩ' || s.position?.toLowerCase().includes('bác sĩ')).length;
+  const nurseCount = staffList.filter(s => s.position !== 'Bác sĩ' && !s.position?.toLowerCase().includes('bác sĩ')).length;
 
   return (
-    <div className="admin-dashboard-wrapper" style={{ maxWidth: '1400px', margin: '0 auto', animation: 'fadeIn 0.4s ease-out' }}>
-      {/* Brand Header */}
-      <header className="card admin-header" style={{ marginBottom: '1.5rem', padding: '1rem 1.5rem', background: '#FFFFFF' }}>
-        <div className="admin-header-brand" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <img src="/logo.png" alt="Logo TTYT Bình Long" className="logo-img" />
+    <div className="admin-container" style={{ maxWidth: '1280px', margin: '0 auto', padding: '1.5rem' }}>
+      {/* Top Header Card */}
+      <header className="card admin-header" style={{ marginBottom: '1.5rem', padding: '1.25rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#FFFFFF', flexWrap: 'wrap', gap: '1rem' }}>
+        <div className="admin-header-left" style={{ display: 'flex', alignItems: 'center', gap: '1.2rem' }}>
+          <img src="/logo.png" alt="Logo TTYT Bình Long" className="logo-img" style={{ width: '48px', height: '48px' }} />
           <div>
-            <h4 style={{ fontSize: '0.75rem', color: 'var(--brand-red)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <h4 style={{ fontSize: '0.8rem', color: 'var(--brand-red)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
               TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG
             </h4>
-            <h2 style={{ fontSize: '1.2rem', color: 'var(--brand-blue)', fontWeight: '800' }}>
-              KHNV — Theo Dõi Báo Cáo Giao Ban
+            <h2 style={{ fontSize: '1.35rem', color: 'var(--brand-blue)', fontWeight: '800' }}>
+              Bảng Điều Khiển — Phòng Kế Hoạch Nghiệp Vụ
             </h2>
           </div>
         </div>
 
-        <div className="admin-header-actions" style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          <div className="admin-date-picker-box" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', backgroundColor: 'var(--bg-color)', padding: '0.45rem 0.85rem', borderRadius: 'var(--radius-md)', border: '1.5px solid var(--border)' }}>
-            <FaCalendarAlt color="var(--brand-blue-light)" />
-            <input 
-              type="date" 
-              value={date} 
-              onChange={(e) => setDate(e.target.value)}
-              style={{ border: 'none', outline: 'none', padding: 0, width: 'auto', background: 'transparent', fontWeight: '600', color: 'var(--brand-blue)', fontSize: '0.9rem' }}
-            />
-          </div>
-          <button className="btn btn-ghost btn-sm" onClick={fetchStatus} title="Làm mới dữ liệu" style={{ padding: '0.5rem 0.75rem' }}>
-            <FaSync className={loading ? 'spinner' : ''} />
-          </button>
-          <button className="btn btn-primary" onClick={handlePresentation} style={{ fontSize: '0.85rem', padding: '0.55rem 1.1rem' }}>
-            <FaTv /> Trình Chiếu Giao Ban
-          </button>
-          <button className="btn btn-secondary btn-sm" onClick={logout} style={{ fontSize: '0.85rem', padding: '0.55rem 0.9rem' }}>
+        <div className="admin-header-controls" style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+          {activeTab === 'reports' && (
+            <div className="date-picker-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#F8FAFC', padding: '0.35rem 0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
+              <FaCalendarAlt style={{ color: 'var(--brand-blue)' }} />
+              <input 
+                type="date" 
+                value={date} 
+                onChange={(e) => setDate(e.target.value)} 
+                style={{ border: 'none', background: 'transparent', outline: 'none', fontWeight: '600', color: 'var(--text-dark)' }}
+              />
+            </div>
+          )}
+
+          {activeTab === 'reports' && (
+            <button className="btn btn-primary" onClick={handlePresentation} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <FaTv /> Trình Chiếu Giao Ban
+            </button>
+          )}
+
+          <button onClick={logout} className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <FaSignOutAlt /> Đăng xuất
           </button>
         </div>
       </header>
 
-      {/* Navigation Tabs (Báo Cáo Giao Ban vs Quản Lý Database) */}
-      <div style={{
-        display: 'flex', gap: '0.75rem', marginBottom: '1.5rem',
-        borderBottom: '2px solid #E2E8F0', paddingBottom: '0.5rem', flexWrap: 'wrap'
-      }}>
+      {/* Navigation Tabs Bar */}
+      <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', borderBottom: '2px solid #E2E8F0', paddingBottom: '0.5rem', flexWrap: 'wrap' }}>
         <button
           onClick={() => setActiveTab('reports')}
           style={{
@@ -410,6 +459,21 @@ const AdminDashboard = () => {
           }}
         >
           <FaLayerGroup /> Báo Cáo Giao Ban
+        </button>
+
+        <button
+          onClick={() => setActiveTab('staff')}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '0.5rem',
+            padding: '0.65rem 1.25rem', borderRadius: '8px',
+            border: 'none', cursor: 'pointer', fontWeight: '700', fontSize: '0.95rem',
+            transition: 'all 0.2s ease',
+            backgroundColor: activeTab === 'staff' ? 'var(--brand-blue)' : '#F1F5F9',
+            color: activeTab === 'staff' ? '#FFFFFF' : '#475569',
+            boxShadow: activeTab === 'staff' ? '0 4px 12px rgba(15, 44, 89, 0.2)' : 'none'
+          }}
+        >
+          <FaUsers /> Quản Lý Nhân Sự ({totalStaffCount})
         </button>
         
         <button
@@ -433,7 +497,7 @@ const AdminDashboard = () => {
       {/* ============================================================ */}
       {activeTab === 'reports' && (
         <div className="animate-fade-in">
-          {/* Stats Summary Grid (Clean 3-column on all screens) */}
+          {/* Stats Summary Grid */}
           <div className="admin-stats-grid">
             <div className="card admin-stats-card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #EFF6FF, #DBEAFE)', borderLeft: '4px solid var(--brand-blue)' }}>
               <div className="stats-num" style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--brand-blue)' }}>{totalCount}</div>
@@ -526,7 +590,215 @@ const AdminDashboard = () => {
       )}
 
       {/* ============================================================ */}
-      {/* TAB 2: QUẢN LÝ DATABASE                                       */}
+      {/* TAB 2: QUẢN LÝ NHÂN SỰ                                         */}
+      {/* ============================================================ */}
+      {activeTab === 'staff' && (
+        <div className="animate-fade-in">
+          {/* Staff Summary Metrics */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', marginBottom: '1.5rem' }}>
+            <div className="card" style={{ padding: '1.25rem', background: 'linear-gradient(135deg, #EFF6FF, #DBEAFE)', borderLeft: '4px solid var(--brand-blue)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--brand-blue)' }}>{totalStaffCount}</div>
+                  <div style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Tổng nhân sự</div>
+                </div>
+                <FaUsers style={{ fontSize: '2rem', color: 'var(--brand-blue)', opacity: 0.6 }} />
+              </div>
+            </div>
+
+            <div className="card" style={{ padding: '1.25rem', background: 'linear-gradient(135deg, #F0FDF4, #DCFCE7)', borderLeft: '4px solid #10B981' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: '1.8rem', fontWeight: '800', color: '#065F46' }}>{doctorCount}</div>
+                  <div style={{ fontSize: '0.8rem', fontWeight: '700', color: '#047857', textTransform: 'uppercase' }}>Bác sĩ</div>
+                </div>
+                <FaUserMd style={{ fontSize: '2rem', color: '#10B981', opacity: 0.6 }} />
+              </div>
+            </div>
+
+            <div className="card" style={{ padding: '1.25rem', background: 'linear-gradient(135deg, #FEF3C7, #FDE68A)', borderLeft: '4px solid #D97706' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: '1.8rem', fontWeight: '800', color: '#92400E' }}>{nurseCount}</div>
+                  <div style={{ fontSize: '0.8rem', fontWeight: '700', color: '#B45309', textTransform: 'uppercase' }}>Điều dưỡng / KTV</div>
+                </div>
+                <FaUserNurse style={{ fontSize: '2rem', color: '#D97706', opacity: 0.6 }} />
+              </div>
+            </div>
+          </div>
+
+          {/* Controls Bar */}
+          <div className="card" style={{ marginBottom: '1.5rem', padding: '1.25rem 1.5rem', background: '#FFFFFF' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
+              <div>
+                <h3 style={{ fontSize: '1.15rem', color: 'var(--brand-blue)', fontWeight: '800', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <FaUsers style={{ color: 'var(--brand-blue)' }} /> Danh Mục Nhân Sự Khoa Phòng
+                </h3>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>
+                  Quản lý danh sách y bác sĩ và điều dưỡng phân quyền theo 12 khoa phòng toàn viện.
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                <button 
+                  className="btn btn-primary" 
+                  onClick={handleOpenAddStaff}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', padding: '0.55rem 1.25rem' }}
+                >
+                  <FaPlus /> Thêm Nhân Viên Mới
+                </button>
+                <button 
+                  className="btn btn-secondary btn-sm" 
+                  onClick={fetchStaff} 
+                  disabled={loadingStaff}
+                  title="Làm mới danh sách"
+                >
+                  <FaSync className={loadingStaff ? 'spinner' : ''} />
+                </button>
+              </div>
+            </div>
+
+            {/* Filter Row */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem', alignItems: 'center' }}>
+              {/* Search input */}
+              <div style={{ position: 'relative' }}>
+                <FaSearch style={{ position: 'absolute', top: '50%', left: '0.75rem', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+                <input 
+                  type="text" 
+                  placeholder="Tìm theo tên hoặc số CCHN..." 
+                  value={staffSearch}
+                  onChange={(e) => setStaffSearch(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && fetchStaff()}
+                  style={{ paddingLeft: '2.2rem', width: '100%', fontSize: '0.85rem' }}
+                />
+              </div>
+
+              {/* Department Filter */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <select 
+                  value={staffDeptFilter}
+                  onChange={(e) => setStaffDeptFilter(e.target.value)}
+                  style={{ width: '100%', fontSize: '0.85rem' }}
+                >
+                  <option value="all">🏥 Tất cả khoa phòng (12 khoa)</option>
+                  {DEPARTMENT_ORDER.map(code => (
+                    <option key={code} value={code}>
+                      {DEPARTMENT_MAP[code] || code}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Position Filter */}
+              <div>
+                <select 
+                  value={staffPosFilter}
+                  onChange={(e) => setStaffPosFilter(e.target.value)}
+                  style={{ width: '100%', fontSize: '0.85rem' }}
+                >
+                  <option value="all">👨‍⚕️ Tất cả chức danh</option>
+                  <option value="Bác sĩ">Bác sĩ</option>
+                  <option value="Điều dưỡng">Điều dưỡng</option>
+                  <option value="Hộ sinh">Hộ sinh</option>
+                  <option value="Kỹ thuật viên">Kỹ thuật viên</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {staffError && (
+            <div style={{ backgroundColor: 'var(--danger-light)', color: 'var(--danger)', padding: '1rem', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
+              ❌ {staffError}
+            </div>
+          )}
+
+          {/* Staff Table Card */}
+          <div className="card" style={{ padding: '1.25rem', background: '#FFFFFF', overflowX: 'auto' }}>
+            {loadingStaff ? (
+              <div style={{ textAlign: 'center', padding: '3rem' }}>
+                <FaSpinner className="spinner" style={{ fontSize: '2rem', color: 'var(--brand-blue)' }} />
+                <p style={{ marginTop: '0.5rem', color: 'var(--text-muted)' }}>Đang tải danh sách nhân sự...</p>
+              </div>
+            ) : staffList.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                <FaUsers style={{ fontSize: '3rem', opacity: 0.3, marginBottom: '1rem' }} />
+                <p>Không tìm thấy nhân sự nào khớp với điều kiện lọc.</p>
+              </div>
+            ) : (
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#F8FAFC', borderBottom: '2px solid #E2E8F0', color: '#475569' }}>
+                    <th style={{ padding: '0.85rem 1rem', fontWeight: '700', width: '50px' }}>#</th>
+                    <th style={{ padding: '0.85rem 1rem', fontWeight: '700' }}>Họ Và Tên</th>
+                    <th style={{ padding: '0.85rem 1rem', fontWeight: '700' }}>Chức Danh</th>
+                    <th style={{ padding: '0.85rem 1rem', fontWeight: '700' }}>Khoa Phòng</th>
+                    <th style={{ padding: '0.85rem 1rem', fontWeight: '700' }}>Số CCHN</th>
+                    <th style={{ padding: '0.85rem 1rem', fontWeight: '700' }}>Giới Tính</th>
+                    <th style={{ padding: '0.85rem 1rem', fontWeight: '700', textAlign: 'center' }}>Thao Tác</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {staffList.map((staff, idx) => (
+                    <tr 
+                      key={staff.id}
+                      style={{ 
+                        borderBottom: '1px solid #F1F5F9',
+                        backgroundColor: idx % 2 === 0 ? '#FFFFFF' : '#FAFAFA'
+                      }}
+                    >
+                      <td style={{ padding: '0.85rem 1rem', color: '#94A3B8', fontWeight: '600' }}>{idx + 1}</td>
+                      <td style={{ padding: '0.85rem 1rem', fontWeight: '700', color: 'var(--brand-blue)' }}>
+                        {staff.position === 'Bác sĩ' ? '👨‍⚕️ ' : '👩‍⚕️ '}
+                        {staff.full_name}
+                      </td>
+                      <td style={{ padding: '0.85rem 1rem' }}>
+                        <span className="badge" style={{ 
+                          backgroundColor: staff.position === 'Bác sĩ' ? '#DBEAFE' : '#FEF3C7',
+                          color: staff.position === 'Bác sĩ' ? '#1E40AF' : '#92400E'
+                        }}>
+                          {staff.position}
+                        </span>
+                      </td>
+                      <td style={{ padding: '0.85rem 1rem', color: '#334155', fontWeight: '600' }}>
+                        {DEPARTMENT_MAP[staff.department] || staff.department}
+                      </td>
+                      <td style={{ padding: '0.85rem 1rem', color: '#64748B', fontFamily: 'monospace' }}>
+                        {staff.certificate || '—'}
+                      </td>
+                      <td style={{ padding: '0.85rem 1rem', color: '#475569' }}>
+                        {staff.gender || 'Nam'}
+                      </td>
+                      <td style={{ padding: '0.85rem 1rem', textAlign: 'center' }}>
+                        <div style={{ display: 'inline-flex', gap: '0.4rem' }}>
+                          <button 
+                            className="btn btn-secondary btn-sm"
+                            onClick={() => handleOpenEditStaff(staff)}
+                            style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem' }}
+                            title="Chỉnh sửa"
+                          >
+                            <FaEdit /> Sửa
+                          </button>
+                          <button 
+                            className="btn btn-danger btn-sm"
+                            onClick={() => setStaffToDelete(staff)}
+                            style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem' }}
+                            title="Xóa nhân sự"
+                          >
+                            <FaTrash /> Xóa
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* TAB 3: QUẢN LÝ DATABASE                                       */}
       {/* ============================================================ */}
       {activeTab === 'database' && (
         <div className="animate-fade-in">
@@ -665,7 +937,8 @@ const AdminDashboard = () => {
                       const desc = {
                         users: 'Tài khoản đăng nhập & phân quyền cán bộ/khoa phòng',
                         reports: 'Báo cáo số liệu giao ban hàng ngày của 12 khoa phòng',
-                        transfer_cases: 'Hồ sơ chi tiết các ca bệnh nhân chuyển viện cấp cứu'
+                        transfer_cases: 'Hồ sơ chi tiết các ca bệnh nhân chuyển viện cấp cứu',
+                        staff_members: 'Danh mục y bác sĩ, điều dưỡng các khoa phòng toàn viện'
                       }[table.tableName] || 'Bảng dữ liệu hệ thống';
 
                       return (
@@ -673,11 +946,8 @@ const AdminDashboard = () => {
                           key={table.tableName}
                           style={{ 
                             borderBottom: '1px solid #F1F5F9',
-                            backgroundColor: idx % 2 === 0 ? '#FFFFFF' : '#FAFAFA',
-                            transition: 'background-color 0.15s ease'
+                            backgroundColor: idx % 2 === 0 ? '#FFFFFF' : '#FAFAFA'
                           }}
-                          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#EFF6FF'; }}
-                          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = idx % 2 === 0 ? '#FFFFFF' : '#FAFAFA'; }}
                         >
                           <td style={{ padding: '0.85rem 1rem', color: '#94A3B8', fontWeight: '600' }}>{idx + 1}</td>
                           <td style={{ padding: '0.85rem 1rem' }}>
@@ -715,25 +985,149 @@ const AdminDashboard = () => {
                   </tbody>
                 </table>
               </div>
-
-              {/* Informational Guidance Box */}
-              <div className="card" style={{ padding: '1.25rem 1.5rem', background: '#F8FAFC', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'flex-start', gap: '0.85rem' }}>
-                <FaInfoCircle style={{ color: 'var(--brand-blue)', fontSize: '1.3rem', marginTop: '0.15rem', flexShrink: 0 }} />
-                <div style={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.6 }}>
-                  <strong>💡 Ghi chú kỹ thuật về dung lượng hệ thống:</strong>
-                  <p style={{ margin: '0.35rem 0 0 0' }}>
-                    • Hệ thống sử dụng định dạng lưu trữ JSON nén hiện đại cho 11 biểu mẫu chuyên khoa, giúp dung lượng mỗi bản ghi báo cáo chỉ chiếm khoảng <strong>2 - 5 KB</strong>.
-                    <br />
-                    • Với giới hạn <strong>1024 MB</strong>, cơ sở dữ liệu có khả năng lưu trữ liên tục hơn <strong>10 năm dữ liệu giao ban</strong> của toàn bộ trung tâm y tế mà không lo đầy bộ nhớ.
-                  </p>
-                </div>
-              </div>
             </>
           ) : null}
         </div>
       )}
 
-      {/* MODAL: VIEW, EDIT & DELETE REPORT DETAILS */}
+      {/* ============================================================ */}
+      {/* MODAL: THÊM / SỬA NHÂN VIÊN                                   */}
+      {/* ============================================================ */}
+      {staffModalOpen && (
+        <div style={{
+          position: 'fixed', inset: 0,
+          backgroundColor: 'rgba(15, 44, 89, 0.6)',
+          backdropFilter: 'blur(5px)',
+          zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem'
+        }}>
+          <div className="card" style={{ width: '100%', maxWidth: '520px', padding: 0, overflow: 'hidden', boxShadow: 'var(--shadow-xl)' }}>
+            <div style={{ padding: '1.25rem 1.5rem', backgroundColor: 'var(--brand-blue)', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ color: 'white', fontSize: '1.1rem', fontWeight: '800', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <FaUsers /> {editingStaffId ? 'Chỉnh Sửa Nhân Sự' : 'Thêm Mới Nhân Sự'}
+              </h3>
+              <button onClick={() => setStaffModalOpen(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
+            </div>
+
+            <form onSubmit={handleSaveStaff} style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {staffActionMsg.text && (
+                <div style={{
+                  padding: '0.75rem 1rem',
+                  borderRadius: '6px',
+                  fontSize: '0.9rem',
+                  backgroundColor: staffActionMsg.type === 'error' ? 'var(--danger-light)' : 'var(--brand-green-subtle)',
+                  color: staffActionMsg.type === 'error' ? 'var(--danger)' : 'var(--brand-green)'
+                }}>
+                  {staffActionMsg.text}
+                </div>
+              )}
+
+              <div className="form-group">
+                <label>Họ và Tên Nhân Sự <span style={{ color: 'var(--brand-red)' }}>*</span></label>
+                <input 
+                  type="text" 
+                  placeholder="VD: BS. Nguyễn Văn A..."
+                  value={staffFormData.full_name}
+                  onChange={(e) => setStaffFormData({ ...staffFormData, full_name: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="form-group">
+                  <label>Chức Danh / Vị Trí <span style={{ color: 'var(--brand-red)' }}>*</span></label>
+                  <select 
+                    value={staffFormData.position}
+                    onChange={(e) => setStaffFormData({ ...staffFormData, position: e.target.value })}
+                  >
+                    <option value="Bác sĩ">Bác sĩ</option>
+                    <option value="Điều dưỡng">Điều dưỡng</option>
+                    <option value="Hộ sinh">Hộ sinh</option>
+                    <option value="Kỹ thuật viên">Kỹ thuật viên</option>
+                    <option value="Dược sĩ">Dược sĩ</option>
+                    <option value="Khác">Khác</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Giới Tính</label>
+                  <select 
+                    value={staffFormData.gender}
+                    onChange={(e) => setStaffFormData({ ...staffFormData, gender: e.target.value })}
+                  >
+                    <option value="Nam">Nam</option>
+                    <option value="Nữ">Nữ</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>Khoa Phòng Làm Việc <span style={{ color: 'var(--brand-red)' }}>*</span></label>
+                <select 
+                  value={staffFormData.department}
+                  onChange={(e) => setStaffFormData({ ...staffFormData, department: e.target.value })}
+                >
+                  {DEPARTMENT_ORDER.map(code => (
+                    <option key={code} value={code}>
+                      {DEPARTMENT_MAP[code] || code}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Số Chứng Chỉ Hành Nghề (CCHN)</label>
+                <input 
+                  type="text" 
+                  placeholder="VD: CCHN-001234/BL"
+                  value={staffFormData.certificate}
+                  onChange={(e) => setStaffFormData({ ...staffFormData, certificate: e.target.value })}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
+                <button type="button" className="btn btn-secondary" onClick={() => setStaffModalOpen(false)}>
+                  Hủy
+                </button>
+                <button type="submit" className="btn btn-primary" disabled={savingStaff}>
+                  {savingStaff ? <><FaSpinner className="spinner" /> Đang lưu...</> : <><FaSave /> Lưu Nhân Sự</>}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* MODAL: XÁC NHẬN XÓA NHÂN SỰ                                   */}
+      {/* ============================================================ */}
+      {staffToDelete && (
+        <div style={{
+          position: 'fixed', inset: 0,
+          backgroundColor: 'rgba(15, 44, 89, 0.6)',
+          backdropFilter: 'blur(5px)',
+          zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem'
+        }}>
+          <div className="card" style={{ maxWidth: '440px', textAlign: 'center', padding: '2rem' }}>
+            <FaExclamationTriangle style={{ fontSize: '3rem', color: 'var(--brand-red)', marginBottom: '1rem' }} />
+            <h4 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--brand-blue)', marginBottom: '0.5rem' }}>
+              Xác Nhận Xóa Nhân Sự?
+            </h4>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
+              Bạn có chắc chắn muốn xóa nhân sự <strong>"{staffToDelete.full_name}"</strong> thuộc khoa <strong>{DEPARTMENT_MAP[staffToDelete.department] || staffToDelete.department}</strong>?
+            </p>
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
+              <button className="btn btn-danger" onClick={handleDeleteStaffConfirm} disabled={deletingStaff}>
+                {deletingStaff ? <><FaSpinner className="spinner" /> Đang xóa...</> : <><FaTrash /> Xác nhận xóa</>}
+              </button>
+              <button className="btn btn-secondary" onClick={() => setStaffToDelete(null)}>Hủy</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* MODAL: XEM / SỬA / XÓA BÁO CÁO GIAO BAN                      */}
+      {/* ============================================================ */}
       {modalOpen && modalDept && (
         <div style={{
           position: 'fixed',
@@ -763,16 +1157,16 @@ const AdminDashboard = () => {
               backgroundColor: 'var(--brand-blue)',
               color: 'white',
               display: 'flex',
-              justify: 'space-between',
+              justifyContent: 'space-between',
               alignItems: 'center'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <img src="/logo.png" alt="Logo" style={{ width: '36px', height: '36px' }} />
                 <div>
-                  <h3 style={{ color: 'white', fontSize: '1.1rem', fontWeight: '800' }}>
+                  <h3 style={{ color: 'white', fontSize: '1.1rem', fontWeight: '800', margin: 0 }}>
                     {modalDept.departmentName}
                   </h3>
-                  <p style={{ fontSize: '0.8rem', color: '#DBEAFE' }}>
+                  <p style={{ fontSize: '0.8rem', color: '#DBEAFE', margin: '0.2rem 0 0 0' }}>
                     Báo cáo giao ban ngày {date}
                   </p>
                 </div>
@@ -800,80 +1194,113 @@ const AdminDashboard = () => {
                     </div>
                   )}
 
-                  {/* Confirmation banner for deleting report */}
-                  {showDeleteConfirm && (
-                    <div style={{ backgroundColor: 'var(--danger-light)', border: '1.5px solid var(--brand-red)', color: 'var(--brand-red)', padding: '1rem 1.25rem', borderRadius: 'var(--radius-md)', marginBottom: '1.25rem', animation: 'fadeIn 0.2s ease-out' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: '700', fontSize: '1rem', marginBottom: '0.5rem' }}>
-                        <FaExclamationTriangle size={20} /> Xác nhận xóa toàn bộ báo cáo này?
+                  {/* Section 1: Thông tin ca trực */}
+                  <div className="sub-section" style={{ marginBottom: '1.5rem' }}>
+                    <h4 style={{ fontSize: '1rem', color: 'var(--brand-blue)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <FaUserMd /> Thông Tin Ca Trực
+                    </h4>
+                    {isEditing ? (
+                      <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <div className="form-group">
+                          <label>Bác sĩ trực chính</label>
+                          <input 
+                            type="text" 
+                            value={editHeader.doctorName} 
+                            onChange={(e) => setEditHeader({...editHeader, doctorName: e.target.value})} 
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>Điều dưỡng trực chính</label>
+                          <input 
+                            type="text" 
+                            value={editHeader.nurseName} 
+                            onChange={(e) => setEditHeader({...editHeader, nurseName: e.target.value})} 
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>Phòng / Buồng</label>
+                          <input 
+                            type="text" 
+                            value={editHeader.room} 
+                            onChange={(e) => setEditHeader({...editHeader, room: e.target.value})} 
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label>Thời gian trực</label>
+                          <input 
+                            type="text" 
+                            value={editHeader.shiftTime} 
+                            onChange={(e) => setEditHeader({...editHeader, shiftTime: e.target.value})} 
+                          />
+                        </div>
                       </div>
-                      <p style={{ fontSize: '0.875rem', marginBottom: '1rem', color: '#991B1B' }}>
-                        Thao tác này sẽ xóa báo cáo ngày {date} của khoa <strong>{modalDept.departmentName}</strong> và đưa trạng thái về <strong>"Chưa nộp"</strong>. Không thể hoàn tác.
-                      </p>
-                      <div style={{ display: 'flex', gap: '0.75rem' }}>
-                        <button type="button" className="btn btn-danger btn-sm" onClick={handleDeleteReport} disabled={deleting}>
-                          {deleting ? <><FaSpinner className="spinner" /> Đang xóa...</> : <>✅ Có, Xóa Ngay</>}
-                        </button>
-                        <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowDeleteConfirm(false)} disabled={deleting}>
-                          Hủy
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Header Form */}
-                  <div className="form-section" style={{ marginBottom: '1rem' }}>
-                    <h4 className="section-title">THÔNG TIN CA TRỰC</h4>
-                    <div className="form-grid">
-                      <div className="form-group">
-                        <label>Bác sĩ trực chính</label>
-                        {isEditing ? (
-                          <input type="text" value={editHeader.doctorName} onChange={(e) => setEditHeader({...editHeader, doctorName: e.target.value})} placeholder="Tên bác sĩ trực" />
-                        ) : (
-                          <div style={{ padding: '0.5rem 0.75rem', backgroundColor: '#F8FAFC', borderRadius: 'var(--radius-sm)', fontWeight: '600', color: 'var(--brand-blue)' }}>
-                            {editHeader.doctorName || 'Chưa nhập'}
-                          </div>
-                        )}
-                      </div>
-                      <div className="form-group">
-                        <label>Phòng / Buồng</label>
-                        {isEditing ? (
-                          <input type="text" value={editHeader.room} onChange={(e) => setEditHeader({...editHeader, room: e.target.value})} placeholder="Phòng trực" />
-                        ) : (
-                          <div style={{ padding: '0.5rem 0.75rem', backgroundColor: '#F8FAFC', borderRadius: 'var(--radius-sm)', fontWeight: '600' }}>
-                            {editHeader.room || '-'}
-                          </div>
-                        )}
-                      </div>
-                      <div className="form-group">
-                        <label>Thời gian trực</label>
-                        {isEditing ? (
-                          <input type="text" value={editHeader.shiftTime} onChange={(e) => setEditHeader({...editHeader, shiftTime: e.target.value})} placeholder="Giờ trực" />
-                        ) : (
-                          <div style={{ padding: '0.5rem 0.75rem', backgroundColor: '#F8FAFC', borderRadius: 'var(--radius-sm)', fontWeight: '600' }}>
-                            {editHeader.shiftTime || '-'}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Report Data Section */}
-                  <div className="form-section" style={{ marginBottom: '1rem' }}>
-                    <h4 className="section-title">DỮ LIỆU BÁO CÁO CHUYÊN MÔN</h4>
-                    {Object.keys(editReportData).length === 0 ? (
-                      <p style={{ color: 'var(--text-light)', fontStyle: 'italic' }}>Chưa có dữ liệu chuyên môn.</p>
                     ) : (
-                      <div className="form-grid">
-                        {renderEditableFields(editReportData)}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', backgroundColor: '#F8FAFC', padding: '1rem', borderRadius: 'var(--radius-md)' }}>
+                        <div><strong>Bác sĩ trực chính:</strong> <p style={{ color: 'var(--brand-blue)', fontWeight: '600', margin: '0.25rem 0 0 0' }}>{editHeader.doctorName || '—'}</p></div>
+                        <div><strong>Điều dưỡng trực:</strong> <p style={{ color: 'var(--brand-blue)', fontWeight: '600', margin: '0.25rem 0 0 0' }}>{editHeader.nurseName || '—'}</p></div>
+                        <div><strong>Phòng / Buồng:</strong> <p style={{ margin: '0.25rem 0 0 0' }}>{editHeader.room || '—'}</p></div>
+                        <div><strong>Thời gian trực:</strong> <p style={{ margin: '0.25rem 0 0 0' }}>{editHeader.shiftTime || '—'}</p></div>
+                      </div>
+                    )}
+
+                    {/* Nhân sự thêm giờ display */}
+                    {editHeader.overtimeStaff && editHeader.overtimeStaff.length > 0 && (
+                      <div style={{ marginTop: '0.75rem', padding: '0.75rem', backgroundColor: '#FEF3C7', borderRadius: '6px', fontSize: '0.85rem' }}>
+                        <strong>⏰ Nhân sự trực thêm giờ:</strong>
+                        <ul style={{ margin: '0.35rem 0 0 1.25rem', padding: 0 }}>
+                          {editHeader.overtimeStaff.map((ot, i) => (
+                            <li key={i}>{ot.staffName} — <em>{ot.time}</em></li>
+                          ))}
+                        </ul>
                       </div>
                     )}
                   </div>
 
-                  {/* Transfer Cases Section */}
-                  <div className="form-section">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                      <h4 className="section-title" style={{ margin: 0, padding: 0, border: 'none', color: 'var(--brand-red)' }}>
-                        <FaAmbulance /> BỆNH CHUYỂN VIỆN ({editTransferCases.length} ca)
+                  {/* Section 2: Dữ liệu chuyên môn */}
+                  <div className="sub-section" style={{ marginBottom: '1.5rem' }}>
+                    <h4 style={{ fontSize: '1rem', color: 'var(--brand-blue)', marginBottom: '1rem' }}>
+                      📊 Dữ Liệu Báo Cáo Chuyên Môn
+                    </h4>
+                    {isEditing ? (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.75rem' }}>
+                        {Object.entries(editReportData).map(([key, val]) => {
+                          if (typeof val === 'object' && val !== null) return null;
+                          return (
+                            <div key={key} className="form-group">
+                              <label style={{ fontSize: '0.8rem' }}>{key}</label>
+                              <input 
+                                type="text" 
+                                value={val === null || val === undefined ? '' : String(val)} 
+                                onChange={(e) => handleDataChange(key, e.target.value)} 
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.75rem' }}>
+                        {Object.entries(editReportData).length === 0 ? (
+                          <p style={{ color: 'var(--text-light)', fontStyle: 'italic' }}>Chưa có dữ liệu chuyên môn.</p>
+                        ) : (
+                          Object.entries(editReportData).map(([key, val]) => {
+                            if (typeof val === 'object' && val !== null) return null;
+                            return (
+                              <div key={key} style={{ padding: '0.6rem 0.8rem', backgroundColor: '#F8FAFC', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
+                                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block' }}>{key}</span>
+                                <span style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--primary)' }}>{String(val ?? '—')}</span>
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Section 3: Bệnh nhân chuyển viện */}
+                  <div className="sub-section">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                      <h4 style={{ fontSize: '1rem', color: 'var(--brand-red)', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
+                        <FaAmbulance /> Bệnh Chuyển Viện ({editTransferCases.length} ca)
                       </h4>
                       {isEditing && (
                         <button type="button" className="btn btn-secondary btn-sm" onClick={handleAddTransferCase}>
@@ -888,7 +1315,9 @@ const AdminDashboard = () => {
                       editTransferCases.map((tc, idx) => (
                         <div key={idx} className="sub-section" style={{ marginBottom: '1rem', borderLeft: '3px solid var(--brand-red)' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                            <h5 style={{ color: 'var(--brand-red)', fontWeight: '700' }}>Ca #{idx + 1} {tc.patient_name || tc.patientName ? `— ${tc.patient_name || tc.patientName}` : ''}</h5>
+                            <h5 style={{ color: 'var(--brand-red)', fontWeight: '700', margin: 0 }}>
+                              Ca #{idx + 1} {tc.patient_name || tc.patientName ? `— ${tc.patient_name || tc.patientName}` : ''}
+                            </h5>
                             {isEditing && (
                               <button type="button" className="btn btn-danger btn-sm" onClick={() => handleRemoveTransferCase(idx)}>
                                 <FaTrash /> Xóa
@@ -928,11 +1357,11 @@ const AdminDashboard = () => {
                             </div>
                           ) : (
                             <div style={{ fontSize: '0.875rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                              <div><strong>Bệnh nhân:</strong> {tc.patient_name || tc.patientName || '-'}</div>
-                              <div><strong>Giờ vào:</strong> {tc.admission_time || tc.admissionTime || '-'}</div>
-                              <div><strong>Lý do:</strong> {tc.reason || '-'}</div>
-                              <div><strong>Chẩn đoán:</strong> {tc.diagnosis || '-'}</div>
-                              <div><strong>Xử trí:</strong> {tc.initial_treatment || tc.initialTreatment || '-'}</div>
+                              <div><strong>Bệnh nhân:</strong> {tc.patient_name || tc.patientName || '—'}</div>
+                              <div><strong>Giờ vào:</strong> {tc.admission_time || tc.admissionTime || '—'}</div>
+                              <div><strong>Lý do:</strong> {tc.reason || '—'}</div>
+                              <div><strong>Chẩn đoán:</strong> {tc.diagnosis || '—'}</div>
+                              <div><strong>Xử trí:</strong> {tc.initial_treatment || tc.initialTreatment || '—'}</div>
                             </div>
                           )}
                         </div>
@@ -949,37 +1378,58 @@ const AdminDashboard = () => {
               backgroundColor: '#F8FAFC',
               borderTop: '1px solid var(--border)',
               display: 'flex',
-              justify: 'space-between',
+              justifyContent: 'space-between',
               alignItems: 'center',
               flexWrap: 'wrap',
               gap: '0.75rem'
             }}>
-              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                {!isEditing ? (
-                  <button type="button" className="btn btn-secondary" onClick={() => setIsEditing(true)}>
-                    <FaEdit /> Chỉnh Sửa Báo Cáo
-                  </button>
-                ) : (
-                  <button type="button" className="btn btn-ghost" onClick={() => setIsEditing(false)}>
-                    Hủy Chỉnh Sửa
-                  </button>
-                )}
-
-                {hasReport && !showDeleteConfirm && (
-                  <button type="button" className="btn btn-danger btn-sm" onClick={() => setShowDeleteConfirm(true)}>
-                    <FaTrash /> Xóa Báo Cáo (Trở về Chưa Nộp)
-                  </button>
+              <div>
+                {hasReport && (
+                  !showDeleteConfirm ? (
+                    <button 
+                      className="btn btn-danger btn-sm" 
+                      onClick={() => setShowDeleteConfirm(true)}
+                    >
+                      <FaTrash /> Xóa Báo Cáo (Trở về Chưa Nộp)
+                    </button>
+                  ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{ fontSize: '0.85rem', color: 'var(--danger)', fontWeight: '600' }}>
+                        ⚠️ Chắc chắn xóa?
+                      </span>
+                      <button 
+                        className="btn btn-danger btn-sm" 
+                        onClick={handleDeleteReport}
+                        disabled={deleting}
+                      >
+                        {deleting ? <FaSpinner className="spinner" /> : 'Xác nhận xóa'}
+                      </button>
+                      <button 
+                        className="btn btn-secondary btn-sm" 
+                        onClick={() => setShowDeleteConfirm(false)}
+                      >
+                        Hủy
+                      </button>
+                    </div>
+                  )
                 )}
               </div>
 
               <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <button type="button" className="btn btn-secondary" onClick={() => setModalOpen(false)}>
-                  Đóng
-                </button>
-                {isEditing && (
-                  <button type="button" className="btn btn-primary" onClick={handleSaveReport} disabled={saving}>
-                    {saving ? <><FaSpinner className="spinner" /> Đang lưu...</> : <><FaSave /> Lưu Thay Đổi</>}
-                  </button>
+                {isEditing ? (
+                  <>
+                    <button className="btn btn-secondary" onClick={() => setIsEditing(false)}>Hủy</button>
+                    <button className="btn btn-primary" onClick={handleSaveReport} disabled={saving}>
+                      {saving ? <><FaSpinner className="spinner" /> Đang lưu...</> : <><FaSave /> Lưu Thay Đổi</>}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button className="btn btn-secondary" onClick={() => setIsEditing(true)}>
+                      <FaEdit /> Chỉnh Sửa Báo Cáo
+                    </button>
+                    <button className="btn btn-primary" onClick={() => setModalOpen(false)}>Đóng</button>
+                  </>
                 )}
               </div>
             </div>

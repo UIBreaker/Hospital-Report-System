@@ -34,9 +34,15 @@ const getPresentationData = async (req, res, next) => {
         'SELECT * FROM transfer_cases WHERE report_id = ?',
         [report.id]
       );
+
+      let overtimeStaff = report.overtime_staff;
+      if (typeof overtimeStaff === 'string') {
+        try { overtimeStaff = JSON.parse(overtimeStaff); } catch (e) { overtimeStaff = []; }
+      }
       
       presentationData.push({
         ...report,
+        overtime_staff: overtimeStaff,
         transferCases
       });
     }

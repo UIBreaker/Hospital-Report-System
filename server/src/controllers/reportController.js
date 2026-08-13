@@ -4,10 +4,22 @@ const createOrUpdateReport = async (req, res, next) => {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
-    const { departmentCode, reportDate, doctorName, room, shiftTime, reportData, status, transferCases } = req.body;
+    const {
+      departmentCode,
+      reportDate,
+      doctorName,
+      nurseName,
+      overtimeStaff,
+      room,
+      shiftTime,
+      reportData,
+      status,
+      transferCases
+    } = req.body;
 
     // Helper: convert undefined/empty string to null for mysql2 (used for all inserts)
     const safeVal = (v) => (v === undefined || v === null || v === '' ? null : v);
+    const safeJson = (v) => (v ? JSON.stringify(v) : null);
 
     // Check if report exists
     const [existing] = await connection.execute(
@@ -20,18 +32,37 @@ const createOrUpdateReport = async (req, res, next) => {
       reportId = existing[0].id;
       await connection.execute(
         `UPDATE reports 
-         SET doctor_name = ?, room = ?, shift_time = ?, report_data = ?, status = ?
+         SET doctor_name = ?, nurse_name = ?, overtime_staff = ?, room = ?, shift_time = ?, report_data = ?, status = ?
          WHERE id = ?`,
-        [safeVal(doctorName), safeVal(room), safeVal(shiftTime), JSON.stringify(reportData || {}), status || 'submitted', reportId]
+        [
+          safeVal(doctorName),
+          safeVal(nurseName),
+          safeJson(overtimeStaff),
+          safeVal(room),
+          safeVal(shiftTime),
+          JSON.stringify(reportData || {}),
+          status || 'submitted',
+          reportId
+        ]
       );
       
       // Delete old transfer cases before re-inserting
       await connection.execute('DELETE FROM transfer_cases WHERE report_id = ?', [reportId]);
     } else {
       const [result] = await connection.execute(
-        `INSERT INTO reports (department_code, report_date, doctor_name, room, shift_time, report_data, status)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [safeVal(departmentCode), safeVal(reportDate), safeVal(doctorName), safeVal(room), safeVal(shiftTime), JSON.stringify(reportData || {}), status || 'submitted']
+        `INSERT INTO reports (department_code, report_date, doctor_name, nurse_name, overtime_staff, room, shift_time, report_data, status)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          safeVal(departmentCode),
+          safeVal(reportDate),
+          safeVal(doctorName),
+          safeVal(nurseName),
+          safeJson(overtimeStaff),
+          safeVal(room),
+          safeVal(shiftTime),
+          JSON.stringify(reportData || {}),
+          status || 'submitted'
+        ]
       );
       reportId = result.insertId;
     }

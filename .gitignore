@@ -51,3 +51,5 @@ fix-dates.js
 verify-database.js
 db-cleaner.js
 query.js
+init-staff.js
+server/src/config/init-staff.js

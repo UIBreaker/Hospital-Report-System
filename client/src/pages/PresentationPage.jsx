@@ -840,6 +840,27 @@ const PresentationPage = () => {
                         }}>
                           👨‍⚕️ Bác sĩ trực: <strong>{slide.report.doctor_name}</strong>
                         </span>
+
+                        {slide.report.nurse_name && (
+                          <span style={{
+                            backgroundColor: '#F0FDF4', color: '#065F46',
+                            padding: '0.4rem 1rem', borderRadius: '999px', fontWeight: '700',
+                            fontSize: isFullscreen ? '1.15rem' : '0.95rem', border: '1px solid #BBF7D0'
+                          }}>
+                            👩‍⚕️ Điều dưỡng: <strong>{slide.report.nurse_name}</strong>
+                          </span>
+                        )}
+
+                        {slide.report.overtime_staff && Array.isArray(slide.report.overtime_staff) && slide.report.overtime_staff.length > 0 && (
+                          <span style={{
+                            backgroundColor: '#FEF3C7', color: '#92400E',
+                            padding: '0.4rem 1rem', borderRadius: '999px', fontWeight: '700',
+                            fontSize: isFullscreen ? '1.05rem' : '0.9rem', border: '1px solid #FDE68A'
+                          }}>
+                            ⏰ Tăng cường: <strong>{slide.report.overtime_staff.map(ot => `${ot.staffName} (${ot.time})`).join(', ')}</strong>
+                          </span>
+                        )}
+
                         {slide.report.room && (
                           <span style={{
                             backgroundColor: '#F1F5F9', color: '#334155',
@@ -851,11 +872,11 @@ const PresentationPage = () => {
                         )}
                         {slide.report.shift_time && (
                           <span style={{
-                            backgroundColor: '#FEF3C7', color: '#92400E',
+                            backgroundColor: '#F8FAFC', color: '#475569',
                             padding: '0.4rem 1rem', borderRadius: '999px', fontWeight: '600',
-                            fontSize: isFullscreen ? '1.05rem' : '0.9rem', border: '1px solid #FDE68A'
+                            fontSize: isFullscreen ? '1.05rem' : '0.9rem', border: '1px solid #CBD5E1'
                           }}>
-                            ⏰ Ca: <strong>{slide.report.shift_time}</strong>
+                            ⏱️ Ca: <strong>{slide.report.shift_time}</strong>
                           </span>
                         )}
                       </div>
