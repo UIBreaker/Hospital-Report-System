@@ -664,7 +664,7 @@ const AdminDashboard = () => {
                     {dbStats.tables.map((table, idx) => {
                       const desc = {
                         users: 'Tài khoản đăng nhập & phân quyền cán bộ/khoa phòng',
-                        reports: 'Báo cáo số liệu giao ban hàng ngày của 11 khoa phòng',
+                        reports: 'Báo cáo số liệu giao ban hàng ngày của 12 khoa phòng',
                         transfer_cases: 'Hồ sơ chi tiết các ca bệnh nhân chuyển viện cấp cứu'
                       }[table.tableName] || 'Bảng dữ liệu hệ thống';
 
