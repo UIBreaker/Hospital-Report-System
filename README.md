@@ -123,10 +123,6 @@ Hệ thống được thiết kế riêng biệt cho 12 chuyên khoa theo đúng
 ### 4.8. 👥 Quản Lý Nhân Sự Toàn Viện & 🗄️ Quản Lý Database
 * **Quản Lý Nhân Sự**: Thêm, sửa, xóa, tìm kiếm, lọc theo khoa phòng và chức vụ cho toàn bộ đội ngũ y tế bệnh viện.
 * **Quản Lý Database**: Theo dõi dung lượng CSDL thời gian thực, số lượng bản ghi từng bảng, trạng thái kết nối Cloud MySQL.
-
-### 4.9. 🔒 Bảo Mật & Duy Trì Phiên Làm Việc 30 Ngày
-* Đồng bộ khóa bảo mật `JWT_SECRET` trên toàn bộ hệ thống backend, kéo dài hạn đăng nhập lên **30 ngày**, chống hoàn toàn hiện tượng văng ra màn hình đăng nhập khi đang làm việc.
-
 ---
 
 ## 5. 🗄️ Cấu Trúc Cơ Sở Dữ Liệu (Database Schema)
