@@ -1,5 +1,5 @@
-import React from 'react';
-import { FaPrint, FaTimes, FaHospital } from 'react-icons/fa';
+import React, { useState } from 'react';
+import { FaPrint, FaTimes, FaHospital, FaFilePdf, FaDownload, FaSpinner } from 'react-icons/fa';
 
 const DEPARTMENT_ORDER = [
   'lck', 'xn', 'cdha', 'hscc_tnt', 'noi', 'nhi',
@@ -22,6 +22,8 @@ const DEPARTMENT_NAMES = {
 };
 
 const MedicalPrintView = ({ date, reports = [], onClose }) => {
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
+
   // Sort reports by official sequence
   const sortedReports = [...reports].sort((a, b) => {
     const idxA = DEPARTMENT_ORDER.indexOf(a.department_code);
@@ -67,6 +69,50 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
     window.print();
   };
 
+  const handleDownloadPDF = async () => {
+    const element = document.querySelector('.printable-medical-document');
+    if (!element) return;
+    setDownloadingPdf(true);
+
+    try {
+      let html2pdfModule;
+      try {
+        const mod = await import('html2pdf.js');
+        html2pdfModule = mod.default || mod;
+      } catch (importErr) {
+        if (window.html2pdf) {
+          html2pdfModule = window.html2pdf;
+        } else {
+          await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+            script.onload = () => resolve();
+            script.onerror = () => reject(new Error('Không thể tải thư viện html2pdf'));
+            document.head.appendChild(script);
+          });
+          html2pdfModule = window.html2pdf;
+        }
+      }
+
+      const opt = {
+        margin: [8, 8, 8, 8],
+        filename: `Bao_Cao_Giao_Ban_${date}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true, backgroundColor: '#FFFFFF' },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+      };
+
+      await html2pdfModule().set(opt).from(element).save();
+    } catch (err) {
+      console.error('PDF Generation failed, fallback to print:', err);
+      alert('Không thể tạo file PDF tự động. Trình duyệt sẽ mở cửa sổ In để bạn chọn "Lưu dưới dạng PDF" (Save as PDF).');
+      window.print();
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
+
   return (
     <div className="medical-print-modal-backdrop" style={{
       position: 'fixed',
@@ -97,13 +143,14 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
         boxShadow: '0 8px 30px rgba(0,0,0,0.5)',
         display: 'flex',
         alignItems: 'center',
-        gap: '1.25rem',
+        gap: '1rem',
         marginBottom: '1.5rem',
         maxWidth: '960px',
         width: '100%',
-        boxSizing: 'border-box'
+        boxSizing: 'border-box',
+        flexWrap: 'wrap'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flex: 1 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flex: 1, minWidth: '260px' }}>
           <FaHospital style={{ color: '#60A5FA', fontSize: '1.4rem' }} />
           <div>
             <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: '800', letterSpacing: '0.5px' }}>
@@ -115,30 +162,52 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
           </div>
         </div>
 
-        <button
-          onClick={handlePrint}
-          style={{
-            backgroundColor: '#16A34A', color: '#FFFFFF',
-            border: 'none', padding: '0.65rem 1.5rem',
-            borderRadius: '8px', fontWeight: '700', fontSize: '0.95rem',
-            display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer',
-            boxShadow: '0 4px 12px rgba(22, 163, 74, 0.4)'
-          }}
-        >
-          <FaPrint /> In Báo Cáo (Ctrl + P)
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+          <button
+            onClick={handlePrint}
+            style={{
+              backgroundColor: '#16A34A', color: '#FFFFFF',
+              border: 'none', padding: '0.65rem 1.25rem',
+              borderRadius: '8px', fontWeight: '700', fontSize: '0.9rem',
+              display: 'flex', alignItems: 'center', gap: '0.45rem', cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(22, 163, 74, 0.4)'
+            }}
+            title="Mở hộp thoại in ấn A4 (hoặc bấm Ctrl+P)"
+          >
+            <FaPrint /> In Báo Cáo (Ctrl + P)
+          </button>
 
-        <button
-          onClick={onClose}
-          style={{
-            backgroundColor: 'rgba(255,255,255,0.15)', color: '#FFFFFF',
-            border: '1px solid rgba(255,255,255,0.3)', padding: '0.65rem 1.25rem',
-            borderRadius: '8px', fontWeight: '600', fontSize: '0.95rem',
-            display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer'
-          }}
-        >
-          <FaTimes /> Đóng
-        </button>
+          <button
+            onClick={handleDownloadPDF}
+            disabled={downloadingPdf}
+            style={{
+              backgroundColor: '#DC2626', color: '#FFFFFF',
+              border: 'none', padding: '0.65rem 1.25rem',
+              borderRadius: '8px', fontWeight: '700', fontSize: '0.9rem',
+              display: 'flex', alignItems: 'center', gap: '0.45rem', cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(220, 38, 38, 0.4)'
+            }}
+            title="Tải trực tiếp file PDF chất lượng cao về máy tính"
+          >
+            {downloadingPdf ? (
+              <><FaSpinner className="spinner" /> Đang tạo PDF...</>
+            ) : (
+              <><FaFilePdf style={{ fontSize: '1.05rem' }} /> Tải Về File PDF</>
+            )}
+          </button>
+
+          <button
+            onClick={onClose}
+            style={{
+              backgroundColor: 'rgba(255,255,255,0.15)', color: '#FFFFFF',
+              border: '1px solid rgba(255,255,255,0.3)', padding: '0.65rem 1.1rem',
+              borderRadius: '8px', fontWeight: '600', fontSize: '0.9rem',
+              display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer'
+            }}
+          >
+            <FaTimes /> Đóng
+          </button>
+        </div>
       </div>
 
       {/* A4 Paper Canvas - 100% Solid Pure White */}
