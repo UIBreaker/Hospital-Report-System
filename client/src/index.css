@@ -776,3 +776,36 @@ label {
     justify-content: center;
   }
 }
+
+/* ==========================================================
+   MEDICAL PRINT VIEW — STYLES & PRINT MEDIA
+   ========================================================== */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .printable-medical-document,
+  .printable-medical-document * {
+    visibility: visible;
+  }
+  .printable-medical-document {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 10mm 8mm !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  @page {
+    size: A4 portrait;
+    margin: 8mm;
+  }
+}
