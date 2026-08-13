@@ -46,3 +46,4 @@ backup_db_*.sql
 backup.js
 check-db.js
 restore.js
+populate-data.js
