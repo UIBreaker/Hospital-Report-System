@@ -39,3 +39,10 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+# Database backups & local helper scripts
+*.sql
+backup_db_*.sql
+backup.js
+check-db.js
+restore.js

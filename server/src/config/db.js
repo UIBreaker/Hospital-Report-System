@@ -19,7 +19,7 @@ const poolConfig = process.env.DATABASE_URL
       password: process.env.DB_PASSWORD || '',
       database: process.env.DB_NAME || 'hospital_report',
       charset: 'utf8mb4',
-      ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
+      ssl: (process.env.DB_SSL === 'true' || (process.env.DB_HOST && process.env.DB_HOST.includes('aivencloud.com'))) ? { rejectUnauthorized: false } : undefined,
       waitForConnections: true,
       connectionLimit: 10,
       queueLimit: 0,

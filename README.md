@@ -14,7 +14,7 @@
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel%20App-0070F3?style=for-the-badge&logo=vercel&logoColor=white)](https://hospital-report-system.vercel.app/)
 [![Author](https://img.shields.io/badge/Author-Nguyen%20Vu%20Nhat%20Nam%20(2004)-0F2C59?style=for-the-badge&logo=github)](https://github.com/UIBreaker/Hospital-Report-System)
-[![Version](https://img.shields.io/badge/Version-1.5.1-10B981?style=for-the-badge)](https://hospital-report-system.vercel.app/)
+[![Version](https://img.shields.io/badge/Version-1.5.2-10B981?style=for-the-badge)](https://hospital-report-system.vercel.app/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
 </div>
@@ -531,7 +531,14 @@ Mọi đóng góp nhằm hoàn thiện hệ thống y tế đều được hoan 
   * Số 0 thứ nhất (`X.0.0`): Bản mới tinh vừa ra mắt, sạch sẽ, chưa qua chỉnh sửa nhỏ lẻ.
   * Số 0 thứ hai (`X.Y.0`): Chưa có lỗi nhỏ nào cần phải vá sau khi phát hành tính năng mới.
 
-### Phiên bản 1.5.1 (Tháng 08/2026) — *Phiên bản hiện tại*
+### Phiên bản 1.5.2 (Tháng 08/2026) — *Phiên bản hiện tại*
+* ☁️ **Cập nhật Cấu hình Kết Nối CSDL Đám Mây Aiven MySQL Mới:**
+  * Đồng bộ thông số kết nối Database mới: Host `mysql-1123ebf7-nhatnam171217-29a7.i.aivencloud.com`, Port `23760`, User `avnadmin`, Database `hospital_report`.
+  * Tự động kích hoạt cơ chế mã hóa SSL (`rejectUnauthorized: false`) khi kết nối đến cụm máy chủ đám mây Aiven.
+  * Cập nhật toàn bộ script tiện ích (`check-db.js`, `backup.js`, `restore.js`, `server/check-size.js`).
+* 🏷️ Nâng cấp phiên bản lên **`v1.5.2`** theo quy chuẩn Semantic Versioning.
+
+### Phiên bản 1.5.1 (Tháng 08/2026)
 * 🤖 **Tối ưu hóa Không gian Làm Việc (Workplace Cleanliness):**
   * Ẩn hoàn toàn Trợ lý Y Tế AI (`AIAssistant`) khi người dùng đã đăng nhập vào hệ thống (ở cả giao diện Báo cáo Khoa phòng `ReportPage` và Bảng Quản trị KHNV `AdminDashboard`).
   * Trợ lý Y Tế AI chỉ xuất hiện duy nhất tại màn hình Đăng nhập (`LoginPage`) nhằm hỗ trợ cấp danh sách tài khoản, mật khẩu và điền nhanh thông tin đăng nhập.
