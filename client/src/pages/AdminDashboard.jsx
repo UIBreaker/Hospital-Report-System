@@ -53,7 +53,7 @@ import { generateAndDownloadHospitalExcel } from '../services/excelExportService
 import MedicalPrintView from '../components/common/MedicalPrintView';
 import CaseImageUploader from '../components/common/CaseImageUploader';
 import Footer from '../components/common/Footer';
-import { Button, Badge, Modal, Notice, Skeleton, EmptyState, TableWrapper, Table } from '../components/ui';
+import { Button, Badge, Modal, Notice, Skeleton, EmptyState, TableWrapper, Table, Tabs, Card, FormField } from '../components/ui';
 
 import {
   HoiSucCapCuuForm,
@@ -1166,70 +1166,17 @@ const AdminDashboard = () => {
       </header>
 
       {/* Navigation Tabs Bar */}
-      <div className="admin-tabs" role="tablist" aria-label="Các khu vực quản trị" style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', borderBottom: '2px solid #E2E8F0', paddingBottom: '0.5rem', flexWrap: 'wrap' }}>
-        <button
-          className={`admin-tab ${activeTab === 'reports' ? 'is-active' : ''}`}
-          onClick={() => setActiveTab('reports')}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '0.5rem',
-            padding: '0.65rem 1.25rem', borderRadius: '8px',
-            border: 'none', cursor: 'pointer', fontWeight: '700', fontSize: '0.95rem',
-            transition: 'all 0.2s ease',
-            backgroundColor: activeTab === 'reports' ? 'var(--brand-blue)' : '#F1F5F9',
-            color: activeTab === 'reports' ? '#FFFFFF' : '#475569',
-            boxShadow: activeTab === 'reports' ? '0 4px 12px rgba(15, 44, 89, 0.2)' : 'none'
-          }}
-        >
-          <FaLayerGroup /> Báo Cáo Giao Ban
-        </button>
-
-        <button
-          className={`admin-tab ${activeTab === 'staff' ? 'is-active' : ''}`}
-          onClick={() => setActiveTab('staff')}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '0.5rem',
-            padding: '0.65rem 1.25rem', borderRadius: '8px',
-            border: 'none', cursor: 'pointer', fontWeight: '700', fontSize: '0.95rem',
-            transition: 'all 0.2s ease',
-            backgroundColor: activeTab === 'staff' ? 'var(--brand-blue)' : '#F1F5F9',
-            color: activeTab === 'staff' ? '#FFFFFF' : '#475569',
-            boxShadow: activeTab === 'staff' ? '0 4px 12px rgba(15, 44, 89, 0.2)' : 'none'
-          }}
-        >
-          <FaUsers /> Quản Lý Nhân Sự ({totalStaffCount})
-        </button>
-        
-        <button
-          className={`admin-tab ${activeTab === 'database' ? 'is-active' : ''}`}
-          onClick={() => setActiveTab('database')}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '0.5rem',
-            padding: '0.65rem 1.25rem', borderRadius: '8px',
-            border: 'none', cursor: 'pointer', fontWeight: '700', fontSize: '0.95rem',
-            transition: 'all 0.2s ease',
-            backgroundColor: activeTab === 'database' ? 'var(--brand-blue)' : '#F1F5F9',
-            color: activeTab === 'database' ? '#FFFFFF' : '#475569',
-            boxShadow: activeTab === 'database' ? '0 4px 12px rgba(15, 44, 89, 0.2)' : 'none'
-          }}
-        >
-          <FaDatabase /> Quản Lý Database
-        </button>
-
-        <button
-          className={`admin-tab ${activeTab === 'accounts' ? 'is-active' : ''}`}
-          onClick={() => setActiveTab('accounts')}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '0.5rem',
-            padding: '0.65rem 1.25rem', borderRadius: '8px',
-            border: 'none', cursor: 'pointer', fontWeight: '700', fontSize: '0.95rem',
-            transition: 'all 0.2s ease',
-            backgroundColor: activeTab === 'accounts' ? 'var(--brand-blue)' : '#F1F5F9',
-            color: activeTab === 'accounts' ? '#FFFFFF' : '#475569',
-            boxShadow: activeTab === 'accounts' ? '0 4px 12px rgba(15, 44, 89, 0.2)' : 'none'
-          }}
-        >
-          <FaUserShield /> Quản Lý Tài Khoản ({accountsList.length})
-        </button>
+      <div style={{ marginBottom: '1.5rem' }}>
+        <Tabs
+          activeTab={activeTab}
+          onChange={setActiveTab}
+          tabs={[
+            { id: 'reports', label: 'Báo Cáo Giao Ban', icon: <FaLayerGroup /> },
+            { id: 'staff', label: 'Quản Lý Nhân Sự', icon: <FaUsers />, badge: totalStaffCount },
+            { id: 'database', label: 'Quản Lý Database', icon: <FaDatabase /> },
+            { id: 'accounts', label: 'Quản Lý Tài Khoản', icon: <FaUserShield />, badge: accountsList.length },
+          ]}
+        />
       </div>
 
       {/* ============================================================ */}
@@ -1238,24 +1185,26 @@ const AdminDashboard = () => {
       {activeTab === 'reports' && (
         <div className="animate-fade-in">
           {/* Stats Summary Grid */}
-          <div className="admin-stats-grid">
-            <div className="card admin-stats-card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #EFF6FF, #DBEAFE)', borderLeft: '4px solid var(--brand-blue)' }}>
-              <div className="stats-num" style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--brand-blue)' }}>{totalCount}</div>
-              <div className="stats-lbl" style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Tổng số khoa</div>
+          <div className="admin-stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', marginBottom: '1.5rem' }}>
+            <div className="card admin-stats-card" style={{ textAlign: 'center', backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0', borderLeft: '5px solid var(--brand-blue)', borderRadius: '14px', padding: '1.25rem' }}>
+              <div className="stats-num" style={{ fontSize: '2.2rem', fontWeight: '900', color: 'var(--brand-blue)' }}>{totalCount}</div>
+              <div className="stats-lbl" style={{ color: 'var(--text-muted)', fontSize: '0.82rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: '0.25rem' }}>Tổng số khoa phòng</div>
             </div>
-            <div className="card admin-stats-card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #E8F5E9, #C8E6C9)', borderLeft: '4px solid var(--brand-green)' }}>
-              <div className="stats-num" style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--brand-green)' }}>{submittedCount}</div>
-              <div className="stats-lbl" style={{ color: 'var(--brand-green)', fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Đã nộp</div>
+            <div className="card admin-stats-card" style={{ textAlign: 'center', backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0', borderLeft: '5px solid #16A34A', borderRadius: '14px', padding: '1.25rem' }}>
+              <div className="stats-num" style={{ fontSize: '2.2rem', fontWeight: '900', color: '#16A34A' }}>{submittedCount}</div>
+              <div className="stats-lbl" style={{ color: '#16A34A', fontSize: '0.82rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: '0.25rem' }}>Đã nộp ({totalCount > 0 ? Math.round((submittedCount / totalCount) * 100) : 0}%)</div>
             </div>
-            <div className="card admin-stats-card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #FEF3C7, #FDE68A)', borderLeft: '4px solid #D97706' }}>
-              <div className="stats-num" style={{ fontSize: '2rem', fontWeight: '800', color: '#92400E' }}>{totalCount - submittedCount}</div>
-              <div className="stats-lbl" style={{ color: '#92400E', fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Chưa nộp</div>
+            <div className="card admin-stats-card" style={{ textAlign: 'center', backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0', borderLeft: '5px solid #D97706', borderRadius: '14px', padding: '1.25rem' }}>
+              <div className="stats-num" style={{ fontSize: '2.2rem', fontWeight: '900', color: '#D97706' }}>{totalCount - submittedCount}</div>
+              <div className="stats-lbl" style={{ color: '#D97706', fontSize: '0.82rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: '0.25rem' }}>Chưa nộp báo cáo</div>
             </div>
           </div>
 
           {error && (
-            <div style={{ backgroundColor: 'var(--warning-light)', color: '#92400E', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', marginBottom: '1rem', fontSize: '0.9rem' }}>
-              ⚠️ {error}
+            <div style={{ marginBottom: '1.25rem' }}>
+              <Notice tone="warning" onClose={() => setError('')}>
+                {error}
+              </Notice>
             </div>
           )}
 

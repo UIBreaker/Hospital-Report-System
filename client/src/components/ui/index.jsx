@@ -411,3 +411,32 @@ export const Tabs = ({ tabs = [], activeTab, onChange, className = '' }) => (
     })}
   </div>
 );
+
+/* ==========================================================
+   STEPPER PROGRESS COMPONENT
+   ========================================================== */
+export const Stepper = ({ steps = [], currentStep = 1, onStepClick }) => (
+  <nav className="report-workflow" aria-label="Tiến độ thực hiện">
+    {steps.map((s, idx) => {
+      const stepNum = idx + 1;
+      const isActive = currentStep === stepNum;
+      const isComplete = currentStep > stepNum;
+      return (
+        <React.Fragment key={s.id || idx}>
+          <div
+            className={`workflow-step ${isActive ? 'is-active' : isComplete ? 'is-complete' : ''}`}
+            onClick={() => onStepClick && isComplete ? onStepClick(stepNum) : undefined}
+            style={{ cursor: onStepClick && isComplete ? 'pointer' : 'default' }}
+          >
+            <span>{isComplete ? '✓' : stepNum}</span>
+            <div>
+              <strong>{s.title}</strong>
+              {s.subtitle && <small>{s.subtitle}</small>}
+            </div>
+          </div>
+          {idx < steps.length - 1 && <div className="workflow-line" />}
+        </React.Fragment>
+      );
+    })}
+  </nav>
+);

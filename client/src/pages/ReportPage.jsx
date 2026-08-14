@@ -16,7 +16,7 @@ import {
 } from 'react-icons/fa';
 import reportService from '../services/reportService';
 import staffService from '../services/staffService';
-import { Button, Modal, Notice } from '../components/ui';
+import { Button, Modal, Notice, Badge, Card, FormField, Stepper } from '../components/ui';
 
 import HoiSucCapCuuForm from '../components/forms/departments/HoiSucCapCuuForm';
 import ChuanDoanHinhAnhForm from '../components/forms/departments/ChuanDoanHinhAnhForm';
@@ -480,47 +480,48 @@ const ReportPage = () => {
         </button>
       </header>
 
-      <div className="report-workflow" aria-label="Tiến độ nhập báo cáo">
-        <div className={`workflow-step ${step === 1 ? 'is-active' : 'is-complete'}`}>
-          <span>1</span><div><strong>Ca trực</strong><small>Nhân sự & thời gian</small></div>
-        </div>
-        <div className="workflow-line" />
-        <div className={`workflow-step ${step === 2 ? 'is-active' : ''}`}>
-          <span>2</span><div><strong>Nội dung báo cáo</strong><small>Số liệu & ca bệnh</small></div>
+      <div className="report-workflow" aria-label="Tiến độ nhập báo cáo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div className={`workflow-step ${step === 1 ? 'is-active' : 'is-complete'}`} onClick={() => setStep(1)} style={{ cursor: 'pointer' }}>
+            <span>{step > 1 ? '✓' : '1'}</span>
+            <div><strong>1. Ca trực</strong><small>Nhân sự & thời gian</small></div>
+          </div>
+          <div className="workflow-line" />
+          <div className={`workflow-step ${step === 2 ? 'is-active' : ''}`} onClick={() => { if (cleanDoctorName) setStep(2); }} style={{ cursor: cleanDoctorName ? 'pointer' : 'default' }}>
+            <span>2</span>
+            <div><strong>2. Số liệu & Ca bệnh</strong><small>Chuyên môn khoa</small></div>
+          </div>
         </div>
         <div className="workflow-status">
-          <i className={existingReportLoaded ? 'status-dot status-info' : 'status-dot'} />
-          {existingReportLoaded ? 'Đang chỉnh sửa báo cáo đã nộp' : 'Bản nháp chưa gửi'}
+          <Badge tone={existingReportLoaded ? 'primary' : 'warning'} dot>
+            {existingReportLoaded ? 'Đã nộp trước đó (Chế độ sửa)' : 'Bản nháp chưa gửi'}
+          </Badge>
         </div>
       </div>
 
       {step === 1 ? (
-        <div className="card animate-fade-in" style={{ maxWidth: '680px', margin: '0 auto' }}>
+        <div className="card animate-fade-in" style={{ maxWidth: '680px', margin: '0 auto', backgroundColor: '#FFFFFF' }}>
           <h3 style={{ fontSize: '1.2rem', marginBottom: '1.5rem', borderBottom: '2px solid var(--primary-lighter)', paddingBottom: '0.75rem', color: 'var(--brand-blue)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <FaUserMd style={{ color: 'var(--brand-red)' }} />
             Thông Tin Hành Chính Ca Trực
           </h3>
           
           {/* Thông báo tải lại báo cáo cũ */}
-          {loadingExistingReport ? (
-            <div style={{ backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', padding: '0.65rem 1rem', borderRadius: '8px', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#475569' }}>
-              <FaSpinner className="spinner" style={{ color: 'var(--brand-blue)' }} /> Đang kiểm tra dữ liệu ngày {headerData.reportDate}...
-            </div>
-          ) : existingReportLoaded ? (
-            <div style={{ backgroundColor: '#EFF6FF', border: '1px solid #BFDBFE', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.85rem', color: '#1E40AF' }}>
-              <FaCheckCircle style={{ color: '#2563EB', fontSize: '1.1rem', flexShrink: 0 }} />
-              <div>
+          <div style={{ marginBottom: '1.25rem' }}>
+            {loadingExistingReport ? (
+              <Notice tone="info" icon={<FaSpinner className="spinner" />}>
+                Đang kiểm tra dữ liệu ngày {headerData.reportDate}...
+              </Notice>
+            ) : existingReportLoaded ? (
+              <Notice tone="success" icon={<FaCheckCircle />}>
                 <strong>Đã nạp dữ liệu báo cáo ngày {headerData.reportDate}:</strong> Toàn bộ thông tin ca trực và số liệu chuyên môn đã nộp trước đó đã được tải sẵn. Bạn có thể tiếp tục chỉnh sửa hoặc nộp bổ sung.
-              </div>
-            </div>
-          ) : (
-            <div style={{ backgroundColor: '#F8FAFC', border: '1px dashed #CBD5E1', padding: '0.65rem 1rem', borderRadius: '8px', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.85rem', color: '#64748B' }}>
-              <span style={{ fontSize: '1.1rem' }}>📝</span>
-              <div>
+              </Notice>
+            ) : (
+              <Notice tone="info">
                 <strong>Ngày {headerData.reportDate} chưa có báo cáo:</strong> Vui lòng chọn Bác sĩ, Điều dưỡng trực và bấm <em>"Tiếp tục nhập báo cáo"</em> để nộp số liệu giao ban.
-              </div>
-            </div>
-          )}
+              </Notice>
+            )}
+          </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '2rem' }}>
             {/* 1. Ngày báo cáo */}
