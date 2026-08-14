@@ -1328,11 +1328,95 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
                   {/* Section & Metric Grid */}
                   {sections.length > 0 ? (() => {
                     const totalMetricsCount = sections.reduce((acc, s) => acc + (s.items ? s.items.length : 0), 0);
-                    const hasMultipleSections = sections.filter(s => s.items).length >= 2;
-                    const isCompactMode = totalMetricsCount > 8 || hasMultipleSections;
+                    const metricSectionsCount = sections.filter(s => s.items).length;
+
+                    // Tính toán kích thước thẻ card tự động theo số lượng chỉ số
+                    const getCardDimensions = () => {
+                      if (totalMetricsCount <= 6) {
+                        return {
+                          padding: isFullscreen ? '1.1rem 1.5rem' : '0.85rem 1.25rem',
+                          minHeight: isFullscreen ? '88px' : '74px',
+                          labelSize: isFullscreen ? '1.2rem' : '1rem',
+                          valueSize: isFullscreen ? '2.5rem' : '1.95rem',
+                          badgeSize: '0.8rem',
+                          gap: isFullscreen ? '1rem' : '0.75rem',
+                          sectionHeaderMb: isFullscreen ? '0.75rem' : '0.55rem',
+                          sectionHeaderPad: isFullscreen ? '0.5rem 1.1rem' : '0.38rem 0.85rem',
+                          sectionHeaderFont: isFullscreen ? '1.2rem' : '1rem'
+                        };
+                      }
+                      if (totalMetricsCount <= 10) {
+                        return {
+                          padding: isFullscreen ? '0.85rem 1.3rem' : '0.68rem 1.05rem',
+                          minHeight: isFullscreen ? '78px' : '65px',
+                          labelSize: isFullscreen ? '1.1rem' : '0.92rem',
+                          valueSize: isFullscreen ? '2.3rem' : '1.75rem',
+                          badgeSize: '0.75rem',
+                          gap: isFullscreen ? '0.85rem' : '0.65rem',
+                          sectionHeaderMb: isFullscreen ? '0.65rem' : '0.48rem',
+                          sectionHeaderPad: isFullscreen ? '0.45rem 1rem' : '0.35rem 0.8rem',
+                          sectionHeaderFont: isFullscreen ? '1.15rem' : '0.95rem'
+                        };
+                      }
+                      if (totalMetricsCount <= 14) {
+                        return {
+                          padding: isFullscreen ? '0.68rem 1.1rem' : '0.52rem 0.85rem',
+                          minHeight: isFullscreen ? '68px' : '56px',
+                          labelSize: isFullscreen ? '1.02rem' : '0.85rem',
+                          valueSize: isFullscreen ? '2rem' : '1.55rem',
+                          badgeSize: '0.72rem',
+                          gap: isFullscreen ? '0.75rem' : '0.55rem',
+                          sectionHeaderMb: isFullscreen ? '0.55rem' : '0.4rem',
+                          sectionHeaderPad: isFullscreen ? '0.4rem 0.9rem' : '0.3rem 0.75rem',
+                          sectionHeaderFont: isFullscreen ? '1.1rem' : '0.9rem'
+                        };
+                      }
+                      // Khoa nhiều chỉ số (HSCC - TNT: 16-18 items)
+                      return {
+                        padding: isFullscreen ? '0.52rem 0.9rem' : '0.38rem 0.68rem',
+                        minHeight: isFullscreen ? '56px' : '46px',
+                        labelSize: isFullscreen ? '0.94rem' : '0.78rem',
+                        valueSize: isFullscreen ? '1.8rem' : '1.38rem',
+                        badgeSize: '0.68rem',
+                        gap: isFullscreen ? '0.6rem' : '0.45rem',
+                        sectionHeaderMb: isFullscreen ? '0.45rem' : '0.32rem',
+                        sectionHeaderPad: isFullscreen ? '0.35rem 0.85rem' : '0.25rem 0.65rem',
+                        sectionHeaderFont: isFullscreen ? '1.05rem' : '0.86rem'
+                      };
+                    };
+
+                    const dims = getCardDimensions();
+
+                    // Tính số cột tự động cho từng khối để vừa khít 100% chiều ngang, không để lại khoảng trống bên phải
+                    const getGridCols = (itemCount) => {
+                      if (metricSectionsCount === 1) {
+                        if (itemCount === 9) return isFullscreen ? 'repeat(3, 1fr)' : 'repeat(3, 1fr)';
+                        if (itemCount === 10) return isFullscreen ? 'repeat(5, 1fr)' : 'repeat(5, 1fr)';
+                        if (itemCount <= 4) return `repeat(${itemCount}, 1fr)`;
+                        if (itemCount <= 6) return 'repeat(3, 1fr)';
+                        if (itemCount <= 8) return 'repeat(4, 1fr)';
+                        return isFullscreen ? 'repeat(4, 1fr)' : 'repeat(4, 1fr)';
+                      }
+
+                      // Đa khối (LCK, YHCT, HSCC_TNT)
+                      if (itemCount <= 2) return `repeat(${itemCount}, 1fr)`;
+                      if (itemCount === 3) return 'repeat(3, 1fr)';
+                      if (itemCount === 4) return 'repeat(4, 1fr)';
+                      if (itemCount === 6) return 'repeat(3, 1fr)';
+                      if (itemCount <= 8) return 'repeat(4, 1fr)';
+                      if (itemCount <= 12) return isFullscreen ? 'repeat(5, 1fr)' : 'repeat(4, 1fr)';
+                      return isFullscreen ? 'repeat(5, 1fr)' : 'repeat(4, 1fr)';
+                    };
 
                     return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: isCompactMode ? (isFullscreen ? '0.55rem' : '0.4rem') : '1rem', flex: 1, justifyContent: 'center' }}>
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: dims.gap,
+                      flex: 1,
+                      justifyContent: totalMetricsCount <= 4 ? 'center' : 'flex-start',
+                      paddingTop: '0.25rem'
+                    }}>
                       {sections.map((section, sIdx) => {
                         // 1. PERSONNEL BANNER VIEW
                         if (section.type === 'personnel') {
@@ -1429,12 +1513,12 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
                           return (
                             <div key={sIdx}>
                               <div style={{
-                                fontSize: isFullscreen ? '1.25rem' : '1.05rem',
+                                fontSize: dims.sectionHeaderFont,
                                 fontWeight: '800', color: '#0F2C59',
                                 backgroundColor: '#EFF6FF',
-                                padding: '0.6rem 1.2rem', borderRadius: '8px',
+                                padding: dims.sectionHeaderPad, borderRadius: '8px',
                                 borderLeft: '5px solid #2563EB',
-                                marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.5px'
+                                marginBottom: dims.sectionHeaderMb, textTransform: 'uppercase', letterSpacing: '0.5px'
                               }}>
                                 {section.title}
                               </div>
@@ -1498,13 +1582,13 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
                             {/* Section Title Header */}
                             {section.title && (
                               <div style={{
-                                fontSize: isCompactMode ? (isFullscreen ? '1.05rem' : '0.88rem') : (isFullscreen ? '1.25rem' : '1.05rem'),
+                                fontSize: dims.sectionHeaderFont,
                                 fontWeight: '800', color: '#0F2C59',
                                 backgroundColor: '#EFF6FF',
-                                padding: isCompactMode ? (isFullscreen ? '0.35rem 0.85rem' : '0.22rem 0.65rem') : '0.6rem 1.2rem',
-                                borderRadius: isCompactMode ? '6px' : '8px',
-                                borderLeft: isCompactMode ? '4px solid #2563EB' : '5px solid #2563EB',
-                                marginBottom: isCompactMode ? (isFullscreen ? '0.45rem' : '0.32rem') : '1rem',
+                                padding: dims.sectionHeaderPad,
+                                borderRadius: '8px',
+                                borderLeft: '5px solid #2563EB',
+                                marginBottom: dims.sectionHeaderMb,
                                 textTransform: 'uppercase', letterSpacing: '0.5px'
                               }}>
                                 {section.title}
@@ -1514,10 +1598,8 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
                             {section.items && (
                               <div style={{
                                 display: 'grid',
-                                gridTemplateColumns: isCompactMode
-                                  ? (isFullscreen ? 'repeat(auto-fill, minmax(200px, 1fr))' : 'repeat(auto-fill, minmax(170px, 1fr))')
-                                  : (isFullscreen ? 'repeat(auto-fit, minmax(280px, 1fr))' : 'repeat(auto-fit, minmax(240px, 1fr))'),
-                                gap: isCompactMode ? (isFullscreen ? '0.55rem' : '0.38rem') : (isFullscreen ? '1.1rem' : '0.85rem')
+                                gridTemplateColumns: getGridCols(section.items.length),
+                                gap: dims.gap
                               }}>
                                 {section.items.map((item, iIdx) => {
                                   const style = getMetricStyle(item.key, item.value);
@@ -1526,39 +1608,31 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
                                       key={iIdx}
                                       style={{
                                         backgroundColor: style.bg,
-                                        border: `${isCompactMode ? '1.5px' : '2px'} solid ${style.border}`,
-                                        borderRadius: isCompactMode ? '9px' : '12px',
-                                        padding: isCompactMode
-                                          ? (isFullscreen ? '0.45rem 0.8rem' : '0.32rem 0.6rem')
-                                          : (isFullscreen ? '1rem 1.4rem' : '0.75rem 1.1rem'),
+                                        border: `2px solid ${style.border}`,
+                                        borderRadius: '12px',
+                                        padding: dims.padding,
                                         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                                        boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
+                                        boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
                                         transition: 'transform 0.15s',
-                                        minHeight: isCompactMode
-                                          ? (isFullscreen ? '52px' : '44px')
-                                          : (isFullscreen ? '90px' : '75px')
+                                        minHeight: dims.minHeight
                                       }}
                                     >
-                                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem', paddingRight: '0.4rem' }}>
+                                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', paddingRight: '0.5rem' }}>
                                         <span style={{
-                                          fontSize: isCompactMode
-                                            ? (isFullscreen ? '0.92rem' : '0.78rem')
-                                            : (isFullscreen ? '1.15rem' : '0.95rem'),
+                                          fontSize: dims.labelSize,
                                           fontWeight: '700', color: style.label,
-                                          lineHeight: 1.2
+                                          lineHeight: 1.3
                                         }}>
                                           {item.label}
                                         </span>
                                         {style.badge && (
-                                          <span style={{ fontSize: isCompactMode ? '0.68rem' : '0.75rem', fontWeight: '800', color: '#DC2626' }}>
+                                          <span style={{ fontSize: dims.badgeSize, fontWeight: '800', color: '#DC2626' }}>
                                             {style.badge}
                                           </span>
                                         )}
                                       </div>
                                       <span style={{
-                                        fontSize: isCompactMode
-                                          ? (isFullscreen ? '1.75rem' : '1.35rem')
-                                          : (isFullscreen ? '2.4rem' : '1.8rem'),
+                                        fontSize: dims.valueSize,
                                         fontWeight: '900', color: style.text,
                                         fontFamily: "'Roboto Mono', monospace",
                                         flexShrink: 0
