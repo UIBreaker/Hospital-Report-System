@@ -1,5 +1,35 @@
 const pool = require('../config/db');
 
+const safeVal = (v) => (v === undefined || v === null || v === '' ? null : v);
+const safeJson = (v) => (v ? JSON.stringify(v) : null);
+
+const safeImages = (imgVal) => {
+  if (!imgVal) return null;
+  if (Array.isArray(imgVal)) {
+    return imgVal.length > 0 ? JSON.stringify(imgVal) : null;
+  }
+  if (typeof imgVal === 'string') {
+    return imgVal.trim() ? imgVal : null;
+  }
+  return null;
+};
+
+const parseCaseImages = (caseItem) => {
+  if (!caseItem) return caseItem;
+  let images = caseItem.images;
+  if (typeof images === 'string') {
+    try {
+      images = JSON.parse(images);
+    } catch (e) {
+      images = [images];
+    }
+  }
+  return {
+    ...caseItem,
+    images: Array.isArray(images) ? images : (images ? [images] : [])
+  };
+};
+
 const createOrUpdateReport = async (req, res, next) => {
   const connection = await pool.getConnection();
   try {
@@ -19,10 +49,6 @@ const createOrUpdateReport = async (req, res, next) => {
       deathCases,
       criticalCases
     } = req.body;
-
-    // Helper: convert undefined/empty string to null for mysql2 (used for all inserts)
-    const safeVal = (v) => (v === undefined || v === null || v === '' ? null : v);
-    const safeJson = (v) => (v ? JSON.stringify(v) : null);
 
     // Check if report exists
     const [existing] = await connection.execute(
@@ -72,33 +98,6 @@ const createOrUpdateReport = async (req, res, next) => {
       );
       reportId = result.insertId;
     }
-
-const safeImages = (imgVal) => {
-  if (!imgVal) return null;
-  if (Array.isArray(imgVal)) {
-    return imgVal.length > 0 ? JSON.stringify(imgVal) : null;
-  }
-  if (typeof imgVal === 'string') {
-    return imgVal.trim() ? imgVal : null;
-  }
-  return null;
-};
-
-const parseCaseImages = (caseItem) => {
-  if (!caseItem) return caseItem;
-  let images = caseItem.images;
-  if (typeof images === 'string') {
-    try {
-      images = JSON.parse(images);
-    } catch (e) {
-      images = [images];
-    }
-  }
-  return {
-    ...caseItem,
-    images: Array.isArray(images) ? images : (images ? [images] : [])
-  };
-};
 
     // Insert new transfer cases
     if (transferCases && Array.isArray(transferCases) && transferCases.length > 0) {
