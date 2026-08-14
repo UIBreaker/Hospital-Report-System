@@ -1582,17 +1582,23 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
                         textTransform: 'uppercase', letterSpacing: '0.5px',
                         borderBottom: '1.5px solid #FDE68A', paddingBottom: '0.35rem'
                       }}>
-                        🔬 CHẨN ĐOÁN & CẬN LÂM SÀNG
+                        🔬 KHÁM LÂM SÀNG & CẬN LÂM SÀNG
                       </div>
                       <div style={{ fontSize: isFullscreen ? '1.1rem' : '0.95rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                        <div style={{ backgroundColor: '#FEF3C7', padding: '0.6rem 0.8rem', borderRadius: '8px', border: '1px solid #FCD34D' }}>
+                        <div style={{ backgroundColor: '#FEF3C7', padding: '0.5rem 0.8rem', borderRadius: '8px', border: '1px solid #FCD34D' }}>
                           <strong style={{ color: '#92400E' }}>Chẩn đoán xác định:</strong>
                           <div style={{ color: '#B45309', fontWeight: '800', fontSize: isFullscreen ? '1.2rem' : '1.05rem', marginTop: '2px' }}>
                             {slide.transferCase.diagnosis || '—'}
                           </div>
                         </div>
+                        {(slide.transferCase.clinical_symptoms || slide.transferCase.clinicalSymptoms) && (
+                          <div>
+                            <strong>Lâm sàng / Triệu chứng khám:</strong>
+                            <div style={{ color: '#1E293B', fontWeight: '600', marginTop: '2px' }}>{slide.transferCase.clinical_symptoms || slide.transferCase.clinicalSymptoms}</div>
+                          </div>
+                        )}
                         <div>
-                          <strong>Cận lâm sàng / X-Quang / ECG:</strong>
+                          <strong>Cận lâm sàng / X-Quang / XN:</strong>
                           <div style={{ color: '#1E293B', fontWeight: '600', marginTop: '2px' }}>{slide.transferCase.clinical_tests || slide.transferCase.clinicalTests || '—'}</div>
                         </div>
                       </div>

@@ -452,7 +452,7 @@ export const generateAndDownloadHospitalExcel = async (date, detailedReports = [
   wsCases.getRow(cRowIdx).height = 22;
   cRowIdx++;
 
-  const tfHeaders = ['STT', 'Khoa Phòng', 'Họ Và Tên BN', 'Tuổi', 'Địa Chỉ', 'Giờ Vào', 'Chẩn Đoán', 'Xử Trí & Diễn Biến Chuyển'];
+  const tfHeaders = ['STT', 'Khoa Phòng', 'Họ Và Tên BN', 'Tuổi', 'Địa Chỉ', 'Giờ Vào', 'Lý Do, Lâm Sàng & CLS', 'Chẩn Đoán & Xử Trí Chuyển'];
   const tfHeaderRow = wsCases.getRow(cRowIdx);
   tfHeaders.forEach((h, idx) => {
     const cell = tfHeaderRow.getCell(idx + 1);
@@ -476,8 +476,8 @@ export const generateAndDownloadHospitalExcel = async (date, detailedReports = [
       r.getCell(4).value = formatPatientAge(tc.age) || '—';
       r.getCell(5).value = tc.address || '—';
       r.getCell(6).value = tc.admission_time || tc.admissionTime || '—';
-      r.getCell(7).value = tc.diagnosis || '—';
-      r.getCell(8).value = `Xử trí: ${tc.initial_treatment || tc.initialTreatment || '—'}\nDiễn biến: ${tc.progress_notes || tc.progressNotes || '—'}`;
+      r.getCell(7).value = `Lý do: ${tc.reason || '—'}\nLâm sàng: ${tc.clinical_symptoms || tc.clinicalSymptoms || '—'}\nCLS: ${tc.clinical_tests || tc.clinicalTests || '—'}`;
+      r.getCell(8).value = `CĐ: ${tc.diagnosis || '—'}\nXử trí: ${tc.initial_treatment || tc.initialTreatment || '—'}\nDiễn biến: ${tc.progress_notes || tc.progressNotes || '—'}`;
       r.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
       r.getCell(2).alignment = { vertical: 'middle' };
       r.getCell(3).alignment = { vertical: 'middle' };
@@ -485,10 +485,9 @@ export const generateAndDownloadHospitalExcel = async (date, detailedReports = [
       r.getCell(4).alignment = { horizontal: 'center', vertical: 'middle' };
       r.getCell(5).alignment = { vertical: 'middle' };
       r.getCell(6).alignment = { horizontal: 'center', vertical: 'middle' };
-      r.getCell(7).font = { bold: true };
       r.getCell(7).alignment = { vertical: 'middle', wrapText: true };
       r.getCell(8).alignment = { vertical: 'middle', wrapText: true };
-      r.height = 32;
+      r.height = 42;
       cRowIdx++;
     });
   });

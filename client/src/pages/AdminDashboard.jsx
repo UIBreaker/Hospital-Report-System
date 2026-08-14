@@ -714,6 +714,8 @@ const AdminDashboard = () => {
         address: '',
         admissionTime: '',
         reason: '',
+        clinicalSymptoms: '',
+        clinical_symptoms: '',
         clinicalTests: '',
         diagnosis: '',
         initialTreatment: '',
@@ -1947,6 +1949,10 @@ const AdminDashboard = () => {
                                 <input type="text" value={tc.reason || ''} onChange={(e) => handleTransferCaseChange(idx, 'reason', e.target.value)} placeholder="Lý do..." />
                               </div>
                               <div className="form-group full-width">
+                                <label>Lâm sàng / Triệu chứng khám / Sinh hiệu</label>
+                                <textarea value={tc.clinicalSymptoms || tc.clinical_symptoms || ''} onChange={(e) => handleTransferCaseChange(idx, 'clinicalSymptoms', e.target.value)} className="note-field" rows={2} placeholder="Tri giác, sinh hiệu, khám lâm sàng..." />
+                              </div>
+                              <div className="form-group full-width">
                                 <label>Cận lâm sàng / XN / X-Quang</label>
                                 <textarea value={tc.clinicalTests || tc.clinical_tests || ''} onChange={(e) => handleTransferCaseChange(idx, 'clinicalTests', e.target.value)} className="note-field" rows={2} placeholder="Kết quả CLS..." />
                               </div>
@@ -1969,6 +1975,7 @@ const AdminDashboard = () => {
                               {tc.address && <div><strong>Địa chỉ:</strong> {tc.address}</div>}
                               <div><strong>Giờ vào:</strong> {tc.admission_time || tc.admissionTime || '—'}</div>
                               <div><strong>Lý do:</strong> {tc.reason || '—'}</div>
+                              {tc.clinical_symptoms || tc.clinicalSymptoms ? <div><strong>Lâm sàng:</strong> {tc.clinical_symptoms || tc.clinicalSymptoms}</div> : null}
                               {tc.clinical_tests || tc.clinicalTests ? <div><strong>Cận lâm sàng:</strong> {tc.clinical_tests || tc.clinicalTests}</div> : null}
                               <div><strong>Chẩn đoán:</strong> <span style={{ color: '#B45309', fontWeight: '600' }}>{tc.diagnosis || '—'}</span></div>
                               <div><strong>Xử trí:</strong> {tc.initial_treatment || tc.initialTreatment || '—'}</div>

@@ -106,8 +106,8 @@ const createOrUpdateReport = async (req, res, next) => {
         if (patientName || tc.admissionTime || tc.diagnosis) {
           await connection.execute(
             `INSERT INTO transfer_cases 
-             (report_id, patient_name, age, address, admission_time, reason, clinical_tests, diagnosis, initial_treatment, progress_notes, images)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             (report_id, patient_name, age, address, admission_time, reason, clinical_symptoms, clinical_tests, diagnosis, initial_treatment, progress_notes, images)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
               reportId,
               patientName,
@@ -115,6 +115,7 @@ const createOrUpdateReport = async (req, res, next) => {
               safeVal(tc.address),
               safeVal(tc.admissionTime || tc.admission_time),
               safeVal(tc.reason),
+              safeVal(tc.clinicalSymptoms || tc.clinical_symptoms),
               safeVal(tc.clinicalTests || tc.clinical_tests),
               safeVal(tc.diagnosis),
               safeVal(tc.initialTreatment || tc.initial_treatment),

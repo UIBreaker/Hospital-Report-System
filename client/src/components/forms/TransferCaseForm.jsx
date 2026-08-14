@@ -21,6 +21,7 @@ const TransferCaseForm = ({ transferCases = [], setTransferCases }) => {
             // Đồng bộ cả snake_case để tương thích ngược 100%
             ...(field === 'patientName' ? { patient_name: value } : {}),
             ...(field === 'admissionTime' ? { admission_time: value } : {}),
+            ...(field === 'clinicalSymptoms' ? { clinical_symptoms: value } : {}),
             ...(field === 'clinicalTests' ? { clinical_tests: value } : {}),
             ...(field === 'initialTreatment' ? { initial_treatment: value } : {}),
             ...(field === 'progressNotes' ? { progress_notes: value } : {})
@@ -44,6 +45,8 @@ const TransferCaseForm = ({ transferCases = [], setTransferCases }) => {
         admissionTime: '',
         admission_time: '',
         reason: '',
+        clinicalSymptoms: '',
+        clinical_symptoms: '',
         clinicalTests: '',
         clinical_tests: '',
         diagnosis: '',
@@ -212,7 +215,19 @@ const TransferCaseForm = ({ transferCases = [], setTransferCases }) => {
                       />
                     </div>
 
-                    {/* Hàng 4: Cận lâm sàng */}
+                    {/* Hàng 4: Lâm sàng (Triệu chứng, Khám thực thể, Sinh hiệu) */}
+                    <div className="form-group" style={{ marginBottom: '1rem' }}>
+                      <label style={{ fontWeight: '700', color: '#0F2C59' }}>Lâm sàng / Triệu chứng khám / Sinh hiệu</label>
+                      <textarea
+                        value={tCase.clinicalSymptoms || tCase.clinical_symptoms || ''}
+                        onChange={(e) => handleChange(id, 'clinicalSymptoms', e.target.value)}
+                        placeholder="Tri giác, tiếp xúc, da niêm, sinh hiệu (Mạch, HA, SpO2, Nhịp thở, Nhiệt độ), khám thực thể vùng tổn thương..."
+                        rows={2}
+                        className="note-field"
+                      />
+                    </div>
+
+                    {/* Hàng 5: Cận lâm sàng */}
                     <div className="form-group" style={{ marginBottom: '1rem' }}>
                       <label style={{ fontWeight: '700', color: '#0F2C59' }}>Cận lâm sàng / X-Quang / Siêu âm / Xét nghiệm</label>
                       <textarea

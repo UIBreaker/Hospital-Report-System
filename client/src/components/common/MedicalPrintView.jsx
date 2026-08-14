@@ -615,7 +615,7 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
                     <th style={{ border: '1px solid #000000', padding: '3px', width: '22px' }}>STT</th>
                     <th style={{ border: '1px solid #000000', padding: '3px', width: '120px' }}>Họ Tên / Địa Chỉ</th>
                     <th style={{ border: '1px solid #000000', padding: '3px', width: '90px' }}>Khoa / Giờ Vào</th>
-                    <th style={{ border: '1px solid #000000', padding: '3px' }}>Lý Do & Cận Lâm Sàng</th>
+                    <th style={{ border: '1px solid #000000', padding: '3px' }}>Lý Do, Lâm Sàng & CLS</th>
                     <th style={{ border: '1px solid #000000', padding: '3px' }}>Chẩn Đoán & Xử Trí</th>
                     <th style={{ border: '1px solid #000000', padding: '3px' }}>Diễn Biến Chuyển</th>
                   </tr>
@@ -635,6 +635,7 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
                       </td>
                       <td style={{ border: '1px solid #000000', padding: '3px' }}>
                         <div><strong>Lý do:</strong> {tc.reason || '—'}</div>
+                        {tc.clinical_symptoms || tc.clinicalSymptoms ? <div style={{ fontSize: '8pt', color: '#374151' }}><strong>Lâm sàng:</strong> {tc.clinical_symptoms || tc.clinicalSymptoms}</div> : null}
                         {tc.clinical_tests || tc.clinicalTests ? <div style={{ fontSize: '8pt', color: '#374151' }}><strong>CLS:</strong> {tc.clinical_tests || tc.clinicalTests}</div> : null}
                       </td>
                       <td style={{ border: '1px solid #000000', padding: '3px' }}>
