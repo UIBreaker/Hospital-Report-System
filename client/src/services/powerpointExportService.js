@@ -503,6 +503,58 @@ export const exportPresentationToPowerPoint = async (slides = [], date = '', rep
         fontSize: 8.5, italic: true, color: '94A3B8', align: 'right', fontFace: 'Arial'
       });
     }
+
+    // =========================================================================
+    // 8. SLIDE HÌNH ẢNH MINH HỌA CA BỆNH (DEDICATED FULL SLIDE IMAGE)
+    // =========================================================================
+    if (s.type === 'case_image') {
+      const themeHex = s.themeColor ? s.themeColor.replace('#', '') : '2563EB';
+      const typeLabel = s.caseType === 'surgery' ? 'CA PHẪU THUẬT' :
+                        s.caseType === 'death' ? 'HỒ SƠ TỬ VONG' :
+                        s.caseType === 'transfer' ? 'CA CHUYỂN VIỆN' : 'BỆNH NẶNG THEO DÕI';
+
+      // Top Border Bar
+      slide.addShape(pptx.ShapeType.rect, {
+        x: 0, y: 0, w: 10, h: 0.08,
+        fill: { color: themeHex }, line: { color: themeHex }
+      });
+
+      // Top Header Title
+      slide.addText(`🖼️ ${s.deptName} • ${typeLabel} #${s.caseIndex} • ẢNH ${s.imgIndex}/${s.totalImages}`, {
+        x: 0.5, y: 0.18, w: 5.5, h: 0.35,
+        fontSize: 11.5, bold: true, color: themeHex, fontFace: 'Arial'
+      });
+
+      // Patient Info Right
+      const patInfo = `👤 ${s.caseItem.patient_name || s.caseItem.patientName || 'Bệnh nhân'}${s.caseItem.age ? ` (${s.caseItem.age}t)` : ''}${s.caseItem.diagnosis ? ` • CĐ: ${s.caseItem.diagnosis}` : ''}`;
+      slide.addText(patInfo, {
+        x: 4.5, y: 0.18, w: 5.0, h: 0.35,
+        fontSize: 10.5, bold: true, color: '0F2C59', align: 'right', fontFace: 'Arial'
+      });
+
+      // Embed Image
+      const imgObj = s.image;
+      const imgData = typeof imgObj === 'string' ? imgObj : imgObj.url;
+      if (imgData) {
+        try {
+          slide.addImage({
+            data: imgData,
+            x: 0.5,
+            y: 0.65,
+            w: 9.0,
+            h: 4.4,
+            sizing: { type: 'contain' }
+          });
+        } catch (imgErr) {
+          console.warn('Lỗi chèn ảnh vào slide PPTX:', imgErr);
+        }
+      }
+
+      slide.addText(`Slide ${i + 1}/${slides.length} • Hình ảnh y khoa minh họa • ${date}`, {
+        x: 0.5, y: 5.15, w: 9.0, h: 0.25,
+        fontSize: 8.5, italic: true, color: '94A3B8', align: 'right', fontFace: 'Arial'
+      });
+    }
   }
 
   // Xuất file PowerPoint

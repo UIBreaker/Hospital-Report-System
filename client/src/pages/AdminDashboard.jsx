@@ -1647,6 +1647,34 @@ const AdminDashboard = () => {
                     <h4 style={{ fontSize: '1rem', color: 'var(--brand-blue)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <FaUserMd /> Thông Tin Ca Trực
                     </h4>
+                    {!hasReport && !isEditing && (
+                      <div style={{
+                        padding: '0.85rem 1.25rem',
+                        backgroundColor: '#FFFBEB',
+                        border: '1.5px solid #FDE68A',
+                        borderRadius: '8px',
+                        marginBottom: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        flexWrap: 'wrap',
+                        gap: '0.75rem'
+                      }}>
+                        <div style={{ color: '#92400E', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <span style={{ fontSize: '1.2rem' }}>⚠️</span>
+                          <span>Khoa <strong>{modalDept?.departmentName}</strong> chưa nộp báo cáo cho ngày <strong>{editHeader.reportDate || date}</strong>.</span>
+                        </div>
+                        <button
+                          type="button"
+                          className="btn btn-primary btn-sm"
+                          onClick={() => setIsEditing(true)}
+                          style={{ fontSize: '0.85rem', padding: '0.4rem 0.9rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+                        >
+                          <FaEdit /> Nhập báo cáo hộ khoa
+                        </button>
+                      </div>
+                    )}
+
                     {isEditing ? (
                       <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                         {/* Admin chỉnh ngày báo cáo */}
@@ -2178,7 +2206,7 @@ const AdminDashboard = () => {
                 ) : (
                   <>
                     <button className="btn btn-secondary" onClick={() => setIsEditing(true)}>
-                      <FaEdit /> Chỉnh Sửa Báo Cáo
+                      <FaEdit /> {hasReport ? 'Chỉnh Sửa Báo Cáo' : 'Nhập Hộ Báo Cáo'}
                     </button>
                     <button className="btn btn-primary" onClick={() => setModalOpen(false)}>Đóng</button>
                   </>

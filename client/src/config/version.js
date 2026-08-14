@@ -4,6 +4,7 @@
 // - MINOR (Y): Bổ sung tính năng mới
 // - PATCH (Z): Vá lỗi nhỏ, tinh chỉnh giao diện, ẩn huy hiệu ở trang khoa phòng
 
-export const APP_VERSION = '1.16.0';
-export const APP_VERSION_TAG = 'v1.16.0';
+export const APP_VERSION = '1.17.0';
+export const APP_VERSION_TAG = 'v1.17.0';
 export const APP_RELEASE_DATE = 'Tháng 08/2026';
+

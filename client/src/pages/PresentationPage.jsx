@@ -639,6 +639,25 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
             deptName,
             report
           });
+
+          // Tạo riêng mỗi ảnh đính kèm thành 1 slide trình chiếu riêng biệt
+          const scImgs = normalizeImages(sc.images);
+          scImgs.forEach((img, imgIdx) => {
+            s.push({
+              type: 'case_image',
+              caseType: 'surgery',
+              title: `HÌNH ẢNH CA PHẪU THUẬT – ${deptName}`,
+              caseItem: sc,
+              image: img,
+              caseIndex: idx + 1,
+              totalCases: report.surgeryCases.length,
+              imgIndex: imgIdx + 1,
+              totalImages: scImgs.length,
+              themeColor: '#0284C7',
+              deptName,
+              report
+            });
+          });
         });
       }
 
@@ -654,10 +673,29 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
             deptName,
             report
           });
+
+          // Tạo riêng mỗi ảnh đính kèm thành 1 slide trình chiếu riêng biệt
+          const dcImgs = normalizeImages(dc.images);
+          dcImgs.forEach((img, imgIdx) => {
+            s.push({
+              type: 'case_image',
+              caseType: 'death',
+              title: `HÌNH ẢNH HỒ SƠ TỬ VONG – ${deptName}`,
+              caseItem: dc,
+              image: img,
+              caseIndex: idx + 1,
+              totalCases: report.deathCases.length,
+              imgIndex: imgIdx + 1,
+              totalImages: dcImgs.length,
+              themeColor: '#DC2626',
+              deptName,
+              report
+            });
+          });
         });
       }
 
-      // Slide Ca Chuyển Viện (Phần 1 & Phần 2)
+      // Slide Ca Chuyển Viện (Phần 1 & Phần 2 + Slide Từng Ảnh Riêng)
       if (report.transferCases && report.transferCases.length > 0) {
         report.transferCases.forEach((tc, idx) => {
           // Slide Part 1: Tiếp nhận, lâm sàng & xử trí ban đầu
@@ -683,10 +721,29 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
             deptName,
             report,
           });
+
+          // Tạo riêng mỗi ảnh đính kèm thành 1 slide trình chiếu riêng biệt
+          const tcImgs = normalizeImages(tc.images);
+          tcImgs.forEach((img, imgIdx) => {
+            s.push({
+              type: 'case_image',
+              caseType: 'transfer',
+              title: `HÌNH ẢNH CA CHUYỂN VIỆN – ${deptName}`,
+              caseItem: tc,
+              image: img,
+              caseIndex: idx + 1,
+              totalCases: report.transferCases.length,
+              imgIndex: imgIdx + 1,
+              totalImages: tcImgs.length,
+              themeColor: '#D97706',
+              deptName,
+              report
+            });
+          });
         });
       }
 
-      // Slide Ca Bệnh Nặng Theo Dõi (Deep Purple Theme)
+      // Slide Ca Bệnh Nặng Theo Dõi (Deep Purple Theme + Slide Từng Ảnh Riêng)
       if (report.criticalCases && report.criticalCases.length > 0) {
         report.criticalCases.forEach((cc, idx) => {
           s.push({
@@ -697,6 +754,25 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
             totalCases: report.criticalCases.length,
             deptName,
             report
+          });
+
+          // Tạo riêng mỗi ảnh đính kèm thành 1 slide trình chiếu riêng biệt
+          const ccImgs = normalizeImages(cc.images);
+          ccImgs.forEach((img, imgIdx) => {
+            s.push({
+              type: 'case_image',
+              caseType: 'critical',
+              title: `HÌNH ẢNH BỆNH NẶNG – ${deptName}`,
+              caseItem: cc,
+              image: img,
+              caseIndex: idx + 1,
+              totalCases: report.criticalCases.length,
+              imgIndex: imgIdx + 1,
+              totalImages: ccImgs.length,
+              themeColor: '#7C3AED',
+              deptName,
+              report
+            });
           });
         });
       }
@@ -1989,6 +2065,141 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
                   themeColor="#7C3AED"
                   onOpen={handleOpenLightbox}
                 />
+              </div>
+            )}
+
+            {/* ==================== 8. DEDICATED FULL-SCREEN IMAGE SLIDE ==================== */}
+            {slide.type === 'case_image' && (
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                {/* Header Banner with Category Theme */}
+                <div style={{
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  paddingBottom: '1rem', marginBottom: '1.25rem',
+                  borderBottom: `4px solid ${slide.themeColor || '#2563EB'}`
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{
+                      width: isFullscreen ? '64px' : '50px', height: isFullscreen ? '64px' : '50px',
+                      borderRadius: '50%',
+                      backgroundColor: `${slide.themeColor}20`,
+                      color: slide.themeColor,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: isFullscreen ? '1.8rem' : '1.4rem',
+                      boxShadow: `0 4px 14px ${slide.themeColor}30`
+                    }}>
+                      <FaImages />
+                    </div>
+                    <div>
+                      <div style={{
+                        fontSize: isFullscreen ? '1rem' : '0.85rem',
+                        color: slide.themeColor,
+                        fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1.2px'
+                      }}>
+                        {slide.deptName} • {
+                          slide.caseType === 'surgery' ? 'CA PHẪU THUẬT' :
+                          slide.caseType === 'death' ? 'HỒ SƠ TỬ VONG' :
+                          slide.caseType === 'transfer' ? 'CA CHUYỂN VIỆN' : 'BỆNH NẶNG THEO DÕI'
+                        } #{slide.caseIndex}/{slide.totalCases}
+                      </div>
+                      <h2 style={{
+                        fontSize: isFullscreen ? '2.2rem' : '1.65rem',
+                        color: '#0F2C59', fontWeight: '900', margin: 0, lineHeight: 1.15
+                      }}>
+                        HÌNH ẢNH MINH HỌA #{slide.imgIndex} / {slide.totalImages}
+                      </h2>
+                    </div>
+                  </div>
+
+                  {/* Patient Quick Badge */}
+                  <div style={{
+                    padding: '0.6rem 1.25rem',
+                    backgroundColor: '#FFFFFF',
+                    borderRadius: '12px',
+                    border: `1.5px solid ${slide.themeColor}44`,
+                    display: 'flex', alignItems: 'center', gap: '0.85rem',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+                  }}>
+                    <div style={{ fontSize: isFullscreen ? '1.1rem' : '0.95rem', fontWeight: '800', color: '#0F2C59' }}>
+                      👤 {slide.caseItem.patient_name || slide.caseItem.patientName || 'Bệnh nhân'}
+                      {(slide.caseItem.age || slide.caseItem.birth_year || slide.caseItem.birthYear) ? ` (${slide.caseItem.age || slide.caseItem.birth_year || slide.caseItem.birthYear} tuổi)` : ''}
+                    </div>
+                    {slide.caseItem.diagnosis && (
+                      <div style={{ fontSize: isFullscreen ? '1rem' : '0.85rem', fontWeight: '700', color: slide.themeColor }}>
+                        • CĐ: {slide.caseItem.diagnosis}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Main Large Image Presentation Stage */}
+                <div style={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: '#0F172A',
+                  borderRadius: '16px',
+                  border: '2px solid #334155',
+                  padding: '1.25rem',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.25)'
+                }}>
+                  {/* The Image */}
+                  <img
+                    src={typeof slide.image === 'string' ? slide.image : slide.image.url}
+                    alt={typeof slide.image === 'object' ? slide.image.name : 'Hình ảnh y khoa'}
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: isFullscreen ? '68vh' : '58vh',
+                      objectFit: 'contain',
+                      borderRadius: '8px',
+                      boxShadow: '0 8px 30px rgba(0, 0, 0, 0.6)',
+                      cursor: 'zoom-in',
+                      transition: 'transform 0.2s ease'
+                    }}
+                    onClick={() => handleOpenLightbox([slide.image], 0, `${slide.caseItem.patient_name || slide.caseItem.patientName || 'Bệnh nhân'} - Ảnh ${slide.imgIndex}/${slide.totalImages}`)}
+                    title="Nhấp để phóng to toàn màn hình (HD Lightbox)"
+                  />
+
+                  {/* Caption & Full-screen trigger */}
+                  <div style={{
+                    marginTop: '0.75rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    width: '100%',
+                    maxWidth: '900px',
+                    color: '#94A3B8',
+                    fontSize: isFullscreen ? '1rem' : '0.85rem'
+                  }}>
+                    <span>
+                      📷 {typeof slide.image === 'object' && slide.image.name ? slide.image.name : `Ảnh minh họa ${slide.imgIndex}`}
+                      {typeof slide.image === 'object' && slide.image.size ? ` (${slide.image.size})` : ''}
+                    </span>
+
+                    <button
+                      onClick={() => handleOpenLightbox([slide.image], 0, `${slide.caseItem.patient_name || slide.caseItem.patientName || 'Bệnh nhân'} - Ảnh ${slide.imgIndex}/${slide.totalImages}`)}
+                      style={{
+                        backgroundColor: slide.themeColor,
+                        color: '#FFFFFF',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '0.4rem 1rem',
+                        fontSize: '0.85rem',
+                        fontWeight: '800',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.4rem',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+                      }}
+                    >
+                      <FaExpand /> Phóng to toàn màn hình (HD Lightbox)
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </div>

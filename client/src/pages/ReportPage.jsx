@@ -498,7 +498,14 @@ const ReportPage = () => {
                 <strong>Đã nạp dữ liệu báo cáo ngày {headerData.reportDate}:</strong> Toàn bộ thông tin ca trực và số liệu chuyên môn đã nộp trước đó đã được tải sẵn. Bạn có thể tiếp tục chỉnh sửa hoặc nộp bổ sung.
               </div>
             </div>
-          ) : null}
+          ) : (
+            <div style={{ backgroundColor: '#F8FAFC', border: '1px dashed #CBD5E1', padding: '0.65rem 1rem', borderRadius: '8px', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.85rem', color: '#64748B' }}>
+              <span style={{ fontSize: '1.1rem' }}>📝</span>
+              <div>
+                <strong>Ngày {headerData.reportDate} chưa có báo cáo:</strong> Vui lòng chọn Bác sĩ, Điều dưỡng trực và bấm <em>"Tiếp tục nhập báo cáo"</em> để nộp số liệu giao ban.
+              </div>
+            </div>
+          )}
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '2rem' }}>
             {/* 1. Ngày báo cáo */}
