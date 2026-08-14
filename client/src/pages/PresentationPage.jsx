@@ -1105,7 +1105,7 @@ const PresentationPage = () => {
           <div style={{ height: '100%', width: `${progressPct}%`, backgroundColor: '#3B82F6', transition: 'width 0.35s cubic-bezier(0.16, 1, 0.3, 1)', boxShadow: '0 0 10px #60A5FA' }} />
         </div>
 
-        {/* Slide Canvas Stage - Optimized to fit 100% viewport with smooth animation */}
+        {/* Slide Canvas Stage - Permanently mounted White Canvas to eliminate unmount flashing */}
         <div 
           ref={scrollContainerRef}
           className="slide-stage-wrapper"
@@ -1121,8 +1121,7 @@ const PresentationPage = () => {
           }}
         >
           <div 
-            key={currentSlide}
-            className={`slide-card-animated presentation-canvas ${slideDirection === 'next' ? 'slide-enter-next' : 'slide-enter-prev'}`}
+            className="presentation-canvas"
             style={{
               width: '100%',
               maxWidth: isFullscreen ? '1600px' : '1280px',
@@ -1153,9 +1152,23 @@ const PresentationPage = () => {
                 ? 'linear-gradient(90deg, #DC2626, #991B1B, #B91C1C)'
                 : slide.type === 'surgery'
                 ? 'linear-gradient(90deg, #0284C7, #0369A1, #38BDF8)'
-                : 'linear-gradient(90deg, #1E40AF, #3B82F6, #0D9488)'
+                : 'linear-gradient(90deg, #1E40AF, #3B82F6, #0D9488)',
+              transition: 'background 0.3s ease'
             }} />
 
+            {/* Inner Content with seamless cross-fade and gentle 10px translate */}
+            <div
+              key={currentSlide}
+              className={`slide-inner-content ${slideDirection === 'next' ? 'slide-content-next' : 'slide-content-prev'}`}
+              style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                height: '100%',
+                minHeight: 0
+              }}
+            >
             {/* ==================== 1. TITLE SLIDE ==================== */}
             {slide.type === 'title' && (() => {
               const totalSubmitted = reports.length;
@@ -2610,6 +2623,7 @@ const PresentationPage = () => {
                 </div>
               );
             })()}
+            </div>
           </div>
         </div>
 
