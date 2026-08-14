@@ -107,6 +107,15 @@ const formatDate = (dateStr) => {
   return d.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 };
 
+// Clean and format patient age (avoids duplicate "tuổi, tuổi" and trailing punctuation)
+const formatPatientAge = (ageVal) => {
+  if (!ageVal) return '';
+  const str = String(ageVal).trim();
+  const clean = str.replace(/tuổi/gi, '').replace(/,/g, '').replace(/\./g, '').trim();
+  return clean ? `${clean} tuổi` : '';
+};
+
+
 // Classify metric severity for smart visual styling
 const getMetricStyle = (key, value) => {
   const numVal = Number(value);
@@ -963,36 +972,42 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
       {/* ===================== MAIN STAGE ===================== */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100vh', position: 'relative' }}>
 
-        {/* Slide Canvas Scroll Container - FIXED TOP CLIPPING & AUTO SCROLL RESET */}
+        {/* Slide Canvas Stage - Optimized to fit 100% viewport without scrollbars */}
         <div 
           ref={scrollContainerRef}
           style={{
             flex: 1,
-            overflowY: 'auto',
+            overflowY: 'hidden',
             overflowX: 'hidden',
-            padding: isFullscreen ? '2rem 3rem 4rem' : '1.5rem 2rem 3rem',
+            padding: isFullscreen ? '0.75rem 1.25rem' : '0.65rem 1rem',
             display: 'flex',
             justifyContent: 'center',
-            alignItems: 'flex-start'
+            alignItems: 'center',
+            boxSizing: 'border-box'
           }}
         >
           <div style={{
             width: '100%',
-            maxWidth: isFullscreen ? '1560px' : '1200px',
+            maxWidth: isFullscreen ? '1600px' : '1280px',
+            height: isFullscreen ? 'calc(100vh - 85px)' : 'calc(100vh - 125px)',
+            maxHeight: isFullscreen ? 'calc(100vh - 85px)' : 'calc(100vh - 125px)',
             margin: '0 auto',
             backgroundColor: '#FFFFFF', color: '#1E293B',
-            borderRadius: '20px',
-            padding: isFullscreen ? '3rem 4rem' : '2.2rem 3rem',
-            boxShadow: '0 20px 50px -10px rgba(0,0,0,0.5)',
-            animation: 'fadeIn 0.25s ease-out',
+            borderRadius: '18px',
+            padding: isFullscreen ? '1.4rem 2.2rem' : '1.15rem 1.65rem',
+            boxShadow: '0 20px 45px -10px rgba(0,0,0,0.35)',
+            animation: 'fadeIn 0.2s ease-out',
             display: 'flex', flexDirection: 'column',
+            justifyContent: 'space-between',
             position: 'relative',
+            boxSizing: 'border-box',
+            overflow: 'hidden',
             zoom: fontScale,
             WebkitZoom: fontScale,
           }}>
             {/* Top decorative gradient line */}
             <div style={{
-              position: 'absolute', top: 0, left: 0, right: 0, height: '8px',
+              position: 'absolute', top: 0, left: 0, right: 0, height: '6px',
               background: slide.type === 'title'
                 ? 'linear-gradient(90deg, #0F2C59, #D97706, #0284C7, #DC2626)'
                 : (slide.type === 'transfer' || slide.type === 'transfer_progress')
@@ -1129,31 +1144,31 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
                   {/* Department top banner */}
                   <div style={{
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                    paddingBottom: '1.5rem', marginBottom: '1.75rem',
-                    borderBottom: '4px solid #1E40AF'
+                    paddingBottom: '0.85rem', marginBottom: '1rem',
+                    borderBottom: '3px solid #1E40AF'
                   }}>
                     <div>
                       <div style={{
-                        fontSize: isFullscreen ? '1rem' : '0.85rem',
+                        fontSize: isFullscreen ? '0.95rem' : '0.8rem',
                         color: '#DC2626', fontWeight: '800', textTransform: 'uppercase',
-                        letterSpacing: '2px', marginBottom: '0.35rem'
+                        letterSpacing: '1.5px', marginBottom: '0.2rem'
                       }}>
                         TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG
                       </div>
                       <h2 style={{
-                        fontSize: isFullscreen ? '2.8rem' : '2.1rem',
-                        color: '#0F2C59', fontWeight: '900', margin: 0, lineHeight: 1.2
+                        fontSize: isFullscreen ? '2.3rem' : '1.75rem',
+                        color: '#0F2C59', fontWeight: '900', margin: 0, lineHeight: 1.15
                       }}>
                         {slide.title}
                       </h2>
                       <div style={{
-                        marginTop: '0.75rem',
-                        display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center'
+                        marginTop: '0.5rem',
+                        display: 'flex', gap: '0.65rem', flexWrap: 'wrap', alignItems: 'center'
                       }}>
                         <span style={{
                           backgroundColor: '#EFF6FF', color: '#1E40AF',
-                          padding: '0.4rem 1rem', borderRadius: '999px', fontWeight: '700',
-                          fontSize: isFullscreen ? '1.15rem' : '0.95rem', border: '1px solid #BFDBFE'
+                          padding: '0.3rem 0.85rem', borderRadius: '999px', fontWeight: '700',
+                          fontSize: isFullscreen ? '1.05rem' : '0.88rem', border: '1px solid #BFDBFE'
                         }}>
                           👨‍⚕️ Bác sĩ trực: <strong>{slide.report.doctor_name}</strong>
                         </span>
@@ -1161,8 +1176,8 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
                         {slide.report.nurse_name && (
                           <span style={{
                             backgroundColor: '#F0FDF4', color: '#065F46',
-                            padding: '0.4rem 1rem', borderRadius: '999px', fontWeight: '700',
-                            fontSize: isFullscreen ? '1.15rem' : '0.95rem', border: '1px solid #BBF7D0'
+                            padding: '0.3rem 0.85rem', borderRadius: '999px', fontWeight: '700',
+                            fontSize: isFullscreen ? '1.05rem' : '0.88rem', border: '1px solid #BBF7D0'
                           }}>
                             👩‍⚕️ Điều dưỡng: <strong>{slide.report.nurse_name}</strong>
                           </span>
@@ -1171,8 +1186,8 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
                         {slide.report.overtime_staff && Array.isArray(slide.report.overtime_staff) && slide.report.overtime_staff.length > 0 && (
                           <span style={{
                             backgroundColor: '#FEF3C7', color: '#92400E',
-                            padding: '0.4rem 1rem', borderRadius: '999px', fontWeight: '700',
-                            fontSize: isFullscreen ? '1.05rem' : '0.9rem', border: '1px solid #FDE68A'
+                            padding: '0.3rem 0.85rem', borderRadius: '999px', fontWeight: '700',
+                            fontSize: isFullscreen ? '0.95rem' : '0.82rem', border: '1px solid #FDE68A'
                           }}>
                             ⏰ Tăng cường: <strong>{slide.report.overtime_staff.map(ot => `${ot.staffName} (${ot.time})`).join(', ')}</strong>
                           </span>
@@ -1181,8 +1196,8 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
                         {slide.report.room && (
                           <span style={{
                             backgroundColor: '#F1F5F9', color: '#334155',
-                            padding: '0.4rem 1rem', borderRadius: '999px', fontWeight: '600',
-                            fontSize: isFullscreen ? '1.05rem' : '0.9rem'
+                            padding: '0.3rem 0.85rem', borderRadius: '999px', fontWeight: '600',
+                            fontSize: isFullscreen ? '0.95rem' : '0.82rem'
                           }}>
                             🏥 Phòng: <strong>{slide.report.room}</strong>
                           </span>
@@ -1190,20 +1205,20 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
                         {slide.report.shift_time && (
                           <span style={{
                             backgroundColor: '#F8FAFC', color: '#475569',
-                            padding: '0.4rem 1rem', borderRadius: '999px', fontWeight: '600',
-                            fontSize: isFullscreen ? '1.05rem' : '0.9rem', border: '1px solid #CBD5E1'
+                            padding: '0.3rem 0.85rem', borderRadius: '999px', fontWeight: '600',
+                            fontSize: isFullscreen ? '0.95rem' : '0.82rem', border: '1px solid #CBD5E1'
                           }}>
                             ⏱️ Ca: <strong>{slide.report.shift_time}</strong>
                           </span>
                         )}
                       </div>
                     </div>
-                    <img src="/logo.png" alt="Logo" style={{ width: isFullscreen ? '80px' : '60px', height: isFullscreen ? '80px' : '60px', flexShrink: 0 }} />
+                    <img src="/logo.png" alt="Logo" style={{ width: isFullscreen ? '65px' : '50px', height: isFullscreen ? '65px' : '50px', flexShrink: 0 }} />
                   </div>
 
                   {/* Section & Metric Grid */}
                   {sections.length > 0 ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1, justifyContent: 'center' }}>
                       {sections.map((section, sIdx) => {
                         // 1. PERSONNEL BANNER VIEW
                         if (section.type === 'personnel') {
@@ -1445,763 +1460,857 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
             })()}
 
             {/* ==================== 3. TRANSFER CASE SLIDE (PART 1: TIẾP NHẬN & XỬ TRÍ) ==================== */}
-            {slide.type === 'transfer' && (
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                {/* Emergency Header - Amber / Gold Theme */}
-                <div style={{
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  paddingBottom: '1.25rem', marginBottom: '1.5rem',
-                  borderBottom: '4px solid #D97706'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-                    <div style={{
-                      width: isFullscreen ? '70px' : '56px', height: isFullscreen ? '70px' : '56px',
-                      borderRadius: '50%', backgroundColor: '#FEF3C7',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      boxShadow: '0 8px 20px rgba(217, 119, 6, 0.25)'
-                    }}>
-                      <FaAmbulance style={{ fontSize: isFullscreen ? '2.4rem' : '1.8rem', color: '#D97706' }} />
-                    </div>
-                    <div>
-                      <div style={{
-                        fontSize: isFullscreen ? '1.1rem' : '0.9rem',
-                        color: '#B45309', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1.5px'
-                      }}>
-                        🚑 {slide.deptName} • CA CHUYỂN VIỆN {slide.caseIndex}/{slide.totalCases} (PHẦN 1: TIẾP NHẬN & XỬ TRÍ)
-                      </div>
-                      <h2 style={{
-                        fontSize: isFullscreen ? '2.4rem' : '1.8rem',
-                        color: '#92400E', fontWeight: '900', margin: 0, lineHeight: 1.15
-                      }}>
-                        THÔNG TIN TIẾP NHẬN BỆNH NHÂN CHUYỂN VIỆN
-                      </h2>
-                    </div>
-                  </div>
-                  <img src="/logo.png" alt="Logo" style={{ width: isFullscreen ? '70px' : '50px', height: isFullscreen ? '70px' : '50px' }} />
-                </div>
-
-                {/* Patient Name Banner */}
-                {(slide.transferCase.patient_name || slide.transferCase.patientName) && (
+            {slide.type === 'transfer' && (() => {
+              const caseImages = normalizeImages(slide.transferCase.images);
+              const ageFormatted = formatPatientAge(slide.transferCase.age);
+              return (
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}>
+                  {/* Emergency Header - Amber / Gold Theme */}
                   <div style={{
-                    backgroundColor: '#FFFBEB', borderRadius: '16px',
-                    border: '2px solid #FDE68A',
-                    borderLeft: '8px solid #D97706',
-                    padding: isFullscreen ? '1.25rem 2rem' : '0.9rem 1.4rem',
-                    marginBottom: '1.5rem',
-                    display: 'flex', alignItems: 'center', gap: '1rem',
-                    boxShadow: '0 4px 15px rgba(217,119,6,0.08)'
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    paddingBottom: '0.85rem', marginBottom: '0.85rem',
+                    borderBottom: '4px solid #D97706'
                   }}>
-                    <span style={{ fontSize: isFullscreen ? '2.2rem' : '1.6rem' }}>👤</span>
-                    <div>
-                      <div style={{ fontSize: isFullscreen ? '0.9rem' : '0.75rem', color: '#B45309', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                        Họ tên • Tuổi • Địa chỉ bệnh nhân:
-                      </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                       <div style={{
-                        fontWeight: '900',
-                        fontSize: isFullscreen ? '1.85rem' : '1.4rem',
-                        color: '#92400E', lineHeight: 1.3
+                        width: isFullscreen ? '58px' : '46px', height: isFullscreen ? '58px' : '46px',
+                        borderRadius: '50%', backgroundColor: '#FEF3C7',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        boxShadow: '0 6px 16px rgba(217, 119, 6, 0.25)', flexShrink: 0
                       }}>
-                        {slide.transferCase.patient_name || slide.transferCase.patientName} {slide.transferCase.age ? `(${slide.transferCase.age} tuổi)` : ''} {slide.transferCase.address ? `• ${slide.transferCase.address}` : ''}
+                        <FaAmbulance style={{ fontSize: isFullscreen ? '1.8rem' : '1.4rem', color: '#D97706' }} />
+                      </div>
+                      <div>
+                        <div style={{
+                          fontSize: isFullscreen ? '0.95rem' : '0.8rem',
+                          color: '#B45309', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1.2px'
+                        }}>
+                          🚑 {slide.deptName} • CA CHUYỂN VIỆN {slide.caseIndex}/{slide.totalCases} (PHẦN 1: TIẾP NHẬN)
+                        </div>
+                        <h2 style={{
+                          fontSize: isFullscreen ? '2rem' : '1.5rem',
+                          color: '#92400E', fontWeight: '900', margin: 0, lineHeight: 1.15
+                        }}>
+                          TIẾP NHẬN BỆNH NHÂN CHUYỂN VIỆN
+                        </h2>
                       </div>
                     </div>
+                    <img src="/logo.png" alt="Logo" style={{ width: isFullscreen ? '55px' : '42px', height: isFullscreen ? '55px' : '42px' }} />
                   </div>
-                )}
 
-                {/* Clinical Details Structured Grid (Excluding progress_notes which is on Part 2) */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: isFullscreen ? '1.1rem' : '0.85rem' }}>
-                  {[
-                    { icon: '⏰', label: 'Giờ / Ngày vào viện', value: slide.transferCase.admission_time || slide.transferCase.admissionTime, highlight: false },
-                    { icon: '📋', label: 'Lý do vào viện', value: slide.transferCase.reason, highlight: false },
-                    { icon: '🔬', label: 'Cận lâm sàng / X-Quang / Xét nghiệm', value: slide.transferCase.clinical_tests || slide.transferCase.clinicalTests, highlight: false },
-                    { icon: '🏥', label: 'Chẩn đoán xác định', value: slide.transferCase.diagnosis, highlight: true },
-                    { icon: '💊', label: 'Xử trí ban đầu', value: slide.transferCase.initial_treatment || slide.transferCase.initialTreatment, highlight: false },
-                  ].filter(item => item.value).map((item, idx) => (
-                    <div
-                      key={idx}
-                      style={{
-                        backgroundColor: item.highlight ? '#FEF3C7' : '#F8FAFC',
-                        borderRadius: '12px',
-                        border: `1.5px solid ${item.highlight ? '#FCD34D' : '#E2E8F0'}`,
-                        borderLeft: `6px solid ${item.highlight ? '#D97706' : '#3B82F6'}`,
-                        padding: isFullscreen ? '1rem 1.5rem' : '0.8rem 1.2rem',
-                        display: 'flex', gap: '1rem', alignItems: 'flex-start'
-                      }}
-                    >
-                      <span style={{ fontSize: isFullscreen ? '1.5rem' : '1.2rem', marginTop: '2px' }}>
-                        {item.icon}
-                      </span>
-                      <div style={{ flex: 1 }}>
-                        <div style={{
-                          fontWeight: '800',
-                          color: item.highlight ? '#92400E' : '#1E40AF',
-                          fontSize: isFullscreen ? '1.05rem' : '0.9rem',
-                          textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '0.25rem'
-                        }}>
-                          {item.label}
-                        </div>
-                        <div style={{
-                          color: '#0F172A',
-                          lineHeight: '1.6', whiteSpace: 'pre-wrap',
-                          fontSize: isFullscreen ? '1.35rem' : '1.1rem',
-                          fontWeight: '600'
-                        }}>
-                          {item.value}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Transfer Case Part 1 Image Gallery */}
-                <SlideImageGallery
-                  images={slide.transferCase.images}
-                  patientName={slide.transferCase.patient_name || slide.transferCase.patientName}
-                  themeColor="#D97706"
-                  onOpen={handleOpenLightbox}
-                />
-              </div>
-            )}
-
-            {/* ==================== 4. TRANSFER CASE SLIDE (PART 2: DIỄN BIẾN & TÌNH TRẠNG CHUYỂN) ==================== */}
-            {slide.type === 'transfer_progress' && (
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                {/* Header */}
-                <div style={{
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  paddingBottom: '1.25rem', marginBottom: '1.5rem',
-                  borderBottom: '4px solid #D97706'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+                  {/* Patient Name Banner */}
+                  {(slide.transferCase.patient_name || slide.transferCase.patientName) && (
                     <div style={{
-                      width: isFullscreen ? '70px' : '56px', height: isFullscreen ? '70px' : '56px',
-                      borderRadius: '50%', backgroundColor: '#FEF3C7',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      boxShadow: '0 8px 20px rgba(217, 119, 6, 0.25)'
+                      backgroundColor: '#FFFBEB', borderRadius: '12px',
+                      border: '1.5px solid #FDE68A',
+                      borderLeft: '6px solid #D97706',
+                      padding: isFullscreen ? '0.8rem 1.4rem' : '0.65rem 1rem',
+                      marginBottom: '0.85rem',
+                      display: 'flex', alignItems: 'center', gap: '0.85rem',
+                      boxShadow: '0 2px 8px rgba(217,119,6,0.06)'
                     }}>
-                      <span style={{ fontSize: isFullscreen ? '2.4rem' : '1.8rem' }}>📝</span>
-                    </div>
-                    <div>
-                      <div style={{
-                        fontSize: isFullscreen ? '1.1rem' : '0.9rem',
-                        color: '#B45309', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1.5px'
-                      }}>
-                        🚑 {slide.deptName} • CA CHUYỂN VIỆN {slide.caseIndex}/{slide.totalCases} (PHẦN 2: DIỄN BIẾN & HỘI CHẨN)
+                      <span style={{ fontSize: isFullscreen ? '1.6rem' : '1.3rem' }}>👤</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                        <span style={{
+                          fontWeight: '900',
+                          fontSize: isFullscreen ? '1.5rem' : '1.2rem',
+                          color: '#92400E'
+                        }}>
+                          {slide.transferCase.patient_name || slide.transferCase.patientName}
+                        </span>
+                        {ageFormatted && (
+                          <span style={{
+                            backgroundColor: '#FEF3C7', color: '#92400E',
+                            padding: '0.2rem 0.65rem', borderRadius: '6px',
+                            fontWeight: '700', fontSize: isFullscreen ? '1rem' : '0.85rem'
+                          }}>
+                            {ageFormatted}
+                          </span>
+                        )}
+                        {slide.transferCase.address && (
+                          <span style={{ color: '#78350F', fontSize: isFullscreen ? '1.05rem' : '0.9rem', fontWeight: '600' }}>
+                            • {slide.transferCase.address}
+                          </span>
+                        )}
                       </div>
-                      <h2 style={{
-                        fontSize: isFullscreen ? '2.4rem' : '1.8rem',
-                        color: '#92400E', fontWeight: '900', margin: 0, lineHeight: 1.15
+                    </div>
+                  )}
+
+                  {/* 2-Column Structured Grid */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1.2fr',
+                    gap: '1rem',
+                    flex: 1
+                  }}>
+                    {/* Left Column: Hành chính & Vào viện */}
+                    <div style={{
+                      backgroundColor: '#F8FAFC',
+                      borderRadius: '12px',
+                      border: '1.5px solid #E2E8F0',
+                      borderLeft: '6px solid #D97706',
+                      padding: isFullscreen ? '1.15rem 1.4rem' : '0.9rem 1.15rem',
+                      display: 'flex', flexDirection: 'column', gap: '0.65rem'
+                    }}>
+                      <div style={{
+                        fontSize: isFullscreen ? '1.1rem' : '0.95rem',
+                        fontWeight: '800', color: '#B45309',
+                        textTransform: 'uppercase', letterSpacing: '0.5px',
+                        borderBottom: '1.5px solid #FDE68A', paddingBottom: '0.35rem'
                       }}>
-                        DIỄN BIẾN • HỘI CHẨN • TÌNH TRẠNG LÚC CHUYỂN
-                      </h2>
+                        ⏰ TIẾP NHẬN & LÝ DO VÀO
+                      </div>
+                      <div style={{ fontSize: isFullscreen ? '1.1rem' : '0.95rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        <div><strong>Giờ vào viện:</strong> <span style={{ fontWeight: '700', color: '#D97706' }}>{slide.transferCase.admission_time || slide.transferCase.admissionTime || '—'}</span></div>
+                        <div><strong>Lý do vào viện:</strong> <span style={{ color: '#0F172A', fontWeight: '600' }}>{slide.transferCase.reason || '—'}</span></div>
+                        <div><strong>Xử trí ban đầu:</strong> <div style={{ color: '#1E293B', fontWeight: '600', marginTop: '2px', backgroundColor: '#FFFFFF', padding: '0.5rem', borderRadius: '6px', border: '1px solid #E2E8F0' }}>{slide.transferCase.initial_treatment || slide.transferCase.initialTreatment || '—'}</div></div>
+                      </div>
+                    </div>
+
+                    {/* Right Column: Chẩn đoán & Cận lâm sàng */}
+                    <div style={{
+                      backgroundColor: '#FFFBEB',
+                      borderRadius: '12px',
+                      border: '1.5px solid #FDE68A',
+                      borderLeft: '6px solid #B45309',
+                      padding: isFullscreen ? '1.15rem 1.4rem' : '0.9rem 1.15rem',
+                      display: 'flex', flexDirection: 'column', gap: '0.65rem'
+                    }}>
+                      <div style={{
+                        fontSize: isFullscreen ? '1.1rem' : '0.95rem',
+                        fontWeight: '800', color: '#92400E',
+                        textTransform: 'uppercase', letterSpacing: '0.5px',
+                        borderBottom: '1.5px solid #FDE68A', paddingBottom: '0.35rem'
+                      }}>
+                        🔬 CHẨN ĐOÁN & CẬN LÂM SÀNG
+                      </div>
+                      <div style={{ fontSize: isFullscreen ? '1.1rem' : '0.95rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        <div style={{ backgroundColor: '#FEF3C7', padding: '0.6rem 0.8rem', borderRadius: '8px', border: '1px solid #FCD34D' }}>
+                          <strong style={{ color: '#92400E' }}>Chẩn đoán xác định:</strong>
+                          <div style={{ color: '#B45309', fontWeight: '800', fontSize: isFullscreen ? '1.2rem' : '1.05rem', marginTop: '2px' }}>
+                            {slide.transferCase.diagnosis || '—'}
+                          </div>
+                        </div>
+                        <div>
+                          <strong>Cận lâm sàng / X-Quang / ECG:</strong>
+                          <div style={{ color: '#1E293B', fontWeight: '600', marginTop: '2px' }}>{slide.transferCase.clinical_tests || slide.transferCase.clinicalTests || '—'}</div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <img src="/logo.png" alt="Logo" style={{ width: isFullscreen ? '70px' : '50px', height: isFullscreen ? '70px' : '50px' }} />
-                </div>
 
-                {/* Patient Summary Quick Bar */}
-                <div style={{
-                  backgroundColor: '#EFF6FF', borderRadius: '12px',
-                  border: '1.5px solid #BFDBFE',
-                  borderLeft: '6px solid #2563EB',
-                  padding: isFullscreen ? '0.9rem 1.5rem' : '0.75rem 1.1rem',
-                  marginBottom: '1.5rem',
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem'
-                }}>
-                  <div style={{ fontSize: isFullscreen ? '1.25rem' : '1.05rem', fontWeight: '800', color: '#1E40AF' }}>
-                    👤 Bệnh nhân: <span style={{ color: '#0F2C59' }}>{slide.transferCase.patient_name || slide.transferCase.patientName || 'Bệnh nhân'}</span>
-                  </div>
-                  {slide.transferCase.diagnosis && (
-                    <div style={{ fontSize: isFullscreen ? '1.15rem' : '0.95rem', fontWeight: '700', color: '#92400E' }}>
-                      🏥 Chẩn đoán: <span style={{ color: '#78350F' }}>{slide.transferCase.diagnosis}</span>
+                  {/* Next Image Slide Notification Badge */}
+                  {caseImages.length > 0 && (
+                    <div style={{
+                      marginTop: '0.65rem',
+                      padding: '0.5rem 1rem',
+                      backgroundColor: '#FEF3C7',
+                      border: '1.5px dashed #D97706',
+                      borderRadius: '8px',
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      color: '#92400E', fontWeight: '700',
+                      fontSize: isFullscreen ? '0.92rem' : '0.82rem'
+                    }}>
+                      <span>📷 Ca bệnh này có <strong>{caseImages.length} hình ảnh minh họa lâm sàng</strong></span>
+                      <span style={{ fontStyle: 'italic', color: '#B45309' }}>(Xem ở Slide tiếp theo ➔)</span>
                     </div>
                   )}
                 </div>
+              );
+            })()}
 
-                {/* Full-width Dedicated Progress Notes Big Box */}
-                <div style={{
-                  flex: 1,
-                  backgroundColor: '#FFFBEB',
-                  borderRadius: '16px',
-                  border: '2px solid #FDE68A',
-                  borderLeft: '10px solid #D97706',
-                  padding: isFullscreen ? '2rem 2.5rem' : '1.5rem 2rem',
-                  display: 'flex', flexDirection: 'column', gap: '1rem',
-                  boxShadow: '0 8px 30px rgba(217, 119, 6, 0.1)'
-                }}>
+            {/* ==================== 4. TRANSFER CASE SLIDE (PART 2: DIỄN BIẾN & TÌNH TRẠNG CHUYỂN) ==================== */}
+            {slide.type === 'transfer_progress' && (() => {
+              const caseImages = normalizeImages(slide.transferCase.images);
+              return (
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}>
+                  {/* Header */}
                   <div style={{
-                    display: 'flex', alignItems: 'center', gap: '0.6rem',
-                    fontSize: isFullscreen ? '1.35rem' : '1.1rem',
-                    fontWeight: '900', color: '#92400E',
-                    textTransform: 'uppercase', letterSpacing: '0.75px',
-                    borderBottom: '2px solid #FDE68A', paddingBottom: '0.75rem'
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    paddingBottom: '0.85rem', marginBottom: '0.85rem',
+                    borderBottom: '4px solid #D97706'
                   }}>
-                    <span>📋</span>
-                    <span>NỘI DUNG DIỄN BIẾN, HỘI CHẨN & TÌNH TRẠNG CHUYỂN VIỆN:</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <div style={{
+                        width: isFullscreen ? '58px' : '46px', height: isFullscreen ? '58px' : '46px',
+                        borderRadius: '50%', backgroundColor: '#FEF3C7',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        boxShadow: '0 6px 16px rgba(217, 119, 6, 0.25)', flexShrink: 0
+                      }}>
+                        <span style={{ fontSize: isFullscreen ? '1.8rem' : '1.4rem' }}>📝</span>
+                      </div>
+                      <div>
+                        <div style={{
+                          fontSize: isFullscreen ? '0.95rem' : '0.8rem',
+                          color: '#B45309', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1.2px'
+                        }}>
+                          🚑 {slide.deptName} • CA CHUYỂN VIỆN {slide.caseIndex}/{slide.totalCases} (PHẦN 2: DIỄN BIẾN)
+                        </div>
+                        <h2 style={{
+                          fontSize: isFullscreen ? '2rem' : '1.5rem',
+                          color: '#92400E', fontWeight: '900', margin: 0, lineHeight: 1.15
+                        }}>
+                          DIỄN BIẾN • HỘI CHẨN • TÌNH TRẠNG CHUYỂN
+                        </h2>
+                      </div>
+                    </div>
+                    <img src="/logo.png" alt="Logo" style={{ width: isFullscreen ? '55px' : '42px', height: isFullscreen ? '55px' : '42px' }} />
                   </div>
 
+                  {/* Patient Summary Quick Bar */}
                   <div style={{
-                    fontSize: isFullscreen ? '1.5rem' : '1.25rem',
-                    lineHeight: '1.8',
-                    color: '#0F172A',
-                    fontWeight: '600',
-                    whiteSpace: 'pre-wrap',
-                    overflowY: 'auto'
+                    backgroundColor: '#EFF6FF', borderRadius: '10px',
+                    border: '1.5px solid #BFDBFE',
+                    borderLeft: '5px solid #2563EB',
+                    padding: isFullscreen ? '0.65rem 1.2rem' : '0.55rem 0.9rem',
+                    marginBottom: '0.85rem',
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem'
                   }}>
-                    {slide.transferCase.progress_notes ? (
-                      slide.transferCase.progress_notes
-                    ) : (
-                      <span style={{ color: '#94A3B8', fontStyle: 'italic' }}>
-                        (Không có ghi chú diễn biến bổ sung cho ca bệnh này)
-                      </span>
+                    <div style={{ fontSize: isFullscreen ? '1.15rem' : '0.95rem', fontWeight: '800', color: '#1E40AF' }}>
+                      👤 Bệnh nhân: <span style={{ color: '#0F2C59' }}>{slide.transferCase.patient_name || slide.transferCase.patientName || 'Bệnh nhân'}</span>
+                    </div>
+                    {slide.transferCase.diagnosis && (
+                      <div style={{ fontSize: isFullscreen ? '1.05rem' : '0.9rem', fontWeight: '700', color: '#92400E' }}>
+                        🏥 Chẩn đoán: <span style={{ color: '#78350F' }}>{slide.transferCase.diagnosis}</span>
+                      </div>
                     )}
                   </div>
-                </div>
 
-                {/* Transfer Case Part 2 Image Gallery */}
-                <SlideImageGallery
-                  images={slide.transferCase.images}
-                  patientName={slide.transferCase.patient_name || slide.transferCase.patientName}
-                  themeColor="#D97706"
-                  onOpen={handleOpenLightbox}
-                />
-              </div>
-            )}
+                  {/* Full-width Dedicated Progress Notes Big Box */}
+                  <div style={{
+                    flex: 1,
+                    backgroundColor: '#FFFBEB',
+                    borderRadius: '14px',
+                    border: '2px solid #FDE68A',
+                    borderLeft: '8px solid #D97706',
+                    padding: isFullscreen ? '1.4rem 1.8rem' : '1.1rem 1.4rem',
+                    display: 'flex', flexDirection: 'column', gap: '0.75rem',
+                    boxShadow: '0 4px 16px rgba(217, 119, 6, 0.08)'
+                  }}>
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: '0.5rem',
+                      fontSize: isFullscreen ? '1.2rem' : '1rem',
+                      fontWeight: '900', color: '#92400E',
+                      textTransform: 'uppercase', letterSpacing: '0.5px',
+                      borderBottom: '1.5px solid #FDE68A', paddingBottom: '0.5rem'
+                    }}>
+                      <span>📋</span>
+                      <span>NỘI DUNG DIỄN BIẾN, HỘI CHẨN & TÌNH TRẠNG CHUYỂN VIỆN:</span>
+                    </div>
+
+                    <div style={{
+                      fontSize: isFullscreen ? '1.35rem' : '1.12rem',
+                      lineHeight: '1.7',
+                      color: '#0F172A',
+                      fontWeight: '600',
+                      whiteSpace: 'pre-wrap',
+                      flex: 1
+                    }}>
+                      {slide.transferCase.progress_notes ? (
+                        slide.transferCase.progress_notes
+                      ) : (
+                        <span style={{ color: '#94A3B8', fontStyle: 'italic' }}>
+                          (Không có ghi chú diễn biến bổ sung cho ca bệnh này)
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Next Image Slide Notification Badge */}
+                  {caseImages.length > 0 && (
+                    <div style={{
+                      marginTop: '0.65rem',
+                      padding: '0.5rem 1rem',
+                      backgroundColor: '#FEF3C7',
+                      border: '1.5px dashed #D97706',
+                      borderRadius: '8px',
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      color: '#92400E', fontWeight: '700',
+                      fontSize: isFullscreen ? '0.92rem' : '0.82rem'
+                    }}>
+                      <span>📷 Ca bệnh này có <strong>{caseImages.length} hình ảnh minh họa lâm sàng</strong></span>
+                      <span style={{ fontStyle: 'italic', color: '#B45309' }}>(Xem ở Slide tiếp theo ➔)</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* ==================== 5. SURGERY CASE SLIDE ==================== */}
-            {slide.type === 'surgery' && (
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                {/* Header Banner */}
-                <div style={{
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  paddingBottom: '1.25rem', marginBottom: '1.5rem',
-                  borderBottom: '4px solid #0284C7'
-                }}>
-                  <div>
-                    <div style={{
-                      fontSize: isFullscreen ? '1rem' : '0.85rem',
-                      fontWeight: '800', color: '#0369A1',
-                      textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '0.3rem'
-                    }}>
-                      BÁO CÁO PHẪU THUẬT (BỆNH MỔ) • {slide.deptName}
-                    </div>
-                    <div style={{
-                      fontSize: isFullscreen ? '2.5rem' : '1.85rem',
-                      fontWeight: '900', color: '#0F2C59',
-                      display: 'flex', alignItems: 'center', gap: '0.75rem'
-                    }}>
-                      <FaProcedures style={{ color: '#0284C7' }} />
-                      Ca Mổ #{slide.caseIndex} / {slide.totalCases}
-                    </div>
-                  </div>
-
+            {slide.type === 'surgery' && (() => {
+              const caseImages = normalizeImages(slide.surgeryCase.images);
+              const ageFormatted = formatPatientAge(slide.surgeryCase.birth_year || slide.surgeryCase.birthYear || slide.surgeryCase.age);
+              return (
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}>
+                  {/* Header Banner */}
                   <div style={{
-                    padding: '0.5rem 1.25rem', backgroundColor: '#E0F2FE',
-                    borderRadius: '999px', border: '1.5px solid #BAE6FD',
-                    fontSize: isFullscreen ? '1.1rem' : '0.9rem',
-                    fontWeight: '800', color: '#0369A1'
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    paddingBottom: '0.85rem', marginBottom: '0.85rem',
+                    borderBottom: '4px solid #0284C7'
                   }}>
-                    🔪 Phẫu thuật trong ca trực
-                  </div>
-                </div>
-
-                {/* 2-Column Grid */}
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-                  gap: '1.5rem',
-                  flex: 1
-                }}>
-                  {/* Left Column: Thông tin hành chính & vào viện */}
-                  <div style={{
-                    backgroundColor: '#F8FAFC',
-                    borderRadius: '16px',
-                    border: '1.5px solid #E2E8F0',
-                    borderLeft: '8px solid #0284C7',
-                    padding: isFullscreen ? '1.75rem 2rem' : '1.25rem 1.5rem',
-                    display: 'flex', flexDirection: 'column', gap: '1rem'
-                  }}>
-                    <div style={{
-                      fontSize: isFullscreen ? '1.25rem' : '1.05rem',
-                      fontWeight: '900', color: '#0369A1',
-                      textTransform: 'uppercase', letterSpacing: '0.5px',
-                      borderBottom: '2px solid #BAE6FD', paddingBottom: '0.5rem'
-                    }}>
-                      👤 HÀNH CHÍNH & LÝ DO VÀO VIỆN
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: isFullscreen ? '1.2rem' : '1.05rem' }}>
-                      <div><strong>Họ và tên:</strong> <span style={{ color: '#0369A1', fontWeight: '800', fontSize: isFullscreen ? '1.35rem' : '1.15rem' }}>{slide.surgeryCase.patient_name || slide.surgeryCase.patientName || '—'}</span></div>
-                      <div><strong>Năm sinh / Tuổi:</strong> {slide.surgeryCase.birth_year || slide.surgeryCase.birthYear || slide.surgeryCase.age || '—'}</div>
-                      <div><strong>Địa chỉ:</strong> {slide.surgeryCase.address || '—'}</div>
-                      <div><strong>Thời gian vào viện:</strong> <span style={{ fontWeight: '700' }}>{slide.surgeryCase.admission_time || slide.surgeryCase.admissionTime || '—'}</span></div>
-                      <div><strong>Lý do nhập viện:</strong> <span style={{ color: '#DC2626', fontWeight: '700' }}>{slide.surgeryCase.reason || '—'}</span></div>
-                    </div>
-                  </div>
-
-                  {/* Right Column: Chuyên môn mổ */}
-                  <div style={{
-                    backgroundColor: '#F0F9FF',
-                    borderRadius: '16px',
-                    border: '1.5px solid #BAE6FD',
-                    borderLeft: '8px solid #0369A1',
-                    padding: isFullscreen ? '1.75rem 2rem' : '1.25rem 1.5rem',
-                    display: 'flex', flexDirection: 'column', gap: '1rem'
-                  }}>
-                    <div style={{
-                      fontSize: isFullscreen ? '1.25rem' : '1.05rem',
-                      fontWeight: '900', color: '#0369A1',
-                      textTransform: 'uppercase', letterSpacing: '0.5px',
-                      borderBottom: '2px solid #BAE6FD', paddingBottom: '0.5rem'
-                    }}>
-                      📋 QUÁ TRÌNH PHẪU THUẬT & HẬU PHẪU
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', fontSize: isFullscreen ? '1.2rem' : '1.05rem' }}>
-                      <div>
-                        <strong>Chẩn đoán trước mổ:</strong>
-                        <div style={{ color: '#0369A1', fontWeight: '700', marginTop: '2px' }}>{slide.surgeryCase.preoperative_diagnosis || slide.surgeryCase.preoperativeDiagnosis || '—'}</div>
-                      </div>
-                      <div>
-                        <strong>Lệnh mổ / Hội chẩn:</strong>
-                        <div style={{ color: '#1E293B', marginTop: '2px' }}>{slide.surgeryCase.consultation_order || slide.surgeryCase.consultationOrder || '—'}</div>
-                      </div>
-                      <div>
-                        <strong>Chẩn đoán sau mổ:</strong>
-                        <div style={{ color: '#166534', fontWeight: '700', marginTop: '2px' }}>{slide.surgeryCase.postoperative_diagnosis || slide.surgeryCase.postoperativeDiagnosis || '—'}</div>
-                      </div>
-                      <div>
-                        <strong>Tình trạng hiện tại:</strong>
-                        <div style={{ color: '#0F172A', fontWeight: '600', marginTop: '2px', backgroundColor: '#FFFFFF', padding: '0.5rem 0.75rem', borderRadius: '8px', border: '1px solid #BAE6FD' }}>
-                          {slide.surgeryCase.current_status || slide.surgeryCase.currentStatus || '—'}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Surgery Case Image Gallery */}
-                <SlideImageGallery
-                  images={slide.surgeryCase.images}
-                  patientName={slide.surgeryCase.patient_name || slide.surgeryCase.patientName}
-                  themeColor="#0284C7"
-                  onOpen={handleOpenLightbox}
-                />
-              </div>
-            )}
-
-            {/* ==================== 6. DEATH CASE SLIDE ==================== */}
-            {slide.type === 'death' && (
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                {/* Header Banner */}
-                <div style={{
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  paddingBottom: '1.25rem', marginBottom: '1.5rem',
-                  borderBottom: '4px solid #DC2626'
-                }}>
-                  <div>
-                    <div style={{
-                      fontSize: isFullscreen ? '1rem' : '0.85rem',
-                      fontWeight: '800', color: '#991B1B',
-                      textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '0.3rem'
-                    }}>
-                      BÁO CÁO BỆNH NHÂN TỬ VONG • {slide.deptName}
-                    </div>
-                    <div style={{
-                      fontSize: isFullscreen ? '2.5rem' : '1.85rem',
-                      fontWeight: '900', color: '#DC2626',
-                      display: 'flex', alignItems: 'center', gap: '0.75rem'
-                    }}>
-                      <FaExclamationTriangle style={{ color: '#DC2626' }} />
-                      Hồ Sơ Tử Vong #{slide.caseIndex} / {slide.totalCases}
-                    </div>
-                  </div>
-
-                  <div style={{
-                    padding: '0.5rem 1.25rem', backgroundColor: '#FEE2E2',
-                    borderRadius: '999px', border: '2px solid #F87171',
-                    fontSize: isFullscreen ? '1.1rem' : '0.9rem',
-                    fontWeight: '900', color: '#991B1B',
-                    display: 'flex', alignItems: 'center', gap: '0.5rem'
-                  }}>
-                    <FaHeartbeat /> CẢNH BÁO TỬ VONG
-                  </div>
-                </div>
-
-                {/* 2-Column Grid */}
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-                  gap: '1.5rem',
-                  flex: 1
-                }}>
-                  {/* Left Column: Tiếp nhận & Tình trạng vào viện */}
-                  <div style={{
-                    backgroundColor: '#FEF2F2',
-                    borderRadius: '16px',
-                    border: '1.5px solid #FECACA',
-                    borderLeft: '8px solid #DC2626',
-                    padding: isFullscreen ? '1.75rem 2rem' : '1.25rem 1.5rem',
-                    display: 'flex', flexDirection: 'column', gap: '0.85rem'
-                  }}>
-                    <div style={{
-                      fontSize: isFullscreen ? '1.25rem' : '1.05rem',
-                      fontWeight: '900', color: '#991B1B',
-                      textTransform: 'uppercase', letterSpacing: '0.5px',
-                      borderBottom: '2px solid #FECACA', paddingBottom: '0.5rem'
-                    }}>
-                      👤 HÀNH CHÍNH & TÌNH TRẠNG LÚC VÀO
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', fontSize: isFullscreen ? '1.15rem' : '1rem' }}>
-                      <div><strong>Họ và tên:</strong> <span style={{ color: '#991B1B', fontWeight: '800', fontSize: isFullscreen ? '1.35rem' : '1.15rem' }}>{slide.deathCase.patient_name || slide.deathCase.patientName || '—'}</span></div>
-                      <div><strong>Tuổi / Năm sinh:</strong> {slide.deathCase.age || '—'} • <strong>Địa chỉ:</strong> {slide.deathCase.address || '—'}</div>
-                      <div><strong>Thời gian vào viện:</strong> <span style={{ fontWeight: '700' }}>{slide.deathCase.admission_time || slide.deathCase.admissionTime || '—'}</span></div>
-                      <div><strong>Lý do vào viện:</strong> {slide.deathCase.reason || '—'}</div>
-                      <div><strong>Tình trạng lúc vào khoa:</strong> <div style={{ color: '#7F1D1D', fontWeight: '600' }}>{slide.deathCase.admission_status || slide.deathCase.admissionStatus || '—'}</div></div>
-                      <div><strong>Tiền sử bệnh:</strong> {slide.deathCase.medical_history || slide.deathCase.medicalHistory || '—'}</div>
-                    </div>
-                  </div>
-
-                  {/* Right Column: Chẩn đoán & Xử trí hồi sinh */}
-                  <div style={{
-                    backgroundColor: '#FFF1F2',
-                    borderRadius: '16px',
-                    border: '1.5px solid #FECDD3',
-                    borderLeft: '8px solid #E11D48',
-                    padding: isFullscreen ? '1.75rem 2rem' : '1.25rem 1.5rem',
-                    display: 'flex', flexDirection: 'column', gap: '0.85rem'
-                  }}>
-                    <div style={{
-                      fontSize: isFullscreen ? '1.25rem' : '1.05rem',
-                      fontWeight: '900', color: '#9F1239',
-                      textTransform: 'uppercase', letterSpacing: '0.5px',
-                      borderBottom: '2px solid #FECDD3', paddingBottom: '0.5rem'
-                    }}>
-                      ⚡ CHẨN ĐOÁN & HỒI SỨC CẤP CỨU
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', fontSize: isFullscreen ? '1.15rem' : '1rem' }}>
-                      <div>
-                        <strong>Cận lâm sàng / ECG:</strong>
-                        <div style={{ color: '#334155' }}>{slide.deathCase.clinical_tests || slide.deathCase.clinicalTests || '—'}</div>
-                      </div>
-                      <div style={{ backgroundColor: '#FEE2E2', padding: '0.6rem 0.8rem', borderRadius: '8px', border: '1px solid #FCA5A5' }}>
-                        <strong style={{ color: '#991B1B' }}>Chẩn đoán tử vong:</strong>
-                        <div style={{ color: '#DC2626', fontWeight: '800', fontSize: isFullscreen ? '1.25rem' : '1.1rem', marginTop: '2px' }}>
-                          {slide.deathCase.diagnosis || '—'}
-                        </div>
-                      </div>
-                      <div>
-                        <strong>Xử trí cấp cứu:</strong>
-                        <div style={{ color: '#0F172A', fontWeight: '600' }}>{slide.deathCase.emergency_treatment || slide.deathCase.emergencyTreatment || '—'}</div>
-                      </div>
-                      <div style={{ backgroundColor: '#FFFFFF', padding: '0.6rem 0.8rem', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
-                        <strong>Kết quả & Hướng xử lý:</strong>
-                        <div style={{ color: '#1E293B', fontWeight: '700' }}>{slide.deathCase.final_outcome || slide.deathCase.finalOutcome || '—'}</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Death Case Image Gallery */}
-                <SlideImageGallery
-                  images={slide.deathCase.images}
-                  patientName={slide.deathCase.patient_name || slide.deathCase.patientName}
-                  themeColor="#DC2626"
-                  onOpen={handleOpenLightbox}
-                />
-              </div>
-            )}
-
-            {/* ==================== 7. CRITICAL CASE SLIDE (PURPLE THEME) ==================== */}
-            {slide.type === 'critical' && (
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                {/* Header Banner */}
-                <div style={{
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  paddingBottom: '1.25rem', marginBottom: '1.5rem',
-                  borderBottom: '4px solid #7C3AED'
-                }}>
-                  <div>
-                    <div style={{
-                      fontSize: isFullscreen ? '1rem' : '0.85rem',
-                      fontWeight: '800', color: '#6D28D9',
-                      textTransform: 'uppercase', letterSpacing: '1.5px'
-                    }}>
-                      ⚡ {slide.deptName} • CA BỆNH NẶNG THEO DÕI {slide.caseIndex}/{slide.totalCases}
-                    </div>
-                    <h2 style={{
-                      fontSize: isFullscreen ? '2.4rem' : '1.8rem',
-                      color: '#4C1D95', fontWeight: '900', margin: 0, lineHeight: 1.15
-                    }}>
-                      {slide.criticalCase.patient_name || slide.criticalCase.patientName || 'BỆNH NHÂN NẶNG'}
-                    </h2>
-                  </div>
-                  <img src="/logo.png" alt="Logo" style={{ width: isFullscreen ? '75px' : '55px', height: isFullscreen ? '75px' : '55px' }} />
-                </div>
-
-                {/* 2-Column Split Layout */}
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1.3fr',
-                  gap: '1.5rem',
-                  flex: 1
-                }}>
-                  {/* Left Column: Hành chính & Tiền căn */}
-                  <div style={{
-                    backgroundColor: '#FAF5FF',
-                    borderRadius: '16px',
-                    border: '1.5px solid #DDD6FE',
-                    borderLeft: '8px solid #7C3AED',
-                    padding: isFullscreen ? '1.75rem 2rem' : '1.25rem 1.5rem',
-                    display: 'flex', flexDirection: 'column', gap: '0.85rem'
-                  }}>
-                    <div style={{
-                      fontSize: isFullscreen ? '1.25rem' : '1.05rem',
-                      fontWeight: '900', color: '#5B21B6',
-                      textTransform: 'uppercase', letterSpacing: '0.5px',
-                      borderBottom: '2px solid #DDD6FE', paddingBottom: '0.5rem'
-                    }}>
-                      👤 HÀNH CHÍNH & VÀO VIỆN
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', fontSize: isFullscreen ? '1.15rem' : '1rem' }}>
-                      <div>
-                        <strong>Họ và tên BN:</strong>{' '}
-                        <span style={{ color: '#5B21B6', fontWeight: '800', fontSize: isFullscreen ? '1.35rem' : '1.15rem' }}>
-                          {slide.criticalCase.patient_name || slide.criticalCase.patientName || '—'}
-                        </span>
-                      </div>
-                      <div>
-                        <strong>Tuổi / Năm sinh:</strong> {slide.criticalCase.age || '—'}
-                      </div>
-                      <div>
-                        <strong>Địa chỉ / Phường xã:</strong> {slide.criticalCase.address || '—'}
-                      </div>
-                      <div>
-                        <strong>Thời gian vào viện (VV):</strong>{' '}
-                        <span style={{ fontWeight: '700', color: '#6D28D9' }}>
-                          {slide.criticalCase.admission_time || slide.criticalCase.admissionTime || '—'}
-                        </span>
-                      </div>
-                      <div style={{ backgroundColor: '#EDE9FE', padding: '0.6rem 0.8rem', borderRadius: '8px', border: '1px solid #DDD6FE' }}>
-                        <strong style={{ color: '#5B21B6' }}>Tiền căn bệnh:</strong>
-                        <div style={{ color: '#3B0764', fontWeight: '600', marginTop: '2px' }}>
-                          {slide.criticalCase.medical_history || slide.criticalCase.medicalHistory || 'Chưa ghi nhận tiền căn đặc biệt'}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right Column: Chẩn đoán, Tình trạng & Xử trí */}
-                  <div style={{
-                    backgroundColor: '#F5F3FF',
-                    borderRadius: '16px',
-                    border: '1.5px solid #DDD6FE',
-                    borderLeft: '8px solid #8B5CF6',
-                    padding: isFullscreen ? '1.75rem 2rem' : '1.25rem 1.5rem',
-                    display: 'flex', flexDirection: 'column', gap: '0.85rem'
-                  }}>
-                    <div style={{
-                      fontSize: isFullscreen ? '1.25rem' : '1.05rem',
-                      fontWeight: '900', color: '#6D28D9',
-                      textTransform: 'uppercase', letterSpacing: '0.5px',
-                      borderBottom: '2px solid #DDD6FE', paddingBottom: '0.5rem'
-                    }}>
-                      📋 CHẨN ĐOÁN, DIỄN BIẾN & ĐIỀU TRỊ
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', fontSize: isFullscreen ? '1.15rem' : '1rem' }}>
-                      {/* Chẩn đoán Box */}
-                      <div style={{ backgroundColor: '#EDE9FE', padding: '0.6rem 0.8rem', borderRadius: '8px', border: '1px solid #C4B5FD' }}>
-                        <strong style={{ color: '#5B21B6' }}>Chẩn đoán bệnh:</strong>
-                        <div style={{ color: '#6D28D9', fontWeight: '800', fontSize: isFullscreen ? '1.25rem' : '1.1rem', marginTop: '2px' }}>
-                          {slide.criticalCase.diagnosis || '—'}
-                        </div>
-                      </div>
-
-                      {/* Tình trạng & Diễn biến */}
-                      <div>
-                        <strong>Tình trạng bệnh & Diễn biến:</strong>
-                        <div style={{
-                          color: '#0F172A',
-                          fontWeight: '600',
-                          backgroundColor: '#FFFFFF',
-                          padding: '0.65rem 0.85rem',
-                          borderRadius: '8px',
-                          border: '1px solid #E2E8F0',
-                          lineHeight: '1.6',
-                          whiteSpace: 'pre-wrap',
-                          maxHeight: '120px',
-                          overflowY: 'auto'
-                        }}>
-                          {slide.criticalCase.condition_summary || slide.criticalCase.conditionSummary || 'Chưa có ghi nhận diễn biến'}
-                        </div>
-                      </div>
-
-                      {/* Xử trí */}
-                      <div>
-                        <strong>Xử trí điều trị:</strong>
-                        <div style={{ color: '#1E1B4B', fontWeight: '600' }}>
-                          {slide.criticalCase.treatment || '—'}
-                        </div>
-                      </div>
-
-                      {/* Hướng tiếp theo */}
-                      <div style={{ backgroundColor: '#FAF5FF', padding: '0.5rem 0.8rem', borderRadius: '8px', border: '1px dashed #A78BFA' }}>
-                        <strong style={{ color: '#6D28D9' }}>Hướng tiếp theo:</strong>
-                        <div style={{ color: '#4C1D95', fontWeight: '700', marginTop: '2px' }}>
-                          {slide.criticalCase.notes || 'Bàn giao tua sau theo dõi tiếp'}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Critical Case Image Gallery */}
-                <SlideImageGallery
-                  images={slide.criticalCase.images}
-                  patientName={slide.criticalCase.patient_name || slide.criticalCase.patientName}
-                  themeColor="#7C3AED"
-                  onOpen={handleOpenLightbox}
-                />
-              </div>
-            )}
-
-            {/* ==================== 8. DEDICATED FULL-SCREEN IMAGE SLIDE ==================== */}
-            {slide.type === 'case_image' && (
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                {/* Header Banner with Category Theme */}
-                <div style={{
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  paddingBottom: '1rem', marginBottom: '1.25rem',
-                  borderBottom: `4px solid ${slide.themeColor || '#2563EB'}`
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{
-                      width: isFullscreen ? '64px' : '50px', height: isFullscreen ? '64px' : '50px',
-                      borderRadius: '50%',
-                      backgroundColor: `${slide.themeColor}20`,
-                      color: slide.themeColor,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: isFullscreen ? '1.8rem' : '1.4rem',
-                      boxShadow: `0 4px 14px ${slide.themeColor}30`
-                    }}>
-                      <FaImages />
-                    </div>
                     <div>
                       <div style={{
-                        fontSize: isFullscreen ? '1rem' : '0.85rem',
-                        color: slide.themeColor,
-                        fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1.2px'
+                        fontSize: isFullscreen ? '0.95rem' : '0.8rem',
+                        fontWeight: '800', color: '#0369A1',
+                        textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: '0.2rem'
                       }}>
-                        {slide.deptName} • {
-                          slide.caseType === 'surgery' ? 'CA PHẪU THUẬT' :
-                          slide.caseType === 'death' ? 'HỒ SƠ TỬ VONG' :
-                          slide.caseType === 'transfer' ? 'CA CHUYỂN VIỆN' : 'BỆNH NẶNG THEO DÕI'
-                        } #{slide.caseIndex}/{slide.totalCases}
+                        BÁO CÁO PHẪU THUẬT (BỆNH MỔ) • {slide.deptName}
+                      </div>
+                      <div style={{
+                        fontSize: isFullscreen ? '2.1rem' : '1.55rem',
+                        fontWeight: '900', color: '#0F2C59',
+                        display: 'flex', alignItems: 'center', gap: '0.6rem'
+                      }}>
+                        <FaProcedures style={{ color: '#0284C7' }} />
+                        Ca Mổ #{slide.caseIndex} / {slide.totalCases}
+                      </div>
+                    </div>
+
+                    <div style={{
+                      padding: '0.4rem 1rem', backgroundColor: '#E0F2FE',
+                      borderRadius: '999px', border: '1.5px solid #BAE6FD',
+                      fontSize: isFullscreen ? '1rem' : '0.85rem',
+                      fontWeight: '800', color: '#0369A1'
+                    }}>
+                      🔪 Phẫu thuật trong ca trực
+                    </div>
+                  </div>
+
+                  {/* 2-Column Grid */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))',
+                    gap: '1.1rem',
+                    flex: 1
+                  }}>
+                    {/* Left Column: Thông tin hành chính & vào viện */}
+                    <div style={{
+                      backgroundColor: '#F8FAFC',
+                      borderRadius: '14px',
+                      border: '1.5px solid #E2E8F0',
+                      borderLeft: '6px solid #0284C7',
+                      padding: isFullscreen ? '1.25rem 1.5rem' : '0.95rem 1.2rem',
+                      display: 'flex', flexDirection: 'column', gap: '0.65rem'
+                    }}>
+                      <div style={{
+                        fontSize: isFullscreen ? '1.15rem' : '0.95rem',
+                        fontWeight: '900', color: '#0369A1',
+                        textTransform: 'uppercase', letterSpacing: '0.5px',
+                        borderBottom: '1.5px solid #BAE6FD', paddingBottom: '0.35rem'
+                      }}>
+                        👤 HÀNH CHÍNH & LÝ DO VÀO VIỆN
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem', fontSize: isFullscreen ? '1.1rem' : '0.95rem' }}>
+                        <div><strong>Họ và tên:</strong> <span style={{ color: '#0369A1', fontWeight: '800', fontSize: isFullscreen ? '1.3rem' : '1.1rem' }}>{slide.surgeryCase.patient_name || slide.surgeryCase.patientName || '—'}</span></div>
+                        <div><strong>Năm sinh / Tuổi:</strong> {ageFormatted || '—'}</div>
+                        <div><strong>Địa chỉ:</strong> {slide.surgeryCase.address || '—'}</div>
+                        <div><strong>Thời gian vào viện:</strong> <span style={{ fontWeight: '700' }}>{slide.surgeryCase.admission_time || slide.surgeryCase.admissionTime || '—'}</span></div>
+                        <div><strong>Lý do nhập viện:</strong> <span style={{ color: '#DC2626', fontWeight: '700' }}>{slide.surgeryCase.reason || '—'}</span></div>
+                      </div>
+                    </div>
+
+                    {/* Right Column: Chuyên môn mổ */}
+                    <div style={{
+                      backgroundColor: '#F0F9FF',
+                      borderRadius: '14px',
+                      border: '1.5px solid #BAE6FD',
+                      borderLeft: '6px solid #0369A1',
+                      padding: isFullscreen ? '1.25rem 1.5rem' : '0.95rem 1.2rem',
+                      display: 'flex', flexDirection: 'column', gap: '0.65rem'
+                    }}>
+                      <div style={{
+                        fontSize: isFullscreen ? '1.15rem' : '0.95rem',
+                        fontWeight: '900', color: '#0369A1',
+                        textTransform: 'uppercase', letterSpacing: '0.5px',
+                        borderBottom: '1.5px solid #BAE6FD', paddingBottom: '0.35rem'
+                      }}>
+                        📋 QUÁ TRÌNH PHẪU THUẬT & HẬU PHẪU
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem', fontSize: isFullscreen ? '1.1rem' : '0.95rem' }}>
+                        <div>
+                          <strong>Chẩn đoán trước mổ:</strong>
+                          <div style={{ color: '#0369A1', fontWeight: '700' }}>{slide.surgeryCase.preoperative_diagnosis || slide.surgeryCase.preoperativeDiagnosis || '—'}</div>
+                        </div>
+                        <div>
+                          <strong>Lệnh mổ / Hội chẩn:</strong>
+                          <div style={{ color: '#1E293B' }}>{slide.surgeryCase.consultation_order || slide.surgeryCase.consultationOrder || '—'}</div>
+                        </div>
+                        <div>
+                          <strong>Chẩn đoán sau mổ:</strong>
+                          <div style={{ color: '#166534', fontWeight: '700' }}>{slide.surgeryCase.postoperative_diagnosis || slide.surgeryCase.postoperativeDiagnosis || '—'}</div>
+                        </div>
+                        <div>
+                          <strong>Tình trạng hiện tại:</strong>
+                          <div style={{ color: '#0F172A', fontWeight: '600', backgroundColor: '#FFFFFF', padding: '0.4rem 0.65rem', borderRadius: '6px', border: '1px solid #BAE6FD' }}>
+                            {slide.surgeryCase.current_status || slide.surgeryCase.currentStatus || '—'}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Next Image Slide Notification Badge */}
+                  {caseImages.length > 0 && (
+                    <div style={{
+                      marginTop: '0.65rem',
+                      padding: '0.5rem 1rem',
+                      backgroundColor: '#E0F2FE',
+                      border: '1.5px dashed #0284C7',
+                      borderRadius: '8px',
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      color: '#0369A1', fontWeight: '700',
+                      fontSize: isFullscreen ? '0.92rem' : '0.82rem'
+                    }}>
+                      <span>📷 Ca mổ này có <strong>{caseImages.length} hình ảnh minh họa</strong></span>
+                      <span style={{ fontStyle: 'italic' }}>(Xem ở Slide tiếp theo ➔)</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* ==================== 6. DEATH CASE SLIDE ==================== */}
+            {slide.type === 'death' && (() => {
+              const caseImages = normalizeImages(slide.deathCase.images);
+              const ageFormatted = formatPatientAge(slide.deathCase.age);
+              return (
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}>
+                  {/* Header Banner */}
+                  <div style={{
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    paddingBottom: '0.85rem', marginBottom: '0.85rem',
+                    borderBottom: '4px solid #DC2626'
+                  }}>
+                    <div>
+                      <div style={{
+                        fontSize: isFullscreen ? '0.95rem' : '0.8rem',
+                        fontWeight: '800', color: '#991B1B',
+                        textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: '0.2rem'
+                      }}>
+                        BÁO CÁO BỆNH NHÂN TỬ VONG • {slide.deptName}
+                      </div>
+                      <div style={{
+                        fontSize: isFullscreen ? '2.1rem' : '1.55rem',
+                        fontWeight: '900', color: '#DC2626',
+                        display: 'flex', alignItems: 'center', gap: '0.6rem'
+                      }}>
+                        <FaExclamationTriangle style={{ color: '#DC2626' }} />
+                        Hồ Sơ Tử Vong #{slide.caseIndex} / {slide.totalCases}
+                      </div>
+                    </div>
+
+                    <div style={{
+                      padding: '0.4rem 1rem', backgroundColor: '#FEE2E2',
+                      borderRadius: '999px', border: '1.5px solid #F87171',
+                      fontSize: isFullscreen ? '1rem' : '0.85rem',
+                      fontWeight: '900', color: '#991B1B',
+                      display: 'flex', alignItems: 'center', gap: '0.4rem'
+                    }}>
+                      <FaHeartbeat /> CẢNH BÁO TỬ VONG
+                    </div>
+                  </div>
+
+                  {/* 2-Column Grid */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))',
+                    gap: '1.1rem',
+                    flex: 1
+                  }}>
+                    {/* Left Column: Tiếp nhận & Tình trạng vào viện */}
+                    <div style={{
+                      backgroundColor: '#FEF2F2',
+                      borderRadius: '14px',
+                      border: '1.5px solid #FECACA',
+                      borderLeft: '6px solid #DC2626',
+                      padding: isFullscreen ? '1.25rem 1.5rem' : '0.95rem 1.2rem',
+                      display: 'flex', flexDirection: 'column', gap: '0.55rem'
+                    }}>
+                      <div style={{
+                        fontSize: isFullscreen ? '1.15rem' : '0.95rem',
+                        fontWeight: '900', color: '#991B1B',
+                        textTransform: 'uppercase', letterSpacing: '0.5px',
+                        borderBottom: '1.5px solid #FECACA', paddingBottom: '0.35rem'
+                      }}>
+                        👤 HÀNH CHÍNH & TÌNH TRẠNG LÚC VÀO
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: isFullscreen ? '1.1rem' : '0.95rem' }}>
+                        <div><strong>Họ và tên:</strong> <span style={{ color: '#991B1B', fontWeight: '800', fontSize: isFullscreen ? '1.3rem' : '1.1rem' }}>{slide.deathCase.patient_name || slide.deathCase.patientName || '—'}</span></div>
+                        <div><strong>Tuổi / Năm sinh:</strong> {ageFormatted || '—'} • <strong>Địa chỉ:</strong> {slide.deathCase.address || '—'}</div>
+                        <div><strong>Thời gian vào viện:</strong> <span style={{ fontWeight: '700' }}>{slide.deathCase.admission_time || slide.deathCase.admissionTime || '—'}</span></div>
+                        <div><strong>Lý do vào viện:</strong> {slide.deathCase.reason || '—'}</div>
+                        <div><strong>Tình trạng lúc vào khoa:</strong> <div style={{ color: '#7F1D1D', fontWeight: '600' }}>{slide.deathCase.admission_status || slide.deathCase.admissionStatus || '—'}</div></div>
+                        <div><strong>Tiền sử bệnh:</strong> {slide.deathCase.medical_history || slide.deathCase.medicalHistory || '—'}</div>
+                      </div>
+                    </div>
+
+                    {/* Right Column: Chẩn đoán & Xử trí hồi sinh */}
+                    <div style={{
+                      backgroundColor: '#FFF1F2',
+                      borderRadius: '14px',
+                      border: '1.5px solid #FECDD3',
+                      borderLeft: '6px solid #E11D48',
+                      padding: isFullscreen ? '1.25rem 1.5rem' : '0.95rem 1.2rem',
+                      display: 'flex', flexDirection: 'column', gap: '0.55rem'
+                    }}>
+                      <div style={{
+                        fontSize: isFullscreen ? '1.15rem' : '0.95rem',
+                        fontWeight: '900', color: '#9F1239',
+                        textTransform: 'uppercase', letterSpacing: '0.5px',
+                        borderBottom: '1.5px solid #FECDD3', paddingBottom: '0.35rem'
+                      }}>
+                        ⚡ CHẨN ĐOÁN & HỒI SỨC CẤP CỨU
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: isFullscreen ? '1.1rem' : '0.95rem' }}>
+                        <div style={{ backgroundColor: '#FEE2E2', padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid #FCA5A5' }}>
+                          <strong style={{ color: '#991B1B' }}>Chẩn đoán tử vong:</strong>
+                          <div style={{ color: '#DC2626', fontWeight: '800', fontSize: isFullscreen ? '1.2rem' : '1.05rem', marginTop: '2px' }}>
+                            {slide.deathCase.diagnosis || '—'}
+                          </div>
+                        </div>
+                        <div>
+                          <strong>Cận lâm sàng / ECG:</strong>
+                          <div style={{ color: '#334155' }}>{slide.deathCase.clinical_tests || slide.deathCase.clinicalTests || '—'}</div>
+                        </div>
+                        <div>
+                          <strong>Xử trí cấp cứu:</strong>
+                          <div style={{ color: '#0F172A', fontWeight: '600' }}>{slide.deathCase.emergency_treatment || slide.deathCase.emergencyTreatment || '—'}</div>
+                        </div>
+                        <div style={{ backgroundColor: '#FFFFFF', padding: '0.45rem 0.7rem', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+                          <strong>Kết quả & Hướng xử lý:</strong>
+                          <div style={{ color: '#1E293B', fontWeight: '700' }}>{slide.deathCase.final_outcome || slide.deathCase.finalOutcome || '—'}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Next Image Slide Notification Badge */}
+                  {caseImages.length > 0 && (
+                    <div style={{
+                      marginTop: '0.65rem',
+                      padding: '0.5rem 1rem',
+                      backgroundColor: '#FEE2E2',
+                      border: '1.5px dashed #DC2626',
+                      borderRadius: '8px',
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      color: '#991B1B', fontWeight: '700',
+                      fontSize: isFullscreen ? '0.92rem' : '0.82rem'
+                    }}>
+                      <span>📷 Hồ sơ tử vong có <strong>{caseImages.length} hình ảnh minh họa</strong></span>
+                      <span style={{ fontStyle: 'italic' }}>(Xem ở Slide tiếp theo ➔)</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* ==================== 7. CRITICAL CASE SLIDE (PURPLE THEME) ==================== */}
+            {slide.type === 'critical' && (() => {
+              const caseImages = normalizeImages(slide.criticalCase.images);
+              const ageFormatted = formatPatientAge(slide.criticalCase.age);
+              return (
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}>
+                  {/* Header Banner */}
+                  <div style={{
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    paddingBottom: '0.85rem', marginBottom: '0.85rem',
+                    borderBottom: '4px solid #7C3AED'
+                  }}>
+                    <div>
+                      <div style={{
+                        fontSize: isFullscreen ? '0.95rem' : '0.8rem',
+                        fontWeight: '800', color: '#6D28D9',
+                        textTransform: 'uppercase', letterSpacing: '1.2px'
+                      }}>
+                        ⚡ {slide.deptName} • CA BỆNH NẶNG THEO DÕI {slide.caseIndex}/{slide.totalCases}
                       </div>
                       <h2 style={{
                         fontSize: isFullscreen ? '2.2rem' : '1.65rem',
-                        color: '#0F2C59', fontWeight: '900', margin: 0, lineHeight: 1.15
+                        color: '#4C1D95', fontWeight: '900', margin: 0, lineHeight: 1.15
                       }}>
-                        HÌNH ẢNH MINH HỌA #{slide.imgIndex} / {slide.totalImages}
+                        {slide.criticalCase.patient_name || slide.criticalCase.patientName || 'BỆNH NHÂN NẶNG'}
                       </h2>
                     </div>
+                    <img src="/logo.png" alt="Logo" style={{ width: isFullscreen ? '60px' : '45px', height: isFullscreen ? '60px' : '45px' }} />
                   </div>
 
-                  {/* Patient Quick Badge */}
+                  {/* 2-Column Split Layout */}
                   <div style={{
-                    padding: '0.6rem 1.25rem',
-                    backgroundColor: '#FFFFFF',
-                    borderRadius: '12px',
-                    border: `1.5px solid ${slide.themeColor}44`,
-                    display: 'flex', alignItems: 'center', gap: '0.85rem',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1.35fr',
+                    gap: '1.1rem',
+                    flex: 1
                   }}>
-                    <div style={{ fontSize: isFullscreen ? '1.1rem' : '0.95rem', fontWeight: '800', color: '#0F2C59' }}>
-                      👤 {slide.caseItem.patient_name || slide.caseItem.patientName || 'Bệnh nhân'}
-                      {(slide.caseItem.age || slide.caseItem.birth_year || slide.caseItem.birthYear) ? ` (${slide.caseItem.age || slide.caseItem.birth_year || slide.caseItem.birthYear} tuổi)` : ''}
-                    </div>
-                    {slide.caseItem.diagnosis && (
-                      <div style={{ fontSize: isFullscreen ? '1rem' : '0.85rem', fontWeight: '700', color: slide.themeColor }}>
-                        • CĐ: {slide.caseItem.diagnosis}
+                    {/* Left Column: Hành chính & Tiền căn */}
+                    <div style={{
+                      backgroundColor: '#FAF5FF',
+                      borderRadius: '14px',
+                      border: '1.5px solid #DDD6FE',
+                      borderLeft: '6px solid #7C3AED',
+                      padding: isFullscreen ? '1.25rem 1.5rem' : '0.95rem 1.2rem',
+                      display: 'flex', flexDirection: 'column', gap: '0.55rem'
+                    }}>
+                      <div style={{
+                        fontSize: isFullscreen ? '1.15rem' : '0.95rem',
+                        fontWeight: '900', color: '#5B21B6',
+                        textTransform: 'uppercase', letterSpacing: '0.5px',
+                        borderBottom: '1.5px solid #DDD6FE', paddingBottom: '0.35rem'
+                      }}>
+                        👤 HÀNH CHÍNH & VÀO VIỆN
                       </div>
-                    )}
-                  </div>
-                </div>
 
-                {/* Main Large Image Presentation Stage */}
-                <div style={{
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: '#0F172A',
-                  borderRadius: '16px',
-                  border: '2px solid #334155',
-                  padding: '1.25rem',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  boxShadow: '0 10px 30px rgba(0,0,0,0.25)'
-                }}>
-                  {/* The Image */}
-                  <img
-                    src={typeof slide.image === 'string' ? slide.image : slide.image.url}
-                    alt={typeof slide.image === 'object' ? slide.image.name : 'Hình ảnh y khoa'}
-                    style={{
-                      maxWidth: '100%',
-                      maxHeight: isFullscreen ? '68vh' : '58vh',
-                      objectFit: 'contain',
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: isFullscreen ? '1.1rem' : '0.95rem' }}>
+                        <div>
+                          <strong>Họ và tên BN:</strong>{' '}
+                          <span style={{ color: '#5B21B6', fontWeight: '800', fontSize: isFullscreen ? '1.3rem' : '1.1rem' }}>
+                            {slide.criticalCase.patient_name || slide.criticalCase.patientName || '—'}
+                          </span>
+                        </div>
+                        <div>
+                          <strong>Tuổi / Năm sinh:</strong> {ageFormatted || '—'}
+                        </div>
+                        <div>
+                          <strong>Địa chỉ / Phường xã:</strong> {slide.criticalCase.address || '—'}
+                        </div>
+                        <div>
+                          <strong>Thời gian vào viện (VV):</strong>{' '}
+                          <span style={{ fontWeight: '700', color: '#6D28D9' }}>
+                            {slide.criticalCase.admission_time || slide.criticalCase.admissionTime || '—'}
+                          </span>
+                        </div>
+                        <div style={{ backgroundColor: '#EDE9FE', padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid #DDD6FE', marginTop: '2px' }}>
+                          <strong style={{ color: '#5B21B6' }}>Tiền căn bệnh:</strong>
+                          <div style={{ color: '#3B0764', fontWeight: '600', marginTop: '2px' }}>
+                            {slide.criticalCase.medical_history || slide.criticalCase.medicalHistory || 'Chưa ghi nhận tiền căn đặc biệt'}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right Column: Chẩn đoán, Tình trạng & Xử trí */}
+                    <div style={{
+                      backgroundColor: '#F5F3FF',
+                      borderRadius: '14px',
+                      border: '1.5px solid #DDD6FE',
+                      borderLeft: '6px solid #8B5CF6',
+                      padding: isFullscreen ? '1.25rem 1.5rem' : '0.95rem 1.2rem',
+                      display: 'flex', flexDirection: 'column', gap: '0.55rem'
+                    }}>
+                      <div style={{
+                        fontSize: isFullscreen ? '1.15rem' : '0.95rem',
+                        fontWeight: '900', color: '#6D28D9',
+                        textTransform: 'uppercase', letterSpacing: '0.5px',
+                        borderBottom: '1.5px solid #DDD6FE', paddingBottom: '0.35rem'
+                      }}>
+                        📋 CHẨN ĐOÁN, DIỄN BIẾN & ĐIỀU TRỊ
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: isFullscreen ? '1.1rem' : '0.95rem' }}>
+                        {/* Chẩn đoán Box */}
+                        <div style={{ backgroundColor: '#EDE9FE', padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid #C4B5FD' }}>
+                          <strong style={{ color: '#5B21B6' }}>Chẩn đoán bệnh:</strong>
+                          <div style={{ color: '#6D28D9', fontWeight: '800', fontSize: isFullscreen ? '1.2rem' : '1.05rem', marginTop: '2px' }}>
+                            {slide.criticalCase.diagnosis || '—'}
+                          </div>
+                        </div>
+
+                        {/* Tình trạng & Diễn biến */}
+                        <div>
+                          <strong>Tình trạng bệnh & Diễn biến:</strong>
+                          <div style={{
+                            color: '#0F172A',
+                            fontWeight: '600',
+                            backgroundColor: '#FFFFFF',
+                            padding: '0.55rem 0.75rem',
+                            borderRadius: '6px',
+                            border: '1px solid #E2E8F0',
+                            lineHeight: '1.6',
+                            whiteSpace: 'pre-wrap'
+                          }}>
+                            {slide.criticalCase.condition_summary || slide.criticalCase.conditionSummary || 'Chưa có ghi nhận diễn biến'}
+                          </div>
+                        </div>
+
+                        {/* Xử trí */}
+                        <div>
+                          <strong>Xử trí điều trị:</strong>
+                          <div style={{ color: '#1E1B4B', fontWeight: '600' }}>
+                            {slide.criticalCase.treatment || '—'}
+                          </div>
+                        </div>
+
+                        {/* Hướng tiếp theo */}
+                        <div style={{ backgroundColor: '#FAF5FF', padding: '0.45rem 0.7rem', borderRadius: '6px', border: '1px dashed #A78BFA' }}>
+                          <strong style={{ color: '#6D28D9' }}>Hướng tiếp theo:</strong>
+                          <div style={{ color: '#4C1D95', fontWeight: '700', marginTop: '2px' }}>
+                            {slide.criticalCase.notes || 'Bàn giao tua sau theo dõi tiếp'}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Next Image Slide Notification Badge */}
+                  {caseImages.length > 0 && (
+                    <div style={{
+                      marginTop: '0.65rem',
+                      padding: '0.5rem 1rem',
+                      backgroundColor: '#FAF5FF',
+                      border: '1.5px dashed #7C3AED',
                       borderRadius: '8px',
-                      boxShadow: '0 8px 30px rgba(0, 0, 0, 0.6)',
-                      cursor: 'zoom-in',
-                      transition: 'transform 0.2s ease'
-                    }}
-                    onClick={() => handleOpenLightbox([slide.image], 0, `${slide.caseItem.patient_name || slide.caseItem.patientName || 'Bệnh nhân'} - Ảnh ${slide.imgIndex}/${slide.totalImages}`)}
-                    title="Nhấp để phóng to toàn màn hình (HD Lightbox)"
-                  />
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      color: '#6D28D9', fontWeight: '700',
+                      fontSize: isFullscreen ? '0.92rem' : '0.82rem'
+                    }}>
+                      <span>📷 Ca bệnh này có <strong>{caseImages.length} hình ảnh minh họa lâm sàng</strong></span>
+                      <span style={{ fontStyle: 'italic' }}>(Xem ở Slide tiếp theo ➔)</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
-                  {/* Caption & Full-screen trigger */}
+            {/* ==================== 8. DEDICATED FULL-SCREEN IMAGE SLIDE ==================== */}
+            {slide.type === 'case_image' && (() => {
+              const ageFormatted = formatPatientAge(slide.caseItem.age || slide.caseItem.birth_year || slide.caseItem.birthYear);
+              return (
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}>
+                  {/* Header Banner with Category Theme */}
                   <div style={{
-                    marginTop: '0.75rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    width: '100%',
-                    maxWidth: '900px',
-                    color: '#94A3B8',
-                    fontSize: isFullscreen ? '1rem' : '0.85rem'
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    paddingBottom: '0.75rem', marginBottom: '0.75rem',
+                    borderBottom: `4px solid ${slide.themeColor || '#2563EB'}`
                   }}>
-                    <span>
-                      📷 {typeof slide.image === 'object' && slide.image.name ? slide.image.name : `Ảnh minh họa ${slide.imgIndex}`}
-                      {typeof slide.image === 'object' && slide.image.size ? ` (${slide.image.size})` : ''}
-                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                      <div style={{
+                        width: isFullscreen ? '52px' : '40px', height: isFullscreen ? '52px' : '40px',
+                        borderRadius: '50%',
+                        backgroundColor: `${slide.themeColor}20`,
+                        color: slide.themeColor,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: isFullscreen ? '1.5rem' : '1.2rem',
+                        boxShadow: `0 4px 12px ${slide.themeColor}30`, flexShrink: 0
+                      }}>
+                        <FaImages />
+                      </div>
+                      <div>
+                        <div style={{
+                          fontSize: isFullscreen ? '0.9rem' : '0.78rem',
+                          color: slide.themeColor,
+                          fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1.2px'
+                        }}>
+                          {slide.deptName} • {
+                            slide.caseType === 'surgery' ? 'CA PHẪU THUẬT' :
+                            slide.caseType === 'death' ? 'HỒ SƠ TỬ VONG' :
+                            slide.caseType === 'transfer' ? 'CA CHUYỂN VIỆN' : 'BỆNH NẶNG THEO DÕI'
+                          } #{slide.caseIndex}/{slide.totalCases}
+                        </div>
+                        <h2 style={{
+                          fontSize: isFullscreen ? '1.9rem' : '1.45rem',
+                          color: '#0F2C59', fontWeight: '900', margin: 0, lineHeight: 1.15
+                        }}>
+                          HÌNH ẢNH MINH HỌA #{slide.imgIndex} / {slide.totalImages}
+                        </h2>
+                      </div>
+                    </div>
 
-                    <button
-                      onClick={() => handleOpenLightbox([slide.image], 0, `${slide.caseItem.patient_name || slide.caseItem.patientName || 'Bệnh nhân'} - Ảnh ${slide.imgIndex}/${slide.totalImages}`)}
+                    {/* Patient Quick Badge */}
+                    <div style={{
+                      padding: '0.5rem 1rem',
+                      backgroundColor: '#FFFFFF',
+                      borderRadius: '10px',
+                      border: `1.5px solid ${slide.themeColor}44`,
+                      display: 'flex', alignItems: 'center', gap: '0.65rem',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+                    }}>
+                      <div style={{ fontSize: isFullscreen ? '1rem' : '0.88rem', fontWeight: '800', color: '#0F2C59' }}>
+                        👤 {slide.caseItem.patient_name || slide.caseItem.patientName || 'Bệnh nhân'}
+                        {ageFormatted ? ` (${ageFormatted})` : ''}
+                      </div>
+                      {slide.caseItem.diagnosis && (
+                        <div style={{ fontSize: isFullscreen ? '0.95rem' : '0.82rem', fontWeight: '700', color: slide.themeColor }}>
+                          • CĐ: {slide.caseItem.diagnosis}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Main Large Image Presentation Stage */}
+                  <div style={{
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: '#0F172A',
+                    borderRadius: '14px',
+                    border: '2px solid #334155',
+                    padding: '0.85rem',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    boxShadow: '0 8px 25px rgba(0,0,0,0.25)',
+                    maxHeight: isFullscreen ? 'calc(100vh - 215px)' : 'calc(100vh - 245px)'
+                  }}>
+                    {/* The Image */}
+                    <img
+                      src={typeof slide.image === 'string' ? slide.image : slide.image.url}
+                      alt={typeof slide.image === 'object' ? slide.image.name : 'Hình ảnh y khoa'}
                       style={{
-                        backgroundColor: slide.themeColor,
-                        color: '#FFFFFF',
-                        border: 'none',
-                        borderRadius: '8px',
-                        padding: '0.4rem 1rem',
-                        fontSize: '0.85rem',
-                        fontWeight: '800',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.4rem',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+                        maxWidth: '100%',
+                        maxHeight: isFullscreen ? 'calc(100vh - 280px)' : 'calc(100vh - 310px)',
+                        objectFit: 'contain',
+                        borderRadius: '6px',
+                        boxShadow: '0 6px 25px rgba(0, 0, 0, 0.6)',
+                        cursor: 'zoom-in',
+                        transition: 'transform 0.2s ease'
                       }}
-                    >
-                      <FaExpand /> Phóng to toàn màn hình (HD Lightbox)
-                    </button>
+                      onClick={() => handleOpenLightbox([slide.image], 0, `${slide.caseItem.patient_name || slide.caseItem.patientName || 'Bệnh nhân'} - Ảnh ${slide.imgIndex}/${slide.totalImages}`)}
+                      title="Nhấp để phóng to toàn màn hình (HD Lightbox)"
+                    />
+
+                    {/* Caption & Full-screen trigger */}
+                    <div style={{
+                      marginTop: '0.6rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                      maxWidth: '900px',
+                      color: '#94A3B8',
+                      fontSize: isFullscreen ? '0.95rem' : '0.82rem'
+                    }}>
+                      <span>
+                        📷 Ảnh minh họa #{slide.imgIndex} / {slide.totalImages}
+                      </span>
+
+                      <button
+                        onClick={() => handleOpenLightbox([slide.image], 0, `${slide.caseItem.patient_name || slide.caseItem.patientName || 'Bệnh nhân'} - Ảnh ${slide.imgIndex}/${slide.totalImages}`)}
+                        style={{
+                          backgroundColor: slide.themeColor,
+                          color: '#FFFFFF',
+                          border: 'none',
+                          borderRadius: '6px',
+                          padding: '0.35rem 0.85rem',
+                          fontSize: '0.82rem',
+                          fontWeight: '800',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+                        }}
+                      >
+                        <FaExpand /> Phóng to toàn màn hình (HD Lightbox)
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </div>
         </div>
 
