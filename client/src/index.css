@@ -811,33 +811,35 @@ label {
 }
 
 /* ==========================================================
-   PRESENTATION PAGE — ZERO-FLICKER SEAMLESS TRANSITIONS
+   PRESENTATION PAGE — ZERO-FLICKER CLINICAL GRADE TRANSITIONS
    ========================================================== */
 .slide-stage-wrapper {
-  perspective: 1200px;
-  transform: translateZ(0);
   background-color: #071224;
 }
 
 .presentation-canvas {
-  will-change: transform;
-  transform: translate3d(0, 0, 0);
-  backface-visibility: hidden;
   background-color: #FFFFFF !important;
+  color: #1E293B;
+  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.35);
+  backface-visibility: hidden;
 }
 
 .slide-inner-content {
-  will-change: opacity, transform;
-  transform: translate3d(0, 0, 0);
-  backface-visibility: hidden;
+  opacity: 1;
+  transform: none;
+  animation: seamlessSlideFade 0.14s ease-out forwards;
 }
 
-.slide-content-next {
-  animation: seamlessNext 0.28s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-}
-
+.slide-content-next,
 .slide-content-prev {
-  animation: seamlessPrev 0.28s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  animation: seamlessSlideFade 0.14s ease-out forwards;
+}
+
+.slide-content-fade,
+.slide-metric-stagger {
+  opacity: 1 !important;
+  transform: none !important;
+  animation: none !important;
 }
 
 /* ==========================================================
@@ -945,62 +947,21 @@ input:focus, textarea:focus, select:focus { box-shadow: var(--focus-ring); }
   .presentation-canvas { border-radius: 12px !important; }
 }
 
-@keyframes seamlessNext {
+@keyframes seamlessSlideFade {
   0% {
-    opacity: 0.35;
-    transform: translate3d(12px, 0, 0);
+    opacity: 0.78;
   }
   100% {
     opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-@keyframes seamlessPrev {
-  0% {
-    opacity: 0.35;
-    transform: translate3d(-12px, 0, 0);
-  }
-  100% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-@keyframes gentleFadeUpAnim {
-  0% {
-    opacity: 0.3;
-    transform: translate3d(0, 6px, 0);
-  }
-  100% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-@keyframes metricPopAnim {
-  0% {
-    opacity: 0.3;
-    transform: translate3d(0, 3px, 0);
-  }
-  100% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .slide-inner-content,
   .slide-content-next,
-  .slide-content-prev,
-  .slide-content-fade,
-  .slide-metric-stagger {
-    animation: seamlessFadeSimple 0.1s ease-out forwards !important;
-    transform: none !important;
-  }
-
-  @keyframes seamlessFadeSimple {
-    0% { opacity: 0.6; }
-    100% { opacity: 1; }
+  .slide-content-prev {
+    animation: none !important;
+    opacity: 1 !important;
   }
 }
 
