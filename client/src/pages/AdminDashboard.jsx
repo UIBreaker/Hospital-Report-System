@@ -283,14 +283,16 @@ const DEPARTMENT_MAP = {
   xn: 'Khoa Xét nghiệm',
   cdha: 'Chẩn đoán hình ảnh',
   hscc_tnt: 'Hồi sức cấp cứu – Thận nhân tạo',
-  noi: 'Khoa Nội',
+  noi: 'Khoa Nội tổng hợp',
   nhi: 'Khoa Nhi',
-  nhiem: 'Khoa Nhiễm',
-  san: 'Khoa Sản',
+  nhiem: 'Khoa Truyền nhiễm',
+  san: 'Khoa Sản (CSSK Sinh sản)',
   yhct_phcn: 'Y học cổ truyền – Phục hồi chức năng',
   ngoai_th: 'Ngoại tổng hợp',
   ctch: 'Chấn thương chỉnh hình',
-  gmhs: 'Gây mê Hồi sức',
+  gmhs: 'Phẫu thuật, gây mê hồi sức',
+  duoc: 'Khoa Dược - Trang thiết bị - VTYT',
+  kham_benh: 'Khoa Khám bệnh'
 };
 
 const DEPARTMENT_ORDER = [
@@ -305,7 +307,9 @@ const DEPARTMENT_ORDER = [
   'yhct_phcn',
   'ngoai_th',
   'ctch',
-  'gmhs'
+  'gmhs',
+  'duoc',
+  'kham_benh'
 ];
 
 const AdminDashboard = () => {
@@ -1109,6 +1113,8 @@ const AdminDashboard = () => {
                   <option value="Điều dưỡng">Điều dưỡng</option>
                   <option value="Hộ sinh">Hộ sinh</option>
                   <option value="Kỹ thuật viên">Kỹ thuật viên</option>
+                  <option value="Dược sĩ">Dược sĩ</option>
+                  <option value="Y sĩ">Y sĩ</option>
                 </select>
               </div>
             </div>
@@ -1452,6 +1458,7 @@ const AdminDashboard = () => {
                     <option value="Hộ sinh">Hộ sinh</option>
                     <option value="Kỹ thuật viên">Kỹ thuật viên</option>
                     <option value="Dược sĩ">Dược sĩ</option>
+                    <option value="Y sĩ">Y sĩ</option>
                     <option value="Khác">Khác</option>
                   </select>
                 </div>
