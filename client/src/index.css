@@ -818,29 +818,29 @@ label {
   transform: translateZ(0);
   will-change: transform, opacity;
   backface-visibility: hidden;
+  background-color: #071224;
 }
 
 .slide-card-animated {
   will-change: transform, opacity;
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
-  transition: box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .slide-enter-next {
-  animation: slideNextAnim 0.36s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: slideNextAnim 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 .slide-enter-prev {
-  animation: slidePrevAnim 0.36s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: slidePrevAnim 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 .slide-content-fade {
-  animation: gentleFadeUpAnim 0.32s cubic-bezier(0.16, 1, 0.3, 1) 0.04s both;
+  animation: gentleFadeUpAnim 0.35s cubic-bezier(0.22, 1, 0.36, 1) 0.03s both;
 }
 
 .slide-metric-stagger {
-  animation: metricPopAnim 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: metricPopAnim 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* ==========================================================
@@ -951,29 +951,29 @@ input:focus, textarea:focus, select:focus { box-shadow: var(--focus-ring); }
 @keyframes slideNextAnim {
   0% {
     opacity: 0;
-    transform: translate3d(32px, 0, 0) scale(0.985);
+    transform: translate3d(16px, 0, 0);
   }
   100% {
     opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
+    transform: translate3d(0, 0, 0);
   }
 }
 
 @keyframes slidePrevAnim {
   0% {
     opacity: 0;
-    transform: translate3d(-32px, 0, 0) scale(0.985);
+    transform: translate3d(-16px, 0, 0);
   }
   100% {
     opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
+    transform: translate3d(0, 0, 0);
   }
 }
 
 @keyframes gentleFadeUpAnim {
   0% {
     opacity: 0;
-    transform: translate3d(0, 10px, 0);
+    transform: translate3d(0, 8px, 0);
   }
   100% {
     opacity: 1;
@@ -984,11 +984,26 @@ input:focus, textarea:focus, select:focus { box-shadow: var(--focus-ring); }
 @keyframes metricPopAnim {
   0% {
     opacity: 0;
-    transform: scale(0.96) translate3d(0, 6px, 0);
+    transform: translate3d(0, 4px, 0);
   }
   100% {
     opacity: 1;
-    transform: scale(1) translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slide-enter-next,
+  .slide-enter-prev,
+  .slide-content-fade,
+  .slide-metric-stagger {
+    animation: slideSimpleFade 0.12s ease-out forwards !important;
+    transform: none !important;
+  }
+
+  @keyframes slideSimpleFade {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
   }
 }
 

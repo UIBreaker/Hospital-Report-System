@@ -890,7 +890,12 @@ const PresentationPage = () => {
     return s;
   }, [reports]);
 
+  const lastNavTimeRef = useRef(0);
+
   const handleNext = () => {
+    const now = Date.now();
+    if (now - lastNavTimeRef.current < 60) return;
+    lastNavTimeRef.current = now;
     if (currentSlide < slides.length - 1) {
       setSlideDirection('next');
       setCurrentSlide(p => p + 1);
@@ -898,6 +903,9 @@ const PresentationPage = () => {
   };
 
   const handlePrev = () => {
+    const now = Date.now();
+    if (now - lastNavTimeRef.current < 60) return;
+    lastNavTimeRef.current = now;
     if (currentSlide > 0) {
       setSlideDirection('prev');
       setCurrentSlide(p => p - 1);
@@ -905,7 +913,8 @@ const PresentationPage = () => {
   };
 
   const handleGoToSlide = (idx) => {
-    setSlideDirection(idx >= currentSlide ? 'next' : 'prev');
+    if (idx === currentSlide) return;
+    setSlideDirection(idx > currentSlide ? 'next' : 'prev');
     setCurrentSlide(idx);
   };
 
