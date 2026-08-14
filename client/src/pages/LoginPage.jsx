@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
-import { FaUser, FaLock, FaSpinner, FaEye, FaEyeSlash, FaCodeBranch } from 'react-icons/fa';
+import { FaUser, FaLock, FaSpinner, FaEye, FaEyeSlash, FaCodeBranch, FaGithub, FaHeart } from 'react-icons/fa';
 import { APP_VERSION } from '../config/version';
 import AIAssistant from '../components/common/AIAssistant';
 
@@ -125,15 +125,25 @@ const LoginPage = () => {
         {/* In-card Footer info */}
         <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', color: '#64748B' }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-            <FaCodeBranch style={{ color: '#2563EB' }} /> Phiên bản <strong>{APP_VERSION}</strong>
+            <FaCodeBranch style={{ color: '#2563EB' }} /> Phiên bản <strong>v{APP_VERSION}</strong>
           </span>
-          <span>TTYT Bình Long</span>
+          <a
+            href="https://github.com/UIBreaker"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#0F2C59', fontWeight: '700', textDecoration: 'none' }}
+          >
+            <FaGithub /> UIBreaker
+          </a>
         </div>
       </div>
       
-      {/* Bottom Copyright */}
-      <div style={{ marginTop: '1.5rem', color: 'rgba(255,255,255,0.7)', fontSize: '0.75rem', textAlign: 'center' }}>
-        &copy; 2026 Trung Tâm Y Tế Khu Vực Bình Long.
+      {/* Bottom Copyright & Author Credit */}
+      <div style={{ marginTop: '1.25rem', color: 'rgba(255,255,255,0.85)', fontSize: '0.78rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+        <div>&copy; 2026 <strong>Trung Tâm Y Tế Khu Vực Bình Long</strong>.</div>
+        <div style={{ fontSize: '0.75rem', opacity: 0.85, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }}>
+          Phát triển bởi <a href="https://github.com/UIBreaker" target="_blank" rel="noopener noreferrer" style={{ color: '#67E8F9', fontWeight: '700', textDecoration: 'none' }}>Nguyễn Vũ Nhật Nam (UIBreaker)</a>
+        </div>
       </div>
 
       {/* Floating AI Assistant */}

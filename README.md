@@ -14,7 +14,7 @@
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel%20App-0070F3?style=for-the-badge&logo=vercel&logoColor=white)](https://hospital-report-system.vercel.app/)
 [![Author](https://img.shields.io/badge/Author-Nguyen%20Vu%20Nhat%20Nam%20(2004)-0F2C59?style=for-the-badge&logo=github)](https://github.com/UIBreaker/Hospital-Report-System)
-[![Version](https://img.shields.io/badge/Version-1.13.0-10B981?style=for-the-badge)](https://hospital-report-system.vercel.app/)
+[![Version](https://img.shields.io/badge/Version-1.14.2-10B981?style=for-the-badge)](https://hospital-report-system.vercel.app/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
 </div>

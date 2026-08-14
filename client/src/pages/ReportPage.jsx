@@ -32,6 +32,7 @@ import LienChuyenKhoaForm from '../components/forms/departments/LienChuyenKhoaFo
 import SurgeryCaseForm from '../components/forms/SurgeryCaseForm';
 import DeathCaseForm from '../components/forms/DeathCaseForm';
 import StaffSelectCombobox from '../components/common/StaffSelectCombobox';
+import Footer from '../components/common/Footer';
 
 const DEPARTMENT_FORMS = {
   lck: LienChuyenKhoaForm,
@@ -759,6 +760,9 @@ const ReportPage = () => {
           </div>
         </div>
       )}
+
+      {/* Hospital System Footer Section */}
+      <Footer />
     </div>
   );
 };

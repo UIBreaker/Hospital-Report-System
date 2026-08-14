@@ -39,6 +39,7 @@ import {
 import reportService from '../services/reportService';
 import staffService from '../services/staffService';
 import MedicalPrintView from '../components/common/MedicalPrintView';
+import Footer from '../components/common/Footer';
 
 import {
   HoiSucCapCuuForm,
@@ -2046,6 +2047,9 @@ const AdminDashboard = () => {
           onClose={() => setShowPrintModal(false)}
         />
       )}
+
+      {/* Hospital System Footer Section */}
+      <Footer />
     </div>
   );
 };
