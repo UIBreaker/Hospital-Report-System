@@ -1835,6 +1835,18 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
                       </div>
 
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem', fontSize: isFullscreen ? '1.1rem' : '0.95rem' }}>
+                        {(slide.surgeryCase.clinical_symptoms || slide.surgeryCase.clinicalSymptoms) && (
+                          <div>
+                            <strong>Lâm sàng / Triệu chứng khám:</strong>
+                            <div style={{ color: '#0369A1', fontWeight: '600' }}>{slide.surgeryCase.clinical_symptoms || slide.surgeryCase.clinicalSymptoms}</div>
+                          </div>
+                        )}
+                        {(slide.surgeryCase.clinical_tests || slide.surgeryCase.clinicalTests) && (
+                          <div>
+                            <strong>Cận lâm sàng / SA / XQ / XN:</strong>
+                            <div style={{ color: '#1E293B' }}>{slide.surgeryCase.clinical_tests || slide.surgeryCase.clinicalTests}</div>
+                          </div>
+                        )}
                         <div>
                           <strong>Chẩn đoán trước mổ:</strong>
                           <div style={{ color: '#0369A1', fontWeight: '700' }}>{slide.surgeryCase.preoperative_diagnosis || slide.surgeryCase.preoperativeDiagnosis || '—'}</div>
@@ -1978,6 +1990,12 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
                             {slide.deathCase.diagnosis || '—'}
                           </div>
                         </div>
+                        {(slide.deathCase.clinical_symptoms || slide.deathCase.clinicalSymptoms) && (
+                          <div>
+                            <strong>Lâm sàng / Triệu chứng lúc cấp cứu:</strong>
+                            <div style={{ color: '#991B1B', fontWeight: '600' }}>{slide.deathCase.clinical_symptoms || slide.deathCase.clinicalSymptoms}</div>
+                          </div>
+                        )}
                         <div>
                           <strong>Cận lâm sàng / ECG:</strong>
                           <div style={{ color: '#334155' }}>{slide.deathCase.clinical_tests || slide.deathCase.clinicalTests || '—'}</div>
@@ -2123,6 +2141,20 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
                             {slide.criticalCase.diagnosis || '—'}
                           </div>
                         </div>
+
+                        {(slide.criticalCase.clinical_symptoms || slide.criticalCase.clinicalSymptoms) && (
+                          <div>
+                            <strong>Lâm sàng / Triệu chứng khám:</strong>
+                            <div style={{ color: '#5B21B6', fontWeight: '600' }}>{slide.criticalCase.clinical_symptoms || slide.criticalCase.clinicalSymptoms}</div>
+                          </div>
+                        )}
+
+                        {(slide.criticalCase.clinical_tests || slide.criticalCase.clinicalTests) && (
+                          <div>
+                            <strong>Cận lâm sàng / X-Quang / XN:</strong>
+                            <div style={{ color: '#1E1B4B' }}>{slide.criticalCase.clinical_tests || slide.criticalCase.clinicalTests}</div>
+                          </div>
+                        )}
 
                         {/* Tình trạng & Diễn biến */}
                         <div>

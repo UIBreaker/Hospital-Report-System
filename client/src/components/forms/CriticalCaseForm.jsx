@@ -45,6 +45,8 @@ const CriticalCaseForm = ({
             ...(field === 'patientName' ? { patient_name: value } : {}),
             ...(field === 'admissionTime' ? { admission_time: value } : {}),
             ...(field === 'medicalHistory' ? { medical_history: value } : {}),
+            ...(field === 'clinicalSymptoms' ? { clinical_symptoms: value } : {}),
+            ...(field === 'clinicalTests' ? { clinical_tests: value } : {}),
             ...(field === 'conditionSummary' ? { condition_summary: value } : {}),
             ...(field === 'progressNotes' ? { condition_summary: value } : {})
           };
@@ -68,6 +70,10 @@ const CriticalCaseForm = ({
         admission_time: '',
         medicalHistory: '',
         medical_history: '',
+        clinicalSymptoms: '',
+        clinical_symptoms: '',
+        clinicalTests: '',
+        clinical_tests: '',
         diagnosis: '',
         conditionSummary: '',
         condition_summary: '',
@@ -95,6 +101,8 @@ const CriticalCaseForm = ({
     const addr = cc.address ? ` - ${cc.address}` : '';
     const vv = cc.admissionTime || cc.admission_time || 'Chưa ghi';
     const history = cc.medicalHistory || cc.medical_history || 'Không';
+    const symptoms = cc.clinicalSymptoms || cc.clinical_symptoms || '';
+    const tests = cc.clinicalTests || cc.clinical_tests || '';
     const diag = cc.diagnosis || 'Chưa có chẩn đoán';
     const condition = cc.conditionSummary || cc.condition_summary || 'Chưa cập nhật diễn biến';
     const treat = cc.treatment || 'Chưa ghi nhận xử trí';
@@ -103,7 +111,7 @@ const CriticalCaseForm = ({
     return `${index + 1}/ BN: ${name.toUpperCase()}${age}${addr}
 - VV: ${vv}
 - Tiền căn: ${history}
-- Chẩn đoán: ${diag}
+${symptoms ? `- Lâm sàng: ${symptoms}\n` : ''}${tests ? `- Cận lâm sàng: ${tests}\n` : ''}- Chẩn đoán: ${diag}
 - Tình trạng & Diễn biến: ${condition}
 - Xử trí: ${treat}
 - Hướng tiếp theo: ${note}`;
@@ -391,7 +399,37 @@ const CriticalCaseForm = ({
                       </div>
                     </div>
 
-                    {/* Hàng 3: Chẩn đoán */}
+                    {/* Hàng 3: Lâm sàng & Cận lâm sàng */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '0.85rem' }}>
+                      <div className="form-group">
+                        <label style={{ color: '#4C1D95', fontWeight: '700', fontSize: '0.85rem' }}>
+                          Lâm Sàng / Triệu Chứng / Sinh Hiệu Lúc Vào
+                        </label>
+                        <textarea
+                          rows={2}
+                          placeholder="VD: Tri giác lơ mơ, SpO2: 88% khí trời, HA: 160/90, thở co kéo..."
+                          value={cc.clinicalSymptoms || cc.clinical_symptoms || ''}
+                          onChange={(e) => handleChange(id, 'clinicalSymptoms', e.target.value)}
+                          style={{ borderColor: '#DDD6FE' }}
+                          className="note-field"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label style={{ color: '#4C1D95', fontWeight: '700', fontSize: '0.85rem' }}>
+                          Cận Lâm Sàng / X-Quang / ECG / Xét Nghiệm
+                        </label>
+                        <textarea
+                          rows={2}
+                          placeholder="VD: XQ phổi thâm nhiễm đáy 2 bên, Khí máu ĐM: PaO2 giảm..."
+                          value={cc.clinicalTests || cc.clinical_tests || ''}
+                          onChange={(e) => handleChange(id, 'clinicalTests', e.target.value)}
+                          style={{ borderColor: '#DDD6FE' }}
+                          className="note-field"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Hàng 4: Chẩn đoán */}
                     <div className="form-group">
                       <label style={{ color: '#4C1D95', fontWeight: '700', fontSize: '0.85rem' }}>
                         <FaStethoscope style={{ marginRight: '0.35rem', color: '#7C3AED' }} />

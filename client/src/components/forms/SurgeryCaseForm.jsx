@@ -11,7 +11,24 @@ const SurgeryCaseForm = ({ surgeryCases = [], setSurgeryCases }) => {
 
   const handleChange = useCallback((id, field, value) => {
     setSurgeryCases(prev =>
-      prev.map(sc => (sc._id || sc.id) === id ? { ...sc, [field]: value } : sc)
+      prev.map(sc => {
+        if ((sc._id || sc.id) === id) {
+          return {
+            ...sc,
+            [field]: value,
+            ...(field === 'patientName' ? { patient_name: value } : {}),
+            ...(field === 'birthYear' ? { birth_year: value } : {}),
+            ...(field === 'admissionTime' ? { admission_time: value } : {}),
+            ...(field === 'clinicalSymptoms' ? { clinical_symptoms: value } : {}),
+            ...(field === 'clinicalTests' ? { clinical_tests: value } : {}),
+            ...(field === 'preoperativeDiagnosis' ? { preoperative_diagnosis: value } : {}),
+            ...(field === 'consultationOrder' ? { consultation_order: value } : {}),
+            ...(field === 'postoperativeDiagnosis' ? { postoperative_diagnosis: value } : {}),
+            ...(field === 'currentStatus' ? { current_status: value } : {})
+          };
+        }
+        return sc;
+      })
     );
   }, [setSurgeryCases]);
 
@@ -22,14 +39,25 @@ const SurgeryCaseForm = ({ surgeryCases = [], setSurgeryCases }) => {
       {
         _id: newId,
         patientName: '',
+        patient_name: '',
         birthYear: '',
+        birth_year: '',
         address: '',
         admissionTime: '',
+        admission_time: '',
         reason: '',
+        clinicalSymptoms: '',
+        clinical_symptoms: '',
+        clinicalTests: '',
+        clinical_tests: '',
         preoperativeDiagnosis: '',
+        preoperative_diagnosis: '',
         consultationOrder: '',
+        consultation_order: '',
         postoperativeDiagnosis: '',
+        postoperative_diagnosis: '',
         currentStatus: '',
+        current_status: '',
         images: []
       }
     ]);
@@ -176,6 +204,30 @@ const SurgeryCaseForm = ({ surgeryCases = [], setSurgeryCases }) => {
                           placeholder="VD: Đau hố chậu phải âm ỉ"
                           value={sCase.reason || ''}
                           onChange={(e) => handleChange(id, 'reason', e.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Lâm sàng & Cận lâm sàng */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                      <div className="form-group">
+                        <label style={{ fontWeight: '700', color: '#0369A1' }}>Lâm Sàng / Triệu Chứng / Sinh Hiệu</label>
+                        <textarea
+                          rows={2}
+                          placeholder="VD: Bụng mềm, phản ứng thành bụng hố chậu (P), M: 82 l/p, HA: 120/80..."
+                          value={sCase.clinicalSymptoms || sCase.clinical_symptoms || ''}
+                          onChange={(e) => handleChange(id, 'clinicalSymptoms', e.target.value)}
+                          className="note-field"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label style={{ fontWeight: '700', color: '#0369A1' }}>Cận Lâm Sàng / X-Quang / Siêu Âm / XN</label>
+                        <textarea
+                          rows={2}
+                          placeholder="VD: SA: Hình ảnh viêm ruột thừa d=8mm, BC: 14.5 G/L..."
+                          value={sCase.clinicalTests || sCase.clinical_tests || ''}
+                          onChange={(e) => handleChange(id, 'clinicalTests', e.target.value)}
+                          className="note-field"
                         />
                       </div>
                     </div>

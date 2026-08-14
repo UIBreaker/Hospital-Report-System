@@ -744,6 +744,10 @@ const AdminDashboard = () => {
         address: '',
         admissionTime: '',
         reason: '',
+        clinicalSymptoms: '',
+        clinical_symptoms: '',
+        clinicalTests: '',
+        clinical_tests: '',
         preoperativeDiagnosis: '',
         consultationOrder: '',
         postoperativeDiagnosis: '',
@@ -773,6 +777,8 @@ const AdminDashboard = () => {
         admissionTime: '',
         reason: '',
         admissionStatus: '',
+        clinicalSymptoms: '',
+        clinical_symptoms: '',
         medicalHistory: '',
         clinicalTests: '',
         diagnosis: '',
@@ -802,6 +808,10 @@ const AdminDashboard = () => {
         address: '',
         admissionTime: '',
         medicalHistory: '',
+        clinicalSymptoms: '',
+        clinical_symptoms: '',
+        clinicalTests: '',
+        clinical_tests: '',
         diagnosis: '',
         conditionSummary: '',
         treatment: '',
@@ -2037,8 +2047,12 @@ const AdminDashboard = () => {
                                 <input type="text" value={sc.admissionTime || sc.admission_time || ''} onChange={(e) => handleSurgeryCaseChange(idx, 'admissionTime', e.target.value)} />
                               </div>
                               <div className="form-group full-width">
-                                <label>Địa chỉ</label>
-                                <input type="text" value={sc.address || ''} onChange={(e) => handleSurgeryCaseChange(idx, 'address', e.target.value)} />
+                                <label>Lâm sàng / Triệu chứng / Sinh hiệu</label>
+                                <textarea rows={2} value={sc.clinicalSymptoms || sc.clinical_symptoms || ''} onChange={(e) => handleSurgeryCaseChange(idx, 'clinicalSymptoms', e.target.value)} className="note-field" placeholder="Khám thực thể, phản ứng thành bụng, sinh hiệu..." />
+                              </div>
+                              <div className="form-group full-width">
+                                <label>Cận lâm sàng / X-Quang / Siêu âm / XN</label>
+                                <textarea rows={2} value={sc.clinicalTests || sc.clinical_tests || ''} onChange={(e) => handleSurgeryCaseChange(idx, 'clinicalTests', e.target.value)} className="note-field" placeholder="Kết quả SA, XQ, CT, xét nghiệm..." />
                               </div>
                               <div className="form-group full-width">
                                 <label>Chẩn đoán trước mổ</label>
@@ -2061,6 +2075,8 @@ const AdminDashboard = () => {
                             <div style={{ fontSize: '0.875rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                               <div><strong>Bệnh nhân:</strong> {sc.patient_name || sc.patientName || '—'} ({sc.birth_year || sc.birthYear || sc.age || '—'})</div>
                               <div><strong>Giờ vào:</strong> {sc.admission_time || sc.admissionTime || '—'}</div>
+                              {sc.clinical_symptoms || sc.clinicalSymptoms ? <div><strong>Lâm sàng:</strong> {sc.clinical_symptoms || sc.clinicalSymptoms}</div> : null}
+                              {sc.clinical_tests || sc.clinicalTests ? <div><strong>Cận lâm sàng:</strong> {sc.clinical_tests || sc.clinicalTests}</div> : null}
                               <div><strong>CĐ trước mổ:</strong> {sc.preoperative_diagnosis || sc.preoperativeDiagnosis || '—'}</div>
                               <div><strong>Lệnh mổ:</strong> {sc.consultation_order || sc.consultationOrder || '—'}</div>
                               <div><strong>CĐ sau mổ:</strong> {sc.postoperative_diagnosis || sc.postoperativeDiagnosis || '—'}</div>
@@ -2130,8 +2146,12 @@ const AdminDashboard = () => {
                                 <textarea rows={2} value={dc.medicalHistory || dc.medical_history || ''} onChange={(e) => handleDeathCaseChange(idx, 'medicalHistory', e.target.value)} />
                               </div>
                               <div className="form-group full-width">
+                                <label>Lâm sàng / Triệu chứng khám / Sinh hiệu</label>
+                                <textarea rows={2} value={dc.clinicalSymptoms || dc.clinical_symptoms || ''} onChange={(e) => handleDeathCaseChange(idx, 'clinicalSymptoms', e.target.value)} className="note-field" placeholder="Tri giác, sinh hiệu, khám lúc cấp cứu..." />
+                              </div>
+                              <div className="form-group full-width">
                                 <label>Cận lâm sàng / ECG</label>
-                                <textarea rows={2} value={dc.clinicalTests || dc.clinical_tests || ''} onChange={(e) => handleDeathCaseChange(idx, 'clinicalTests', e.target.value)} />
+                                <textarea rows={2} value={dc.clinicalTests || dc.clinical_tests || ''} onChange={(e) => handleDeathCaseChange(idx, 'clinicalTests', e.target.value)} className="note-field" />
                               </div>
                               <div className="form-group full-width">
                                 <label>Chẩn đoán</label>
@@ -2150,6 +2170,8 @@ const AdminDashboard = () => {
                             <div style={{ fontSize: '0.875rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                               <div><strong>Bệnh nhân:</strong> {dc.patient_name || dc.patientName || '—'} ({dc.age || '—'} tuổi)</div>
                               <div><strong>Giờ vào:</strong> {dc.admission_time || dc.admissionTime || '—'} | <strong>Lý do:</strong> {dc.reason || '—'}</div>
+                              {dc.clinical_symptoms || dc.clinicalSymptoms ? <div><strong>Lâm sàng:</strong> {dc.clinical_symptoms || dc.clinicalSymptoms}</div> : null}
+                              {dc.clinical_tests || dc.clinicalTests ? <div><strong>Cận lâm sàng:</strong> {dc.clinical_tests || dc.clinicalTests}</div> : null}
                               <div><strong>Chẩn đoán:</strong> <span style={{ color: '#DC2626', fontWeight: 'bold' }}>{dc.diagnosis || '—'}</span></div>
                               <div><strong>Xử trí:</strong> {dc.emergency_treatment || dc.emergencyTreatment || '—'}</div>
                               <div><strong>Kết quả:</strong> {dc.final_outcome || dc.finalOutcome || '—'}</div>
@@ -2218,6 +2240,14 @@ const AdminDashboard = () => {
                                 <input type="text" value={cc.medicalHistory || cc.medical_history || ''} onChange={(e) => handleCriticalCaseChange(idx, 'medicalHistory', e.target.value)} />
                               </div>
                               <div className="form-group full-width">
+                                <label>Lâm sàng / Triệu chứng / Sinh hiệu lúc vào</label>
+                                <textarea rows={2} value={cc.clinicalSymptoms || cc.clinical_symptoms || ''} onChange={(e) => handleCriticalCaseChange(idx, 'clinicalSymptoms', e.target.value)} className="note-field" placeholder="Tri giác, sinh hiệu..." />
+                              </div>
+                              <div className="form-group full-width">
+                                <label>Cận lâm sàng / X-Quang / ECG / Xét nghiệm</label>
+                                <textarea rows={2} value={cc.clinicalTests || cc.clinical_tests || ''} onChange={(e) => handleCriticalCaseChange(idx, 'clinicalTests', e.target.value)} className="note-field" placeholder="Kết quả CLS..." />
+                              </div>
+                              <div className="form-group full-width">
                                 <label>Chẩn đoán</label>
                                 <input type="text" value={cc.diagnosis || ''} onChange={(e) => handleCriticalCaseChange(idx, 'diagnosis', e.target.value)} />
                               </div>
@@ -2238,6 +2268,8 @@ const AdminDashboard = () => {
                             <div style={{ fontSize: '0.875rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                               <div><strong>Bệnh nhân:</strong> {cc.patient_name || cc.patientName || '—'}{cc.age ? ` (${cc.age} tuổi)` : ''}{cc.address ? ` - ${cc.address}` : ''}</div>
                               <div><strong>Giờ vào:</strong> {cc.admission_time || cc.admissionTime || '—'} | <strong>Tiền căn:</strong> {cc.medical_history || cc.medicalHistory || 'Không'}</div>
+                              {cc.clinical_symptoms || cc.clinicalSymptoms ? <div><strong>Lâm sàng:</strong> {cc.clinical_symptoms || cc.clinicalSymptoms}</div> : null}
+                              {cc.clinical_tests || cc.clinicalTests ? <div><strong>Cận lâm sàng:</strong> {cc.clinical_tests || cc.clinicalTests}</div> : null}
                               <div><strong>Chẩn đoán:</strong> <span style={{ color: '#6D28D9', fontWeight: 'bold' }}>{cc.diagnosis || '—'}</span></div>
                               <div><strong>Tình trạng & Diễn biến:</strong> {cc.condition_summary || cc.conditionSummary || '—'}</div>
                               <div><strong>Xử trí:</strong> {cc.treatment || '—'}</div>

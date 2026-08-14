@@ -536,8 +536,8 @@ export const generateAndDownloadHospitalExcel = async (date, detailedReports = [
       r.getCell(4).value = formatPatientAge(sc.birth_year || sc.birthYear || sc.age) || '—';
       r.getCell(5).value = sc.address || '—';
       r.getCell(6).value = sc.admission_time || sc.admissionTime || '—';
-      r.getCell(7).value = `Trước mổ: ${sc.preoperative_diagnosis || sc.preoperativeDiagnosis || '—'}\nSau mổ: ${sc.postoperative_diagnosis || sc.postoperativeDiagnosis || '—'}`;
-      r.getCell(8).value = `Lệnh mổ: ${sc.consultation_order || sc.consultationOrder || '—'}\nHiện tại: ${sc.current_status || sc.currentStatus || '—'}`;
+      r.getCell(7).value = `Lý do: ${sc.reason || '—'}\nLâm sàng: ${sc.clinical_symptoms || sc.clinicalSymptoms || '—'}\nCLS: ${sc.clinical_tests || sc.clinicalTests || '—'}\nTrước mổ: ${sc.preoperative_diagnosis || sc.preoperativeDiagnosis || '—'}`;
+      r.getCell(8).value = `Sau mổ: ${sc.postoperative_diagnosis || sc.postoperativeDiagnosis || '—'}\nLệnh mổ: ${sc.consultation_order || sc.consultationOrder || '—'}\nHiện tại: ${sc.current_status || sc.currentStatus || '—'}`;
       r.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
       r.getCell(2).alignment = { vertical: 'middle' };
       r.getCell(3).alignment = { vertical: 'middle' };
@@ -547,7 +547,7 @@ export const generateAndDownloadHospitalExcel = async (date, detailedReports = [
       r.getCell(6).alignment = { horizontal: 'center', vertical: 'middle' };
       r.getCell(7).alignment = { vertical: 'middle', wrapText: true };
       r.getCell(8).alignment = { vertical: 'middle', wrapText: true };
-      r.height = 32;
+      r.height = 42;
       cRowIdx++;
     });
   });
@@ -572,7 +572,7 @@ export const generateAndDownloadHospitalExcel = async (date, detailedReports = [
   wsCases.getRow(cRowIdx).height = 22;
   cRowIdx++;
 
-  const dtHeaders = ['STT', 'Khoa Phòng', 'Họ Và Tên BN', 'Tuổi', 'Địa Chỉ', 'Giờ Vào', 'Chẩn Đoán Tử Vong', 'Cấp Cứu & Kết Quả Xử Lý'];
+  const dtHeaders = ['STT', 'Khoa Phòng', 'Họ Và Tên BN', 'Tuổi', 'Địa Chỉ', 'Giờ Vào', 'Lý Do, Lâm Sàng & Chẩn Đoán', 'Cấp Cứu & Kết Quả Xử Lý'];
   const dtHeaderRow = wsCases.getRow(cRowIdx);
   dtHeaders.forEach((h, idx) => {
     const cell = dtHeaderRow.getCell(idx + 1);
@@ -596,7 +596,7 @@ export const generateAndDownloadHospitalExcel = async (date, detailedReports = [
       r.getCell(4).value = formatPatientAge(dc.age) || '—';
       r.getCell(5).value = dc.address || '—';
       r.getCell(6).value = dc.admission_time || dc.admissionTime || '—';
-      r.getCell(7).value = dc.diagnosis || '—';
+      r.getCell(7).value = `Lý do: ${dc.reason || '—'}\nLâm sàng: ${dc.clinical_symptoms || dc.clinicalSymptoms || '—'}\nCLS/ECG: ${dc.clinical_tests || dc.clinicalTests || '—'}\nCĐ: ${dc.diagnosis || '—'}`;
       r.getCell(8).value = `Xử trí: ${dc.emergency_treatment || dc.emergencyTreatment || '—'}\nKết quả: ${dc.final_outcome || dc.finalOutcome || '—'}`;
       r.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
       r.getCell(2).alignment = { vertical: 'middle' };
@@ -608,7 +608,7 @@ export const generateAndDownloadHospitalExcel = async (date, detailedReports = [
       r.getCell(7).font = { bold: true, color: { argb: 'FFDC2626' } };
       r.getCell(7).alignment = { vertical: 'middle', wrapText: true };
       r.getCell(8).alignment = { vertical: 'middle', wrapText: true };
-      r.height = 32;
+      r.height = 42;
       cRowIdx++;
     });
   });
@@ -633,7 +633,7 @@ export const generateAndDownloadHospitalExcel = async (date, detailedReports = [
   wsCases.getRow(cRowIdx).height = 22;
   cRowIdx++;
 
-  const crHeaders = ['STT', 'Khoa Phòng', 'Họ Và Tên BN', 'Tuổi', 'Địa Chỉ', 'Giờ Vào', 'Chẩn Đoán & Diễn Biến', 'Xử Trí & Hướng Tiếp Theo'];
+  const crHeaders = ['STT', 'Khoa Phòng', 'Họ Và Tên BN', 'Tuổi', 'Địa Chỉ', 'Giờ Vào', 'Tiền Căn, Lâm Sàng & CĐ', 'Diễn Biến, Xử Trí & Hướng Tiếp'];
   const crHeaderRow = wsCases.getRow(cRowIdx);
   crHeaders.forEach((h, idx) => {
     const cell = crHeaderRow.getCell(idx + 1);
@@ -657,8 +657,8 @@ export const generateAndDownloadHospitalExcel = async (date, detailedReports = [
       r.getCell(4).value = formatPatientAge(cc.age) || '—';
       r.getCell(5).value = cc.address || '—';
       r.getCell(6).value = cc.admission_time || cc.admissionTime || '—';
-      r.getCell(7).value = `Chẩn đoán: ${cc.diagnosis || '—'}\nDiễn biến: ${cc.condition_summary || cc.conditionSummary || '—'}`;
-      r.getCell(8).value = `Xử trí: ${cc.treatment || '—'}\nHướng tiếp: ${cc.notes || 'Bàn giao tua sau theo dõi tiếp'}`;
+      r.getCell(7).value = `Tiền căn: ${cc.medical_history || cc.medicalHistory || '—'}\nLâm sàng: ${cc.clinical_symptoms || cc.clinicalSymptoms || '—'}\nCLS: ${cc.clinical_tests || cc.clinicalTests || '—'}\nCĐ: ${cc.diagnosis || '—'}`;
+      r.getCell(8).value = `Diễn biến: ${cc.condition_summary || cc.conditionSummary || '—'}\nXử trí: ${cc.treatment || '—'}\nHướng tiếp: ${cc.notes || 'Bàn giao tua sau theo dõi tiếp'}`;
       r.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
       r.getCell(2).alignment = { vertical: 'middle' };
       r.getCell(3).alignment = { vertical: 'middle' };
@@ -668,7 +668,7 @@ export const generateAndDownloadHospitalExcel = async (date, detailedReports = [
       r.getCell(6).alignment = { horizontal: 'center', vertical: 'middle' };
       r.getCell(7).alignment = { vertical: 'middle', wrapText: true };
       r.getCell(8).alignment = { vertical: 'middle', wrapText: true };
-      r.height = 32;
+      r.height = 48;
       cRowIdx++;
     });
   });

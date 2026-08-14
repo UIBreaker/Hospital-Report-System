@@ -134,8 +134,8 @@ const createOrUpdateReport = async (req, res, next) => {
         if (patientName || sc.admissionTime || sc.preoperativeDiagnosis || sc.preoperative_diagnosis) {
           await connection.execute(
             `INSERT INTO surgery_cases 
-             (report_id, patient_name, birth_year, address, admission_time, reason, preoperative_diagnosis, consultation_order, postoperative_diagnosis, current_status, images)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             (report_id, patient_name, birth_year, address, admission_time, reason, clinical_symptoms, clinical_tests, preoperative_diagnosis, consultation_order, postoperative_diagnosis, current_status, images)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
               reportId,
               patientName,
@@ -143,6 +143,8 @@ const createOrUpdateReport = async (req, res, next) => {
               safeVal(sc.address),
               safeVal(sc.admissionTime || sc.admission_time),
               safeVal(sc.reason),
+              safeVal(sc.clinicalSymptoms || sc.clinical_symptoms),
+              safeVal(sc.clinicalTests || sc.clinical_tests),
               safeVal(sc.preoperativeDiagnosis || sc.preoperative_diagnosis),
               safeVal(sc.consultationOrder || sc.consultation_order),
               safeVal(sc.postoperativeDiagnosis || sc.postoperative_diagnosis),
@@ -161,8 +163,8 @@ const createOrUpdateReport = async (req, res, next) => {
         if (patientName || dc.admissionTime || dc.diagnosis) {
           await connection.execute(
             `INSERT INTO death_cases 
-             (report_id, patient_name, age, address, admission_time, reason, admission_status, medical_history, clinical_tests, diagnosis, emergency_treatment, final_outcome, images)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             (report_id, patient_name, age, address, admission_time, reason, admission_status, clinical_symptoms, medical_history, clinical_tests, diagnosis, emergency_treatment, final_outcome, images)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
               reportId,
               patientName,
@@ -171,6 +173,7 @@ const createOrUpdateReport = async (req, res, next) => {
               safeVal(dc.admissionTime || dc.admission_time),
               safeVal(dc.reason),
               safeVal(dc.admissionStatus || dc.admission_status),
+              safeVal(dc.clinicalSymptoms || dc.clinical_symptoms),
               safeVal(dc.medicalHistory || dc.medical_history),
               safeVal(dc.clinicalTests || dc.clinical_tests),
               safeVal(dc.diagnosis),
@@ -190,8 +193,8 @@ const createOrUpdateReport = async (req, res, next) => {
         if (patientName || cc.admissionTime || cc.diagnosis || cc.conditionSummary || cc.condition_summary) {
           await connection.execute(
             `INSERT INTO critical_cases 
-             (report_id, patient_name, age, address, admission_time, medical_history, diagnosis, condition_summary, treatment, notes, images)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             (report_id, patient_name, age, address, admission_time, medical_history, clinical_symptoms, clinical_tests, diagnosis, condition_summary, treatment, notes, images)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
               reportId,
               patientName,
@@ -199,6 +202,8 @@ const createOrUpdateReport = async (req, res, next) => {
               safeVal(cc.address),
               safeVal(cc.admissionTime || cc.admission_time),
               safeVal(cc.medicalHistory || cc.medical_history),
+              safeVal(cc.clinicalSymptoms || cc.clinical_symptoms),
+              safeVal(cc.clinicalTests || cc.clinical_tests),
               safeVal(cc.diagnosis),
               safeVal(cc.conditionSummary || cc.condition_summary),
               safeVal(cc.treatment),

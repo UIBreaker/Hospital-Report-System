@@ -11,7 +11,23 @@ const DeathCaseForm = ({ deathCases = [], setDeathCases }) => {
 
   const handleChange = useCallback((id, field, value) => {
     setDeathCases(prev =>
-      prev.map(dc => (dc._id || dc.id) === id ? { ...dc, [field]: value } : dc)
+      prev.map(dc => {
+        if ((dc._id || dc.id) === id) {
+          return {
+            ...dc,
+            [field]: value,
+            ...(field === 'patientName' ? { patient_name: value } : {}),
+            ...(field === 'admissionTime' ? { admission_time: value } : {}),
+            ...(field === 'admissionStatus' ? { admission_status: value } : {}),
+            ...(field === 'clinicalSymptoms' ? { clinical_symptoms: value } : {}),
+            ...(field === 'medicalHistory' ? { medical_history: value } : {}),
+            ...(field === 'clinicalTests' ? { clinical_tests: value } : {}),
+            ...(field === 'emergencyTreatment' ? { emergency_treatment: value } : {}),
+            ...(field === 'finalOutcome' ? { final_outcome: value } : {})
+          };
+        }
+        return dc;
+      })
     );
   }, [setDeathCases]);
 
@@ -22,16 +38,25 @@ const DeathCaseForm = ({ deathCases = [], setDeathCases }) => {
       {
         _id: newId,
         patientName: '',
+        patient_name: '',
         age: '',
         address: '',
         admissionTime: '',
+        admission_time: '',
         reason: '',
         admissionStatus: '',
+        admission_status: '',
+        clinicalSymptoms: '',
+        clinical_symptoms: '',
         medicalHistory: '',
+        medical_history: '',
         clinicalTests: '',
+        clinical_tests: '',
         diagnosis: '',
         emergencyTreatment: '',
+        emergency_treatment: '',
         finalOutcome: '',
+        final_outcome: '',
         images: []
       }
     ]);
@@ -205,14 +230,28 @@ const DeathCaseForm = ({ deathCases = [], setDeathCases }) => {
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                       <div className="form-group">
-                        <label>Kết Quả Cận Lâm Sàng / ECG</label>
+                        <label style={{ fontWeight: '700', color: '#B91C1C' }}>Lâm Sàng / Triệu Chứng Khám / Sinh Hiệu</label>
+                        <textarea
+                          rows={2}
+                          placeholder="VD: Tri giác hôn mê sâu, Glasgow 3đ, thở ngáp cá, tím tái toàn thân, SpO2 không đo được..."
+                          value={dCase.clinicalSymptoms || dCase.clinical_symptoms || ''}
+                          onChange={(e) => handleChange(id, 'clinicalSymptoms', e.target.value)}
+                          className="note-field"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label style={{ fontWeight: '700', color: '#B91C1C' }}>Kết Quả Cận Lâm Sàng / ECG</label>
                         <textarea
                           rows={2}
                           placeholder="VD: ECG: Rung thất, sau đó đường đẳng điện; XQ ngực mờ rải rác 2 phế trường..."
                           value={dCase.clinicalTests || dCase.clinical_tests || ''}
                           onChange={(e) => handleChange(id, 'clinicalTests', e.target.value)}
+                          className="note-field"
                         />
                       </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.75rem' }}>
                       <div className="form-group">
                         <label>Chẩn Đoán Tử Vong</label>
                         <textarea

@@ -571,9 +571,9 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
                     <th style={{ border: '1px solid #000000', padding: '3px', width: '22px' }}>STT</th>
                     <th style={{ border: '1px solid #000000', padding: '3px', width: '110px' }}>Họ Tên / Tuổi</th>
                     <th style={{ border: '1px solid #000000', padding: '3px', width: '90px' }}>Khoa / Giờ Vào</th>
+                    <th style={{ border: '1px solid #000000', padding: '3px' }}>Lý Do, Lâm Sàng & CLS</th>
                     <th style={{ border: '1px solid #000000', padding: '3px' }}>Chẩn Đoán Trước Mổ</th>
-                    <th style={{ border: '1px solid #000000', padding: '3px' }}>Lệnh Mổ / Hội Chẩn</th>
-                    <th style={{ border: '1px solid #000000', padding: '3px' }}>Chẩn Đoán Sau Mổ</th>
+                    <th style={{ border: '1px solid #000000', padding: '3px' }}>Lệnh Mổ & CĐ Sau Mổ</th>
                     <th style={{ border: '1px solid #000000', padding: '3px', width: '90px' }}>Hiện Tại</th>
                   </tr>
                 </thead>
@@ -590,9 +590,16 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
                         <div><strong>{sc.departmentName}</strong></div>
                         <div>{sc.admission_time || sc.admissionTime || '—'}</div>
                       </td>
+                      <td style={{ border: '1px solid #000000', padding: '3px' }}>
+                        <div><strong>Lý do:</strong> {sc.reason || '—'}</div>
+                        {sc.clinical_symptoms || sc.clinicalSymptoms ? <div style={{ fontSize: '8pt', color: '#374151' }}><strong>LS:</strong> {sc.clinical_symptoms || sc.clinicalSymptoms}</div> : null}
+                        {sc.clinical_tests || sc.clinicalTests ? <div style={{ fontSize: '8pt', color: '#374151' }}><strong>CLS:</strong> {sc.clinical_tests || sc.clinicalTests}</div> : null}
+                      </td>
                       <td style={{ border: '1px solid #000000', padding: '3px' }}>{sc.preoperative_diagnosis || sc.preoperativeDiagnosis || '—'}</td>
-                      <td style={{ border: '1px solid #000000', padding: '3px' }}>{sc.consultation_order || sc.consultationOrder || '—'}</td>
-                      <td style={{ border: '1px solid #000000', padding: '3px' }}>{sc.postoperative_diagnosis || sc.postoperativeDiagnosis || '—'}</td>
+                      <td style={{ border: '1px solid #000000', padding: '3px' }}>
+                        <div><strong>Lệnh:</strong> {sc.consultation_order || sc.consultationOrder || '—'}</div>
+                        <div><strong>Sau mổ:</strong> {sc.postoperative_diagnosis || sc.postoperativeDiagnosis || '—'}</div>
+                      </td>
                       <td style={{ border: '1px solid #000000', padding: '3px', fontSize: '8pt' }}>{sc.current_status || sc.currentStatus || '—'}</td>
                     </tr>
                   ))}
@@ -670,6 +677,7 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
                     <div><strong>- Giờ vào viện:</strong> {dc.admission_time || dc.admissionTime || '—'} | <strong>Lý do:</strong> {dc.reason || '—'}</div>
                     <div><strong>- Tình trạng lúc vào:</strong> {dc.admission_status || dc.admissionStatus || '—'}</div>
                     <div><strong>- Tiền sử bệnh:</strong> {dc.medical_history || dc.medicalHistory || '—'}</div>
+                    {dc.clinical_symptoms || dc.clinicalSymptoms ? <div><strong>- Lâm sàng:</strong> {dc.clinical_symptoms || dc.clinicalSymptoms}</div> : null}
                     <div><strong>- Cận lâm sàng / ECG:</strong> {dc.clinical_tests || dc.clinicalTests || '—'}</div>
                     <div><strong>- Chẩn đoán tử vong:</strong> <strong style={{ color: '#DC2626' }}>{dc.diagnosis || '—'}</strong></div>
                     <div><strong>- Quá trình xử trí cấp cứu:</strong> {dc.emergency_treatment || dc.emergencyTreatment || '—'}</div>
@@ -694,7 +702,7 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
                     <th style={{ border: '1px solid #000000', padding: '3px', width: '22px' }}>STT</th>
                     <th style={{ border: '1px solid #000000', padding: '3px', width: '120px' }}>Họ Tên / Tuổi / Đ/C</th>
                     <th style={{ border: '1px solid #000000', padding: '3px', width: '90px' }}>Khoa / Giờ Vào</th>
-                    <th style={{ border: '1px solid #000000', padding: '3px', width: '110px' }}>Tiền Căn / Chẩn Đoán</th>
+                    <th style={{ border: '1px solid #000000', padding: '3px', width: '120px' }}>Tiền Căn, Lâm Sàng & CĐ</th>
                     <th style={{ border: '1px solid #000000', padding: '3px' }}>Tình Trạng & Diễn Biến</th>
                     <th style={{ border: '1px solid #000000', padding: '3px', width: '110px' }}>Xử Trí & Hướng Tiếp</th>
                   </tr>
@@ -714,6 +722,8 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
                       </td>
                       <td style={{ border: '1px solid #000000', padding: '3px' }}>
                         {cc.medical_history || cc.medicalHistory ? <div style={{ fontSize: '8pt', color: '#4B5563' }}><strong>TC:</strong> {cc.medical_history || cc.medicalHistory}</div> : null}
+                        {cc.clinical_symptoms || cc.clinicalSymptoms ? <div style={{ fontSize: '8pt', color: '#374151' }}><strong>LS:</strong> {cc.clinical_symptoms || cc.clinicalSymptoms}</div> : null}
+                        {cc.clinical_tests || cc.clinicalTests ? <div style={{ fontSize: '8pt', color: '#374151' }}><strong>CLS:</strong> {cc.clinical_tests || cc.clinicalTests}</div> : null}
                         <div><strong style={{ color: '#5B21B6' }}>CĐ:</strong> {cc.diagnosis || '—'}</div>
                       </td>
                       <td style={{ border: '1px solid #000000', padding: '3px', fontSize: '8pt' }}>
