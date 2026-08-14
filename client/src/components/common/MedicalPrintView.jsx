@@ -21,34 +21,45 @@ const DEPARTMENT_NAMES = {
   gmhs: 'Phẫu thuật, gây mê hồi sức'
 };
 
-const FIELD_LABELS = {
-  // LCK
-  tmh_tongSo: 'TMH (Tổng khám)',
-  tmh_thuThuat: 'TMH (Thủ thuật)',
+// Từ điển chuẩn hóa toàn bộ mã biến y tế sang tiếng Việt có dấu chuẩn Bộ Y Tế
+const VIETNAMESE_DICTIONARY = {
+  // --- Khoa Liên Chuyên Khoa (LCK) ---
+  tmh_tongSo: 'Tai Mũi Họng (Tổng khám)',
+  tmh_thuThuat: 'Tai Mũi Họng (Thủ thuật)',
   mat_tongSo: 'Mắt (Tổng khám)',
   mat_thuThuat: 'Mắt (Thủ thuật)',
-  rhm_noi_tongSo: 'RHM + Nội (Tổng khám)',
-  rhm_noi_thuThuat: 'RHM + Nội (Thủ thuật)',
+  rhm_noi_tongSo: 'Răng Hàm Mặt + Nội (Tổng khám)',
+  rhm_noi_thuThuat: 'Răng Hàm Mặt + Nội (Thủ thuật)',
+  rhm_noiTru: 'RHM nội trú',
+  rhm_ngoaiTru: 'RHM ngoại trú',
   daLieu_tongSo: 'Da liễu (Tổng khám)',
   tong4ck_tongSo: 'Tổng 4 chuyên khoa',
   tong4ck_thuThuat: 'Tổng thủ thuật 4CK',
+  nhapVien_tongSo: 'Nhập viện',
+  chuyenVien_tongSo: 'Chuyển viện',
 
-  // Common
-  tongSoKham: 'Tổng khám',
+  // --- Các chỉ số dùng chung toàn viện ---
+  tongSoKham: 'Tổng số khám',
   benhCu: 'Bệnh cũ',
-  benhMoi: 'Bệnh mới',
+  benhMoi: 'Bệnh mới nhập viện',
   xuatVien: 'Xuất viện',
   chuyenVien: 'Chuyển viện',
   chuyenKhoa: 'Chuyển khoa',
-  hienCon: 'Hiện còn',
+  hienCon: 'Hiện còn điều trị',
+  hienCo: 'Hiện có tại khoa',
   tuVong: 'Tử vong',
   nangXinVe: 'Nặng xin về',
   baoHiem: 'BHYT',
+  bhyt: 'BHYT',
+  dichVu: 'Dịch vụ',
   noiTru: 'Nội trú',
   ngoaiTru: 'Ngoại trú',
+  keToa: 'Kê toa',
   tongSo: 'Tổng số',
+  tongSoKhamBenh: 'Tổng khám bệnh',
+  soCaKham: 'Số ca khám',
 
-  // XN
+  // --- Khoa Xét Nghiệm (XN) ---
   tongXetNghiem: 'Tổng XN thực hiện',
   sinhHoa: 'Sinh hóa',
   huyetHoc: 'Huyết học',
@@ -57,39 +68,123 @@ const FIELD_LABELS = {
   viSinh: 'Vi sinh',
   mienDich: 'Miễn dịch',
 
-  // CDHA
+  // --- Chẩn Đoán Hình Ảnh (CDHA) ---
   tongSoSieuAm: 'Tổng siêu âm',
   tongSoXquang: 'Tổng X-quang',
   tongSoCT: 'Tổng CT Scanner',
+  bsSieuAm: 'BS trực Siêu âm',
+  bsXquangCT: 'BS trực Xquang - CT',
 
-  // HSCC - TNT
+  // --- Khoa HSCC – TNT ---
+  tnt_ctdk: 'Chạy thận định kỳ (CTĐK)',
+  ctdk: 'Chạy thận định kỳ',
   tnt_benhCu: 'Bệnh cũ (TNT)',
   tnt_benhMoi: 'Bệnh mới (TNT)',
   tnt_xuatVien: 'Xuất viện (TNT)',
+  tnt_chuyenVien: 'Chuyển viện (TNT)',
+  tnt_chuyenKhoa: 'Chuyển khoa (TNT)',
+  tnt_noiTru: 'Thận nhân tạo nội trú',
   tnt_hienCon: 'Hiện còn (TNT)',
+  tieuPhau: 'Tiểu phẫu',
+  boBot: 'Bó bột',
+  truyenMau: 'Truyền máu',
+  ccNgoaiVien: 'Cấp cứu ngoài viện',
   thoMay: 'Thở máy',
   cpap: 'Thở CPAP',
   thoOxy: 'Thở Oxy',
-  ctdk: 'Chạy thận định kỳ',
+  bsTrucTNT: 'Bác sĩ trực TNT',
 
-  // San
+  // --- Khoa Sản ---
   sanhThuong: 'Sanh thường',
-  sanhHut: 'Sanh hút',
+  sanhHut: 'Sanh hút / Giúp sinh',
   moLayThai: 'Mổ lấy thai',
   moDe: 'Mổ đẻ',
   choSanh: 'Chờ sanh',
   sieuAm: 'Siêu âm sản',
+  hauPhau: 'Hậu phẫu',
+  chuyenVienNgoaiTru: 'Chuyển viện ngoại trú',
 
-  // GMHS
+  // --- Khoa Nhi & Nhiễm ---
+  duoi6Thang: 'Trẻ dưới 6 tháng',
+  duoi5Tuoi: 'Trẻ dưới 5 tuổi',
+  chuyenKhoaSan: 'Chuyển khoa Sản',
+  xinXuatVien: 'Xin xuất viện',
+
+  // --- Gây Mê Hồi Sức (GMHS) ---
   tongSoCaMo: 'Tổng số ca mổ',
-  cc_ctch: 'Mổ CC - CTCH',
-  cc_ngoaiTH: 'Mổ CC - Ngoại TH',
-  cc_san: 'Mổ CC - Sản',
-  ct_ctch: 'Mổ CT - CTCH',
-  ct_ngoaiTH: 'Mổ CT - Ngoại TH',
-  ct_san: 'Mổ CT - Sản',
+  cc_ctch: 'Mổ cấp cứu - CTCH',
+  cc_ngoaiTH: 'Mổ cấp cứu - Ngoại TH',
+  cc_san: 'Mổ cấp cứu - Sản khoa',
+  ct_ctch: 'Mổ kế hoạch - CTCH',
+  ct_ngoaiTH: 'Mổ kế hoạch - Ngoại TH',
+  ct_san: 'Mổ kế hoạch - Sản khoa',
+  moKhac: 'Mổ khác',
+  soCaGiamDau: 'Ca giảm đau sau mổ',
   soCaGayMe: 'Số ca gây mê',
-  soCaHoiTinh: 'Số ca hồi tỉnh'
+  soCaHoiTinh: 'Số ca theo dõi hồi tỉnh',
+
+  // --- Y Học Cổ Truyền - PHCN ---
+  chamCuu: 'Châm cứu',
+  xoaBop: 'Xoa bóp bấm huyệt',
+  vatLyTriLieu: 'Vật lý trị liệu',
+  phcn: 'Phục hồi chức năng',
+
+  // --- Ghi chú, nhân sự ---
+  nhanSu: 'Thành phần nhân sự',
+  dieuDuongTruc: 'Điều dưỡng trực ca',
+  themGio: 'Ghi chú thêm giờ / Diễn biến',
+  tinhHinhChung: 'Tình hình chung ca trực',
+  ghiChu: 'Ghi chú',
+  hienConGhiChu: 'Ghi chú hiện còn',
+  chuyenVienTT: 'Chuyển viện tuyến trên'
+};
+
+// Hàm dịch mã trường tự động sang tiếng Việt
+const translateFieldKey = (key, parentKey = '') => {
+  if (!key) return '';
+  if (VIETNAMESE_DICTIONARY[key]) return VIETNAMESE_DICTIONARY[key];
+
+  // Thử tra cứu khi có prefix
+  const combinedKey = parentKey ? `${parentKey}_${key}` : key;
+  if (VIETNAMESE_DICTIONARY[combinedKey]) return VIETNAMESE_DICTIONARY[combinedKey];
+
+  // Chuyển đổi camelCase / snake_case tự động
+  let formatted = key
+    .replace(/_/g, ' ')
+    .replace(/([A-Z])/g, ' $1')
+    .toLowerCase()
+    .trim();
+
+  // Từ điển ánh xạ từ phổ biến
+  const wordMap = {
+    'tong so': 'Tổng số',
+    'benh cu': 'Bệnh cũ',
+    'benh moi': 'Bệnh mới',
+    'xuat vien': 'Xuất viện',
+    'chuyen vien': 'Chuyển viện',
+    'chuyen khoa': 'Chuyển khoa',
+    'hien con': 'Hiện còn',
+    'hien co': 'Hiện có',
+    'tu vong': 'Tử vong',
+    'noi tru': 'Nội trú',
+    'ngoai tru': 'Ngoại trú',
+    'bao hiem': 'BHYT',
+    'ke toa': 'Kê toa',
+    'tnt': 'TNT',
+    'hscc': 'HSCC',
+    'ctch': 'CTCH',
+    'rhm': 'RHM',
+    'tmh': 'TMH',
+    'pk': 'Phòng khám',
+    'sieu am': 'Siêu âm',
+    'xquang': 'X-Quang'
+  };
+
+  Object.entries(wordMap).forEach(([en, vi]) => {
+    formatted = formatted.replace(new RegExp(en, 'gi'), vi);
+  });
+
+  return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 };
 
 const formatPatientAge = (ageVal) => {
@@ -102,7 +197,7 @@ const formatPatientAge = (ageVal) => {
 const MedicalPrintView = ({ date, reports = [], onClose }) => {
   const [downloadingPdf, setDownloadingPdf] = useState(false);
 
-  // Sort reports by official sequence
+  // Sắp xếp báo cáo theo đúng thứ tự 12 khoa phòng chuẩn
   const sortedReports = [...reports].sort((a, b) => {
     const idxA = DEPARTMENT_ORDER.indexOf(a.department_code);
     const idxB = DEPARTMENT_ORDER.indexOf(b.department_code);
@@ -114,7 +209,7 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
     reportMap[r.department_code] = r;
   });
 
-  // Collect all surgery cases across departments
+  // Gom toàn bộ ca bệnh đặc biệt
   const allSurgeryCases = [];
   const allDeathCases = [];
   const allTransferCases = [];
@@ -145,31 +240,27 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
     }
   });
 
-  // Calculate totals for summary table
+  // Tính tổng số liệu toàn viện
   let sumKham = 0, sumCu = 0, sumMoi = 0, sumXuat = 0, sumChuyen = 0, sumMo = 0, sumTuVong = 0;
   DEPARTMENT_ORDER.forEach(code => {
     const report = reportMap[code];
     if (!report) return;
     const repData = typeof report.report_data === 'string' ? JSON.parse(report.report_data || '{}') : (report.report_data || {});
-    sumKham += parseInt(repData.tongSoKham || repData.tongSo || repData.tmh_tongSo || 0, 10) || 0;
-    sumCu += parseInt(repData.benhCu || repData.tnt_benhCu || 0, 10) || 0;
-    sumMoi += parseInt(repData.benhMoi || repData.tnt_benhMoi || 0, 10) || 0;
-    sumXuat += parseInt(repData.xuatVien || repData.tnt_xuatVien || 0, 10) || 0;
-    sumChuyen += parseInt(repData.chuyenVien || repData.tnt_chuyenVien || 0, 10) || (report.transferCases?.length || 0);
+    sumKham += parseInt(repData.tongSoKham || repData.tongSo || repData.tmh_tongSo || (repData.hscc?.tongSoKham) || 0, 10) || 0;
+    sumCu += parseInt(repData.benhCu || repData.tnt_benhCu || (repData.hscc?.benhCu) || (repData.noiTru?.benhCu) || 0, 10) || 0;
+    sumMoi += parseInt(repData.benhMoi || repData.tnt_benhMoi || (repData.hscc?.benhMoi) || (repData.noiTru?.benhMoi) || 0, 10) || 0;
+    sumXuat += parseInt(repData.xuatVien || repData.tnt_xuatVien || (repData.hscc?.xuatVien) || (repData.noiTru?.xuatVien) || 0, 10) || 0;
+    sumChuyen += parseInt(repData.chuyenVien || repData.tnt_chuyenVien || (repData.hscc?.chuyenVien) || 0, 10) || (report.transferCases?.length || 0);
     sumMo += parseInt(repData.tongSoCaMo || 0, 10) || (report.surgeryCases?.length || 0);
-    sumTuVong += parseInt(repData.tuVong || 0, 10) || (report.deathCases?.length || 0);
+    sumTuVong += parseInt(repData.tuVong || (repData.hscc?.tuVong) || 0, 10) || (report.deathCases?.length || 0);
   });
 
-  // Format date for display
+  // Định dạng ngày hiển thị
   const dateObj = new Date(date + 'T00:00:00');
   const dayName = dateObj.toLocaleDateString('vi-VN', { weekday: 'long' });
   const formattedDateStr = `${dayName}, ngày ${dateObj.getDate()} tháng ${dateObj.getMonth() + 1} năm ${dateObj.getFullYear()}`;
   const now = new Date();
   const printDateStr = `Bình Long, ngày ${now.getDate()} tháng ${now.getMonth() + 1} năm ${now.getFullYear()}`;
-
-  // Split departments into 2 groups for Page 2 & Page 3 (6 depts per page)
-  const deptsGroup1 = DEPARTMENT_ORDER.slice(0, 6);
-  const deptsGroup2 = DEPARTMENT_ORDER.slice(6, 12);
 
   const handlePrint = () => {
     window.print();
@@ -201,82 +292,129 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
       }
 
       const opt = {
-        margin: [6, 6, 6, 6],
-        filename: `Bao_Cao_Giao_Ban_Chi_Tiet_${date}.pdf`,
+        margin: [8, 10, 8, 10],
+        filename: `Bao_Cao_Giao_Ban_Y_Te_${date}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: {
           scale: 2,
           useCORS: true,
+          logging: false,
           letterRendering: true,
           backgroundColor: '#FFFFFF',
           scrollY: 0
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'] }
+        pagebreak: { 
+          mode: ['avoid-all', 'css', 'legacy'], 
+          avoid: ['.pdf-avoid-break', '.pdf-dept-card', 'tr', '.patient-case-box'] 
+        }
       };
 
       await html2pdfModule().set(opt).from(element).save();
     } catch (err) {
       console.error('PDF Generation failed, fallback to print:', err);
-      alert('Không thể tạo file PDF tự động. Trình duyệt sẽ mở cửa sổ In để bạn chọn "Lưu dưới dạng PDF" (Save as PDF).');
+      alert('Không thể tạo file PDF tự động. Trình duyệt sẽ mở hộp thoại In để bạn chọn "Lưu dưới dạng PDF" (Save as PDF).');
       window.print();
     } finally {
       setDownloadingPdf(false);
     }
   };
 
+  // Render khung báo cáo chuyên môn từng khoa (Gọn gàng, phẳng, tự động co giãn không thừa khoảng trắng)
   const renderDeptCard = (code) => {
     const report = reportMap[code];
     const deptName = DEPARTMENT_NAMES[code] || code;
     const repData = report ? (typeof report.report_data === 'string' ? JSON.parse(report.report_data || '{}') : (report.report_data || {})) : {};
 
     const metrics = [];
+    const notes = [];
+
+    // Duyệt dữ liệu và mapping nhãn
     Object.entries(repData).forEach(([k, v]) => {
-      if (v === null || v === undefined || v === '') return;
+      if (v === null || v === undefined || v === '' || k === '_id') return;
+
+      if (k === 'themGio' || k === 'tinhHinhChung' || k === 'ghiChu') {
+        notes.push({ label: translateFieldKey(k), value: String(v) });
+        return;
+      }
+
       if (typeof v === 'object' && !Array.isArray(v)) {
+        const subGroupTitle = translateFieldKey(k);
         Object.entries(v).forEach(([subK, subV]) => {
-          if (subV !== null && subV !== undefined && subV !== '') {
-            metrics.push({ label: `${FIELD_LABELS[subK] || subK} (${k.toUpperCase()})`, value: String(subV) });
+          if (subV !== null && subV !== undefined && subV !== '' && subK !== '_id') {
+            metrics.push({
+              label: `${translateFieldKey(subK, k)} (${subGroupTitle})`,
+              value: String(subV)
+            });
           }
         });
       } else if (Array.isArray(v)) {
         if (v.length > 0 && typeof v[0] === 'object') {
           v.forEach((item) => {
-            metrics.push({ label: item.name, value: `${item.tongSo || 0} (BHYT: ${item.baoHiem || 0})` });
+            if (item && item.name) {
+              metrics.push({
+                label: item.name,
+                value: `Tổng: ${item.tongSo || 0} | BHYT: ${item.baoHiem || 0} | Nội trú: ${item.noiTru || 0}`
+              });
+            }
           });
         }
       } else {
-        metrics.push({ label: FIELD_LABELS[k] || k, value: String(v) });
+        metrics.push({
+          label: translateFieldKey(k),
+          value: String(v)
+        });
       }
     });
 
     return (
-      <div key={code} style={{
-        border: '1px solid #94A3B8',
+      <div key={code} className="pdf-dept-card pdf-avoid-break" style={{
+        border: '1px solid #CBD5E1',
+        borderLeft: '4px solid #1E3A8A',
         borderRadius: '4px',
         padding: '6px 8px',
         fontSize: '8.5pt',
-        backgroundColor: '#FAFAFA',
+        backgroundColor: '#FFFFFF',
         boxSizing: 'border-box',
-        minHeight: '68mm'
+        height: 'auto',
+        minHeight: 'unset',
+        marginBottom: '6px'
       }}>
-        <div style={{ fontWeight: 'bold', color: '#1E3A8A', borderBottom: '1px dashed #CBD5E1', paddingBottom: '2px', marginBottom: '3px', fontSize: '9pt' }}>
-          🏥 {deptName}
+        <div style={{ fontWeight: 'bold', color: '#1E3A8A', borderBottom: '1px solid #E2E8F0', paddingBottom: '3px', marginBottom: '4px', fontSize: '9pt', display: 'flex', justifyContent: 'space-between' }}>
+          <span>🏥 {deptName}</span>
+          <span style={{ fontSize: '8pt', color: report ? '#16A34A' : '#DC2626', fontWeight: 'bold' }}>
+            {report ? '✓ Đã nộp' : '✗ Chưa nộp'}
+          </span>
         </div>
-        <div style={{ fontSize: '8pt', color: '#475569', marginBottom: '3px' }}>
-          <strong>BS:</strong> {report?.doctor_name || '—'} | <strong>ĐD:</strong> {report?.nurse_name || '—'} {report?.room ? `| P: ${report.room}` : ''}
+
+        <div style={{ fontSize: '8pt', color: '#334155', marginBottom: '4px', backgroundColor: '#F8FAFC', padding: '2px 5px', borderRadius: '3px' }}>
+          <strong>BS trực:</strong> {report?.doctor_name || '—'} | <strong>ĐD trực:</strong> {report?.nurse_name || '—'} {report?.room ? `| P: ${report.room}` : ''}
+          {report?.overtime_staff && report.overtime_staff.length > 0 && (
+            <span> | <strong>Tăng cường:</strong> {report.overtime_staff.map(o => `${o.staffName} (${o.time})`).join(', ')}</span>
+          )}
         </div>
+
         {metrics.length > 0 ? (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px', fontSize: '8pt' }}>
-            {metrics.slice(0, 10).map((m, mIdx) => (
-              <div key={mIdx} style={{ backgroundColor: '#FFFFFF', padding: '1.5px 3px', border: '1px solid #E2E8F0', borderRadius: '2px' }}>
-                <span style={{ color: '#475569' }}>{m.label}: </span>
-                <strong style={{ color: '#0F2C59' }}>{m.value}</strong>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px', fontSize: '8pt' }}>
+            {metrics.map((m, mIdx) => (
+              <div key={mIdx} style={{ backgroundColor: '#F8FAFC', padding: '2px 4px', border: '1px solid #E2E8F0', borderRadius: '2px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ color: '#475569', paddingRight: '4px' }}>{m.label}:</span>
+                <strong style={{ color: '#0F2C59', whiteSpace: 'nowrap' }}>{m.value}</strong>
               </div>
             ))}
           </div>
         ) : (
           <div style={{ fontStyle: 'italic', color: '#94A3B8', fontSize: '8pt' }}>Chưa có số liệu chuyên môn chi tiết</div>
+        )}
+
+        {notes.length > 0 && (
+          <div style={{ marginTop: '4px', paddingTop: '3px', borderTop: '1px dashed #CBD5E1', fontSize: '7.8pt', color: '#78350F' }}>
+            {notes.map((n, nIdx) => (
+              <div key={nIdx}>
+                <strong>{n.label}:</strong> {n.value}
+              </div>
+            ))}
+          </div>
         )}
       </div>
     );
@@ -300,6 +438,59 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
       alignItems: 'center',
       boxSizing: 'border-box'
     }}>
+      {/* Print Specific CSS Embedded */}
+      <style>{`
+        @page {
+          size: A4 portrait;
+          margin: 8mm 10mm;
+        }
+        @media print {
+          body {
+            background-color: #FFFFFF !important;
+            color: #000000 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          .no-print, .medical-print-modal-backdrop {
+            background: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            position: static !important;
+            overflow: visible !important;
+          }
+          .printable-medical-document {
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            max-width: 100% !important;
+            width: 100% !important;
+          }
+        }
+        .pdf-table {
+          table-layout: auto !important;
+          width: 100% !important;
+          border-collapse: collapse !important;
+          margin-bottom: 6px;
+        }
+        .pdf-table th, .pdf-table td {
+          height: auto !important;
+          min-height: 24px;
+          padding: 4px 5px !important;
+          vertical-align: middle !important;
+          word-wrap: break-word !important;
+          white-space: normal !important;
+          line-height: 1.35 !important;
+          overflow: visible !important;
+          box-sizing: border-box !important;
+          border: 1px solid #000000 !important;
+        }
+        .pdf-avoid-break {
+          page-break-inside: avoid !important;
+          break-inside: avoid !important;
+        }
+      `}</style>
+
       {/* Control bar (hidden during print) */}
       <div className="no-print" style={{
         position: 'sticky',
@@ -314,7 +505,7 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
         alignItems: 'center',
         gap: '1rem',
         marginBottom: '1.5rem',
-        maxWidth: '820px',
+        maxWidth: '840px',
         width: '100%',
         boxSizing: 'border-box',
         flexWrap: 'wrap'
@@ -379,52 +570,52 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
         </div>
       </div>
 
-      {/* A4 Document Canvas - Exactly 198mm Width matching A4 page layout */}
+      {/* A4 Document Canvas - Exactly matching A4 page layout */}
       <div className="printable-medical-document" style={{
         width: '100%',
-        maxWidth: '820px',
+        maxWidth: '840px',
         backgroundColor: '#FFFFFF',
         color: '#000000',
         boxShadow: '0 20px 50px rgba(0,0,0,0.6)',
         borderRadius: '6px',
-        padding: '14mm 14mm',
+        padding: '12mm 12mm',
         fontFamily: "'Times New Roman', Times, serif",
-        fontSize: '11pt',
-        lineHeight: 1.3,
+        fontSize: '10.5pt',
+        lineHeight: 1.35,
         boxSizing: 'border-box',
         position: 'relative',
         zIndex: 1,
         marginBottom: '4rem'
       }}>
         {/* =========================================================================
-            TRANG 1: BÌA & BẢNG TỔNG HỢP SỐ LIỆU GIAO BAN TOÀN VIỆN (FIT 100% 1 TRANG)
+            TRANG 1: BÌA & BẢNG TỔNG HỢP SỐ LIỆU GIAO BAN TOÀN VIỆN
         ========================================================================= */}
-        <div style={{ pageBreakAfter: 'always', minHeight: '260mm', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
+        <div style={{ pageBreakAfter: 'always', display: 'flex', flexDirection: 'column' }}>
           {/* Document Header */}
-          <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '0.75rem', backgroundColor: '#FFFFFF' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '0.65rem', backgroundColor: '#FFFFFF' }}>
             <tbody>
               <tr style={{ verticalAlign: 'top', backgroundColor: '#FFFFFF' }}>
-                <td style={{ width: '45%', textAlign: 'center', backgroundColor: '#FFFFFF', color: '#000000' }}>
-                  <div style={{ fontSize: '10pt', fontWeight: 'bold', textTransform: 'uppercase' }}>
+                <td style={{ width: '45%', textAlign: 'center', backgroundColor: '#FFFFFF', color: '#000000', border: 'none', padding: 0 }}>
+                  <div style={{ fontSize: '9.5pt', fontWeight: 'bold', textTransform: 'uppercase' }}>
                     SỞ Y TẾ BÌNH PHƯỚC
                   </div>
-                  <div style={{ fontSize: '10.5pt', fontWeight: 'bold', textTransform: 'uppercase', color: '#0F2C59' }}>
+                  <div style={{ fontSize: '10pt', fontWeight: 'bold', textTransform: 'uppercase', color: '#0F2C59' }}>
                     TTYT KHU VỰC BÌNH LONG
                   </div>
-                  <div style={{ fontSize: '9.5pt', fontStyle: 'italic' }}>
+                  <div style={{ fontSize: '9pt', fontStyle: 'italic' }}>
                     Phòng Kế Hoạch - Nghiệp Vụ
                   </div>
-                  <div style={{ width: '70px', height: '1px', backgroundColor: '#000000', margin: '3px auto 0' }}></div>
+                  <div style={{ width: '60px', height: '1px', backgroundColor: '#000000', margin: '3px auto 0' }}></div>
                 </td>
-                <td style={{ width: '55%', textAlign: 'center', backgroundColor: '#FFFFFF', color: '#000000' }}>
-                  <div style={{ fontSize: '10pt', fontWeight: 'bold', textTransform: 'uppercase' }}>
+                <td style={{ width: '55%', textAlign: 'center', backgroundColor: '#FFFFFF', color: '#000000', border: 'none', padding: 0 }}>
+                  <div style={{ fontSize: '9.5pt', fontWeight: 'bold', textTransform: 'uppercase' }}>
                     CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
                   </div>
-                  <div style={{ fontSize: '10.5pt', fontWeight: 'bold' }}>
+                  <div style={{ fontSize: '10pt', fontWeight: 'bold' }}>
                     Độc lập - Tự do - Hạnh phúc
                   </div>
-                  <div style={{ width: '100px', height: '1px', backgroundColor: '#000000', margin: '3px auto 0' }}></div>
-                  <div style={{ fontSize: '9.5pt', fontStyle: 'italic', marginTop: '4px' }}>
+                  <div style={{ width: '90px', height: '1px', backgroundColor: '#000000', margin: '3px auto 0' }}></div>
+                  <div style={{ fontSize: '9pt', fontStyle: 'italic', marginTop: '3px' }}>
                     {printDateStr}
                   </div>
                 </td>
@@ -433,9 +624,9 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
           </table>
 
           {/* Document Title */}
-          <div style={{ textAlign: 'center', marginBottom: '1rem', backgroundColor: '#FFFFFF' }}>
+          <div style={{ textAlign: 'center', marginBottom: '0.85rem', backgroundColor: '#FFFFFF' }}>
             <h1 style={{
-              fontSize: '14pt',
+              fontSize: '13.5pt',
               fontWeight: 'bold',
               textTransform: 'uppercase',
               margin: '0 0 2px 0',
@@ -444,32 +635,32 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
             }}>
               BÁO CÁO GIAO BAN BỆNH VIỆN
             </h1>
-            <div style={{ fontSize: '10.5pt', fontWeight: 'bold', fontStyle: 'italic', color: '#000000' }}>
+            <div style={{ fontSize: '10pt', fontWeight: 'bold', fontStyle: 'italic', color: '#000000' }}>
               ({formattedDateStr})
             </div>
           </div>
 
           {/* Section I Header */}
-          <div style={{ fontSize: '11pt', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '5px', color: '#0F2C59', borderBottom: '1.5px solid #0F2C59', paddingBottom: '2px' }}>
+          <div style={{ fontSize: '10.5pt', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '4px', color: '#0F2C59', borderBottom: '1.5px solid #0F2C59', paddingBottom: '2px' }}>
             PHẦN I: TỔNG HỢP SỐ LIỆU GIAO BAN TOÀN VIỆN ({sortedReports.length}/12 KHOA)
           </div>
 
           {/* Summary Table 12 Departments */}
-          <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #000000', fontSize: '9pt', backgroundColor: '#FFFFFF', lineHeight: 1.2 }}>
+          <table className="pdf-table" style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #000000', fontSize: '8.5pt', backgroundColor: '#FFFFFF', lineHeight: 1.3 }}>
             <thead>
               <tr style={{ backgroundColor: '#F1F5F9', textAlign: 'center', color: '#000000', fontWeight: 'bold' }}>
-                <th style={{ border: '1px solid #000000', padding: '4px 2px', width: '24px' }}>STT</th>
-                <th style={{ border: '1px solid #000000', padding: '4px 5px', textAlign: 'left', width: '160px' }}>Khoa / Phòng</th>
-                <th style={{ border: '1px solid #000000', padding: '4px 2px', width: '50px' }}>Trạng Thái</th>
-                <th style={{ border: '1px solid #000000', padding: '4px 5px', textAlign: 'left' }}>Bác Sĩ Trực</th>
-                <th style={{ border: '1px solid #000000', padding: '4px 5px', textAlign: 'left' }}>Điều Dưỡng</th>
-                <th style={{ border: '1px solid #000000', padding: '4px 2px', width: '34px' }}>Khám</th>
-                <th style={{ border: '1px solid #000000', padding: '4px 2px', width: '32px' }}>Cũ</th>
-                <th style={{ border: '1px solid #000000', padding: '4px 2px', width: '32px' }}>Mới</th>
-                <th style={{ border: '1px solid #000000', padding: '4px 2px', width: '32px' }}>Xuất</th>
-                <th style={{ border: '1px solid #000000', padding: '4px 2px', width: '34px' }}>Chuyển</th>
-                <th style={{ border: '1px solid #000000', padding: '4px 2px', width: '32px' }}>Mổ</th>
-                <th style={{ border: '1px solid #000000', padding: '4px 2px', width: '34px' }}>Tử Vong</th>
+                <th style={{ width: '4%' }}>STT</th>
+                <th style={{ width: '22%', textAlign: 'left' }}>Khoa / Phòng</th>
+                <th style={{ width: '8%' }}>Trạng Thái</th>
+                <th style={{ width: '16%', textAlign: 'left' }}>Bác Sĩ Trực</th>
+                <th style={{ width: '16%', textAlign: 'left' }}>Điều Dưỡng</th>
+                <th style={{ width: '5%' }}>Khám</th>
+                <th style={{ width: '5%' }}>Cũ</th>
+                <th style={{ width: '5%' }}>Mới</th>
+                <th style={{ width: '5%' }}>Xuất</th>
+                <th style={{ width: '5%' }}>Chuyển</th>
+                <th style={{ width: '5%' }}>Mổ</th>
+                <th style={{ width: '5%' }}>Tử Vong</th>
               </tr>
             </thead>
             <tbody>
@@ -479,30 +670,30 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
                 const isSubmitted = !!report;
                 const repData = report ? (typeof report.report_data === 'string' ? JSON.parse(report.report_data || '{}') : (report.report_data || {})) : {};
 
-                let kham = parseInt(repData.tongSoKham || repData.tongSo || repData.tmh_tongSo || 0, 10) || 0;
-                let cu = parseInt(repData.benhCu || repData.tnt_benhCu || 0, 10) || 0;
-                let moi = parseInt(repData.benhMoi || repData.tnt_benhMoi || 0, 10) || 0;
-                let xuat = parseInt(repData.xuatVien || repData.tnt_xuatVien || 0, 10) || 0;
-                let chuyen = parseInt(repData.chuyenVien || repData.tnt_chuyenVien || 0, 10) || (report?.transferCases?.length || 0);
+                let kham = parseInt(repData.tongSoKham || repData.tongSo || repData.tmh_tongSo || (repData.hscc?.tongSoKham) || 0, 10) || 0;
+                let cu = parseInt(repData.benhCu || repData.tnt_benhCu || (repData.hscc?.benhCu) || (repData.noiTru?.benhCu) || 0, 10) || 0;
+                let moi = parseInt(repData.benhMoi || repData.tnt_benhMoi || (repData.hscc?.benhMoi) || (repData.noiTru?.benhMoi) || 0, 10) || 0;
+                let xuat = parseInt(repData.xuatVien || repData.tnt_xuatVien || (repData.hscc?.xuatVien) || (repData.noiTru?.xuatVien) || 0, 10) || 0;
+                let chuyen = parseInt(repData.chuyenVien || repData.tnt_chuyenVien || (repData.hscc?.chuyenVien) || 0, 10) || (report?.transferCases?.length || 0);
                 let mo = parseInt(repData.tongSoCaMo || 0, 10) || (report?.surgeryCases?.length || 0);
-                let tuVong = parseInt(repData.tuVong || 0, 10) || (report?.deathCases?.length || 0);
+                let tuVong = parseInt(repData.tuVong || (repData.hscc?.tuVong) || 0, 10) || (report?.deathCases?.length || 0);
 
                 return (
                   <tr key={code} style={{ backgroundColor: idx % 2 === 0 ? '#FFFFFF' : '#F8FAFC' }}>
-                    <td style={{ border: '1px solid #000000', padding: '3px 2px', textAlign: 'center' }}>{idx + 1}</td>
-                    <td style={{ border: '1px solid #000000', padding: '3px 5px', fontWeight: 'bold' }}>{deptName}</td>
-                    <td style={{ border: '1px solid #000000', padding: '3px 2px', textAlign: 'center', fontSize: '8pt', color: isSubmitted ? '#16A34A' : '#DC2626', fontWeight: 'bold' }}>
+                    <td style={{ textAlign: 'center' }}>{idx + 1}</td>
+                    <td style={{ fontWeight: 'bold' }}>{deptName}</td>
+                    <td style={{ textAlign: 'center', fontSize: '8pt', color: isSubmitted ? '#16A34A' : '#DC2626', fontWeight: 'bold' }}>
                       {isSubmitted ? 'Đã nộp' : 'Chưa'}
                     </td>
-                    <td style={{ border: '1px solid #000000', padding: '3px 5px' }}>{report?.doctor_name || '—'}</td>
-                    <td style={{ border: '1px solid #000000', padding: '3px 5px' }}>{report?.nurse_name || '—'}</td>
-                    <td style={{ border: '1px solid #000000', padding: '3px 2px', textAlign: 'center' }}>{kham || '—'}</td>
-                    <td style={{ border: '1px solid #000000', padding: '3px 2px', textAlign: 'center' }}>{cu || '—'}</td>
-                    <td style={{ border: '1px solid #000000', padding: '3px 2px', textAlign: 'center' }}>{moi || '—'}</td>
-                    <td style={{ border: '1px solid #000000', padding: '3px 2px', textAlign: 'center' }}>{xuat || '—'}</td>
-                    <td style={{ border: '1px solid #000000', padding: '3px 2px', textAlign: 'center' }}>{chuyen || '—'}</td>
-                    <td style={{ border: '1px solid #000000', padding: '3px 2px', textAlign: 'center' }}>{mo || '—'}</td>
-                    <td style={{ border: '1px solid #000000', padding: '3px 2px', textAlign: 'center', fontWeight: tuVong > 0 ? 'bold' : 'normal', color: tuVong > 0 ? '#DC2626' : '#000' }}>
+                    <td>{report?.doctor_name || '—'}</td>
+                    <td>{report?.nurse_name || '—'}</td>
+                    <td style={{ textAlign: 'center' }}>{kham || '—'}</td>
+                    <td style={{ textAlign: 'center' }}>{cu || '—'}</td>
+                    <td style={{ textAlign: 'center' }}>{moi || '—'}</td>
+                    <td style={{ textAlign: 'center' }}>{xuat || '—'}</td>
+                    <td style={{ textAlign: 'center' }}>{chuyen || '—'}</td>
+                    <td style={{ textAlign: 'center' }}>{mo || '—'}</td>
+                    <td style={{ textAlign: 'center', fontWeight: tuVong > 0 ? 'bold' : 'normal', color: tuVong > 0 ? '#DC2626' : '#000' }}>
                       {tuVong || '0'}
                     </td>
                   </tr>
@@ -510,146 +701,133 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
               })}
               {/* Total Row */}
               <tr style={{ backgroundColor: '#EFF6FF', fontWeight: 'bold' }}>
-                <td colSpan={2} style={{ border: '1px solid #000000', padding: '4px 5px', textAlign: 'center' }}>TỔNG CỘNG TOÀN VIỆN</td>
-                <td style={{ border: '1px solid #000000', padding: '4px 2px', textAlign: 'center' }}>{sortedReports.length}/12</td>
-                <td colSpan={2} style={{ border: '1px solid #000000', padding: '4px 5px' }}></td>
-                <td style={{ border: '1px solid #000000', padding: '4px 2px', textAlign: 'center' }}>{sumKham}</td>
-                <td style={{ border: '1px solid #000000', padding: '4px 2px', textAlign: 'center' }}>{sumCu}</td>
-                <td style={{ border: '1px solid #000000', padding: '4px 2px', textAlign: 'center' }}>{sumMoi}</td>
-                <td style={{ border: '1px solid #000000', padding: '4px 2px', textAlign: 'center' }}>{sumXuat}</td>
-                <td style={{ border: '1px solid #000000', padding: '4px 2px', textAlign: 'center' }}>{sumChuyen}</td>
-                <td style={{ border: '1px solid #000000', padding: '4px 2px', textAlign: 'center' }}>{sumMo}</td>
-                <td style={{ border: '1px solid #000000', padding: '4px 2px', textAlign: 'center', color: sumTuVong > 0 ? '#DC2626' : '#000' }}>{sumTuVong}</td>
+                <td colSpan={2} style={{ textAlign: 'center' }}>TỔNG CỘNG TOÀN VIỆN</td>
+                <td style={{ textAlign: 'center' }}>{sortedReports.length}/12</td>
+                <td colSpan={2}></td>
+                <td style={{ textAlign: 'center' }}>{sumKham}</td>
+                <td style={{ textAlign: 'center' }}>{sumCu}</td>
+                <td style={{ textAlign: 'center' }}>{sumMoi}</td>
+                <td style={{ textAlign: 'center' }}>{sumXuat}</td>
+                <td style={{ textAlign: 'center' }}>{sumChuyen}</td>
+                <td style={{ textAlign: 'center' }}>{sumMo}</td>
+                <td style={{ textAlign: 'center', color: sumTuVong > 0 ? '#DC2626' : '#000' }}>{sumTuVong}</td>
               </tr>
             </tbody>
           </table>
         </div>
 
         {/* =========================================================================
-            TRANG 2: DỮ LIỆU CHUYÊN MÔN (NHÓM 1 - 6 KHOA ĐẦU)
+            TRANG 2+: DỮ LIỆU BÁO CÁO CHUYÊN MÔN CHI TIẾT TỪNG KHOA
         ========================================================================= */}
-        <div style={{ pageBreakAfter: 'always', minHeight: '260mm', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
-          <div style={{ fontSize: '11pt', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px', color: '#0F2C59', borderBottom: '1.5px solid #0F2C59', paddingBottom: '2px' }}>
-            PHẦN II: DỮ LIỆU BÁO CÁO CHUYÊN MÔN CHI TIẾT TỪNG KHOA PHÒNG (TRANG 1/2)
+        <div style={{ pageBreakAfter: 'always', marginTop: '1rem' }}>
+          <div style={{ fontSize: '10.5pt', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px', color: '#0F2C59', borderBottom: '1.5px solid #0F2C59', paddingBottom: '2px' }}>
+            PHẦN II: DỮ LIỆU BÁO CÁO CHUYÊN MÔN CHI TIẾT TỪNG KHOA PHÒNG
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', flex: 1 }}>
-            {deptsGroup1.map(code => renderDeptCard(code))}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            {DEPARTMENT_ORDER.map(code => renderDeptCard(code))}
           </div>
         </div>
 
         {/* =========================================================================
-            TRANG 3: DỮ LIỆU CHUYÊN MÔN (NHÓM 2 - 6 KHOA SAU)
+            TRANG 3+: BÁO CÁO CÁC CA BỆNH ĐẶC BIỆT & CHỮ KÝ PHÊ DUYỆT
         ========================================================================= */}
-        <div style={{ pageBreakAfter: 'always', minHeight: '260mm', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
-          <div style={{ fontSize: '11pt', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px', color: '#0F2C59', borderBottom: '1.5px solid #0F2C59', paddingBottom: '2px' }}>
-            PHẦN II: DỮ LIỆU BÁO CÁO CHUYÊN MÔN CHI TIẾT TỪNG KHOA PHÒNG (TRANG 2/2)
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', flex: 1 }}>
-            {deptsGroup2.map(code => renderDeptCard(code))}
-          </div>
-        </div>
-
-        {/* =========================================================================
-            TRANG 4+: BÁO CÁO CÁC CA BỆNH CHI TIẾT & CHỮ KÝ PHÊ DUYỆT
-        ========================================================================= */}
-        <div style={{ pageBreakInside: 'auto', backgroundColor: '#FFFFFF' }}>
-          <div style={{ fontSize: '11pt', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px', color: '#0F2C59', borderBottom: '1.5px solid #0F2C59', paddingBottom: '2px' }}>
+        <div style={{ pageBreakInside: 'auto', backgroundColor: '#FFFFFF', marginTop: '1rem' }}>
+          <div style={{ fontSize: '10.5pt', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px', color: '#0F2C59', borderBottom: '1.5px solid #0F2C59', paddingBottom: '2px' }}>
             PHẦN III: BÁO CÁO CHI TIẾT CÁC CA BỆNH ĐẶC BIỆT
           </div>
 
           {/* 1. Ca Phẫu Thuật (Mổ) */}
-          <div style={{ marginBottom: '1.25rem', pageBreakInside: 'avoid' }}>
-            <div style={{ fontSize: '10pt', fontWeight: 'bold', textTransform: 'uppercase', margin: '0 0 4px 0', color: '#0369A1' }}>
+          <div className="pdf-avoid-break" style={{ marginBottom: '1.25rem' }}>
+            <div style={{ fontSize: '9.5pt', fontWeight: 'bold', textTransform: 'uppercase', margin: '0 0 4px 0', color: '#0369A1' }}>
               1. Danh sách bệnh nhân phẫu thuật (Mổ) ({allSurgeryCases.length} ca)
             </div>
             {allSurgeryCases.length > 0 ? (
-              <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #000000', fontSize: '8.5pt', backgroundColor: '#FFFFFF' }}>
+              <table className="pdf-table" style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #000000', fontSize: '8pt', backgroundColor: '#FFFFFF' }}>
                 <thead>
                   <tr style={{ backgroundColor: '#E0F2FE', textAlign: 'center', color: '#0369A1', fontWeight: 'bold' }}>
-                    <th style={{ border: '1px solid #000000', padding: '3px', width: '22px' }}>STT</th>
-                    <th style={{ border: '1px solid #000000', padding: '3px', width: '110px' }}>Họ Tên / Tuổi</th>
-                    <th style={{ border: '1px solid #000000', padding: '3px', width: '90px' }}>Khoa / Giờ Vào</th>
-                    <th style={{ border: '1px solid #000000', padding: '3px' }}>Lý Do, Lâm Sàng & CLS</th>
-                    <th style={{ border: '1px solid #000000', padding: '3px' }}>Chẩn Đoán Trước Mổ</th>
-                    <th style={{ border: '1px solid #000000', padding: '3px' }}>Lệnh Mổ & CĐ Sau Mổ</th>
-                    <th style={{ border: '1px solid #000000', padding: '3px', width: '90px' }}>Hiện Tại</th>
+                    <th style={{ width: '4%' }}>STT</th>
+                    <th style={{ width: '16%' }}>Họ Tên / Tuổi</th>
+                    <th style={{ width: '14%' }}>Khoa / Giờ Vào</th>
+                    <th style={{ width: '22%' }}>Lý Do, Lâm Sàng & CLS</th>
+                    <th style={{ width: '16%' }}>Chẩn Đoán Trước Mổ</th>
+                    <th style={{ width: '16%' }}>Lệnh Mổ & CĐ Sau Mổ</th>
+                    <th style={{ width: '12%' }}>Hiện Tại</th>
                   </tr>
                 </thead>
                 <tbody>
                   {allSurgeryCases.map((sc, i) => (
                     <tr key={i} style={{ backgroundColor: i % 2 === 0 ? '#FFFFFF' : '#FAFAFA' }}>
-                      <td style={{ border: '1px solid #000000', padding: '3px', textAlign: 'center' }}>{i + 1}</td>
-                      <td style={{ border: '1px solid #000000', padding: '3px' }}>
+                      <td style={{ textAlign: 'center' }}>{i + 1}</td>
+                      <td>
                         <strong>{sc.patient_name || sc.patientName}</strong>
-                        <div style={{ fontSize: '8pt', color: '#4B5563' }}>{formatPatientAge(sc.birth_year || sc.birthYear || sc.age)}</div>
+                        <div style={{ fontSize: '7.5pt', color: '#4B5563' }}>{formatPatientAge(sc.birth_year || sc.birthYear || sc.age)}</div>
                         <div style={{ fontSize: '7.5pt', color: '#6B7280' }}>{sc.address}</div>
                       </td>
-                      <td style={{ border: '1px solid #000000', padding: '3px', fontSize: '8pt' }}>
+                      <td style={{ fontSize: '7.8pt' }}>
                         <div><strong>{sc.departmentName}</strong></div>
                         <div>{sc.admission_time || sc.admissionTime || '—'}</div>
                       </td>
-                      <td style={{ border: '1px solid #000000', padding: '3px' }}>
+                      <td>
                         <div><strong>Lý do:</strong> {sc.reason || '—'}</div>
-                        {sc.clinical_symptoms || sc.clinicalSymptoms ? <div style={{ fontSize: '8pt', color: '#374151' }}><strong>LS:</strong> {sc.clinical_symptoms || sc.clinicalSymptoms}</div> : null}
-                        {sc.clinical_tests || sc.clinicalTests ? <div style={{ fontSize: '8pt', color: '#374151' }}><strong>CLS:</strong> {sc.clinical_tests || sc.clinicalTests}</div> : null}
+                        {sc.clinical_symptoms || sc.clinicalSymptoms ? <div style={{ fontSize: '7.8pt', color: '#374151' }}><strong>LS:</strong> {sc.clinical_symptoms || sc.clinicalSymptoms}</div> : null}
+                        {sc.clinical_tests || sc.clinicalTests ? <div style={{ fontSize: '7.8pt', color: '#374151' }}><strong>CLS:</strong> {sc.clinical_tests || sc.clinicalTests}</div> : null}
                       </td>
-                      <td style={{ border: '1px solid #000000', padding: '3px' }}>{sc.preoperative_diagnosis || sc.preoperativeDiagnosis || '—'}</td>
-                      <td style={{ border: '1px solid #000000', padding: '3px' }}>
+                      <td>{sc.preoperative_diagnosis || sc.preoperativeDiagnosis || '—'}</td>
+                      <td>
                         <div><strong>Lệnh:</strong> {sc.consultation_order || sc.consultationOrder || '—'}</div>
                         <div><strong>Sau mổ:</strong> {sc.postoperative_diagnosis || sc.postoperativeDiagnosis || '—'}</div>
                       </td>
-                      <td style={{ border: '1px solid #000000', padding: '3px', fontSize: '8pt' }}>{sc.current_status || sc.currentStatus || '—'}</td>
+                      <td style={{ fontSize: '7.8pt' }}>{sc.current_status || sc.currentStatus || '—'}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             ) : (
-              <div style={{ fontStyle: 'italic', fontSize: '8.5pt', color: '#64748B', padding: '3px 0' }}>Không phát sinh ca phẫu thuật trong ngày.</div>
+              <div style={{ fontStyle: 'italic', fontSize: '8pt', color: '#64748B', padding: '3px 0' }}>Không phát sinh ca phẫu thuật trong ngày.</div>
             )}
           </div>
 
           {/* 2. Ca Chuyển Viện */}
-          <div style={{ marginBottom: '1.25rem', pageBreakInside: 'avoid' }}>
-            <div style={{ fontSize: '10pt', fontWeight: 'bold', textTransform: 'uppercase', margin: '0 0 4px 0', color: '#D97706' }}>
+          <div className="pdf-avoid-break" style={{ marginBottom: '1.25rem' }}>
+            <div style={{ fontSize: '9.5pt', fontWeight: 'bold', textTransform: 'uppercase', margin: '0 0 4px 0', color: '#D97706' }}>
               2. Danh sách bệnh nhân chuyển viện cấp cứu ({allTransferCases.length} ca)
             </div>
             {allTransferCases.length > 0 ? (
-              <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #000000', fontSize: '8.5pt', backgroundColor: '#FFFFFF' }}>
+              <table className="pdf-table" style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #000000', fontSize: '8pt', backgroundColor: '#FFFFFF' }}>
                 <thead>
                   <tr style={{ backgroundColor: '#FEF3C7', textAlign: 'center', color: '#92400E', fontWeight: 'bold' }}>
-                    <th style={{ border: '1px solid #000000', padding: '3px', width: '22px' }}>STT</th>
-                    <th style={{ border: '1px solid #000000', padding: '3px', width: '120px' }}>Họ Tên / Địa Chỉ</th>
-                    <th style={{ border: '1px solid #000000', padding: '3px', width: '90px' }}>Khoa / Giờ Vào</th>
-                    <th style={{ border: '1px solid #000000', padding: '3px' }}>Lý Do, Lâm Sàng & CLS</th>
-                    <th style={{ border: '1px solid #000000', padding: '3px' }}>Chẩn Đoán & Xử Trí</th>
-                    <th style={{ border: '1px solid #000000', padding: '3px' }}>Diễn Biến Chuyển</th>
+                    <th style={{ width: '4%' }}>STT</th>
+                    <th style={{ width: '18%' }}>Họ Tên / Địa Chỉ</th>
+                    <th style={{ width: '14%' }}>Khoa / Giờ Vào</th>
+                    <th style={{ width: '22%' }}>Lý Do, Lâm Sàng & CLS</th>
+                    <th style={{ width: '20%' }}>Chẩn Đoán & Xử Trí</th>
+                    <th style={{ width: '22%' }}>Diễn Biến Chuyển</th>
                   </tr>
                 </thead>
                 <tbody>
                   {allTransferCases.map((tc, i) => (
                     <tr key={i} style={{ backgroundColor: i % 2 === 0 ? '#FFFFFF' : '#FAFAFA' }}>
-                      <td style={{ border: '1px solid #000000', padding: '3px', textAlign: 'center' }}>{i + 1}</td>
-                      <td style={{ border: '1px solid #000000', padding: '3px' }}>
+                      <td style={{ textAlign: 'center' }}>{i + 1}</td>
+                      <td>
                         <strong>{tc.patient_name || tc.patientName}</strong>
-                        <div style={{ fontSize: '8pt', color: '#4B5563' }}>{formatPatientAge(tc.age)}</div>
+                        <div style={{ fontSize: '7.5pt', color: '#4B5563' }}>{formatPatientAge(tc.age)}</div>
                         <div style={{ fontSize: '7.5pt', color: '#6B7280' }}>{tc.address}</div>
                       </td>
-                      <td style={{ border: '1px solid #000000', padding: '3px', fontSize: '8pt' }}>
+                      <td style={{ fontSize: '7.8pt' }}>
                         <div><strong>{tc.departmentName}</strong></div>
                         <div>{tc.admission_time || tc.admissionTime || '—'}</div>
                       </td>
-                      <td style={{ border: '1px solid #000000', padding: '3px' }}>
+                      <td>
                         <div><strong>Lý do:</strong> {tc.reason || '—'}</div>
-                        {tc.clinical_symptoms || tc.clinicalSymptoms ? <div style={{ fontSize: '8pt', color: '#374151' }}><strong>Lâm sàng:</strong> {tc.clinical_symptoms || tc.clinicalSymptoms}</div> : null}
-                        {tc.clinical_tests || tc.clinicalTests ? <div style={{ fontSize: '8pt', color: '#374151' }}><strong>CLS:</strong> {tc.clinical_tests || tc.clinicalTests}</div> : null}
+                        {tc.clinical_symptoms || tc.clinicalSymptoms ? <div style={{ fontSize: '7.8pt', color: '#374151' }}><strong>LS:</strong> {tc.clinical_symptoms || tc.clinicalSymptoms}</div> : null}
+                        {tc.clinical_tests || tc.clinicalTests ? <div style={{ fontSize: '7.8pt', color: '#374151' }}><strong>CLS:</strong> {tc.clinical_tests || tc.clinicalTests}</div> : null}
                       </td>
-                      <td style={{ border: '1px solid #000000', padding: '3px' }}>
+                      <td>
                         <div><strong>CĐ:</strong> {tc.diagnosis || '—'}</div>
-                        <div style={{ fontSize: '8pt', color: '#374151' }}><strong>Xử trí:</strong> {tc.initial_treatment || tc.initialTreatment || '—'}</div>
+                        <div style={{ fontSize: '7.8pt', color: '#374151' }}><strong>Xử trí:</strong> {tc.initial_treatment || tc.initialTreatment || '—'}</div>
                       </td>
-                      <td style={{ border: '1px solid #000000', padding: '3px', fontSize: '8pt' }}>
+                      <td style={{ fontSize: '7.8pt' }}>
                         {tc.progress_notes || tc.progressNotes || '—'}
                       </td>
                     </tr>
@@ -657,19 +835,19 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
                 </tbody>
               </table>
             ) : (
-              <div style={{ fontStyle: 'italic', fontSize: '8.5pt', color: '#64748B', padding: '3px 0' }}>Không phát sinh ca chuyển viện trong ngày.</div>
+              <div style={{ fontStyle: 'italic', fontSize: '8pt', color: '#64748B', padding: '3px 0' }}>Không phát sinh ca chuyển viện trong ngày.</div>
             )}
           </div>
 
           {/* 3. Ca Tử Vong */}
-          <div style={{ marginBottom: '1.25rem', pageBreakInside: 'avoid' }}>
-            <div style={{ fontSize: '10pt', fontWeight: 'bold', textTransform: 'uppercase', margin: '0 0 4px 0', color: '#DC2626' }}>
+          <div className="pdf-avoid-break" style={{ marginBottom: '1.25rem' }}>
+            <div style={{ fontSize: '9.5pt', fontWeight: 'bold', textTransform: 'uppercase', margin: '0 0 4px 0', color: '#DC2626' }}>
               3. Hồ sơ bệnh nhân tử vong ({allDeathCases.length} trường hợp)
             </div>
             {allDeathCases.length > 0 ? (
               allDeathCases.map((dc, i) => (
-                <div key={i} style={{ border: '1.5px solid #000000', padding: '6px 10px', marginBottom: '5px', fontSize: '9pt', backgroundColor: '#FEF2F2' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed #DC2626', paddingBottom: '2px', marginBottom: '4px' }}>
+                <div key={i} className="pdf-avoid-break" style={{ border: '1px solid #000000', padding: '6px 8px', marginBottom: '5px', fontSize: '8.5pt', backgroundColor: '#FEF2F2' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed #DC2626', paddingBottom: '2px', marginBottom: '3px' }}>
                     <span><strong style={{ color: '#991B1B' }}>Ca tử vong #{i + 1}: {dc.patient_name || dc.patientName}</strong> ({formatPatientAge(dc.age)}) — {dc.address}</span>
                     <span><strong>Khoa:</strong> {dc.departmentName}</span>
                   </div>
@@ -686,50 +864,50 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
                 </div>
               ))
             ) : (
-              <div style={{ fontStyle: 'italic', fontSize: '8.5pt', color: '#64748B', padding: '3px 0' }}>Không có trường hợp tử vong trong ngày.</div>
+              <div style={{ fontStyle: 'italic', fontSize: '8pt', color: '#64748B', padding: '3px 0' }}>Không có trường hợp tử vong trong ngày.</div>
             )}
           </div>
 
           {/* 4. Ca Bệnh Nặng Cần Theo Dõi */}
-          <div style={{ marginBottom: '1.25rem', pageBreakInside: 'avoid' }}>
-            <div style={{ fontSize: '10pt', fontWeight: 'bold', textTransform: 'uppercase', margin: '0 0 4px 0', color: '#7C3AED' }}>
+          <div className="pdf-avoid-break" style={{ marginBottom: '1.25rem' }}>
+            <div style={{ fontSize: '9.5pt', fontWeight: 'bold', textTransform: 'uppercase', margin: '0 0 4px 0', color: '#7C3AED' }}>
               4. Danh sách bệnh nhân nặng cần theo dõi ({allCriticalCases.length} ca)
             </div>
             {allCriticalCases.length > 0 ? (
-              <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #000000', fontSize: '8.5pt', backgroundColor: '#FFFFFF' }}>
+              <table className="pdf-table" style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #000000', fontSize: '8pt', backgroundColor: '#FFFFFF' }}>
                 <thead>
                   <tr style={{ backgroundColor: '#EDE9FE', textAlign: 'center', color: '#5B21B6', fontWeight: 'bold' }}>
-                    <th style={{ border: '1px solid #000000', padding: '3px', width: '22px' }}>STT</th>
-                    <th style={{ border: '1px solid #000000', padding: '3px', width: '120px' }}>Họ Tên / Tuổi / Đ/C</th>
-                    <th style={{ border: '1px solid #000000', padding: '3px', width: '90px' }}>Khoa / Giờ Vào</th>
-                    <th style={{ border: '1px solid #000000', padding: '3px', width: '120px' }}>Tiền Căn, Lâm Sàng & CĐ</th>
-                    <th style={{ border: '1px solid #000000', padding: '3px' }}>Tình Trạng & Diễn Biến</th>
-                    <th style={{ border: '1px solid #000000', padding: '3px', width: '110px' }}>Xử Trí & Hướng Tiếp</th>
+                    <th style={{ width: '4%' }}>STT</th>
+                    <th style={{ width: '16%' }}>Họ Tên / Tuổi / Đ/C</th>
+                    <th style={{ width: '14%' }}>Khoa / Giờ Vào</th>
+                    <th style={{ width: '20%' }}>Tiền Căn, Lâm Sàng & CĐ</th>
+                    <th style={{ width: '26%' }}>Tình Trạng & Diễn Biến</th>
+                    <th style={{ width: '20%' }}>Xử Trí & Hướng Tiếp</th>
                   </tr>
                 </thead>
                 <tbody>
                   {allCriticalCases.map((cc, i) => (
                     <tr key={i} style={{ backgroundColor: i % 2 === 0 ? '#FFFFFF' : '#FAF5FF' }}>
-                      <td style={{ border: '1px solid #000000', padding: '3px', textAlign: 'center' }}>{i + 1}</td>
-                      <td style={{ border: '1px solid #000000', padding: '3px' }}>
+                      <td style={{ textAlign: 'center' }}>{i + 1}</td>
+                      <td>
                         <strong>{cc.patient_name || cc.patientName}</strong>
-                        <div style={{ fontSize: '8pt', color: '#4B5563' }}>{formatPatientAge(cc.age)}</div>
+                        <div style={{ fontSize: '7.5pt', color: '#4B5563' }}>{formatPatientAge(cc.age)}</div>
                         <div style={{ fontSize: '7.5pt', color: '#6B7280' }}>{cc.address}</div>
                       </td>
-                      <td style={{ border: '1px solid #000000', padding: '3px', fontSize: '8pt' }}>
+                      <td style={{ fontSize: '7.8pt' }}>
                         <div><strong>{cc.departmentName}</strong></div>
                         <div>{cc.admission_time || cc.admissionTime || '—'}</div>
                       </td>
-                      <td style={{ border: '1px solid #000000', padding: '3px' }}>
-                        {cc.medical_history || cc.medicalHistory ? <div style={{ fontSize: '8pt', color: '#4B5563' }}><strong>TC:</strong> {cc.medical_history || cc.medicalHistory}</div> : null}
-                        {cc.clinical_symptoms || cc.clinicalSymptoms ? <div style={{ fontSize: '8pt', color: '#374151' }}><strong>LS:</strong> {cc.clinical_symptoms || cc.clinicalSymptoms}</div> : null}
-                        {cc.clinical_tests || cc.clinicalTests ? <div style={{ fontSize: '8pt', color: '#374151' }}><strong>CLS:</strong> {cc.clinical_tests || cc.clinicalTests}</div> : null}
+                      <td>
+                        {cc.medical_history || cc.medicalHistory ? <div style={{ fontSize: '7.5pt', color: '#4B5563' }}><strong>TC:</strong> {cc.medical_history || cc.medicalHistory}</div> : null}
+                        {cc.clinical_symptoms || cc.clinicalSymptoms ? <div style={{ fontSize: '7.8pt', color: '#374151' }}><strong>LS:</strong> {cc.clinical_symptoms || cc.clinicalSymptoms}</div> : null}
+                        {cc.clinical_tests || cc.clinicalTests ? <div style={{ fontSize: '7.8pt', color: '#374151' }}><strong>CLS:</strong> {cc.clinical_tests || cc.clinicalTests}</div> : null}
                         <div><strong style={{ color: '#5B21B6' }}>CĐ:</strong> {cc.diagnosis || '—'}</div>
                       </td>
-                      <td style={{ border: '1px solid #000000', padding: '3px', fontSize: '8pt' }}>
+                      <td style={{ fontSize: '7.8pt' }}>
                         {cc.condition_summary || cc.conditionSummary || '—'}
                       </td>
-                      <td style={{ border: '1px solid #000000', padding: '3px', fontSize: '8pt' }}>
+                      <td style={{ fontSize: '7.8pt' }}>
                         <div><strong>Xử trí:</strong> {cc.treatment || '—'}</div>
                         <div style={{ fontSize: '7.5pt', color: '#4B5563', marginTop: '1px' }}><em>{cc.notes || 'Bàn giao tua sau theo dõi tiếp'}</em></div>
                       </td>
@@ -738,35 +916,35 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
                 </tbody>
               </table>
             ) : (
-              <div style={{ fontStyle: 'italic', fontSize: '8.5pt', color: '#64748B', padding: '3px 0' }}>Không có ca bệnh nặng theo dõi trong ngày.</div>
+              <div style={{ fontStyle: 'italic', fontSize: '8pt', color: '#64748B', padding: '3px 0' }}>Không có ca bệnh nặng theo dõi trong ngày.</div>
             )}
           </div>
 
           {/* Section Chữ ký bàn giao & phê duyệt */}
-          <div style={{ marginTop: '1.5rem', pageBreakInside: 'avoid', backgroundColor: '#FFFFFF' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', backgroundColor: '#FFFFFF' }}>
+          <div className="pdf-avoid-break" style={{ marginTop: '1.25rem', backgroundColor: '#FFFFFF' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', backgroundColor: '#FFFFFF', border: 'none' }}>
               <tbody>
                 <tr style={{ verticalAlign: 'top', backgroundColor: '#FFFFFF' }}>
-                  <td style={{ width: '33.3%', backgroundColor: '#FFFFFF', color: '#000000' }}>
-                    <div style={{ fontSize: '10pt', fontWeight: 'bold', textTransform: 'uppercase' }}>
+                  <td style={{ width: '33.3%', backgroundColor: '#FFFFFF', color: '#000000', border: 'none' }}>
+                    <div style={{ fontSize: '9.5pt', fontWeight: 'bold', textTransform: 'uppercase' }}>
                       BÁC SĨ TRỰC GIAO BAN
                     </div>
-                    <div style={{ fontSize: '8.5pt', fontStyle: 'italic' }}>(Ký và ghi rõ họ tên)</div>
-                    <div style={{ height: '55px' }}></div>
+                    <div style={{ fontSize: '8pt', fontStyle: 'italic' }}>(Ký và ghi rõ họ tên)</div>
+                    <div style={{ height: '48px' }}></div>
                   </td>
-                  <td style={{ width: '33.3%', backgroundColor: '#FFFFFF', color: '#000000' }}>
-                    <div style={{ fontSize: '10pt', fontWeight: 'bold', textTransform: 'uppercase' }}>
+                  <td style={{ width: '33.3%', backgroundColor: '#FFFFFF', color: '#000000', border: 'none' }}>
+                    <div style={{ fontSize: '9.5pt', fontWeight: 'bold', textTransform: 'uppercase' }}>
                       TRƯỞNG PHÒNG KH-NV
                     </div>
-                    <div style={{ fontSize: '8.5pt', fontStyle: 'italic' }}>(Ký và ghi rõ họ tên)</div>
-                    <div style={{ height: '55px' }}></div>
+                    <div style={{ fontSize: '8pt', fontStyle: 'italic' }}>(Ký và ghi rõ họ tên)</div>
+                    <div style={{ height: '48px' }}></div>
                   </td>
-                  <td style={{ width: '33.3%', backgroundColor: '#FFFFFF', color: '#000000' }}>
-                    <div style={{ fontSize: '10pt', fontWeight: 'bold', textTransform: 'uppercase' }}>
+                  <td style={{ width: '33.3%', backgroundColor: '#FFFFFF', color: '#000000', border: 'none' }}>
+                    <div style={{ fontSize: '9.5pt', fontWeight: 'bold', textTransform: 'uppercase' }}>
                       BAN GIÁM ĐỐC
                     </div>
-                    <div style={{ fontSize: '8.5pt', fontStyle: 'italic' }}>(Ký, đóng dấu và ghi rõ họ tên)</div>
-                    <div style={{ height: '55px' }}></div>
+                    <div style={{ fontSize: '8pt', fontStyle: 'italic' }}>(Ký, đóng dấu và ghi rõ họ tên)</div>
+                    <div style={{ height: '48px' }}></div>
                   </td>
                 </tr>
               </tbody>
