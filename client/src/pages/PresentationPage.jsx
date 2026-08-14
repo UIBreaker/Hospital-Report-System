@@ -290,7 +290,105 @@ const parseDepartmentSections = (reportData, deptCode = '') => {
     return sections;
   }
 
-  // ================= 3. KHOA NHIỄM (NHIEM) =================
+  // ================= 3. HỒI SỨC CẤP CỨU – THẬN NHÂN TẠO (HSCC_TNT) =================
+  if (normalizedDept === 'hscc_tnt' || (data.hscc && data.tnt)) {
+    // 1. Phân công bác sĩ trực TNT (nếu có)
+    if (data.bsTrucTNT) {
+      sections.push({
+        type: 'personnel',
+        title: 'BÁC SĨ TRỰC THẬN NHÂN TẠO (TNT)',
+        value: String(data.bsTrucTNT)
+      });
+    }
+
+    // 2. KHỐI HỒI SỨC CẤP CỨU (HSCC) — ƯU TIÊN BÁO CÁO TRƯỚC
+    if (data.hscc && typeof data.hscc === 'object') {
+      const hsccItems = [];
+      const hsccKeyOrder = [
+        'tongSoKham', 'benhCu', 'benhMoi', 'xuatVien', 'chuyenVien', 'chuyenKhoa', 'hienCon',
+        'tuVong', 'keToa', 'ngoaiTru', 'tieuPhau', 'boBot', 'truyenMau', 'ccNgoaiVien'
+      ];
+
+      const hsccKeys = Object.keys(data.hscc).filter(k => k !== '_id' && data.hscc[k] !== null && data.hscc[k] !== undefined && data.hscc[k] !== '');
+      hsccKeys.sort((a, b) => {
+        const idxA = hsccKeyOrder.indexOf(a);
+        const idxB = hsccKeyOrder.indexOf(b);
+        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        if (idxA !== -1) return -1;
+        if (idxB !== -1) return 1;
+        return 0;
+      });
+
+      hsccKeys.forEach(k => {
+        hsccItems.push({ key: k, label: getLabel(k), value: String(data.hscc[k]) });
+      });
+
+      if (hsccItems.length > 0) {
+        sections.push({
+          title: 'KHỐI HỒI SỨC CẤP CỨU (HSCC)',
+          items: hsccItems
+        });
+      }
+    }
+
+    // 3. KHỐI THẬN NHÂN TẠO (TNT) — BÁO CÁO SAU
+    if (data.tnt && typeof data.tnt === 'object') {
+      const tntItems = [];
+      const tntKeyOrder = [
+        'tnt_ctdk', 'tnt_benhCu', 'tnt_benhMoi', 'tnt_xuatVien', 'tnt_chuyenVien', 'tnt_chuyenKhoa', 'tnt_noiTru', 'tnt_hienCon'
+      ];
+
+      const tntKeys = Object.keys(data.tnt).filter(k => k !== '_id' && data.tnt[k] !== null && data.tnt[k] !== undefined && data.tnt[k] !== '');
+      tntKeys.sort((a, b) => {
+        const idxA = tntKeyOrder.indexOf(a);
+        const idxB = tntKeyOrder.indexOf(b);
+        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        if (idxA !== -1) return -1;
+        if (idxB !== -1) return 1;
+        return 0;
+      });
+
+      tntKeys.forEach(k => {
+        tntItems.push({ key: k, label: getLabel(k), value: String(data.tnt[k]) });
+      });
+
+      if (tntItems.length > 0) {
+        sections.push({
+          title: 'KHỐI THẬN NHÂN TẠO (TNT)',
+          items: tntItems
+        });
+      }
+    }
+
+    // 4. PHÒNG KHÁM 21 (nếu có)
+    if (data.pk21 && typeof data.pk21 === 'object') {
+      const pkItems = [];
+      Object.entries(data.pk21).forEach(([k, v]) => {
+        if (v !== null && v !== undefined && v !== '' && k !== '_id') {
+          pkItems.push({ key: k, label: getLabel(k), value: String(v) });
+        }
+      });
+      if (pkItems.length > 0) {
+        sections.push({
+          title: 'PHÒNG KHÁM 21 (PK 21)',
+          items: pkItems
+        });
+      }
+    }
+
+    // 5. Ghi chú thêm giờ
+    if (data.themGio) {
+      sections.push({
+        type: 'note',
+        title: 'GHI CHÚ THÊM GIỜ & DIỄN BIẾN',
+        value: data.themGio
+      });
+    }
+
+    return sections;
+  }
+
+  // ================= 4. KHOA NHIỄM (NHIEM) =================
   if (normalizedDept === 'nhiem' || data.chuyenKhoaSan !== undefined || data.xinXuatVien !== undefined) {
     if (data.dieuDuongTruc) {
       sections.push({
@@ -334,7 +432,7 @@ const parseDepartmentSections = (reportData, deptCode = '') => {
     return sections;
   }
 
-  // ================= 4. CHẨN ĐOÁN HÌNH ẢNH (CDHA) =================
+  // ================= 5. CHẨN ĐOÁN HÌNH ẢNH (CDHA) =================
   if (data.techniques && Array.isArray(data.techniques)) {
     const docItems = [];
     if (data.bsSieuAm) docItems.push({ key: 'bsSieuAm', label: 'BS trực Siêu âm', value: String(data.bsSieuAm) });
@@ -367,9 +465,20 @@ const parseDepartmentSections = (reportData, deptCode = '') => {
     return sections;
   }
 
-  // ================= 5. UNIVERSAL / MULTI-BLOCK PARSER =================
+  // ================= 6. UNIVERSAL / MULTI-BLOCK PARSER =================
   const topKeys = Object.keys(data).filter(k => k !== '_id');
   const hasNestedObjects = topKeys.some(k => data[k] && typeof data[k] === 'object' && !Array.isArray(data[k]));
+
+  // Đảm bảo thứ tự ưu tiên các khối khi duyệt tự động (HSCC luôn đứng trước TNT)
+  const SECTION_PRIORITY = ['hscc', 'tnt', 'pk21', 'noiTru', 'ngoaiTru', 'keToa', 'khamBenh', 'dieuTri'];
+  topKeys.sort((a, b) => {
+    const idxA = SECTION_PRIORITY.indexOf(a);
+    const idxB = SECTION_PRIORITY.indexOf(b);
+    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+    if (idxA !== -1) return -1;
+    if (idxB !== -1) return 1;
+    return 0;
+  });
 
   const noteKeys = ['themGio', 'tinhHinhChung', 'ghiChu', 'hienConGhiChu', 'hienCoGhiChu', 'chuyenVienTT', 'nhanSu', 'dieuDuongTruc'];
 
@@ -1217,8 +1326,13 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
                   </div>
 
                   {/* Section & Metric Grid */}
-                  {sections.length > 0 ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1, justifyContent: 'center' }}>
+                  {sections.length > 0 ? (() => {
+                    const totalMetricsCount = sections.reduce((acc, s) => acc + (s.items ? s.items.length : 0), 0);
+                    const hasMultipleSections = sections.filter(s => s.items).length >= 2;
+                    const isCompactMode = totalMetricsCount > 8 || hasMultipleSections;
+
+                    return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: isCompactMode ? (isFullscreen ? '0.55rem' : '0.4rem') : '1rem', flex: 1, justifyContent: 'center' }}>
                       {sections.map((section, sIdx) => {
                         // 1. PERSONNEL BANNER VIEW
                         if (section.type === 'personnel') {
@@ -1384,12 +1498,14 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
                             {/* Section Title Header */}
                             {section.title && (
                               <div style={{
-                                fontSize: isFullscreen ? '1.25rem' : '1.05rem',
+                                fontSize: isCompactMode ? (isFullscreen ? '1.05rem' : '0.88rem') : (isFullscreen ? '1.25rem' : '1.05rem'),
                                 fontWeight: '800', color: '#0F2C59',
                                 backgroundColor: '#EFF6FF',
-                                padding: '0.6rem 1.2rem', borderRadius: '8px',
-                                borderLeft: '5px solid #2563EB',
-                                marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.5px'
+                                padding: isCompactMode ? (isFullscreen ? '0.35rem 0.85rem' : '0.22rem 0.65rem') : '0.6rem 1.2rem',
+                                borderRadius: isCompactMode ? '6px' : '8px',
+                                borderLeft: isCompactMode ? '4px solid #2563EB' : '5px solid #2563EB',
+                                marginBottom: isCompactMode ? (isFullscreen ? '0.45rem' : '0.32rem') : '1rem',
+                                textTransform: 'uppercase', letterSpacing: '0.5px'
                               }}>
                                 {section.title}
                               </div>
@@ -1398,10 +1514,10 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
                             {section.items && (
                               <div style={{
                                 display: 'grid',
-                                gridTemplateColumns: isFullscreen
-                                  ? 'repeat(auto-fit, minmax(280px, 1fr))'
-                                  : 'repeat(auto-fit, minmax(240px, 1fr))',
-                                gap: isFullscreen ? '1.1rem' : '0.85rem'
+                                gridTemplateColumns: isCompactMode
+                                  ? (isFullscreen ? 'repeat(auto-fill, minmax(200px, 1fr))' : 'repeat(auto-fill, minmax(170px, 1fr))')
+                                  : (isFullscreen ? 'repeat(auto-fit, minmax(280px, 1fr))' : 'repeat(auto-fit, minmax(240px, 1fr))'),
+                                gap: isCompactMode ? (isFullscreen ? '0.55rem' : '0.38rem') : (isFullscreen ? '1.1rem' : '0.85rem')
                               }}>
                                 {section.items.map((item, iIdx) => {
                                   const style = getMetricStyle(item.key, item.value);
@@ -1410,31 +1526,39 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
                                       key={iIdx}
                                       style={{
                                         backgroundColor: style.bg,
-                                        border: `2px solid ${style.border}`,
-                                        borderRadius: '12px',
-                                        padding: isFullscreen ? '1rem 1.4rem' : '0.75rem 1.1rem',
+                                        border: `${isCompactMode ? '1.5px' : '2px'} solid ${style.border}`,
+                                        borderRadius: isCompactMode ? '9px' : '12px',
+                                        padding: isCompactMode
+                                          ? (isFullscreen ? '0.45rem 0.8rem' : '0.32rem 0.6rem')
+                                          : (isFullscreen ? '1rem 1.4rem' : '0.75rem 1.1rem'),
                                         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                                        boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                                        boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
                                         transition: 'transform 0.15s',
-                                        minHeight: isFullscreen ? '90px' : '75px'
+                                        minHeight: isCompactMode
+                                          ? (isFullscreen ? '52px' : '44px')
+                                          : (isFullscreen ? '90px' : '75px')
                                       }}
                                     >
-                                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', paddingRight: '0.5rem' }}>
+                                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem', paddingRight: '0.4rem' }}>
                                         <span style={{
-                                          fontSize: isFullscreen ? '1.15rem' : '0.95rem',
+                                          fontSize: isCompactMode
+                                            ? (isFullscreen ? '0.92rem' : '0.78rem')
+                                            : (isFullscreen ? '1.15rem' : '0.95rem'),
                                           fontWeight: '700', color: style.label,
-                                          lineHeight: 1.3
+                                          lineHeight: 1.2
                                         }}>
                                           {item.label}
                                         </span>
                                         {style.badge && (
-                                          <span style={{ fontSize: '0.75rem', fontWeight: '800', color: '#DC2626' }}>
+                                          <span style={{ fontSize: isCompactMode ? '0.68rem' : '0.75rem', fontWeight: '800', color: '#DC2626' }}>
                                             {style.badge}
                                           </span>
                                         )}
                                       </div>
                                       <span style={{
-                                        fontSize: isFullscreen ? '2.4rem' : '1.8rem',
+                                        fontSize: isCompactMode
+                                          ? (isFullscreen ? '1.75rem' : '1.35rem')
+                                          : (isFullscreen ? '2.4rem' : '1.8rem'),
                                         fontWeight: '900', color: style.text,
                                         fontFamily: "'Roboto Mono', monospace",
                                         flexShrink: 0
@@ -1450,7 +1574,8 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
                         );
                       })}
                     </div>
-                  ) : (
+                    );
+                  })() : (
                     <div style={{ textAlign: 'center', color: '#94A3B8', fontSize: '1.4rem', paddingTop: '4rem' }}>
                       Không có số liệu báo cáo nào trong ca trực
                     </div>
