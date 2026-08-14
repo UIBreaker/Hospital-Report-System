@@ -1758,41 +1758,52 @@ const AdminDashboard = () => {
                           {isEditing ? (
                             <div className="form-grid">
                               <div className="form-group">
-                                <label>Tên / Tuổi / ĐC</label>
-                                <input type="text" value={tc.patientName || tc.patient_name || ''} onChange={(e) => handleTransferCaseChange(idx, 'patientName', e.target.value)} />
+                                <label>Họ và tên bệnh nhân</label>
+                                <input type="text" value={tc.patientName || tc.patient_name || ''} onChange={(e) => handleTransferCaseChange(idx, 'patientName', e.target.value)} placeholder="VD: Nguyễn Văn A" />
+                              </div>
+                              <div className="form-group">
+                                <label>Tuổi / Năm sinh</label>
+                                <input type="text" value={tc.age || ''} onChange={(e) => handleTransferCaseChange(idx, 'age', e.target.value)} placeholder="VD: 45 tuổi" />
+                              </div>
+                              <div className="form-group full-width">
+                                <label>Địa chỉ thường trú</label>
+                                <input type="text" value={tc.address || ''} onChange={(e) => handleTransferCaseChange(idx, 'address', e.target.value)} placeholder="VD: P. An Lộc, Bình Long, Bình Phước" />
                               </div>
                               <div className="form-group">
                                 <label>Giờ vào viện</label>
-                                <input type="text" value={tc.admissionTime || tc.admission_time || ''} onChange={(e) => handleTransferCaseChange(idx, 'admissionTime', e.target.value)} />
+                                <input type="text" value={tc.admissionTime || tc.admission_time || ''} onChange={(e) => handleTransferCaseChange(idx, 'admissionTime', e.target.value)} placeholder="08:30 ngày 14/08/2026" />
                               </div>
                               <div className="form-group full-width">
                                 <label>Lý do vào viện</label>
-                                <input type="text" value={tc.reason || ''} onChange={(e) => handleTransferCaseChange(idx, 'reason', e.target.value)} />
+                                <input type="text" value={tc.reason || ''} onChange={(e) => handleTransferCaseChange(idx, 'reason', e.target.value)} placeholder="Lý do..." />
                               </div>
                               <div className="form-group full-width">
-                                <label>Cận lâm sàng / XN</label>
-                                <textarea value={tc.clinicalTests || tc.clinical_tests || ''} onChange={(e) => handleTransferCaseChange(idx, 'clinicalTests', e.target.value)} className="note-field" rows={2} />
+                                <label>Cận lâm sàng / XN / X-Quang</label>
+                                <textarea value={tc.clinicalTests || tc.clinical_tests || ''} onChange={(e) => handleTransferCaseChange(idx, 'clinicalTests', e.target.value)} className="note-field" rows={2} placeholder="Kết quả CLS..." />
                               </div>
                               <div className="form-group full-width">
-                                <label>Chẩn đoán</label>
-                                <input type="text" value={tc.diagnosis || ''} onChange={(e) => handleTransferCaseChange(idx, 'diagnosis', e.target.value)} />
+                                <label style={{ color: '#B45309', fontWeight: '700' }}>Chẩn đoán xác định</label>
+                                <input type="text" value={tc.diagnosis || ''} onChange={(e) => handleTransferCaseChange(idx, 'diagnosis', e.target.value)} placeholder="Chẩn đoán..." />
                               </div>
                               <div className="form-group full-width">
                                 <label>Xử trí ban đầu</label>
-                                <textarea value={tc.initialTreatment || tc.initial_treatment || ''} onChange={(e) => handleTransferCaseChange(idx, 'initialTreatment', e.target.value)} className="note-field" rows={2} />
+                                <textarea value={tc.initialTreatment || tc.initial_treatment || ''} onChange={(e) => handleTransferCaseChange(idx, 'initialTreatment', e.target.value)} className="note-field" rows={2} placeholder="Thuốc, dịch truyền..." />
                               </div>
                               <div className="form-group full-width">
-                                <label>Diễn biến / Hội chẩn</label>
-                                <textarea value={tc.progressNotes || tc.progress_notes || ''} onChange={(e) => handleTransferCaseChange(idx, 'progressNotes', e.target.value)} className="note-field" rows={2} />
+                                <label>Diễn biến / Hội chẩn / Tình trạng chuyển</label>
+                                <textarea value={tc.progressNotes || tc.progress_notes || ''} onChange={(e) => handleTransferCaseChange(idx, 'progressNotes', e.target.value)} className="note-field" rows={2} placeholder="Diễn biến..." />
                               </div>
                             </div>
                           ) : (
                             <div style={{ fontSize: '0.875rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                              <div><strong>Bệnh nhân:</strong> {tc.patient_name || tc.patientName || '—'}</div>
+                              <div><strong>Bệnh nhân:</strong> {tc.patient_name || tc.patientName || '—'}{tc.age ? ` (${tc.age} tuổi)` : ''}</div>
+                              {tc.address && <div><strong>Địa chỉ:</strong> {tc.address}</div>}
                               <div><strong>Giờ vào:</strong> {tc.admission_time || tc.admissionTime || '—'}</div>
                               <div><strong>Lý do:</strong> {tc.reason || '—'}</div>
-                              <div><strong>Chẩn đoán:</strong> {tc.diagnosis || '—'}</div>
+                              {tc.clinical_tests || tc.clinicalTests ? <div><strong>Cận lâm sàng:</strong> {tc.clinical_tests || tc.clinicalTests}</div> : null}
+                              <div><strong>Chẩn đoán:</strong> <span style={{ color: '#B45309', fontWeight: '600' }}>{tc.diagnosis || '—'}</span></div>
                               <div><strong>Xử trí:</strong> {tc.initial_treatment || tc.initialTreatment || '—'}</div>
+                              {tc.progress_notes || tc.progressNotes ? <div><strong>Diễn biến / Hội chẩn:</strong> {tc.progress_notes || tc.progressNotes}</div> : null}
                             </div>
                           )}
                         </div>
