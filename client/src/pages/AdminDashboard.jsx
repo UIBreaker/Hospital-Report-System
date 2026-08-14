@@ -53,6 +53,7 @@ import { generateAndDownloadHospitalExcel } from '../services/excelExportService
 import MedicalPrintView from '../components/common/MedicalPrintView';
 import CaseImageUploader from '../components/common/CaseImageUploader';
 import Footer from '../components/common/Footer';
+import { Button, Badge, Modal, Notice, Skeleton, EmptyState, TableWrapper, Table } from '../components/ui';
 
 import {
   HoiSucCapCuuForm,
@@ -998,7 +999,7 @@ const AdminDashboard = () => {
   const nurseCount = staffList.filter(s => s.position !== 'Bác sĩ' && !s.position?.toLowerCase().includes('bác sĩ')).length;
 
   return (
-    <div className="admin-container" style={{ maxWidth: '1280px', margin: '0 auto', padding: '1.5rem' }}>
+    <div className="admin-container admin-dashboard-wrapper app-page" style={{ maxWidth: '1280px', margin: '0 auto', padding: '1.5rem' }}>
       {/* Top Header Card */}
       <header className="card admin-header" style={{ marginBottom: '1.5rem', padding: '1.25rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#FFFFFF', flexWrap: 'wrap', gap: '1rem' }}>
         <div className="admin-header-left" style={{ display: 'flex', alignItems: 'center', gap: '1.2rem' }}>
@@ -1165,8 +1166,9 @@ const AdminDashboard = () => {
       </header>
 
       {/* Navigation Tabs Bar */}
-      <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', borderBottom: '2px solid #E2E8F0', paddingBottom: '0.5rem', flexWrap: 'wrap' }}>
+      <div className="admin-tabs" role="tablist" aria-label="Các khu vực quản trị" style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', borderBottom: '2px solid #E2E8F0', paddingBottom: '0.5rem', flexWrap: 'wrap' }}>
         <button
+          className={`admin-tab ${activeTab === 'reports' ? 'is-active' : ''}`}
           onClick={() => setActiveTab('reports')}
           style={{
             display: 'flex', alignItems: 'center', gap: '0.5rem',
@@ -1182,6 +1184,7 @@ const AdminDashboard = () => {
         </button>
 
         <button
+          className={`admin-tab ${activeTab === 'staff' ? 'is-active' : ''}`}
           onClick={() => setActiveTab('staff')}
           style={{
             display: 'flex', alignItems: 'center', gap: '0.5rem',
@@ -1197,6 +1200,7 @@ const AdminDashboard = () => {
         </button>
         
         <button
+          className={`admin-tab ${activeTab === 'database' ? 'is-active' : ''}`}
           onClick={() => setActiveTab('database')}
           style={{
             display: 'flex', alignItems: 'center', gap: '0.5rem',
@@ -1212,6 +1216,7 @@ const AdminDashboard = () => {
         </button>
 
         <button
+          className={`admin-tab ${activeTab === 'accounts' ? 'is-active' : ''}`}
           onClick={() => setActiveTab('accounts')}
           style={{
             display: 'flex', alignItems: 'center', gap: '0.5rem',

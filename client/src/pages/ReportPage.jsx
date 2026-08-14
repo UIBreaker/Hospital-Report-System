@@ -16,6 +16,7 @@ import {
 } from 'react-icons/fa';
 import reportService from '../services/reportService';
 import staffService from '../services/staffService';
+import { Button, Modal, Notice } from '../components/ui';
 
 import HoiSucCapCuuForm from '../components/forms/departments/HoiSucCapCuuForm';
 import ChuanDoanHinhAnhForm from '../components/forms/departments/ChuanDoanHinhAnhForm';
@@ -460,7 +461,7 @@ const ReportPage = () => {
   }
 
   return (
-    <div className="report-page-wrapper" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+    <div className="report-page-wrapper app-page" style={{ maxWidth: '1200px', margin: '0 auto' }}>
       {/* Brand Header */}
       <header className="card report-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', padding: '1rem 1.5rem', background: '#FFFFFF' }}>
         <div className="report-header-left" style={{ display: 'flex', alignItems: 'center', gap: '1.2rem' }}>
@@ -478,6 +479,20 @@ const ReportPage = () => {
           <FaSignOutAlt /> Đăng xuất
         </button>
       </header>
+
+      <div className="report-workflow" aria-label="Tiến độ nhập báo cáo">
+        <div className={`workflow-step ${step === 1 ? 'is-active' : 'is-complete'}`}>
+          <span>1</span><div><strong>Ca trực</strong><small>Nhân sự & thời gian</small></div>
+        </div>
+        <div className="workflow-line" />
+        <div className={`workflow-step ${step === 2 ? 'is-active' : ''}`}>
+          <span>2</span><div><strong>Nội dung báo cáo</strong><small>Số liệu & ca bệnh</small></div>
+        </div>
+        <div className="workflow-status">
+          <i className={existingReportLoaded ? 'status-dot status-info' : 'status-dot'} />
+          {existingReportLoaded ? 'Đang chỉnh sửa báo cáo đã nộp' : 'Bản nháp chưa gửi'}
+        </div>
+      </div>
 
       {step === 1 ? (
         <div className="card animate-fade-in" style={{ maxWidth: '680px', margin: '0 auto' }}>
@@ -724,7 +739,7 @@ const ReportPage = () => {
           </div>
 
           {/* Dynamic department form */}
-          <div className="card" style={{ marginBottom: '1.5rem' }}>
+          <div className="card" style={{ marginBottom: '1.5rem', backgroundColor: '#FFFFFF' }}>
             {FormComponent ? (
               <FormComponent 
                 reportDate={headerData.reportDate}
@@ -759,46 +774,54 @@ const ReportPage = () => {
 
           {/* Submit error */}
           {submitError && (
-            <div style={{ backgroundColor: 'var(--danger-light)', color: 'var(--danger)', padding: '1rem', borderRadius: 'var(--radius-md)', marginBottom: '1rem', fontSize: '0.9rem' }}>
-              ❌ {submitError}
+            <div style={{ marginBottom: '1.25rem' }}>
+              <Notice tone="danger" onClose={() => setSubmitError('')}>
+                {submitError}
+              </Notice>
             </div>
           )}
 
-          {/* Submit button */}
+          {/* Sticky/Bottom Submit button */}
           <div className="submit-area" style={{ display: 'flex', justifyContent: 'center', padding: '1rem 0 2rem' }}>
-            {!showConfirm ? (
-              <button 
-                className="btn btn-primary"
-                onClick={() => setShowConfirm(true)}
-                style={{ fontSize: '1.1rem', padding: '0.9rem 3rem' }}
-              >
-                <FaPaperPlane /> Gửi Báo Cáo Giao Ban
-              </button>
-            ) : (
-              <div className="card confirm-card" style={{ textAlign: 'center', padding: '2rem', maxWidth: '500px', border: '2px solid var(--warning)', width: '100%' }}>
-                <p style={{ marginBottom: '1.5rem', fontSize: '1rem', fontWeight: '600' }}>
-                  ⚠️ Xác nhận gửi báo cáo ngày {headerData.reportDate} của khoa {user?.departmentName}?
-                </p>
-                <div className="btn-row" style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-                  <button 
-                    className="btn btn-primary"
-                    onClick={handleSubmit}
-                    disabled={submitting}
-                    style={{ padding: '0.75rem 2rem' }}
-                  >
-                    {submitting ? <><FaSpinner className="spinner" /> Đang gửi...</> : <>✅ Xác nhận gửi</>}
-                  </button>
-                  <button 
-                    className="btn btn-secondary"
-                    onClick={() => setShowConfirm(false)}
-                    disabled={submitting}
-                  >
-                    Hủy
-                  </button>
-                </div>
-              </div>
-            )}
+            <Button 
+              variant="primary"
+              size="lg"
+              icon={FaPaperPlane}
+              onClick={() => setShowConfirm(true)}
+              style={{ padding: '0.85rem 3rem', fontSize: '1.05rem', boxShadow: '0 8px 20px rgba(15, 44, 89, 0.25)' }}
+            >
+              Gửi Báo Cáo Giao Ban
+            </Button>
           </div>
+
+          {/* Confirm Submission Modal */}
+          <Modal
+            isOpen={showConfirm}
+            onClose={() => setShowConfirm(false)}
+            title="Xác Nhận Nộp Báo Cáo Giao Ban"
+            description={`Khoa: ${user?.departmentName} • Ngày báo cáo: ${headerData.reportDate}`}
+            footer={(
+              <>
+                <Button variant="secondary" onClick={() => setShowConfirm(false)} disabled={submitting}>
+                  Hủy Bỏ
+                </Button>
+                <Button variant="success" loading={submitting} onClick={handleSubmit}>
+                  ✅ Đồng Ý & Nộp Báo Cáo
+                </Button>
+              </>
+            )}
+          >
+            <div style={{ fontSize: '0.92rem', color: '#334155', lineHeight: '1.6' }}>
+              <p style={{ margin: '0 0 0.85rem' }}>
+                Báo cáo của khoa sẽ được lưu vào hệ thống dữ liệu toàn viện và đưa vào <strong>Trình Chiếu Giao Ban Sáng</strong> phục vụ Ban Giám Đốc.
+              </p>
+              <div style={{ backgroundColor: '#F8FAFC', padding: '0.85rem 1rem', borderRadius: '8px', border: '1px solid #E2E8F0', fontSize: '0.85rem' }}>
+                <div>👨‍⚕️ <strong>Bác sĩ trực:</strong> {cleanDoctorName}</div>
+                {cleanNurseNames.length > 0 && <div style={{ marginTop: '3px' }}>👩‍⚕️ <strong>Điều dưỡng:</strong> {cleanNurseNames.join(', ')}</div>}
+                <div style={{ marginTop: '3px' }}>📋 <strong>Số ca lâm sàng:</strong> {transferCases.length} chuyển viện • {surgeryCases.length} ca mổ • {deathCases.length} tử vong • {criticalCases.length} bệnh nặng</div>
+              </div>
+            </div>
+          </Modal>
         </div>
       )}
 

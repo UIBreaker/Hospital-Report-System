@@ -964,6 +964,7 @@ const PresentationPage = () => {
   return (
     <div
       ref={containerRef}
+      className="presentation-shell"
       style={{
         display: 'flex', height: '100vh', width: '100vw',
         backgroundColor: '#071224', color: '#1E293B',
@@ -973,7 +974,7 @@ const PresentationPage = () => {
     >
       {/* ===================== SIDEBAR ===================== */}
       {!isFullscreen && (
-        <div className="no-print" style={{
+        <div className="no-print presentation-sidebar" style={{
           width: '280px', backgroundColor: '#0F172A',
           borderRight: '1px solid #1E293B',
           display: 'flex', flexDirection: 'column', flexShrink: 0
@@ -1088,7 +1089,7 @@ const PresentationPage = () => {
       )}
 
       {/* ===================== MAIN STAGE ===================== */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100vh', position: 'relative' }}>
+      <div className="presentation-main" style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100vh', position: 'relative' }}>
 
         {/* Top Floating Progress Bar */}
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', backgroundColor: 'rgba(255,255,255,0.08)', zIndex: 30 }}>
@@ -1112,7 +1113,7 @@ const PresentationPage = () => {
         >
           <div 
             key={currentSlide}
-            className={`slide-card-animated ${slideDirection === 'next' ? 'slide-enter-next' : 'slide-enter-prev'}`}
+            className={`slide-card-animated presentation-canvas ${slideDirection === 'next' ? 'slide-enter-next' : 'slide-enter-prev'}`}
             style={{
               width: '100%',
               maxWidth: isFullscreen ? '1600px' : '1280px',

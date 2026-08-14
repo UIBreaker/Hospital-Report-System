@@ -843,6 +843,111 @@ label {
   animation: metricPopAnim 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* ==========================================================
+   REDESIGN LAYER — calm, high-clarity clinical workspace
+   ========================================================== */
+:root {
+  --canvas: #f4f7fb;
+  --ink: #14213d;
+  --surface-raised: #ffffff;
+  --surface-tint: #f8fbff;
+  --line: #dce5f0;
+  --focus-ring: 0 0 0 4px rgba(32, 101, 209, .14);
+  --radius-control: 12px;
+  --radius-panel: 18px;
+  --space-1: .5rem;
+  --space-2: .75rem;
+  --space-3: 1rem;
+  --space-4: 1.5rem;
+  --space-5: 2rem;
+}
+
+body { background: var(--canvas); }
+.app-page { padding: 1.5rem 1rem 3rem; }
+.card, .form-section {
+  border-color: var(--line);
+  border-radius: var(--radius-panel);
+  box-shadow: 0 8px 24px rgba(20, 33, 61, .055);
+}
+.card:hover { box-shadow: 0 12px 30px rgba(20, 33, 61, .08); }
+input, textarea, select { border-color: var(--line); border-radius: var(--radius-control); background: #fff; }
+input:focus, textarea:focus, select:focus { box-shadow: var(--focus-ring); }
+.btn { min-height: 40px; border-radius: 10px; font-weight: 700; letter-spacing: .01em; }
+.btn-primary { background: linear-gradient(135deg, #12366e 0%, #2463bd 100%); }
+.btn-secondary { border-color: var(--line); }
+.badge-info { background: #e9f2ff; color: #1c5bb2; }
+.ui-notice { display: flex; gap: .6rem; align-items: flex-start; padding: .85rem 1rem; border: 1px solid; border-radius: 12px; font-size: .875rem; font-weight: 600; }
+.ui-notice-info { background: #eff6ff; border-color: #c7ddff; color: #1d4f91; }
+.ui-notice-success { background: #edf9f0; border-color: #bce4c4; color: #176a35; }
+.ui-notice-warning { background: #fff8e7; border-color: #f4d890; color: #86520b; }
+.ui-notice-danger { background: #fff0f1; border-color: #ffc8ce; color: #af2536; }
+
+/* Login: a focused, trustworthy entry point */
+.login-wrapper { background: linear-gradient(145deg, #0b2447 0%, #12366e 53%, #176147 100%); }
+.login-wrapper::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 10% 85%, rgba(117, 209, 180, .17), transparent 32%), radial-gradient(circle at 92% 12%, rgba(148, 194, 255, .22), transparent 30%); pointer-events: none; }
+.login-bg-overlay { border-radius: 50%; filter: blur(2px); }
+.login-card { position: relative; border: 1px solid rgba(255,255,255,.65); box-shadow: 0 28px 70px rgba(3, 17, 42, .28); }
+.login-card form { position: relative; }
+.login-card .btn-primary { min-height: 48px; }
+
+/* Report workspace */
+.report-page-wrapper { max-width: 1240px !important; }
+.report-header, .admin-header { position: relative; overflow: hidden; }
+.report-header::before, .admin-header::before { content: ''; position: absolute; inset: 0 auto 0 0; width: 5px; background: linear-gradient(#d8404d, #1e62bc); }
+.report-workflow { display: flex; align-items: center; gap: .8rem; padding: .85rem 1.1rem; margin: -0.45rem 0 1.35rem; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,255,255,.82); box-shadow: 0 5px 18px rgba(20,33,61,.04); }
+.workflow-step { display: flex; align-items: center; gap: .65rem; color: #76849b; min-width: 0; }
+.workflow-step span { display: grid; place-items: center; width: 28px; height: 28px; flex: 0 0 auto; border-radius: 50%; background: #e7edf5; color: #65758c; font-size: .8rem; font-weight: 800; }
+.workflow-step strong, .workflow-step small { display: block; line-height: 1.25; }
+.workflow-step strong { font-size: .8rem; color: inherit; }
+.workflow-step small { margin-top: .1rem; font-size: .7rem; }
+.workflow-step.is-active { color: #144f9b; }
+.workflow-step.is-active span { color: #fff; background: #2463bd; box-shadow: 0 3px 9px rgba(36,99,189,.3); }
+.workflow-step.is-complete { color: #1e7650; }
+.workflow-step.is-complete span { color: #fff; background: #2d8d62; }
+.workflow-line { width: 40px; height: 1px; background: #cad5e3; }
+.workflow-status { margin-left: auto; display: flex; align-items: center; gap: .45rem; color: #607087; font-size: .75rem; font-weight: 650; text-align: right; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: #e59a22; box-shadow: 0 0 0 3px #fff5dc; }
+.status-dot.status-info { background: #2a73d5; box-shadow: 0 0 0 3px #e7f1ff; }
+.report-page-wrapper .form-section { margin-top: 1.25rem !important; }
+.report-page-wrapper .form-section > div:first-child { padding-bottom: .75rem; border-bottom: 1px solid rgba(20,33,61,.08); }
+
+/* Admin: dashboard navigation and data scanning */
+.admin-container { max-width: 1360px !important; }
+.admin-tabs { gap: .45rem !important; padding: .45rem !important; border: 1px solid var(--line) !important; border-radius: 14px; background: #eef3f9; }
+.admin-tab { border-radius: 10px !important; }
+.admin-tab:not(.is-active) { background: transparent !important; }
+.admin-tab.is-active { background: #153d7a !important; }
+.admin-stats-card { border: 1px solid rgba(20,33,61,.06); box-shadow: 0 6px 16px rgba(20,33,61,.04); }
+.admin-dept-grid > .card, .admin-dept-grid > div { border-radius: 14px !important; }
+.date-picker-wrapper { border-radius: 12px !important; }
+
+/* Presentation: quieter chrome, larger visual focus */
+.presentation-shell { background: radial-gradient(circle at 70% 5%, #183d76 0, #071224 42%) !important; }
+.presentation-sidebar { box-shadow: 10px 0 30px rgba(0,0,0,.16); z-index: 3; }
+.presentation-canvas { border: 1px solid rgba(255,255,255,.65); box-shadow: 0 28px 70px -18px rgba(0,0,0,.48) !important; }
+
+@media (max-width: 768px) {
+  .app-page { padding: .85rem .75rem 5rem; }
+  .report-workflow { align-items: stretch; gap: .55rem; padding: .75rem; }
+  .workflow-step { flex: 1; }
+  .workflow-step small { display: none; }
+  .workflow-line { width: 12px; align-self: center; }
+  .workflow-status { position: absolute; margin-top: 44px; right: 1rem; font-size: .67rem; }
+  .report-workflow { margin-bottom: 2.3rem; }
+  .admin-tabs { flex-wrap: nowrap !important; overflow-x: auto; }
+  .admin-tab { white-space: nowrap; flex: 0 0 auto; }
+  .presentation-sidebar { width: 230px !important; }
+}
+
+@media (max-width: 560px) {
+  .report-header, .admin-header { border-radius: 14px; }
+  .workflow-step strong { font-size: .72rem; }
+  .workflow-step span { width: 24px; height: 24px; }
+  .workflow-line { display: none; }
+  .presentation-sidebar { display: none !important; }
+  .presentation-canvas { border-radius: 12px !important; }
+}
+
 @keyframes slideNextAnim {
   0% {
     opacity: 0;
@@ -906,4 +1011,3 @@ label {
 .contain-layout-style {
   contain: layout style;
 }
-
