@@ -33,6 +33,9 @@ const parseCaseImages = (caseItem) => {
 const createOrUpdateReport = async (req, res, next) => {
   const connection = await pool.getConnection();
   try {
+    if (pool.ensureSchema) {
+      await pool.ensureSchema(connection);
+    }
     await connection.beginTransaction();
     const {
       departmentCode,

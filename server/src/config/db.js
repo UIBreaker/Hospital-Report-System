@@ -34,6 +34,49 @@ const poolConfig = process.env.DATABASE_URL
 
 const pool = mysql.createPool(poolConfig);
 
+let schemaInitialized = false;
+
+const ensureSchema = async (connOrPool) => {
+  if (schemaInitialized) return;
+  let connection = connOrPool;
+  let shouldRelease = false;
+
+  try {
+    if (!connection || typeof connection.beginTransaction !== 'function') {
+      connection = await pool.getConnection();
+      shouldRelease = true;
+    }
+
+    const alters = [
+      'ALTER TABLE transfer_cases ADD COLUMN clinical_symptoms TEXT DEFAULT NULL AFTER reason',
+      'ALTER TABLE transfer_cases ADD COLUMN clinical_tests TEXT DEFAULT NULL AFTER clinical_symptoms',
+      'ALTER TABLE surgery_cases ADD COLUMN clinical_symptoms TEXT DEFAULT NULL AFTER reason',
+      'ALTER TABLE surgery_cases ADD COLUMN clinical_tests TEXT DEFAULT NULL AFTER clinical_symptoms',
+      'ALTER TABLE death_cases ADD COLUMN clinical_symptoms TEXT DEFAULT NULL AFTER admission_status',
+      'ALTER TABLE death_cases ADD COLUMN clinical_tests TEXT DEFAULT NULL AFTER medical_history',
+      'ALTER TABLE critical_cases ADD COLUMN clinical_symptoms TEXT DEFAULT NULL AFTER medical_history',
+      'ALTER TABLE critical_cases ADD COLUMN clinical_tests TEXT DEFAULT NULL AFTER clinical_symptoms'
+    ];
+
+    for (const sql of alters) {
+      try {
+        await connection.query(sql);
+      } catch (e) {
+        // Ignore duplicate column errors
+      }
+    }
+    schemaInitialized = true;
+  } catch (err) {
+    console.warn('Schema auto-migration check warning:', err.message);
+  } finally {
+    if (shouldRelease && connection) {
+      connection.release();
+    }
+  }
+};
+
+pool.ensureSchema = ensureSchema;
+
 // Warm up the pool and verify connection on startup (only in non-serverless dev mode)
 if (!process.env.VERCEL) {
   const connectWithRetry = async () => {
@@ -43,8 +86,9 @@ if (!process.env.VERCEL) {
       try {
         const conn = await pool.getConnection();
         await conn.query('SELECT 1');
+        await ensureSchema(conn);
         conn.release();
-        console.log('✅ MySQL connected successfully (attempt', attempt + ')');
+        console.log('✅ MySQL connected & schema verified successfully (attempt', attempt + ')');
         return;
       } catch (err) {
         console.error(`⚠️  MySQL not ready (attempt ${attempt}): ${err.message} — retrying in 3s...`);
