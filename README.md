@@ -14,7 +14,7 @@
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel%20App-0070F3?style=for-the-badge&logo=vercel&logoColor=white)](https://hospital-report-system.vercel.app/)
 [![Author](https://img.shields.io/badge/Author-Nguyen%20Vu%20Nhat%20Nam%20(2004)-0F2C59?style=for-the-badge&logo=github)](https://github.com/UIBreaker/Hospital-Report-System)
-[![Version](https://img.shields.io/badge/Version-1.11.6-10B981?style=for-the-badge)](https://hospital-report-system.vercel.app/)
+[![Version](https://img.shields.io/badge/Version-1.13.0-10B981?style=for-the-badge)](https://hospital-report-system.vercel.app/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
 </div>
@@ -25,7 +25,7 @@
 
 **Hệ Thống Báo Cáo Giao Ban Trực Tuyến** là giải pháp phần mềm chuyển đổi số y tế hiện đại, thay thế hoàn toàn phương thức báo cáo giao ban truyền thống bằng giấy tờ và file bảng tính rời rạc tại **Trung Tâm Y Tế Khu Vực Bình Long (Sở Y Tế Tỉnh Bình Phước)**.
 
-Phần mềm được thiết kế đồng bộ theo chuẩn nhận diện thương hiệu y tế bệnh viện, cung cấp quy trình nhập liệu nhanh chóng cho các Bác sĩ & Điều dưỡng trực thuộc **12 khoa phòng chuyên môn**, đồng thời trang bị **Trợ lý Y Tế AI**, **thanh tìm kiếm nhân sự đánh số thứ tự thông minh**, **hỗ trợ nhiều điều dưỡng trực ca**, **tự động nạp lại báo cáo cũ khi chọn ngày**, **quản lý ca bệnh chuyển viện - phẫu thuật - tử vong khẩn cấp**, **xuất Excel đa Sheet chuyên nghiệp (`ExcelJS`)**, **in ấn chuẩn A4 & tải trực tiếp file PDF (`html2pdf.js`)**, cùng **chế độ trình chiếu giao ban toàn màn hình (Presentation Mode)** phục vụ các cuộc họp giao ban buổi sáng của Ban Giám Đốc.
+Phần mềm được thiết kế đồng bộ theo chuẩn nhận diện thương hiệu y tế bệnh viện, cung cấp quy trình nhập liệu nhanh chóng cho các Bác sĩ & Điều dưỡng trực thuộc **12 khoa phòng chuyên môn**, đồng thời trang bị **Trợ lý Y Tế AI**, **thanh tìm kiếm nhân sự đánh số thứ tự thông minh**, **hỗ trợ nhiều điều dưỡng trực ca**, **phân tách độc lập thông tin ca chuyển viện (Họ tên, tuổi, địa chỉ, diễn biến)**, **tự động nạp lại báo cáo cũ khi chọn ngày**, **quản lý ca bệnh chuyển viện - phẫu thuật - tử vong khẩn cấp**, **xuất Excel đa Sheet chuyên môn động (`ExcelJS`)**, **xuất toàn bộ Trình chiếu ra file PowerPoint (.pptx) động (`pptxgenjs`)**, **in ấn chuẩn A4 & tải trực tiếp file PDF (`html2pdf.js`)**, cùng **chế độ trình chiếu giao ban toàn màn hình (Presentation Mode)** phục vụ các cuộc họp giao ban buổi sáng của Ban Giám Đốc.
 
 ---
 
@@ -39,6 +39,7 @@ Phần mềm được thiết kế đồng bộ theo chuẩn nhận diện thư�
 ![Express.js](https://img.shields.io/badge/Express.js-5.x-000000?style=flat-square&logo=express&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-8.x%20%2F%20Aiven%20Cloud-4479A1?style=flat-square&logo=mysql&logoColor=white)
 ![ExcelJS](https://img.shields.io/badge/ExcelJS-4.4.x-217346?style=flat-square&logo=microsoftexcel&logoColor=white)
+![pptxgenjs](https://img.shields.io/badge/pptxgenjs-3.12.x-D97706?style=flat-square&logo=microsoftpowerpoint&logoColor=white)
 ![html2pdf.js](https://img.shields.io/badge/html2pdf.js-0.10.x-E11D48?style=flat-square&logo=adobeacrobatreader&logoColor=white)
 ![Playwright](https://img.shields.io/badge/Playwright-E2E%20Testing-45ba4b?style=flat-square&logo=playwright&logoColor=white)
 ![JWT](https://img.shields.io/badge/JWT-30--Day%20Persistence-black?style=flat-square&logo=jsonwebtokens)
