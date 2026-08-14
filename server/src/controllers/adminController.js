@@ -1,5 +1,21 @@
 const pool = require('../config/db');
 
+const parseCaseImages = (caseItem) => {
+  if (!caseItem) return caseItem;
+  let images = caseItem.images;
+  if (typeof images === 'string') {
+    try {
+      images = JSON.parse(images);
+    } catch (e) {
+      images = [images];
+    }
+  }
+  return {
+    ...caseItem,
+    images: Array.isArray(images) ? images : (images ? [images] : [])
+  };
+};
+
 const DEPARTMENT_ORDER = [
   'lck',
   'xn',
@@ -51,22 +67,6 @@ const getPresentationData = async (req, res, next) => {
       if (typeof overtimeStaff === 'string') {
         try { overtimeStaff = JSON.parse(overtimeStaff); } catch (e) { overtimeStaff = []; }
       }
-      
-const parseCaseImages = (caseItem) => {
-  if (!caseItem) return caseItem;
-  let images = caseItem.images;
-  if (typeof images === 'string') {
-    try {
-      images = JSON.parse(images);
-    } catch (e) {
-      images = [images];
-    }
-  }
-  return {
-    ...caseItem,
-    images: Array.isArray(images) ? images : (images ? [images] : [])
-  };
-};
 
       presentationData.push({
         ...report,
@@ -237,7 +237,7 @@ const exportReports = async (req, res, next) => {
     }
 
     const workbook = await generateHospitalExcelReport(date, deptUsers, detailedReports);
-    const filename = `Bao_Cao_Giao_Ban_Toan_Vien_${date}.xlsx`;
+    const filename = `Bao_Cao_Giao_Ban_Tong_Hop_${date}.xlsx`;
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);

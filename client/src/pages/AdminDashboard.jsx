@@ -7,7 +7,9 @@ import {
   FaTv, 
   FaPrint,
   FaFileExcel,
+  FaFilePdf,
   FaDownload,
+  FaChevronDown,
   FaCheck, 
   FaTimes, 
   FaSpinner, 
@@ -38,6 +40,7 @@ import {
 } from 'react-icons/fa';
 import reportService from '../services/reportService';
 import staffService from '../services/staffService';
+import { generateAndDownloadHospitalExcel } from '../services/excelExportService';
 import MedicalPrintView from '../components/common/MedicalPrintView';
 import CaseImageUploader from '../components/common/CaseImageUploader';
 import Footer from '../components/common/Footer';
@@ -555,25 +558,37 @@ const AdminDashboard = () => {
     }
   };
 
+  const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
   const [exportingExcel, setExportingExcel] = useState(false);
 
   const handleExportExcel = async () => {
+    setExportDropdownOpen(false);
     setExportingExcel(true);
     try {
-      const response = await reportService.exportHospitalReportExcel(date);
-      const blob = new Blob([response.data], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      });
-      const downloadUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.setAttribute('download', `Bao_Cao_Giao_Ban_Toan_Vien_${date}.xlsx`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(downloadUrl);
+      // 1. Fetch live full details/presentation data
+      const res = await reportService.getPresentationData(date);
+      const reports = (res && res.data) ? res.data : [];
+
+      // 2. Generate with exceljs in browser (3 Sheets, beautiful formatting)
+      await generateAndDownloadHospitalExcel(date, reports, statusList);
     } catch (err) {
-      alert('Không thể xuất file Excel: ' + (err.response?.data?.error || err.message || 'Lỗi hệ thống'));
+      console.warn('Client Excel generation failed, falling back to server export:', err);
+      try {
+        const response = await reportService.exportHospitalReportExcel(date);
+        const blob = new Blob([response.data], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.setAttribute('download', `Bao_Cao_Giao_Ban_Tong_Hop_${date}.xlsx`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(downloadUrl);
+      } catch (fallbackErr) {
+        alert('Không thể xuất file Excel: ' + (fallbackErr.response?.data?.error || fallbackErr.message || err.message || 'Lỗi hệ thống'));
+      }
     } finally {
       setExportingExcel(false);
     }
@@ -838,44 +853,129 @@ const AdminDashboard = () => {
 
           {activeTab === 'reports' && (
             <>
-              <button 
-                className="btn btn-secondary" 
-                onClick={handleExportExcel} 
-                disabled={exportingExcel} 
-                style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '0.5rem', 
-                  backgroundColor: '#107C41', // Microsoft Excel Green
-                  color: '#FFFFFF', 
-                  borderColor: '#0B5C30',
-                  boxShadow: '0 2px 6px rgba(16, 124, 65, 0.25)',
-                  fontWeight: '700'
-                }}
-                title="Xuất file Excel tổng hợp toàn viện gồm 3 Sheet: Tổng hợp, Chi tiết Ca trực, Chi tiết Bệnh lý"
-              >
-                {exportingExcel ? (
-                  <><FaSpinner className="spinner" /> Đang tạo Excel...</>
-                ) : (
-                  <><FaFileExcel style={{ fontSize: '1.05rem' }} /> Xuất Báo Cáo Excel</>
-                )}
-              </button>
+              {/* Dropdown Xuất Báo Cáo */}
+              <div style={{ position: 'relative', display: 'inline-block' }}>
+                <button 
+                  className="btn btn-secondary" 
+                  onClick={() => setExportDropdownOpen(!exportDropdownOpen)} 
+                  disabled={exportingExcel || loadingPrint} 
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '0.5rem', 
+                    backgroundColor: '#0F2C59',
+                    color: '#FFFFFF', 
+                    borderColor: '#1E3A8A',
+                    boxShadow: '0 2px 8px rgba(15, 44, 89, 0.25)',
+                    fontWeight: '700'
+                  }}
+                  title="Tùy chọn xuất báo cáo tổng hợp toàn viện"
+                >
+                  {exportingExcel ? (
+                    <><FaSpinner className="spinner" /> Đang tạo Excel...</>
+                  ) : loadingPrint ? (
+                    <><FaSpinner className="spinner" /> Đang nạp PDF...</>
+                  ) : (
+                    <>
+                      <FaDownload style={{ fontSize: '0.95rem', color: '#60A5FA' }} />
+                      <span>Xuất Báo Cáo</span>
+                      <FaChevronDown style={{ fontSize: '0.75rem', marginLeft: '0.2rem', transition: 'transform 0.2s', transform: exportDropdownOpen ? 'rotate(180deg)' : 'none' }} />
+                    </>
+                  )}
+                </button>
 
-              <button 
-                className="btn btn-secondary" 
-                onClick={handleOpenPrint} 
-                disabled={loadingPrint} 
-                style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '0.5rem', 
-                  backgroundColor: '#059669', 
-                  color: '#FFFFFF', 
-                  borderColor: '#047857' 
-                }}
-              >
-                <FaPrint /> {loadingPrint ? <><FaSpinner className="spinner" /> Đang nạp...</> : 'Xuất / In Báo Cáo Y Tế'}
-              </button>
+                {exportDropdownOpen && (
+                  <>
+                    <div 
+                      style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 90 }} 
+                      onClick={() => setExportDropdownOpen(false)} 
+                    />
+                    <div 
+                      style={{
+                        position: 'absolute',
+                        top: 'calc(100% + 6px)',
+                        right: 0,
+                        backgroundColor: '#FFFFFF',
+                        borderRadius: '10px',
+                        boxShadow: '0 10px 30px rgba(0,0,0,0.2), 0 0 0 1px rgba(0,0,0,0.08)',
+                        zIndex: 100,
+                        minWidth: '240px',
+                        overflow: 'hidden'
+                      }}
+                    >
+                      <button
+                        onClick={handleExportExcel}
+                        style={{
+                          width: '100%',
+                          textAlign: 'left',
+                          padding: '0.85rem 1.1rem',
+                          backgroundColor: 'transparent',
+                          border: 'none',
+                          borderBottom: '1px solid #F1F5F9',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.75rem',
+                          cursor: 'pointer',
+                          fontWeight: '600',
+                          fontSize: '0.92rem',
+                          color: '#1E293B'
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#F0FDF4'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+                      >
+                        <div style={{
+                          width: '32px', height: '32px', borderRadius: '6px',
+                          backgroundColor: '#DCFCE7', color: '#15803D',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: '1rem', flexShrink: 0
+                        }}>
+                          <FaFileExcel />
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: '700', color: '#15803D' }}>Xuất Báo Cáo Excel (.xlsx)</div>
+                          <div style={{ fontSize: '0.75rem', color: '#64748B' }}>3 Sheet: Tổng hợp, Chi tiết khoa, Bệnh lý</div>
+                        </div>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setExportDropdownOpen(false);
+                          handleOpenPrint();
+                        }}
+                        style={{
+                          width: '100%',
+                          textAlign: 'left',
+                          padding: '0.85rem 1.1rem',
+                          backgroundColor: 'transparent',
+                          border: 'none',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.75rem',
+                          cursor: 'pointer',
+                          fontWeight: '600',
+                          fontSize: '0.92rem',
+                          color: '#1E293B'
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#FEF2F2'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+                      >
+                        <div style={{
+                          width: '32px', height: '32px', borderRadius: '6px',
+                          backgroundColor: '#FEE2E2', color: '#DC2626',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: '1rem', flexShrink: 0
+                        }}>
+                          <FaFilePdf />
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: '700', color: '#DC2626' }}>Xuất Báo Cáo Y Tế PDF (.pdf)</div>
+                          <div style={{ fontSize: '0.75rem', color: '#64748B' }}>Chuẩn A4 3 phần & In trực tiếp</div>
+                        </div>
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
 
               <button className="btn btn-primary" onClick={handlePresentation} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <FaTv /> Trình Chiếu Giao Ban
