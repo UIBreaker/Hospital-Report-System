@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaExpand, FaCompress, FaPrint, FaChevronLeft, FaChevronRight, FaSpinner, FaAmbulance, FaArrowLeft, FaSearchPlus, FaSearchMinus, FaHeartbeat, FaProcedures, FaExclamationTriangle } from 'react-icons/fa';
+import { FaExpand, FaCompress, FaPrint, FaChevronLeft, FaChevronRight, FaSpinner, FaAmbulance, FaArrowLeft, FaSearchPlus, FaSearchMinus, FaHeartbeat, FaProcedures, FaExclamationTriangle, FaFilePowerpoint } from 'react-icons/fa';
 import reportService from '../services/reportService';
+import { exportPresentationToPowerPoint } from '../services/powerpointExportService';
 
 const DEPARTMENT_DISPLAY_NAMES = {
   lck: 'KHOA LIÊN CHUYÊN KHOA',
@@ -567,6 +568,20 @@ const PresentationPage = () => {
   const handleNext = () => { if (currentSlide < slides.length - 1) setCurrentSlide(p => p + 1); };
   const handlePrev = () => { if (currentSlide > 0) setCurrentSlide(p => p - 1); };
 
+  const [exportingPptx, setExportingPptx] = useState(false);
+
+  const handleExportPowerPoint = async () => {
+    setExportingPptx(true);
+    try {
+      await exportPresentationToPowerPoint(slides, date, reports);
+    } catch (err) {
+      console.error('PowerPoint Export Error:', err);
+      alert('Không thể xuất file PowerPoint: ' + (err.message || 'Lỗi hệ thống'));
+    } finally {
+      setExportingPptx(false);
+    }
+  };
+
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
       containerRef.current?.requestFullscreen?.().catch(() => {});
@@ -693,21 +708,38 @@ const PresentationPage = () => {
           </div>
 
           {/* Sidebar footer tools */}
-          <div style={{ padding: '0.85rem 1rem', borderTop: '1px solid #1E293B', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#0B132B' }}>
-            <span style={{ fontSize: '0.8rem', color: '#94A3B8', fontWeight: '600' }}>
-              Slide {currentSlide + 1} / {slides.length}
-            </span>
+          <div style={{ padding: '0.85rem 0.9rem', borderTop: '1px solid #1E293B', display: 'flex', flexDirection: 'column', gap: '0.5rem', backgroundColor: '#0B132B' }}>
             <button
-              onClick={toggleFullscreen}
-              title="Toàn màn hình (Phím F)"
+              onClick={handleExportPowerPoint}
+              disabled={exportingPptx}
+              title="Xuất toàn bộ các slide trình chiếu ra file Microsoft PowerPoint (.pptx)"
               style={{
-                padding: '0.55rem 1rem', backgroundColor: '#2563EB', color: 'white',
-                border: 'none', borderRadius: '6px', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.82rem', fontWeight: '700'
+                width: '100%', padding: '0.6rem 0.8rem',
+                backgroundColor: exportingPptx ? '#92400E' : '#D97706', color: '#FFFFFF',
+                border: 'none', borderRadius: '6px', cursor: exportingPptx ? 'default' : 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+                fontSize: '0.85rem', fontWeight: '700', boxShadow: '0 4px 12px rgba(217, 119, 6, 0.35)'
               }}
             >
-              <FaExpand /> Toàn màn hình
+              {exportingPptx ? <><FaSpinner className="spinner" /> Đang tạo PowerPoint...</> : <><FaFilePowerpoint /> 📥 Xuất file PowerPoint</>}
             </button>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.78rem', color: '#94A3B8', fontWeight: '600' }}>
+                Slide {currentSlide + 1} / {slides.length}
+              </span>
+              <button
+                onClick={toggleFullscreen}
+                title="Toàn màn hình (Phím F)"
+                style={{
+                  padding: '0.45rem 0.85rem', backgroundColor: '#2563EB', color: 'white',
+                  border: 'none', borderRadius: '6px', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem', fontWeight: '700'
+                }}
+              >
+                <FaExpand /> Toàn màn hình
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -1732,6 +1764,23 @@ const PresentationPage = () => {
                 <FaSearchPlus /> Phóng to
               </button>
             </div>
+
+            {/* Export PowerPoint in bottom bar */}
+            <button
+              onClick={handleExportPowerPoint}
+              disabled={exportingPptx}
+              title="Xuất toàn bộ slide ra file Microsoft PowerPoint (.pptx)"
+              style={{
+                backgroundColor: exportingPptx ? '#92400E' : '#D97706', color: '#FFFFFF',
+                border: 'none', borderRadius: '8px',
+                padding: '0.45rem 0.95rem', cursor: exportingPptx ? 'default' : 'pointer',
+                display: 'flex', alignItems: 'center', gap: '0.45rem',
+                fontSize: '0.85rem', fontWeight: '700',
+                boxShadow: '0 2px 8px rgba(217, 119, 6, 0.35)'
+              }}
+            >
+              {exportingPptx ? <><FaSpinner className="spinner" /> Tạo PPTX...</> : <><FaFilePowerpoint /> Xuất PPTX</>}
+            </button>
 
             {/* Fullscreen Button in bottom bar */}
             <button
