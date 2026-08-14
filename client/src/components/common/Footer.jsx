@@ -1,143 +1,125 @@
 import React from 'react';
-import { FaGithub, FaHeart, FaHospital, FaCodeBranch, FaServer, FaShieldAlt, FaExternalLinkAlt, FaUserMd } from 'react-icons/fa';
-import { APP_VERSION_TAG, APP_RELEASE_DATE } from '../../config/version';
+import { FaGithub, FaHeart, FaCodeBranch, FaExternalLinkAlt, FaHospital, FaCheckCircle } from 'react-icons/fa';
+import { APP_VERSION_TAG } from '../../config/version';
 
-const Footer = ({ isDark = true }) => {
+const Footer = () => {
   return (
     <footer
       style={{
-        marginTop: '3.5rem',
-        backgroundColor: '#0F172A',
-        color: '#94A3B8',
-        borderTop: '1px solid #1E293B',
+        marginTop: '3rem',
+        padding: '1.75rem 1rem 2rem',
+        borderTop: '1px solid #E2E8F0',
+        backgroundColor: 'transparent',
+        color: '#64748B',
         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-        fontSize: '0.875rem',
-        position: 'relative',
-        zIndex: 10
+        fontSize: '0.85rem'
       }}
     >
-      {/* Top Accent Gradient Bar */}
-      <div style={{ height: '3px', background: 'linear-gradient(90deg, #0F2C59 0%, #2563EB 25%, #D97706 50%, #0284C7 75%, #DC2626 100%)' }} />
-
-      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '2.5rem 1.5rem 1.5rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
-          
-          {/* Column 1: Đơn vị công tác */}
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-              <img src="/logo.png" alt="Logo TTYT Bình Long" style={{ width: '42px', height: '42px', objectFit: 'contain' }} />
-              <div>
-                <h4 style={{ color: '#F8FAFC', fontSize: '0.95rem', fontWeight: '800', margin: 0, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-                  TTYT KHU VỰC BÌNH LONG
-                </h4>
-                <span style={{ fontSize: '0.78rem', color: '#38BDF8', fontWeight: '600' }}>Sở Y Tế Tỉnh Bình Phước</span>
-              </div>
-            </div>
-            <p style={{ lineHeight: '1.6', fontSize: '0.82rem', color: '#94A3B8', margin: 0 }}>
-              Hệ thống Báo cáo Giao ban Trực tuyến & Quản trị Y tế Thông minh phục vụ 12 Khoa/Phòng chuyên môn và Ban Giám Đốc.
-            </p>
-            <div style={{ marginTop: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.78rem', color: '#64748B' }}>
-              <FaHospital style={{ color: '#38BDF8' }} /> Phòng Kế Hoạch - Nghiệp Vụ (KHNV)
-            </div>
-          </div>
-
-          {/* Column 2: Tác giả & Kỹ sư phát triển */}
-          <div>
-            <h4 style={{ color: '#F8FAFC', fontSize: '0.9rem', fontWeight: '700', marginBottom: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-              <FaUserMd style={{ color: '#38BDF8' }} /> Tác Giả Phát Triển
-            </h4>
-            <div style={{ backgroundColor: '#1E293B', padding: '1rem', borderRadius: '10px', border: '1px solid #334155' }}>
-              <div style={{ fontWeight: '800', color: '#FFFFFF', fontSize: '0.95rem', marginBottom: '0.25rem' }}>
-                Nguyễn Vũ Nhật Nam
-              </div>
-              <div style={{ fontSize: '0.8rem', color: '#94A3B8', marginBottom: '0.75rem' }}>
-                Phòng Kế Hoạch - Nghiệp Vụ • TTYT Bình Long
-              </div>
-
-              {/* GitHub Link Button */}
-              <a
-                href="https://github.com/UIBreaker"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  backgroundColor: '#0F172A',
-                  color: '#F8FAFC',
-                  padding: '0.45rem 0.85rem',
-                  borderRadius: '6px',
-                  textDecoration: 'none',
-                  fontSize: '0.8rem',
-                  fontWeight: '700',
-                  border: '1px solid #475569',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.backgroundColor = '#2563EB';
-                  e.currentTarget.style.borderColor = '#3B82F6';
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.backgroundColor = '#0F172A';
-                  e.currentTarget.style.borderColor = '#475569';
-                }}
-              >
-                <FaGithub style={{ fontSize: '1.05rem' }} />
-                <span>github.com/UIBreaker</span>
-                <FaExternalLinkAlt style={{ fontSize: '0.65rem', opacity: 0.7 }} />
-              </a>
-            </div>
-          </div>
-
-          {/* Column 3: Thông tin phiên bản & Hạ tầng */}
-          <div>
-            <h4 style={{ color: '#F8FAFC', fontSize: '0.9rem', fontWeight: '700', marginBottom: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-              <FaShieldAlt style={{ color: '#10B981' }} /> Hệ Thống & Bảo Mật
-            </h4>
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.82rem' }}>
-              <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <FaCodeBranch style={{ color: '#38BDF8' }} />
-                <span>Phiên bản chính thức: <strong style={{ color: '#F8FAFC' }}>{APP_VERSION_TAG}</strong> ({APP_RELEASE_DATE})</span>
-              </li>
-              <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <FaServer style={{ color: '#10B981' }} />
-                <span>Cơ sở dữ liệu: <strong style={{ color: '#10B981' }}>Aiven Cloud MySQL (SSL)</strong></span>
-              </li>
-              <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10B981', boxShadow: '0 0 6px #10B981' }} />
-                <span>Trạng thái: <strong style={{ color: '#10B981' }}>Đang hoạt động ổn định 24/7</strong></span>
-              </li>
-            </ul>
-          </div>
-
+      <div
+        style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '1rem',
+          textAlign: 'center'
+        }}
+      >
+        {/* Top Unit Branding */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+          <img src="/logo.png" alt="Logo TTYT Bình Long" style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
+          <span style={{ fontWeight: '800', color: '#0F2C59', fontSize: '0.9rem', letterSpacing: '0.3px', textTransform: 'uppercase' }}>
+            Trung Tâm Y Tế Khu Vực Bình Long
+          </span>
+          <span style={{ color: '#CBD5E1' }}>•</span>
+          <span style={{ fontWeight: '600', color: '#2563EB', fontSize: '0.85rem' }}>
+            Phòng Kế Hoạch - Nghiệp Vụ
+          </span>
         </div>
 
-        {/* Bottom copyright & attribution */}
-        <div style={{
-          borderTop: '1px solid #1E293B',
-          paddingTop: '1.25rem',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '0.75rem',
-          fontSize: '0.78rem',
-          color: '#64748B'
-        }}>
-          <div>
-            &copy; 2026 <strong>Trung Tâm Y Tế Khu Vực Bình Long</strong>. Tất cả các quyền được bảo lưu.
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            Phát triển với <FaHeart style={{ color: '#EF4444', fontSize: '0.75rem' }} /> bởi{' '}
-            <a
-              href="https://github.com/UIBreaker"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: '#38BDF8', textDecoration: 'none', fontWeight: '700' }}
-            >
-              UIBreaker (Nguyễn Vũ Nhật Nam)
-            </a>
-          </div>
+        {/* Middle Badges Row: Version, GitHub Author, Database Status */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+          {/* Version Badge */}
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              backgroundColor: '#EFF6FF',
+              color: '#1E40AF',
+              border: '1px solid #BFDBFE',
+              padding: '0.3rem 0.75rem',
+              borderRadius: '20px',
+              fontSize: '0.78rem',
+              fontWeight: '700'
+            }}
+          >
+            <FaCodeBranch style={{ color: '#3B82F6' }} /> Phiên bản {APP_VERSION_TAG}
+          </span>
+
+          {/* GitHub Author Pill Badge */}
+          <a
+            href="https://github.com/UIBreaker"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Xem mã nguồn & GitHub của tác giả Nguyễn Vũ Nhật Nam"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              backgroundColor: '#FFFFFF',
+              color: '#334155',
+              border: '1px solid #CBD5E1',
+              padding: '0.3rem 0.85rem',
+              borderRadius: '20px',
+              textDecoration: 'none',
+              fontSize: '0.78rem',
+              fontWeight: '700',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.backgroundColor = '#F8FAFC';
+              e.currentTarget.style.borderColor = '#2563EB';
+              e.currentTarget.style.color = '#2563EB';
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(37,99,235,0.15)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.backgroundColor = '#FFFFFF';
+              e.currentTarget.style.borderColor = '#CBD5E1';
+              e.currentTarget.style.color = '#334155';
+              e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)';
+            }}
+          >
+            <FaGithub style={{ fontSize: '0.95rem', color: '#1E293B' }} />
+            <span>Tác giả: <strong>Nguyễn Vũ Nhật Nam</strong> (UIBreaker)</span>
+            <FaExternalLinkAlt style={{ fontSize: '0.65rem', opacity: 0.6 }} />
+          </a>
+
+          {/* Cloud Database Status Badge */}
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              backgroundColor: '#F0FDF4',
+              color: '#166534',
+              border: '1px solid #BBF7D0',
+              padding: '0.3rem 0.75rem',
+              borderRadius: '20px',
+              fontSize: '0.78rem',
+              fontWeight: '600'
+            }}
+          >
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#16A34A', display: 'inline-block' }} />
+            Aiven Cloud MySQL SSL
+          </span>
+        </div>
+
+        {/* Bottom Copyright Line */}
+        <div style={{ fontSize: '0.75rem', color: '#94A3B8', marginTop: '0.2rem' }}>
+          &copy; 2026 <strong>Trung Tâm Y Tế Khu Vực Bình Long</strong> — Sở Y Tế Tỉnh Bình Phước. Phát triển cho công tác Báo cáo Giao ban Bệnh viện.
         </div>
       </div>
     </footer>
