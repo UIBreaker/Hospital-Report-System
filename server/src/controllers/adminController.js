@@ -211,7 +211,7 @@ const exportReports = async (req, res, next) => {
     }
 
     const workbook = await generateHospitalExcelReport(date, deptUsers, detailedReports);
-    const filename = `Tong_Hop_Bao_Cao_${date}.xlsx`;
+    const filename = `Bao_Cao_Giao_Ban_Toan_Vien_${date}.xlsx`;
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);

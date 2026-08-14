@@ -560,7 +560,7 @@ const AdminDashboard = () => {
       const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = downloadUrl;
-      link.setAttribute('download', `Tong_Hop_Bao_Cao_${date}.xlsx`);
+      link.setAttribute('download', `Bao_Cao_Giao_Ban_Toan_Vien_${date}.xlsx`);
       document.body.appendChild(link);
       link.click();
       link.remove();
