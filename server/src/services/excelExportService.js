@@ -30,6 +30,123 @@ const DEPARTMENT_MAP = {
   gmhs: 'Gây mê Hồi sức'
 };
 
+// Bộ từ điển ánh xạ toàn bộ trường dữ liệu chuyên môn sang Tiếng Việt có dấu chuẩn y tế
+const FIELD_LABELS = {
+  // LCK
+  tmh_tongSo: 'Tai Mũi Họng (Tổng số khám)',
+  tmh_thuThuat: 'Tai Mũi Họng (Thủ thuật)',
+  mat_tongSo: 'Mắt (Tổng số khám)',
+  mat_thuThuat: 'Mắt (Thủ thuật)',
+  rhm_noi_tongSo: 'RHM + Nội (Tổng số khám)',
+  rhm_noi_thuThuat: 'RHM + Nội (Thủ thuật)',
+  daLieu_tongSo: 'Da liễu (Tổng số khám)',
+  nhapVien_tongSo: 'Số ca nhập viện',
+  chuyenVien_tongSo: 'Số ca chuyển viện',
+  tong4ck_tongSo: 'TỔNG SỐ 4 CHUYÊN KHOA',
+  tong4ck_thuThuat: 'TỔNG THỦ THUẬT 4CK',
+
+  // Chỉ số chung
+  tongSoKham: 'Tổng số lượt khám',
+  tongSo: 'Tổng số thực hiện',
+  tongSoLuot: 'Tổng số lượt',
+  tongSoCa: 'Tổng số ca',
+  benhCu: 'Bệnh cũ (Đang điều trị)',
+  benhMoi: 'Bệnh mới (Nhập viện)',
+  xuatVien: 'Xuất viện',
+  chuyenVien: 'Chuyển viện',
+  chuyenKhoa: 'Chuyển khoa',
+  hienCon: 'Hiện còn điều trị',
+  tuVong: 'Tử vong',
+  nangXinVe: 'Nặng xin về',
+  baoHiem: 'Bảo hiểm y tế (BHYT)',
+  noiTru: 'Bệnh nhân nội trú',
+  ngoaiTru: 'Bệnh nhân ngoại trú',
+
+  // Xét nghiệm
+  tongXetNghiem: 'Tổng số xét nghiệm thực hiện',
+  sinhHoa: 'Xét nghiệm Sinh hóa',
+  huyetHoc: 'Xét nghiệm Huyết học',
+  dongMau: 'Xét nghiệm Đông máu',
+  nuocTieu: 'Xét nghiệm Nước tiểu',
+  viSinh: 'Xét nghiệm Vi sinh',
+  mienDich: 'Xét nghiệm Miễn dịch',
+
+  // HSCC - TNT - PK21
+  thoMay: 'Thở máy xâm lấn / Không xâm lấn',
+  thoOxy: 'Thở oxy qua gọng kính / Mask',
+  cpap: 'Thở CPAP',
+  ctdk: 'Chạy thận định kỳ (Chu kỳ)',
+  bsTrucTNT: 'Bác sĩ trực Thận nhân tạo',
+  keToa: 'Kê toa phòng khám',
+  truyenMau: 'Truyền máu / Chế phẩm máu',
+  tieuPhau: 'Tiểu phẫu cấp cứu',
+  boBot: 'Bó bột / Bất động xương',
+  ccNgoaiVien: 'Cấp cứu ngoại viện (115)',
+
+  // Khoa Sản
+  sanhThuong: 'Sanh thường',
+  sanhHut: 'Sanh hút (Giúp sanh)',
+  moLayThai: 'Mổ lấy thai (Mổ đẻ)',
+  moDe: 'Mổ đẻ',
+  choSanh: 'Theo dõi chờ sanh',
+  sieuAm: 'Siêu âm sản phụ khoa',
+  chuyenVienNgoaiTru: 'Chuyển viện ngoại trú',
+
+  // Khoa Nhi
+  benhMoi_pk: 'Bệnh mới (Từ Phòng khám)',
+  benhMoi_cc: 'Bệnh mới (Từ Cấp cứu)',
+  soSinh: 'Bệnh nhi sơ sinh',
+
+  // Khoa Nhiễm
+  sotXuatHuyet: 'Sốt xuất huyết Dengue',
+  tayChanMieng: 'Bệnh Tay chân miệng',
+  chuyenKhoaSan: 'Chuyển khoa Sản',
+  xinXuatVien: 'Xin về / Trốn viện',
+
+  // YHCT - PHCN
+  khamNgoaiTru: 'Khám ngoại trú YHCT',
+  dieuTriNoiTru: 'Điều trị nội trú YHCT',
+  chamCuu: 'Châm cứu',
+  xoaBop: 'Xoa bóp / Bấm huyệt',
+  vatLyTriLieu: 'Vật lý trị liệu / Phục hồi chức năng',
+
+  // Ngoại TH / CTCH
+  daiPhau: 'Đại phẫu',
+  trungPhau: 'Trung phẫu',
+  hauPhau: 'Hậu phẫu theo dõi',
+  khamCapCuu: 'Khám cấp cứu ngoại khoa',
+  nepBatDong: 'Nẹp bất động',
+  moKetHopXuong: 'Phẫu thuật kết hợp xương',
+
+  // GMHS
+  nhanSu: 'Thành phần nhân sự ca trực',
+  tongSoCaMo: 'Tổng số ca mổ (Cấp cứu + Kế hoạch)',
+  cc_ctch: 'Mổ cấp cứu - Chấn thương chỉnh hình',
+  cc_ngoaiTH: 'Mổ cấp cứu - Ngoại tổng hợp',
+  cc_san: 'Mổ cấp cứu - Sản khoa',
+  ct_ctch: 'Mổ kế hoạch - Chấn thương chỉnh hình',
+  ct_ngoaiTH: 'Mổ kế hoạch - Ngoại tổng hợp',
+  ct_san: 'Mổ kế hoạch - Sản khoa',
+  gayMe: 'Gây mê toàn thân',
+  gayTe: 'Gây tê tủy sống / Gây tê vùng',
+  soCaHoiTinh: 'Bệnh nhân hồi tỉnh theo dõi',
+
+  // Khác
+  themGio: 'Trực thêm giờ / Ghi chú ca trực',
+  ghiChu: 'Ghi chú khoa phòng',
+  dienBien: 'Diễn biến ca trực'
+};
+
+// Hàm dịch label tự động nếu chưa có trong từ điển
+const getLabelVi = (key) => {
+  if (FIELD_LABELS[key]) return FIELD_LABELS[key];
+  return key
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, c => c.toUpperCase())
+    .trim();
+};
+
 // Hàm định dạng ngày DD/MM/YYYY
 const formatDateVi = (dateStr) => {
   if (!dateStr) return '';
@@ -70,7 +187,7 @@ const totalBorder = {
 };
 
 /**
- * Tạo file Excel Báo cáo tổng hợp toàn viện
+ * Tạo file Excel Báo cáo tổng hợp toàn viện đa Sheet
  * @param {string} date - Ngày báo cáo YYYY-MM-DD
  * @param {Array} deptUsers - Danh sách user khoa
  * @param {Array} detailedReports - Danh sách báo cáo chi tiết kèm sub-records
@@ -117,7 +234,7 @@ const generateHospitalExcelReport = async (date, deptUsers = [], detailedReports
   });
 
   // =========================================================================
-  // SHEET 1: TongHopToanVien
+  // SHEET 1: TongHopToanVien (BẢNG TỔNG HỢP TOÀN VIỆN CHUẨN)
   // =========================================================================
   const ws1 = workbook.addWorksheet('TongHopToanVien', {
     pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0 }
@@ -212,7 +329,6 @@ const generateHospitalExcelReport = async (date, deptUsers = [], detailedReports
   // Freeze Panes dưới dòng 7
   ws1.views = [{ state: 'frozen', xSplit: 0, ySplit: 7, activeCell: 'A8' }];
 
-  // Thêm dữ liệu từng khoa
   let sumKham = 0;
   let sumBenhCu = 0;
   let sumBenhMoi = 0;
@@ -223,7 +339,6 @@ const generateHospitalExcelReport = async (date, deptUsers = [], detailedReports
     const rd = r?.report_data || {};
     const hscc = rd.hscc || {};
 
-    // Trích xuất số liệu an toàn tuyệt đối (Không bao giờ xảy ra NaN)
     const tongKham = safeNum(hscc.tongSoKham || rd.tongSoKham || rd.tongSo || rd.tongSoLuot || rd.tongSoCa || rd.tong4ck_tongSo || rd.tongXetNghiem || 0);
     const benhCu = safeNum(hscc.benhCu || rd.benhCu || 0);
     const benhMoi = safeNum(hscc.benhMoi || rd.benhMoi || 0);
@@ -237,7 +352,6 @@ const generateHospitalExcelReport = async (date, deptUsers = [], detailedReports
     sumBenhMoi += benhMoi;
     sumXuatVien += xuatVien;
 
-    // Ghi chú & Tăng cường
     let note = '';
     if (rd.ghiChu) note += rd.ghiChu + ' ';
     if (rd.dienBien) note += rd.dienBien + ' ';
@@ -275,7 +389,6 @@ const generateHospitalExcelReport = async (date, deptUsers = [], detailedReports
         fgColor: { argb: isEven ? 'FFFFFFFF' : 'FFF8FAFC' }
       };
 
-      // Alignment
       if (colNumber === 1 || colNumber === 3) {
         cell.alignment = { vertical: 'middle', horizontal: 'center' };
       } else if (colNumber === 2) {
@@ -290,16 +403,10 @@ const generateHospitalExcelReport = async (date, deptUsers = [], detailedReports
         cell.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
       }
 
-      // Trạng thái highlight
       if (colNumber === 3) {
-        if (dept.isSubmitted) {
-          cell.font = { name: 'Arial', size: 9.5, bold: true, color: { argb: 'FF15803D' } };
-        } else {
-          cell.font = { name: 'Arial', size: 9.5, bold: true, color: { argb: 'FFDC2626' } };
-        }
+        cell.font = { name: 'Arial', size: 9.5, bold: true, color: { argb: dept.isSubmitted ? 'FF15803D' : 'FFDC2626' } };
       }
 
-      // Tử vong highlight nếu > 0
       if (colNumber === 12 && typeof cell.value === 'number' && cell.value > 0) {
         cell.font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FFDC2626' } };
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEF2F2' } };
@@ -342,7 +449,6 @@ const generateHospitalExcelReport = async (date, deptUsers = [], detailedReports
     }
   });
 
-  // Thiết lập độ rộng cột chuẩn cho Sheet 1
   ws1.columns = [
     { width: 6 },   // STT
     { width: 32 },  // Khoa phòng
@@ -360,29 +466,28 @@ const generateHospitalExcelReport = async (date, deptUsers = [], detailedReports
   ];
 
   // =========================================================================
-  // SHEET 2: ChiTietCacKhoa (DỮ LIỆU CHI TIẾT 12 KHOA PHÒNG)
+  // SHEET 2: ChiTietChuyenMonKhoa (DỮ LIỆU ĐỘNG LINH HOẠT TỪNG KHOA)
   // =========================================================================
-  const ws2 = workbook.addWorksheet('ChiTietCacKhoa', {
+  const ws2 = workbook.addWorksheet('ChiTietChuyenMonKhoa', {
     pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0 }
   });
 
-  // Freeze Panes ở dòng 2
   ws2.views = [{ state: 'frozen', xSplit: 0, ySplit: 2, activeCell: 'A3' }];
 
   ws2.mergeCells('A1:G1');
-  ws2.getCell('A1').value = `CHI TIẾT TOÀN BỘ DỮ LIỆU BÁO CÁO FORM 12 KHOA PHÒNG — NGÀY ${formattedDate}`;
+  ws2.getCell('A1').value = `CHI TIẾT TOÀN BỘ DỮ LIỆU BÁO CÁO CHUYÊN MÔN THEO TỪNG KHOA PHÒNG — NGÀY ${formattedDate}`;
   ws2.getCell('A1').font = { name: 'Arial', size: 14, bold: true, color: { argb: 'FF0F2C59' } };
   ws2.getCell('A1').alignment = { vertical: 'middle', horizontal: 'left' };
   ws2.getRow(1).height = 28;
 
   const headers2 = [
     'STT',
-    'Tên Khoa / Phòng',
-    'Hạng Mục Báo Cáo',
-    'Thông Tin / Chỉ Số Chi Tiết',
-    'Giá Trị Số Liệu',
-    'Đơn Vị / Phân Loại',
-    'Ghi Chú & Diễn Biến'
+    'Khoa / Phòng',
+    'Phân Nhóm / Dịch Vụ',
+    'Chỉ Số Báo Cáo Chuyên Môn',
+    'Số Lượng Thực Tế',
+    'Đơn Vị Tính',
+    'Ghi Chú & Diễn Biến Kèm Theo'
   ];
 
   const headerRow2 = ws2.addRow(headers2);
@@ -394,20 +499,17 @@ const generateHospitalExcelReport = async (date, deptUsers = [], detailedReports
     cell.border = headerBorder;
   });
 
-  let detailRowIndex = 0;
-
   orderedDepartments.forEach((dept, deptIdx) => {
     const r = dept.report;
     const rd = r?.report_data || {};
-    detailRowIndex++;
 
     // Banner Header của từng khoa
     const deptTitleRow = ws2.addRow([
       `${deptIdx + 1}`,
       dept.departmentName.toUpperCase(),
-      dept.isSubmitted ? 'TRẠNG THÁI: ĐÃ NỘP BÁO CÁO' : 'TRẠNG THÁI: CHƯA NỘP',
+      dept.isSubmitted ? 'ĐÃ NỘP BÁO CÁO' : 'CHƯA NỘP',
       `Bác sĩ trực: ${r?.doctor_name || '—'} | Điều dưỡng: ${r?.nurse_name || '—'}`,
-      `Phòng: ${r?.room || '—'} | Khung giờ: ${r?.shift_time || '—'}`,
+      `Phòng trực: ${r?.room || '—'} | Thời gian: ${r?.shift_time || '—'}`,
       '',
       ''
     ]);
@@ -435,33 +537,35 @@ const generateHospitalExcelReport = async (date, deptUsers = [], detailedReports
         cell.border = thinBorder;
         cell.alignment = { vertical: 'middle', horizontal: 'left' };
       });
+      // Cách dòng nhỏ
+      ws2.addRow([]);
       return;
     }
 
-    // 1. Dòng Hành chính & Tăng cường
+    // 1. Dòng Nhân sự tăng cường (nếu có)
     if (r.overtime_staff && Array.isArray(r.overtime_staff) && r.overtime_staff.length > 0) {
-      r.overtime_staff.forEach((ot, otIdx) => {
+      r.overtime_staff.forEach((ot) => {
         const otRow = ws2.addRow([
           '',
           dept.departmentName,
-          'Nhân sự tăng cường / Thêm giờ',
+          'Nhân sự tăng cường',
           ot.staffName || 'Nhân viên',
           ot.time || '—',
-          'Tăng cường',
-          ot.notes || '—'
+          'Khung giờ',
+          ot.notes || 'Trực tăng cường'
         ]);
         otRow.height = 20;
         otRow.eachCell(c => { c.font = { name: 'Arial', size: 9 }; c.border = thinBorder; });
       });
     }
 
-    // 2. Dữ liệu chuyên môn Form
-    const addMetric = (category, name, value, unit = 'Lượt/Ca', note = '') => {
+    // Hàm helper thêm dòng chỉ số chuyên môn
+    const addMetric = (group, name, value, unit = 'Lượt/Ca', note = '') => {
       if (value === undefined || value === null || value === '') return;
       const row = ws2.addRow([
         '',
         dept.departmentName,
-        category,
+        group,
         name,
         typeof value === 'number' ? value : String(value),
         unit,
@@ -480,179 +584,139 @@ const generateHospitalExcelReport = async (date, deptUsers = [], detailedReports
       });
     };
 
-    // Parse chuyên biệt theo từng khoa
+    // ================= DỮ LIỆU ĐỘNG THEO TỪNG KHOA =================
     const code = dept.departmentCode;
 
-    if (code === 'lck') {
-      addMetric('Liên Chuyên Khoa', 'TỔNG SỐ 4 CHUYÊN KHOA', safeNum(rd.tong4ck_tongSo), 'Lượt');
-      addMetric('Liên Chuyên Khoa', 'TỔNG THỦ THUẬT 4CK', safeNum(rd.tong4ck_thuThuat), 'Thủ thuật');
-      addMetric('Tai Mũi Họng', 'Khám Tai Mũi Họng', safeNum(rd.tmh_tongSo), 'Lượt');
-      addMetric('Tai Mũi Họng', 'Thủ thuật Tai Mũi Họng', safeNum(rd.tmh_thuThuat), 'Thủ thuật');
-      addMetric('Mắt', 'Khám Mắt', safeNum(rd.mat_tongSo), 'Lượt');
-      addMetric('Mắt', 'Thủ thuật Mắt', safeNum(rd.mat_thuThuat), 'Thủ thuật');
-      addMetric('Răng Hàm Mặt + Nội', 'Khám RHM + Nội', safeNum(rd.rhm_noi_tongSo), 'Lượt');
-      addMetric('Răng Hàm Mặt + Nội', 'Thủ thuật RHM + Nội', safeNum(rd.rhm_noi_thuThuat), 'Thủ thuật');
-      addMetric('Da Liễu', 'Khám Da Liễu', safeNum(rd.daLieu_tongSo), 'Lượt');
-      addMetric('Chuyển khoa / Nhập viện', 'Số ca nhập viện', safeNum(rd.nhapVien_tongSo), 'Ca');
-      addMetric('Chuyển viện', 'Số ca chuyển viện', safeNum(rd.chuyenVien_tongSo), 'Ca');
-    } else if (code === 'xn') {
-      addMetric('Xét Nghiệm', 'Tổng số xét nghiệm thực hiện', safeNum(rd.tongXetNghiem || rd.tongSo), 'Mẫu');
-      addMetric('Xét Nghiệm', 'Bảo hiểm y tế (BHYT)', safeNum(rd.baoHiem), 'Mẫu');
-      addMetric('Xét Nghiệm', 'Bệnh nhân nội trú', safeNum(rd.noiTru), 'Mẫu');
-      addMetric('Xét Nghiệm', 'Bệnh nhân ngoại trú', safeNum(rd.ngoaiTru), 'Mẫu');
-      addMetric('Sinh Hóa', 'Xét nghiệm Sinh Hóa', safeNum(rd.sinhHoa), 'Mẫu');
-      addMetric('Huyết Học', 'Xét nghiệm Huyết Học', safeNum(rd.huyetHoc), 'Mẫu');
-      addMetric('Đông Máu', 'Xét nghiệm Đông Máu', safeNum(rd.dongMau), 'Mẫu');
-      addMetric('Nước Tiểu', 'Xét nghiệm Nước Tiểu', safeNum(rd.nuocTieu), 'Mẫu');
-      addMetric('Vi Sinh', 'Xét nghiệm Vi Sinh', safeNum(rd.viSinh), 'Mẫu');
-      addMetric('Miễn Dịch', 'Xét nghiệm Miễn Dịch', safeNum(rd.mienDich), 'Mẫu');
-    } else if (code === 'cdha') {
+    if (code === 'cdha') {
+      // Khoa Chẩn đoán hình ảnh: Xử lý mảng techniques hoặc các trường phẳng
       if (Array.isArray(rd.techniques) && rd.techniques.length > 0) {
-        rd.techniques.forEach(t => {
-          addMetric('Kỹ thuật CĐHA', `${t.name || 'Kỹ thuật'} (Tổng số)`, safeNum(t.tongSo), 'Lượt', `BHYT: ${safeNum(t.baoHiem)} | Nội trú: ${safeNum(t.noiTru)} | Ngoại trú: ${safeNum(t.ngoaiTru)}`);
+        rd.techniques.forEach((t, tIdx) => {
+          addMetric(
+            'Kỹ thuật CĐHA',
+            t.name || `Kỹ thuật #${tIdx + 1}`,
+            safeNum(t.tongSo),
+            'Lượt thực hiện',
+            `BHYT: ${safeNum(t.baoHiem)} | Nội trú: ${safeNum(t.noiTru)} | Ngoại trú: ${safeNum(t.ngoaiTru)}`
+          );
         });
-      } else {
-        addMetric('Chẩn Đoán Hình Ảnh', 'X-Quang', safeNum(rd.xQuang), 'Lượt');
-        addMetric('Chẩn Đoán Hình Ảnh', 'CT-Scanner', safeNum(rd.ctScanner), 'Lượt');
-        addMetric('Chẩn Đoán Hình Ảnh', 'Siêu âm', safeNum(rd.sieuAm), 'Lượt');
-        addMetric('Chẩn Đoán Hình Ảnh', 'Điện tim (ECG)', safeNum(rd.dienTim), 'Lượt');
-        addMetric('Chẩn Đoán Hình Ảnh', 'Nội soi', safeNum(rd.noiSoi), 'Lượt');
       }
+      if (rd.bsSieuAm) addMetric('Phân công BS', 'BS trực Siêu âm', rd.bsSieuAm, 'Nhân sự');
+      if (rd.bsXquangCT) addMetric('Phân công BS', 'BS trực X-Quang / CT', rd.bsXquangCT, 'Nhân sự');
     } else if (code === 'hscc_tnt') {
+      // Khoa HSCC - TNT: Gồm 3 khối lồng nhau
       const h = rd.hscc || {};
-      addMetric('Khối HSCC', 'Tổng số khám Cấp cứu', safeNum(h.tongSoKham), 'Lượt');
-      addMetric('Khối HSCC', 'Bệnh cũ đang điều trị', safeNum(h.benhCu), 'Người');
-      addMetric('Khối HSCC', 'Bệnh mới vào', safeNum(h.benhMoi), 'Người');
-      addMetric('Khối HSCC', 'Xuất viện', safeNum(h.xuatVien), 'Người');
-      addMetric('Khối HSCC', 'Chuyển khoa', safeNum(h.chuyenKhoa), 'Người');
-      addMetric('Khối HSCC', 'Chuyển viện', safeNum(h.chuyenVien), 'Người');
-      addMetric('Khối HSCC', 'Hiện còn điều trị', safeNum(h.hienCon), 'Người');
-      addMetric('Khối HSCC', 'Thở máy', safeNum(h.thoMay), 'Người');
-      addMetric('Khối HSCC', 'Thở oxy', safeNum(h.thoOxy), 'Người');
-      addMetric('Khối HSCC', 'CPAP', safeNum(h.cpap), 'Người');
-      addMetric('Khối HSCC', 'Tử vong', safeNum(h.tuVong), 'Người');
+      addMetric('Khối Hồi Sức Cấp Cứu (HSCC)', 'Tổng số lượt khám cấp cứu', safeNum(h.tongSoKham), 'Lượt');
+      addMetric('Khối Hồi Sức Cấp Cứu (HSCC)', 'Bệnh cũ đang điều trị', safeNum(h.benhCu), 'Người');
+      addMetric('Khối Hồi Sức Cấp Cứu (HSCC)', 'Bệnh mới vào khoa', safeNum(h.benhMoi), 'Người');
+      addMetric('Khối Hồi Sức Cấp Cứu (HSCC)', 'Thở máy', safeNum(h.thoMay), 'Người');
+      addMetric('Khối Hồi Sức Cấp Cứu (HSCC)', 'Thở Oxy', safeNum(h.thoOxy), 'Người');
+      addMetric('Khối Hồi Sức Cấp Cứu (HSCC)', 'Thở CPAP', safeNum(h.cpap), 'Người');
+      addMetric('Khối Hồi Sức Cấp Cứu (HSCC)', 'Xuất viện', safeNum(h.xuatVien), 'Người');
+      addMetric('Khối Hồi Sức Cấp Cứu (HSCC)', 'Chuyển khoa', safeNum(h.chuyenKhoa), 'Người');
+      addMetric('Khối Hồi Sức Cấp Cứu (HSCC)', 'Chuyển viện', safeNum(h.chuyenVien), 'Người');
+      addMetric('Khối Hồi Sức Cấp Cứu (HSCC)', 'Hiện còn điều trị tại HSCC', safeNum(h.hienCon), 'Người');
+      addMetric('Khối Hồi Sức Cấp Cứu (HSCC)', 'Tử vong', safeNum(h.tuVong), 'Người');
 
       const tnt = rd.tnt || {};
-      addMetric('Khối Thận Nhân Tạo', 'Bệnh cũ', safeNum(tnt.benhCu), 'Người');
-      addMetric('Khối Thận Nhân Tạo', 'Bệnh mới', safeNum(tnt.benhMoi), 'Người');
-      addMetric('Khối Thận Nhân Tạo', 'Chạy thận định kỳ', safeNum(tnt.ctdk), 'Lượt');
-      addMetric('Khối Thận Nhân Tạo', 'Nội trú TNT', safeNum(tnt.noiTru), 'Người');
-      addMetric('Khối Thận Nhân Tạo', 'Hiện còn TNT', safeNum(tnt.hienCon), 'Người');
+      addMetric('Khối Thận Nhân Tạo (TNT)', 'Bệnh cũ', safeNum(tnt.benhCu), 'Người');
+      addMetric('Khối Thận Nhân Tạo (TNT)', 'Bệnh mới', safeNum(tnt.benhMoi), 'Người');
+      addMetric('Khối Thận Nhân Tạo (TNT)', 'Số ca chạy thận định kỳ', safeNum(tnt.ctdk), 'Lượt');
+      addMetric('Khối Thận Nhân Tạo (TNT)', 'Bệnh nhân nội trú TNT', safeNum(tnt.noiTru), 'Người');
+      addMetric('Khối Thận Nhân Tạo (TNT)', 'Hiện còn TNT', safeNum(tnt.hienCon), 'Người');
+      if (tnt.bsTrucTNT) addMetric('Khối Thận Nhân Tạo (TNT)', 'BS trực Thận nhân tạo', tnt.bsTrucTNT, 'Nhân sự');
 
       const pk = rd.pk21 || {};
-      addMetric('Phòng Khám 21', 'Tổng số khám PK21', safeNum(pk.tongSo), 'Lượt');
-      addMetric('Phòng Khám 21', 'Kê toa', safeNum(pk.keToa), 'Toa');
-      addMetric('Phòng Khám 21', 'Truyền máu', safeNum(pk.truyenMau), 'Ca');
-      addMetric('Phòng Khám 21', 'Tiểu phẫu', safeNum(pk.tieuPhau), 'Ca');
-      addMetric('Phòng Khám 21', 'Bó bột', safeNum(pk.boBot), 'Ca');
-      addMetric('Phòng Khám 21', 'Cấp cứu ngoại viện', safeNum(pk.ccNgoaiVien), 'Ca');
-    } else if (code === 'noi') {
-      addMetric('Khoa Nội', 'Bệnh cũ', safeNum(rd.benhCu), 'Người');
-      addMetric('Khoa Nội', 'Bệnh mới', safeNum(rd.benhMoi), 'Người');
-      addMetric('Khoa Nội', 'Tổng số khám', safeNum(rd.tongSoKham), 'Lượt');
-      addMetric('Khoa Nội', 'Xuất viện', safeNum(rd.xuatVien), 'Người');
-      addMetric('Khoa Nội', 'Chuyển khoa', safeNum(rd.chuyenKhoa), 'Người');
-      addMetric('Khoa Nội', 'Chuyển viện', safeNum(rd.chuyenVien), 'Người');
-      addMetric('Khoa Nội', 'Hiện còn điều trị', safeNum(rd.hienCon), 'Người');
-      addMetric('Khoa Nội', 'Tử vong', safeNum(rd.tuVong), 'Người');
-    } else if (code === 'nhi') {
-      addMetric('Khoa Nhi', 'Bệnh cũ', safeNum(rd.benhCu), 'Người');
-      addMetric('Khoa Nhi', 'Bệnh mới (Phòng khám)', safeNum(rd.benhMoi_pk), 'Bé');
-      addMetric('Khoa Nhi', 'Bệnh mới (Cấp cứu)', safeNum(rd.benhMoi_cc), 'Bé');
-      addMetric('Khoa Nhi', 'Sơ sinh', safeNum(rd.soSinh), 'Bé');
-      addMetric('Khoa Nhi', 'Xuất viện', safeNum(rd.xuatVien), 'Bé');
-      addMetric('Khoa Nhi', 'Chuyển viện', safeNum(rd.chuyenVien), 'Bé');
-      addMetric('Khoa Nhi', 'Hiện còn điều trị', safeNum(rd.hienCon), 'Bé');
-      addMetric('Khoa Nhi', 'Tử vong', safeNum(rd.tuVong), 'Bé');
-    } else if (code === 'nhiem') {
-      addMetric('Khoa Nhiễm', 'Bệnh cũ', safeNum(rd.benhCu), 'Người');
-      addMetric('Khoa Nhiễm', 'Bệnh mới', safeNum(rd.benhMoi), 'Người');
-      addMetric('Khoa Nhiễm', 'Sốt xuất huyết', safeNum(rd.sotXuatHuyet), 'Người');
-      addMetric('Khoa Nhiễm', 'Tay chân miệng', safeNum(rd.tayChanMieng), 'Người');
-      addMetric('Khoa Nhiễm', 'Xuất viện', safeNum(rd.xuatVien), 'Người');
-      addMetric('Khoa Nhiễm', 'Chuyển viện', safeNum(rd.chuyenVien), 'Người');
-      addMetric('Khoa Nhiễm', 'Chuyển khoa Sản', safeNum(rd.chuyenKhoaSan), 'Người');
-      addMetric('Khoa Nhiễm', 'Xin xuất viện', safeNum(rd.xinXuatVien), 'Người');
-      addMetric('Khoa Nhiễm', 'Hiện còn điều trị', safeNum(rd.hienCon), 'Người');
-      addMetric('Khoa Nhiễm', 'Tử vong', safeNum(rd.tuVong), 'Người');
-    } else if (code === 'san') {
-      addMetric('Khoa Sản', 'Bệnh cũ', safeNum(rd.benhCu), 'Sản phụ');
-      addMetric('Khoa Sản', 'Bệnh mới', safeNum(rd.benhMoi), 'Sản phụ');
-      addMetric('Khoa Sản', 'Sanh thường', safeNum(rd.sanhThuong), 'Ca');
-      addMetric('Khoa Sản', 'Sanh hút', safeNum(rd.sanhHut), 'Ca');
-      addMetric('Khoa Sản', 'Mổ đẻ (Mổ lấy thai)', safeNum(rd.moLayThai), 'Ca');
-      addMetric('Khoa Sản', 'Chờ sanh', safeNum(rd.choSanh), 'Sản phụ');
-      addMetric('Khoa Sản', 'Siêu âm sản', safeNum(rd.sieuAm), 'Lượt');
-      addMetric('Khoa Sản', 'Xuất viện', safeNum(rd.xuatVien), 'Sản phụ');
-      addMetric('Khoa Sản', 'Chuyển viện nội trú', safeNum(rd.chuyenVien), 'Sản phụ');
-      addMetric('Khoa Sản', 'Chuyển viện ngoại trú', safeNum(rd.chuyenVienNgoaiTru), 'Sản phụ');
-      addMetric('Khoa Sản', 'Hiện còn', safeNum(rd.hienCon), 'Sản phụ');
-    } else if (code === 'yhct_phcn') {
-      addMetric('YHCT & PHCN', 'Khám ngoại trú', safeNum(rd.khamNgoaiTru), 'Lượt');
-      addMetric('YHCT & PHCN', 'Điều trị nội trú', safeNum(rd.dieuTriNoiTru), 'Người');
-      addMetric('YHCT & PHCN', 'Kê toa', safeNum(rd.keToa), 'Toa');
-      addMetric('YHCT & PHCN', 'Châm cứu', safeNum(rd.chamCuu), 'Lượt');
-      addMetric('YHCT & PHCN', 'Xoa bóp / Bấm huyệt', safeNum(rd.xoaBop), 'Lượt');
-      addMetric('YHCT & PHCN', 'Vật lý trị liệu', safeNum(rd.vatLyTriLieu), 'Lượt');
-      addMetric('YHCT & PHCN', 'Bệnh cũ', safeNum(rd.benhCu), 'Người');
-      addMetric('YHCT & PHCN', 'Bệnh mới', safeNum(rd.benhMoi), 'Người');
-      addMetric('YHCT & PHCN', 'Xuất viện', safeNum(rd.xuatVien), 'Người');
-      addMetric('YHCT & PHCN', 'Hiện còn', safeNum(rd.hienCon), 'Người');
-    } else if (code === 'ngoai_th') {
-      addMetric('Ngoại Tổng Hợp', 'Bệnh cũ', safeNum(rd.benhCu), 'Người');
-      addMetric('Ngoại Tổng Hợp', 'Bệnh mới', safeNum(rd.benhMoi), 'Người');
-      addMetric('Ngoại Tổng Hợp', 'Khám cấp cứu', safeNum(rd.khamCapCuu), 'Lượt');
-      addMetric('Ngoại Tổng Hợp', 'Đại phẫu', safeNum(rd.daiPhau), 'Ca');
-      addMetric('Ngoại Tổng Hợp', 'Trung phẫu', safeNum(rd.trungPhau), 'Ca');
-      addMetric('Ngoại Tổng Hợp', 'Tiểu phẫu', safeNum(rd.tieuPhau), 'Ca');
-      addMetric('Ngoại Tổng Hợp', 'Hậu phẫu theo dõi', safeNum(rd.hauPhau), 'Người');
-      addMetric('Ngoại Tổng Hợp', 'Xuất viện', safeNum(rd.xuatVien), 'Người');
-      addMetric('Ngoại Tổng Hợp', 'Chuyển viện', safeNum(rd.chuyenVien), 'Người');
-      addMetric('Ngoại Tổng Hợp', 'Hiện còn', safeNum(rd.hienCon), 'Người');
-    } else if (code === 'ctch') {
-      addMetric('Chấn Thương Chỉnh Hình', 'Bệnh cũ', safeNum(rd.benhCu), 'Người');
-      addMetric('Chấn Thương Chỉnh Hình', 'Bệnh mới', safeNum(rd.benhMoi), 'Người');
-      addMetric('Chấn Thương Chỉnh Hình', 'Tổng số khám', safeNum(rd.tongSoKham), 'Lượt');
-      addMetric('Chấn Thương Chỉnh Hình', 'Bó bột', safeNum(rd.boBot), 'Ca');
-      addMetric('Chấn Thương Chỉnh Hình', 'Nẹp bất động', safeNum(rd.nepBatDong), 'Ca');
-      addMetric('Chấn Thương Chỉnh Hình', 'Mổ kết hợp xương', safeNum(rd.moKetHopXuong), 'Ca');
-      addMetric('Chấn Thương Chỉnh Hình', 'Hậu phẫu', safeNum(rd.hauPhau), 'Người');
-      addMetric('Chấn Thương Chỉnh Hình', 'Xuất viện', safeNum(rd.xuatVien), 'Người');
-      addMetric('Chấn Thương Chỉnh Hình', 'Chuyển viện', safeNum(rd.chuyenVien), 'Người');
-      addMetric('Chấn Thương Chỉnh Hình', 'Hiện còn', safeNum(rd.hienCon), 'Người');
-    } else if (code === 'gmhs') {
-      addMetric('Gây Mê Hồi Sức', 'Nhân sự ca trực GMHS', rd.nhanSu || '—', 'Kíp trực');
-      addMetric('Gây Mê Hồi Sức', 'Tổng số ca mổ', safeNum(rd.tongSoCaMo), 'Ca');
-      addMetric('Gây Mê Hồi Sức', 'Mổ cấp cứu - CTCH', safeNum(rd.cc_ctch), 'Ca');
-      addMetric('Gây Mê Hồi Sức', 'Mổ cấp cứu - Ngoại TH', safeNum(rd.cc_ngoaiTH), 'Ca');
-      addMetric('Gây Mê Hồi Sức', 'Mổ cấp cứu - Sản', safeNum(rd.cc_san), 'Ca');
-      addMetric('Gây Mê Hồi Sức', 'Mổ chương trình - CTCH', safeNum(rd.ct_ctch), 'Ca');
-      addMetric('Gây Mê Hồi Sức', 'Mổ chương trình - Ngoại TH', safeNum(rd.ct_ngoaiTH), 'Ca');
-      addMetric('Gây Mê Hồi Sức', 'Mổ chương trình - Sản', safeNum(rd.ct_san), 'Ca');
-      addMetric('Gây Mê Hồi Sức', 'Gây mê', safeNum(rd.gayMe), 'Ca');
-      addMetric('Gây Mê Hồi Sức', 'Gây tê', safeNum(rd.gayTe), 'Ca');
-      addMetric('Gây Mê Hồi Sức', 'Bệnh nhân hồi tỉnh theo dõi', safeNum(rd.hienCon), 'Người');
+      addMetric('Phòng Khám 21 (Cấp cứu ngoại viện)', 'Tổng số khám PK21', safeNum(pk.tongSo), 'Lượt');
+      addMetric('Phòng Khám 21 (Cấp cứu ngoại viện)', 'Kê toa phòng khám', safeNum(pk.keToa), 'Toa');
+      addMetric('Phòng Khám 21 (Cấp cứu ngoại viện)', 'Truyền máu', safeNum(pk.truyenMau), 'Ca');
+      addMetric('Phòng Khám 21 (Cấp cứu ngoại viện)', 'Tiểu phẫu', safeNum(pk.tieuPhau), 'Ca');
+      addMetric('Phòng Khám 21 (Cấp cứu ngoại viện)', 'Bó bột', safeNum(pk.boBot), 'Ca');
+      addMetric('Phòng Khám 21 (Cấp cứu ngoại viện)', 'Cấp cứu ngoại viện (115)', safeNum(pk.ccNgoaiVien), 'Ca');
+      addMetric('Phòng Khám 21 (Cấp cứu ngoại viện)', 'Hiện còn PK21', safeNum(pk.hienCon), 'Người');
+    } else {
+      // Duyệt qua TẤT CẢ các keys trong report_data của khoa
+      const processedKeys = new Set();
+
+      // Nhóm 1: Các chỉ số số học hoặc text trực tiếp
+      Object.keys(rd).forEach((k) => {
+        if (['ghiChu', 'dienBien', 'themGio', 'techniques', 'hscc', 'tnt', 'pk21'].includes(k)) return;
+        const val = rd[k];
+        if (typeof val === 'object' && val !== null) {
+          // Object con lồng nhau
+          Object.keys(val).forEach(subK => {
+            const subVal = val[subK];
+            if (subVal !== undefined && subVal !== null && subVal !== '') {
+              addMetric(getLabelVi(k), getLabelVi(subK), typeof subVal === 'number' || !isNaN(Number(subVal)) ? safeNum(subVal) : subVal, 'Chỉ số');
+            }
+          });
+        } else if (val !== undefined && val !== null && val !== '') {
+          addMetric('Chỉ tiêu chuyên môn', getLabelVi(k), typeof val === 'number' || !isNaN(Number(val)) ? safeNum(val) : val, 'Chỉ số');
+        }
+        processedKeys.add(k);
+      });
     }
 
     // 3. Ghi chú & Diễn biến
-    if (rd.themGio) addMetric('Diễn Biến', 'Trực thêm giờ', rd.themGio, 'Ghi chú');
-    if (rd.ghiChu) addMetric('Ghi Chú', 'Ghi chú khoa phòng', rd.ghiChu, 'Ghi chú');
-    if (rd.dienBien) addMetric('Diễn Biến', 'Diễn biến ca trực', rd.dienBien, 'Ghi chú');
+    if (rd.themGio) addMetric('Diễn Biến Ca Trực', 'Ghi chú trực thêm giờ', rd.themGio, 'Ghi chú');
+    if (rd.ghiChu) addMetric('Ghi Chú Khoa Phòng', 'Nội dung ghi chú', rd.ghiChu, 'Ghi chú');
+    if (rd.dienBien) addMetric('Diễn Biến Ca Trực', 'Diễn biến bệnh phòng', rd.dienBien, 'Ghi chú');
+
+    // 4. Danh sách ca bệnh lâm sàng nếu khoa có
+    const tCases = r.transferCases || [];
+    if (tCases.length > 0) {
+      tCases.forEach((tc, cIdx) => {
+        addMetric(
+          '🚑 Ca Chuyển Viện',
+          `Ca #${cIdx + 1}: ${tc.patient_name || tc.patientName || 'Bệnh nhân'} (${tc.age || '—'} tuổi)`,
+          `Vào: ${tc.admission_time || tc.admissionTime || '—'}`,
+          'Chuyển viện',
+          `Chẩn đoán: ${tc.diagnosis || '—'} | Xử trí: ${tc.initial_treatment || tc.initialTreatment || '—'} | Diễn biến: ${tc.progress_notes || tc.progressNotes || '—'}`
+        );
+      });
+    }
+
+    const sCases = r.surgeryCases || [];
+    if (sCases.length > 0) {
+      sCases.forEach((sc, cIdx) => {
+        addMetric(
+          '🔪 Ca Phẫu Thuật (Mổ)',
+          `Ca #${cIdx + 1}: ${sc.patient_name || sc.patientName || 'Bệnh nhân'} (${sc.birth_year || sc.birthYear || '—'})`,
+          `Vào: ${sc.admission_time || sc.admissionTime || '—'}`,
+          'Phẫu thuật',
+          `CĐ trước mổ: ${sc.preoperative_diagnosis || sc.preoperativeDiagnosis || '—'} | CĐ sau mổ: ${sc.postoperative_diagnosis || sc.postoperativeDiagnosis || '—'} | Tình trạng: ${sc.current_status || sc.currentStatus || '—'}`
+        );
+      });
+    }
+
+    const dCases = r.deathCases || [];
+    if (dCases.length > 0) {
+      dCases.forEach((dc, cIdx) => {
+        addMetric(
+          '🚨 Ca Tử Vong',
+          `Ca #${cIdx + 1}: ${dc.patient_name || dc.patientName || 'Bệnh nhân'} (${dc.age || '—'} tuổi)`,
+          `Vào: ${dc.admission_time || dc.admissionTime || '—'}`,
+          'Tử vong',
+          `Chẩn đoán tử vong: ${dc.diagnosis || '—'} | CPR: ${dc.emergency_treatment || dc.emergencyTreatment || '—'} | Kết quả: ${dc.final_outcome || dc.finalOutcome || '—'}`
+        );
+      });
+    }
+
+    // Cách 1 dòng giữa các khoa
+    ws2.addRow([]);
   });
 
-  // Tự động căn chỉnh độ rộng cột cho Sheet 2
   ws2.columns = [
     { width: 6 },   // STT
     { width: 32 },  // Tên Khoa
-    { width: 24 },  // Hạng Mục
-    { width: 36 },  // Chỉ Số Chi Tiết
-    { width: 16 },  // Giá Trị
+    { width: 28 },  // Phân Nhóm
+    { width: 38 },  // Chỉ Số Chuyên Môn
+    { width: 18 },  // Số Lượng
     { width: 16 },  // Đơn Vị
-    { width: 40 }   // Ghi Chú
+    { width: 45 }   // Ghi Chú & Diễn Biến
   ];
 
   // =========================================================================
-  // SHEET 3: ChiTietBenhLy (CHUYỂN VIỆN, CA MỔ, TỬ VONG)
+  // SHEET 3: ChiTietBenhLy (TỔNG HỢP CHUYỂN VIỆN, CA MỔ, TỬ VONG TOÀN VIỆN)
   // =========================================================================
   const ws3 = workbook.addWorksheet('ChiTietBenhLy', {
     pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0 }
