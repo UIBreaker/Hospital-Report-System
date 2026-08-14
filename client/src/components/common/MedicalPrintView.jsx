@@ -262,6 +262,10 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
   const now = new Date();
   const printDateStr = `Bình Long, ngày ${now.getDate()} tháng ${now.getMonth() + 1} năm ${now.getFullYear()}`;
 
+  // Phân bổ 12 khoa thành 2 nhóm (6 khoa / trang) để ngắt trang hoàn hảo
+  const deptsGroup1 = DEPARTMENT_ORDER.slice(0, 6);
+  const deptsGroup2 = DEPARTMENT_ORDER.slice(6, 12);
+
   const handlePrint = () => {
     window.print();
   };
@@ -292,7 +296,7 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
       }
 
       const opt = {
-        margin: [8, 10, 8, 10],
+        margin: [10, 10, 10, 10], // Chuẩn lề 10mm đều 4 phía
         filename: `Bao_Cao_Giao_Ban_Y_Te_${date}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: {
@@ -305,8 +309,8 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { 
-          mode: ['avoid-all', 'css', 'legacy'], 
-          avoid: ['.pdf-avoid-break', '.pdf-dept-card', 'tr', '.patient-case-box'] 
+          mode: ['css', 'legacy'], 
+          avoid: ['.dept-card', '.patient-card', '.patient-case-box', 'tr', 'thead', 'h1', 'h2', 'h3', 'h4', '.table-title', '.report-section-box', '.pdf-avoid-break'] 
         }
       };
 
@@ -320,7 +324,7 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
     }
   };
 
-  // Render khung báo cáo chuyên môn từng khoa (Gọn gàng, phẳng, tự động co giãn không thừa khoảng trắng)
+  // Render card chuyên môn từng khoa
   const renderDeptCard = (code) => {
     const report = reportMap[code];
     const deptName = DEPARTMENT_NAMES[code] || code;
@@ -368,7 +372,7 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
     });
 
     return (
-      <div key={code} className="pdf-dept-card pdf-avoid-break" style={{
+      <div key={code} className="dept-card" style={{
         border: '1px solid #CBD5E1',
         borderLeft: '4px solid #1E3A8A',
         borderRadius: '4px',
@@ -378,7 +382,7 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
         boxSizing: 'border-box',
         height: 'auto',
         minHeight: 'unset',
-        marginBottom: '6px'
+        marginBottom: '8px'
       }}>
         <div style={{ fontWeight: 'bold', color: '#1E3A8A', borderBottom: '1px solid #E2E8F0', paddingBottom: '3px', marginBottom: '4px', fontSize: '9pt', display: 'flex', justifyContent: 'space-between' }}>
           <span>🏥 {deptName}</span>
@@ -442,8 +446,9 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
       <style>{`
         @page {
           size: A4 portrait;
-          margin: 8mm 10mm;
+          margin: 10mm 10mm;
         }
+
         @media print {
           body {
             background-color: #FFFFFF !important;
@@ -467,13 +472,40 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
             width: 100% !important;
           }
         }
-        .pdf-table {
-          table-layout: auto !important;
-          width: 100% !important;
-          border-collapse: collapse !important;
-          margin-bottom: 6px;
+
+        /* 1. CHỐNG CẮT ĐÔI PHẦN TỬ */
+        .dept-card, .patient-card, .patient-case-box, tr, .report-section-box, .pdf-avoid-break {
+          page-break-inside: avoid !important;
+          break-inside: avoid !important;
         }
-        .pdf-table th, .pdf-table td {
+
+        h1, h2, h3, h4, .table-title, thead {
+          page-break-after: avoid !important;
+          break-after: avoid !important;
+        }
+
+        /* 2. TỰ ĐỘNG LẶP LẠI TIÊU ĐỀ BẢNG KHI SANG TRANG MỚI */
+        table.pdf-table {
+          border-collapse: collapse !important;
+          width: 100% !important;
+          table-layout: auto !important;
+          margin-bottom: 8px !important;
+        }
+
+        table.pdf-table thead {
+          display: table-header-group !important; /* Bắt buộc để lặp lại header */
+        }
+
+        table.pdf-table tfoot {
+          display: table-footer-group !important;
+        }
+
+        table.pdf-table tbody tr {
+          page-break-inside: avoid !important;
+          break-inside: avoid !important;
+        }
+
+        table.pdf-table th, table.pdf-table td {
           height: auto !important;
           min-height: 24px;
           padding: 4px 5px !important;
@@ -485,9 +517,11 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
           box-sizing: border-box !important;
           border: 1px solid #000000 !important;
         }
-        .pdf-avoid-break {
-          page-break-inside: avoid !important;
-          break-inside: avoid !important;
+
+        /* Section Page Breaks */
+        .pdf-page-section {
+          page-break-after: always;
+          break-after: page;
         }
       `}</style>
 
@@ -570,7 +604,7 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
         </div>
       </div>
 
-      {/* A4 Document Canvas - Exactly matching A4 page layout */}
+      {/* A4 Document Canvas */}
       <div className="printable-medical-document" style={{
         width: '100%',
         maxWidth: '840px',
@@ -588,9 +622,9 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
         marginBottom: '4rem'
       }}>
         {/* =========================================================================
-            TRANG 1: BÌA & BẢNG TỔNG HỢP SỐ LIỆU GIAO BAN TOÀN VIỆN
+            SECTION 1: TRANG BÌA & BẢNG TỔNG HỢP SỐ LIỆU TOÀN VIỆN (CỐ ĐỊNH TRANG 1)
         ========================================================================= */}
-        <div style={{ pageBreakAfter: 'always', display: 'flex', flexDirection: 'column' }}>
+        <div className="pdf-page-section report-section-box" style={{ display: 'flex', flexDirection: 'column' }}>
           {/* Document Header */}
           <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '0.65rem', backgroundColor: '#FFFFFF' }}>
             <tbody>
@@ -625,7 +659,7 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
 
           {/* Document Title */}
           <div style={{ textAlign: 'center', marginBottom: '0.85rem', backgroundColor: '#FFFFFF' }}>
-            <h1 style={{
+            <h1 className="table-title" style={{
               fontSize: '13.5pt',
               fontWeight: 'bold',
               textTransform: 'uppercase',
@@ -641,7 +675,7 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
           </div>
 
           {/* Section I Header */}
-          <div style={{ fontSize: '10.5pt', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '4px', color: '#0F2C59', borderBottom: '1.5px solid #0F2C59', paddingBottom: '2px' }}>
+          <div className="table-title" style={{ fontSize: '10.5pt', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '4px', color: '#0F2C59', borderBottom: '1.5px solid #0F2C59', paddingBottom: '2px' }}>
             PHẦN I: TỔNG HỢP SỐ LIỆU GIAO BAN TOÀN VIỆN ({sortedReports.length}/12 KHOA)
           </div>
 
@@ -717,31 +751,44 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
         </div>
 
         {/* =========================================================================
-            TRANG 2+: DỮ LIỆU BÁO CÁO CHUYÊN MÔN CHI TIẾT TỪNG KHOA
+            SECTION 2: DỮ LIỆU BÁO CÁO CHUYÊN MÔN TỪNG KHOA (TRANG 2: NHÓM 1 - 6 KHOA)
         ========================================================================= */}
-        <div style={{ pageBreakAfter: 'always', marginTop: '1rem' }}>
-          <div style={{ fontSize: '10.5pt', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px', color: '#0F2C59', borderBottom: '1.5px solid #0F2C59', paddingBottom: '2px' }}>
-            PHẦN II: DỮ LIỆU BÁO CÁO CHUYÊN MÔN CHI TIẾT TỪNG KHOA PHÒNG
+        <div className="pdf-page-section report-section-box" style={{ marginTop: '0.75rem' }}>
+          <div className="table-title" style={{ fontSize: '10.5pt', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px', color: '#0F2C59', borderBottom: '1.5px solid #0F2C59', paddingBottom: '2px' }}>
+            PHẦN II: DỮ LIỆU BÁO CÁO CHUYÊN MÔN CHI TIẾT TỪNG KHOA PHÒNG (TRANG 1/2)
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-            {DEPARTMENT_ORDER.map(code => renderDeptCard(code))}
+            {deptsGroup1.map(code => renderDeptCard(code))}
           </div>
         </div>
 
         {/* =========================================================================
-            TRANG 3+: BÁO CÁO CÁC CA BỆNH ĐẶC BIỆT & CHỮ KÝ PHÊ DUYỆT
+            SECTION 2 (TIẾP): DỮ LIỆU BÁO CÁO CHUYÊN MÔN (TRANG 3: NHÓM 2 - 6 KHOA)
         ========================================================================= */}
-        <div style={{ pageBreakInside: 'auto', backgroundColor: '#FFFFFF', marginTop: '1rem' }}>
-          <div style={{ fontSize: '10.5pt', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px', color: '#0F2C59', borderBottom: '1.5px solid #0F2C59', paddingBottom: '2px' }}>
+        <div className="pdf-page-section report-section-box" style={{ marginTop: '0.75rem' }}>
+          <div className="table-title" style={{ fontSize: '10.5pt', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px', color: '#0F2C59', borderBottom: '1.5px solid #0F2C59', paddingBottom: '2px' }}>
+            PHẦN II: DỮ LIỆU BÁO CÁO CHUYÊN MÔN CHI TIẾT TỪNG KHOA PHÒNG (TRANG 2/2)
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            {deptsGroup2.map(code => renderDeptCard(code))}
+          </div>
+        </div>
+
+        {/* =========================================================================
+            SECTION 3: BÁO CÁO CÁC CA BỆNH ĐẶC BIỆT & CHỮ KÝ PHÊ DUYỆT
+        ========================================================================= */}
+        <div className="report-section-box" style={{ backgroundColor: '#FFFFFF', marginTop: '0.75rem' }}>
+          <div className="table-title" style={{ fontSize: '10.5pt', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px', color: '#0F2C59', borderBottom: '1.5px solid #0F2C59', paddingBottom: '2px' }}>
             PHẦN III: BÁO CÁO CHI TIẾT CÁC CA BỆNH ĐẶC BIỆT
           </div>
 
           {/* 1. Ca Phẫu Thuật (Mổ) */}
-          <div className="pdf-avoid-break" style={{ marginBottom: '1.25rem' }}>
-            <div style={{ fontSize: '9.5pt', fontWeight: 'bold', textTransform: 'uppercase', margin: '0 0 4px 0', color: '#0369A1' }}>
+          <div className="report-section-box" style={{ marginBottom: '1.25rem' }}>
+            <h4 className="table-title" style={{ fontSize: '9.5pt', fontWeight: 'bold', textTransform: 'uppercase', margin: '0 0 4px 0', color: '#0369A1' }}>
               1. Danh sách bệnh nhân phẫu thuật (Mổ) ({allSurgeryCases.length} ca)
-            </div>
+            </h4>
             {allSurgeryCases.length > 0 ? (
               <table className="pdf-table" style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #000000', fontSize: '8pt', backgroundColor: '#FFFFFF' }}>
                 <thead>
@@ -757,7 +804,7 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
                 </thead>
                 <tbody>
                   {allSurgeryCases.map((sc, i) => (
-                    <tr key={i} style={{ backgroundColor: i % 2 === 0 ? '#FFFFFF' : '#FAFAFA' }}>
+                    <tr key={i} className="patient-card" style={{ backgroundColor: i % 2 === 0 ? '#FFFFFF' : '#FAFAFA' }}>
                       <td style={{ textAlign: 'center' }}>{i + 1}</td>
                       <td>
                         <strong>{sc.patient_name || sc.patientName}</strong>
@@ -789,10 +836,10 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
           </div>
 
           {/* 2. Ca Chuyển Viện */}
-          <div className="pdf-avoid-break" style={{ marginBottom: '1.25rem' }}>
-            <div style={{ fontSize: '9.5pt', fontWeight: 'bold', textTransform: 'uppercase', margin: '0 0 4px 0', color: '#D97706' }}>
+          <div className="report-section-box" style={{ marginBottom: '1.25rem' }}>
+            <h4 className="table-title" style={{ fontSize: '9.5pt', fontWeight: 'bold', textTransform: 'uppercase', margin: '0 0 4px 0', color: '#D97706' }}>
               2. Danh sách bệnh nhân chuyển viện cấp cứu ({allTransferCases.length} ca)
-            </div>
+            </h4>
             {allTransferCases.length > 0 ? (
               <table className="pdf-table" style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #000000', fontSize: '8pt', backgroundColor: '#FFFFFF' }}>
                 <thead>
@@ -807,7 +854,7 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
                 </thead>
                 <tbody>
                   {allTransferCases.map((tc, i) => (
-                    <tr key={i} style={{ backgroundColor: i % 2 === 0 ? '#FFFFFF' : '#FAFAFA' }}>
+                    <tr key={i} className="patient-card" style={{ backgroundColor: i % 2 === 0 ? '#FFFFFF' : '#FAFAFA' }}>
                       <td style={{ textAlign: 'center' }}>{i + 1}</td>
                       <td>
                         <strong>{tc.patient_name || tc.patientName}</strong>
@@ -840,13 +887,13 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
           </div>
 
           {/* 3. Ca Tử Vong */}
-          <div className="pdf-avoid-break" style={{ marginBottom: '1.25rem' }}>
-            <div style={{ fontSize: '9.5pt', fontWeight: 'bold', textTransform: 'uppercase', margin: '0 0 4px 0', color: '#DC2626' }}>
+          <div className="report-section-box" style={{ marginBottom: '1.25rem' }}>
+            <h4 className="table-title" style={{ fontSize: '9.5pt', fontWeight: 'bold', textTransform: 'uppercase', margin: '0 0 4px 0', color: '#DC2626' }}>
               3. Hồ sơ bệnh nhân tử vong ({allDeathCases.length} trường hợp)
-            </div>
+            </h4>
             {allDeathCases.length > 0 ? (
               allDeathCases.map((dc, i) => (
-                <div key={i} className="pdf-avoid-break" style={{ border: '1px solid #000000', padding: '6px 8px', marginBottom: '5px', fontSize: '8.5pt', backgroundColor: '#FEF2F2' }}>
+                <div key={i} className="patient-card patient-case-box" style={{ border: '1px solid #000000', padding: '6px 8px', marginBottom: '6px', fontSize: '8.5pt', backgroundColor: '#FEF2F2' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed #DC2626', paddingBottom: '2px', marginBottom: '3px' }}>
                     <span><strong style={{ color: '#991B1B' }}>Ca tử vong #{i + 1}: {dc.patient_name || dc.patientName}</strong> ({formatPatientAge(dc.age)}) — {dc.address}</span>
                     <span><strong>Khoa:</strong> {dc.departmentName}</span>
@@ -869,10 +916,10 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
           </div>
 
           {/* 4. Ca Bệnh Nặng Cần Theo Dõi */}
-          <div className="pdf-avoid-break" style={{ marginBottom: '1.25rem' }}>
-            <div style={{ fontSize: '9.5pt', fontWeight: 'bold', textTransform: 'uppercase', margin: '0 0 4px 0', color: '#7C3AED' }}>
+          <div className="report-section-box" style={{ marginBottom: '1.25rem' }}>
+            <h4 className="table-title" style={{ fontSize: '9.5pt', fontWeight: 'bold', textTransform: 'uppercase', margin: '0 0 4px 0', color: '#7C3AED' }}>
               4. Danh sách bệnh nhân nặng cần theo dõi ({allCriticalCases.length} ca)
-            </div>
+            </h4>
             {allCriticalCases.length > 0 ? (
               <table className="pdf-table" style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #000000', fontSize: '8pt', backgroundColor: '#FFFFFF' }}>
                 <thead>
@@ -887,7 +934,7 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
                 </thead>
                 <tbody>
                   {allCriticalCases.map((cc, i) => (
-                    <tr key={i} style={{ backgroundColor: i % 2 === 0 ? '#FFFFFF' : '#FAF5FF' }}>
+                    <tr key={i} className="patient-card" style={{ backgroundColor: i % 2 === 0 ? '#FFFFFF' : '#FAF5FF' }}>
                       <td style={{ textAlign: 'center' }}>{i + 1}</td>
                       <td>
                         <strong>{cc.patient_name || cc.patientName}</strong>
@@ -921,7 +968,7 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
           </div>
 
           {/* Section Chữ ký bàn giao & phê duyệt */}
-          <div className="pdf-avoid-break" style={{ marginTop: '1.25rem', backgroundColor: '#FFFFFF' }}>
+          <div className="pdf-avoid-break report-section-box" style={{ marginTop: '1.25rem', backgroundColor: '#FFFFFF' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', backgroundColor: '#FFFFFF', border: 'none' }}>
               <tbody>
                 <tr style={{ verticalAlign: 'top', backgroundColor: '#FFFFFF' }}>
