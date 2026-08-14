@@ -252,15 +252,57 @@ const exportReports = async (req, res, next) => {
 
 const bcrypt = require('bcryptjs');
 
+const OFFICIAL_DEPARTMENTS = [
+  { code: 'lck', username: 'lck.bvbl', name: 'Khoa Liên Chuyên Khoa' },
+  { code: 'xn', username: 'xn.bvbl', name: 'Khoa Xét nghiệm' },
+  { code: 'cdha', username: 'cdha.bvbl', name: 'Chẩn đoán hình ảnh' },
+  { code: 'hscc_tnt', username: 'hscc.bvbl', name: 'Hồi sức cấp cứu – Thận nhân tạo' },
+  { code: 'noi', username: 'noi.bvbl', name: 'Khoa Nội tổng hợp' },
+  { code: 'nhi', username: 'nhi.bvbl', name: 'Khoa Nhi' },
+  { code: 'nhiem', username: 'nhiem.bvbl', name: 'Khoa Truyền nhiễm' },
+  { code: 'san', username: 'san.bvbl', name: 'Khoa Sản (CSSK Sinh sản)' },
+  { code: 'yhct_phcn', username: 'yhct.bvbl', name: 'Y học cổ truyền – PHCN' },
+  { code: 'ngoai_th', username: 'ngoai.bvbl', name: 'Ngoại tổng hợp' },
+  { code: 'ctch', username: 'ctch.bvbl', name: 'Chấn thương chỉnh hình' },
+  { code: 'gmhs', username: 'gmhs.bvbl', name: 'Phẫu thuật, gây mê hồi sức' }
+];
+
+const DEFAULT_HASH_123 = '$2b$10$P6qiqatgseZ31AOk6DdQe.iosBVo0IL6yiQEvnJtdPxA/pOczEjWa'; // 123
+
 const getAllAccounts = async (req, res, next) => {
   try {
-    const [users] = await pool.execute(
-      `SELECT id, username, department_code, department_name, role, created_at, updated_at 
-       FROM users 
-       ORDER BY role ASC, id ASC`
+    // 1. Fetch current users
+    let [users] = await pool.execute(
+      'SELECT id, username, department_code, department_name, role FROM users'
     );
 
-    // Sort according to DEPARTMENT_ORDER for department accounts
+    // 2. Ensure all 12 official department accounts exist in DB
+    const existingDeptCodes = new Set(users.map(u => u.department_code));
+    const existingUsernames = new Set(users.map(u => u.username?.toLowerCase()));
+
+    for (const dept of OFFICIAL_DEPARTMENTS) {
+      if (!existingDeptCodes.has(dept.code)) {
+        try {
+          const username = existingUsernames.has(dept.username.toLowerCase()) 
+            ? `${dept.code}.bvbl` 
+            : dept.username;
+
+          await pool.execute(
+            'INSERT INTO users (username, password_hash, department_code, department_name, role) VALUES (?, ?, ?, ?, ?)',
+            [username, DEFAULT_HASH_123, dept.code, dept.name, 'department']
+          );
+        } catch (seedErr) {
+          console.warn(`Seed notice for ${dept.code}:`, seedErr.message);
+        }
+      }
+    }
+
+    // Re-fetch clean list after auto-seed
+    [users] = await pool.execute(
+      'SELECT id, username, department_code, department_name, role FROM users'
+    );
+
+    // 3. Sort according to official 12-department sequence, admin first
     users.sort((a, b) => {
       if (a.role === 'admin' && b.role !== 'admin') return -1;
       if (b.role === 'admin' && a.role !== 'admin') return 1;
