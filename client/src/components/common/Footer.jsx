@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaGithub, FaHeart, FaCodeBranch, FaExternalLinkAlt, FaHospital, FaCheckCircle } from 'react-icons/fa';
+import { FaGithub, FaHeart, FaCodeBranch, FaExternalLinkAlt, FaHospital, FaCheckCircle, FaPhoneAlt } from 'react-icons/fa';
 import { APP_VERSION_TAG } from '../../config/version';
 
 const Footer = () => {
@@ -38,7 +38,7 @@ const Footer = () => {
           </span>
         </div>
 
-        {/* Middle Badges Row: Version, GitHub Author, Database Status */}
+        {/* Middle Badges Row: Version, GitHub Author, Phone Contact, Database Status */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
           {/* Version Badge */}
           <span
@@ -95,6 +95,38 @@ const Footer = () => {
             <FaGithub style={{ fontSize: '0.95rem', color: '#1E293B' }} />
             <span>Tác giả: <strong>Nguyễn Vũ Nhật Nam</strong> (UIBreaker)</span>
             <FaExternalLinkAlt style={{ fontSize: '0.65rem', opacity: 0.6 }} />
+          </a>
+
+          {/* Phone Contact Pill Badge */}
+          <a
+            href="tel:0916337266"
+            title="Gọi hotline hỗ trợ kỹ thuật"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              backgroundColor: '#F0FDFA',
+              color: '#0D9488',
+              border: '1px solid #99F6E4',
+              padding: '0.3rem 0.85rem',
+              borderRadius: '20px',
+              textDecoration: 'none',
+              fontSize: '0.78rem',
+              fontWeight: '700',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.backgroundColor = '#CCFBF1';
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(13,148,136,0.2)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.backgroundColor = '#F0FDFA';
+              e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)';
+            }}
+          >
+            <FaPhoneAlt style={{ fontSize: '0.75rem', color: '#0D9488' }} />
+            <span>SĐT: <strong>0916.337.266</strong></span>
           </a>
 
           {/* Cloud Database Status Badge */}
