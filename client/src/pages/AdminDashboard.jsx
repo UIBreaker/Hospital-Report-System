@@ -36,10 +36,19 @@ import {
   FaVenusMars, 
   FaClock,
   FaHeartbeat,
-  FaProcedures
+  FaProcedures,
+  FaUserShield,
+  FaKey,
+  FaLock,
+  FaUnlockAlt,
+  FaCopy,
+  FaDice,
+  FaShieldAlt,
+  FaCheckCircle
 } from 'react-icons/fa';
 import reportService from '../services/reportService';
 import staffService from '../services/staffService';
+import accountService from '../services/accountService';
 import { generateAndDownloadHospitalExcel } from '../services/excelExportService';
 import MedicalPrintView from '../components/common/MedicalPrintView';
 import CaseImageUploader from '../components/common/CaseImageUploader';
@@ -359,6 +368,36 @@ const AdminDashboard = () => {
   const [deletingStaff, setDeletingStaff] = useState(false);
 
   // -------------------------------------------------------------------------
+  // ACCOUNTS MANAGEMENT STATE
+  // -------------------------------------------------------------------------
+  const [accountsList, setAccountsList] = useState([]);
+  const [loadingAccounts, setLoadingAccounts] = useState(false);
+  const [accountsError, setAccountsError] = useState('');
+  const [accountSearch, setAccountSearch] = useState('');
+  const [accountRoleFilter, setAccountRoleFilter] = useState('all');
+  const [accountActionMsg, setAccountActionMsg] = useState({ type: '', text: '' });
+  const [copiedAccount, setCopiedAccount] = useState('');
+
+  // Password Modal State
+  const [pwdModalOpen, setPwdModalOpen] = useState(false);
+  const [pwdAccount, setPwdAccount] = useState(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(true);
+  const [savingPassword, setSavingPassword] = useState(false);
+
+  // Edit/Add Account Modal State
+  const [accModalOpen, setAccModalOpen] = useState(false);
+  const [editingAccountId, setEditingAccountId] = useState(null);
+  const [accFormData, setAccFormData] = useState({
+    username: '',
+    department_name: '',
+    department_code: 'lck',
+    role: 'department',
+    password: ''
+  });
+  const [savingAccount, setSavingAccount] = useState(false);
+
+  // -------------------------------------------------------------------------
   // DATABASE STATS STATE
   // -------------------------------------------------------------------------
   const [dbStats, setDbStats] = useState(null);
@@ -455,6 +494,21 @@ const AdminDashboard = () => {
     }
   };
 
+  const fetchAccounts = async () => {
+    setLoadingAccounts(true);
+    setAccountsError('');
+    try {
+      const res = await accountService.getAllAccounts();
+      if (res && res.data) {
+        setAccountsList(res.data);
+      }
+    } catch (err) {
+      setAccountsError(err.response?.data?.error || 'Không thể tải danh sách tài khoản.');
+    } finally {
+      setLoadingAccounts(false);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === 'reports') {
       fetchStatus();
@@ -462,8 +516,117 @@ const AdminDashboard = () => {
       fetchStaff();
     } else if (activeTab === 'database') {
       fetchDatabaseStats();
+    } else if (activeTab === 'accounts') {
+      fetchAccounts();
     }
   }, [date, activeTab, staffDeptFilter, staffPosFilter]);
+
+  // -------------------------------------------------------------------------
+  // ACCOUNT ACTIONS
+  // -------------------------------------------------------------------------
+  const handleOpenChangePassword = (account) => {
+    setPwdAccount(account);
+    setNewPassword('');
+    setShowNewPassword(true);
+    setAccountActionMsg({ type: '', text: '' });
+    setPwdModalOpen(true);
+  };
+
+  const handleSavePassword = async () => {
+    if (!newPassword.trim()) {
+      alert('Vui lòng nhập mật khẩu mới');
+      return;
+    }
+    setSavingPassword(true);
+    try {
+      const res = await accountService.updatePassword(pwdAccount.id, newPassword);
+      setAccountActionMsg({ type: 'success', text: res.message || 'Đã cập nhật mật khẩu thành công!' });
+      setPwdModalOpen(false);
+      fetchAccounts();
+    } catch (err) {
+      alert('Lỗi cập nhật mật khẩu: ' + (err.response?.data?.error || err.message));
+    } finally {
+      setSavingPassword(false);
+    }
+  };
+
+  const handleQuickResetPassword = async (account) => {
+    if (!window.confirm(`Bạn có chắc chắn muốn đặt lại mật khẩu của tài khoản "${account.username}" (${account.department_name}) về "123"?`)) {
+      return;
+    }
+    try {
+      const res = await accountService.resetPassword(account.id, '123');
+      setAccountActionMsg({ type: 'success', text: res.message || `Đã đặt lại mật khẩu về "123" cho "${account.username}"!` });
+      fetchAccounts();
+    } catch (err) {
+      alert('Lỗi khi đặt lại mật khẩu: ' + (err.response?.data?.error || err.message));
+    }
+  };
+
+  const handleOpenAddAccount = () => {
+    setEditingAccountId(null);
+    setAccFormData({
+      username: '',
+      department_name: '',
+      department_code: 'lck',
+      role: 'department',
+      password: '123'
+    });
+    setAccountActionMsg({ type: '', text: '' });
+    setAccModalOpen(true);
+  };
+
+  const handleOpenEditAccount = (acc) => {
+    setEditingAccountId(acc.id);
+    setAccFormData({
+      username: acc.username,
+      department_name: acc.department_name,
+      department_code: acc.department_code,
+      role: acc.role,
+      password: ''
+    });
+    setAccountActionMsg({ type: '', text: '' });
+    setAccModalOpen(true);
+  };
+
+  const handleSaveAccount = async (e) => {
+    e.preventDefault();
+    if (!accFormData.username.trim() || !accFormData.department_name.trim()) {
+      alert('Vui lòng nhập đầy đủ tên đăng nhập và tên khoa phòng');
+      return;
+    }
+    setSavingAccount(true);
+    try {
+      if (editingAccountId) {
+        await accountService.updateAccount(editingAccountId, accFormData);
+        setAccountActionMsg({ type: 'success', text: 'Cập nhật thông tin tài khoản thành công!' });
+      } else {
+        await accountService.createAccount(accFormData);
+        setAccountActionMsg({ type: 'success', text: 'Thêm tài khoản mới thành công!' });
+      }
+      setAccModalOpen(false);
+      fetchAccounts();
+    } catch (err) {
+      alert('Lỗi: ' + (err.response?.data?.error || err.message));
+    } finally {
+      setSavingAccount(false);
+    }
+  };
+
+  const handleCopyAccount = (text, label) => {
+    navigator.clipboard.writeText(text);
+    setCopiedAccount(label);
+    setTimeout(() => setCopiedAccount(''), 2000);
+  };
+
+  const generateRandomPassword = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789@#';
+    let result = '';
+    for (let i = 0; i < 8; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setNewPassword(result);
+  };
 
   // -------------------------------------------------------------------------
   // STAFF ACTIONS
@@ -1047,6 +1210,21 @@ const AdminDashboard = () => {
         >
           <FaDatabase /> Quản Lý Database
         </button>
+
+        <button
+          onClick={() => setActiveTab('accounts')}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '0.5rem',
+            padding: '0.65rem 1.25rem', borderRadius: '8px',
+            border: 'none', cursor: 'pointer', fontWeight: '700', fontSize: '0.95rem',
+            transition: 'all 0.2s ease',
+            backgroundColor: activeTab === 'accounts' ? 'var(--brand-blue)' : '#F1F5F9',
+            color: activeTab === 'accounts' ? '#FFFFFF' : '#475569',
+            boxShadow: activeTab === 'accounts' ? '0 4px 12px rgba(15, 44, 89, 0.2)' : 'none'
+          }}
+        >
+          <FaUserShield /> Quản Lý Tài Khoản ({accountsList.length})
+        </button>
       </div>
 
       {/* ============================================================ */}
@@ -1550,8 +1728,543 @@ const AdminDashboard = () => {
       )}
 
       {/* ============================================================ */}
-      {/* MODAL: THÊM / SỬA NHÂN VIÊN                                   */}
+      {/* TAB 4: QUẢN LÝ TÀI KHOẢN KHOA PHÒNG                           */}
       {/* ============================================================ */}
+      {activeTab === 'accounts' && (
+        <div className="animate-fade-in">
+          {/* Stats Summary Grid */}
+          <div className="admin-stats-grid" style={{ marginBottom: '1.25rem' }}>
+            <div className="card admin-stats-card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #EFF6FF, #DBEAFE)', borderLeft: '4px solid var(--brand-blue)' }}>
+              <div className="stats-num" style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--brand-blue)' }}>{accountsList.length}</div>
+              <div className="stats-lbl" style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Tổng số tài khoản</div>
+            </div>
+            <div className="card admin-stats-card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #E8F5E9, #C8E6C9)', borderLeft: '4px solid var(--brand-green)' }}>
+              <div className="stats-num" style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--brand-green)' }}>
+                {accountsList.filter(a => a.role === 'department').length}
+              </div>
+              <div className="stats-lbl" style={{ color: 'var(--brand-green)', fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Tài khoản Khoa/Phòng</div>
+            </div>
+            <div className="card admin-stats-card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #FAF5FF, #E9D5FF)', borderLeft: '4px solid #7C3AED' }}>
+              <div className="stats-num" style={{ fontSize: '2rem', fontWeight: '800', color: '#7C3AED' }}>
+                {accountsList.filter(a => a.role === 'admin').length}
+              </div>
+              <div className="stats-lbl" style={{ color: '#7C3AED', fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Quản trị viên (KHNV)</div>
+            </div>
+          </div>
+
+          {/* Action Message Banner */}
+          {accountActionMsg.text && (
+            <div style={{
+              padding: '0.85rem 1.25rem',
+              borderRadius: '8px',
+              marginBottom: '1.25rem',
+              fontSize: '0.92rem',
+              fontWeight: '600',
+              backgroundColor: accountActionMsg.type === 'error' ? 'var(--danger-light)' : 'var(--brand-green-subtle)',
+              color: accountActionMsg.type === 'error' ? 'var(--danger)' : 'var(--brand-green)',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+            }}>
+              <span>{accountActionMsg.type === 'error' ? '⚠️ ' : '✓ '}{accountActionMsg.text}</span>
+              <button 
+                onClick={() => setAccountActionMsg({ type: '', text: '' })} 
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontWeight: 'bold', color: 'inherit' }}
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
+          {/* Search & Filter Bar */}
+          <div className="card" style={{ marginBottom: '1.25rem', padding: '1rem 1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            <div style={{ display: 'flex', gap: '0.75rem', flex: 1, minWidth: '280px', flexWrap: 'wrap' }}>
+              <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
+                <FaSearch style={{ position: 'absolute', top: '50%', left: '0.85rem', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                <input
+                  type="text"
+                  placeholder="Tìm theo tên khoa, username..."
+                  value={accountSearch}
+                  onChange={(e) => setAccountSearch(e.target.value)}
+                  style={{ width: '100%', paddingLeft: '2.4rem', borderRadius: '6px', border: '1px solid var(--border)', padding: '0.55rem 0.75rem 0.55rem 2.4rem', fontSize: '0.9rem' }}
+                />
+              </div>
+
+              <select
+                value={accountRoleFilter}
+                onChange={(e) => setAccountRoleFilter(e.target.value)}
+                style={{ padding: '0.55rem 0.85rem', borderRadius: '6px', border: '1px solid var(--border)', fontSize: '0.9rem', backgroundColor: '#FFFFFF' }}
+              >
+                <option value="all">Tất cả vai trò</option>
+                <option value="department">Khoa phòng</option>
+                <option value="admin">Quản trị viên</option>
+              </select>
+
+              <button
+                onClick={fetchAccounts}
+                className="btn btn-secondary btn-sm"
+                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                title="Tải lại danh sách tài khoản"
+              >
+                <FaSync /> Làm mới
+              </button>
+            </div>
+
+            <button
+              onClick={handleOpenAddAccount}
+              className="btn btn-primary"
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: '700' }}
+            >
+              <FaPlus /> Thêm Tài Khoản Mới
+            </button>
+          </div>
+
+          {/* Accounts Table Card */}
+          <div className="card" style={{ padding: 0, overflow: 'hidden', boxShadow: 'var(--shadow-md)' }}>
+            {loadingAccounts ? (
+              <div style={{ textAlign: 'center', padding: '4rem' }}>
+                <FaSpinner className="spinner" style={{ fontSize: '2.5rem', color: 'var(--brand-blue)' }} />
+                <p style={{ marginTop: '1rem', color: 'var(--text-muted)' }}>Đang tải danh sách tài khoản...</p>
+              </div>
+            ) : accountsError ? (
+              <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--danger)' }}>
+                ⚠️ {accountsError}
+              </div>
+            ) : (
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.92rem' }}>
+                  <thead>
+                    <tr style={{ backgroundColor: 'var(--brand-blue)', color: '#FFFFFF', textAlign: 'left' }}>
+                      <th style={{ padding: '0.9rem 1rem', width: '50px', textAlign: 'center' }}>STT</th>
+                      <th style={{ padding: '0.9rem 1rem' }}>Khoa / Phòng</th>
+                      <th style={{ padding: '0.9rem 1rem' }}>Tên Đăng Nhập (Username)</th>
+                      <th style={{ padding: '0.9rem 1rem', width: '140px', textAlign: 'center' }}>Vai Trò</th>
+                      <th style={{ padding: '0.9rem 1rem', width: '280px', textAlign: 'center' }}>Quản Lý Mật Khẩu & Thao Tác</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {accountsList
+                      .filter(acc => {
+                        if (accountRoleFilter !== 'all' && acc.role !== accountRoleFilter) return false;
+                        if (!accountSearch.trim()) return true;
+                        const q = accountSearch.toLowerCase();
+                        return (
+                          (acc.username && acc.username.toLowerCase().includes(q)) ||
+                          (acc.department_name && acc.department_name.toLowerCase().includes(q)) ||
+                          (acc.department_code && acc.department_code.toLowerCase().includes(q))
+                        );
+                      })
+                      .map((acc, index) => {
+                        const isAdmin = acc.role === 'admin';
+                        return (
+                          <tr
+                            key={acc.id}
+                            style={{
+                              borderBottom: '1px solid #F1F5F9',
+                              backgroundColor: index % 2 === 0 ? '#FFFFFF' : '#F8FAFC',
+                              transition: 'background-color 0.15s'
+                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#EFF6FF'; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = index % 2 === 0 ? '#FFFFFF' : '#F8FAFC'; }}
+                          >
+                            <td style={{ padding: '0.85rem 1rem', textAlign: 'center', color: '#94A3B8', fontWeight: '600' }}>
+                              {index + 1}
+                            </td>
+                            <td style={{ padding: '0.85rem 1rem' }}>
+                              <div style={{ fontWeight: '700', color: isAdmin ? '#7C3AED' : '#0F2C59' }}>
+                                {isAdmin ? '🛡️ ' : '🏥 '}{acc.department_name}
+                              </div>
+                              {acc.department_code && (
+                                <span style={{
+                                  fontSize: '0.75rem',
+                                  color: '#64748B',
+                                  backgroundColor: '#E2E8F0',
+                                  padding: '0.1rem 0.4rem',
+                                  borderRadius: '4px',
+                                  fontWeight: '600'
+                                }}>
+                                  Mã: {acc.department_code}
+                                </span>
+                              )}
+                            </td>
+                            <td style={{ padding: '0.85rem 1rem' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <span style={{
+                                  fontFamily: 'monospace',
+                                  fontWeight: '800',
+                                  fontSize: '0.98rem',
+                                  backgroundColor: '#F1F5F9',
+                                  padding: '0.25rem 0.6rem',
+                                  borderRadius: '6px',
+                                  border: '1px solid #CBD5E1',
+                                  color: '#0F2C59'
+                                }}>
+                                  {acc.username}
+                                </span>
+                                <button
+                                  onClick={() => handleCopyAccount(acc.username, `user_${acc.id}`)}
+                                  style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    color: copiedAccount === `user_${acc.id}` ? 'var(--brand-green)' : '#94A3B8',
+                                    padding: '0.25rem',
+                                    display: 'flex', alignItems: 'center'
+                                  }}
+                                  title="Copy tên đăng nhập"
+                                >
+                                  {copiedAccount === `user_${acc.id}` ? <FaCheckCircle style={{ color: '#16A34A' }} /> : <FaCopy />}
+                                </button>
+                              </div>
+                            </td>
+                            <td style={{ padding: '0.85rem 1rem', textAlign: 'center' }}>
+                              {isAdmin ? (
+                                <span className="badge" style={{ backgroundColor: '#EDE9FE', color: '#6D28D9', border: '1px solid #C4B5FD', padding: '0.35rem 0.65rem' }}>
+                                  🛡️ Quản Trị Viên
+                                </span>
+                              ) : (
+                                <span className="badge" style={{ backgroundColor: '#E0F2FE', color: '#0369A1', border: '1px solid #BAE6FD', padding: '0.35rem 0.65rem' }}>
+                                  🏥 Khoa Phòng
+                                </span>
+                              )}
+                            </td>
+                            <td style={{ padding: '0.85rem 1rem', textAlign: 'center' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.45rem', flexWrap: 'wrap' }}>
+                                <button
+                                  onClick={() => handleOpenChangePassword(acc)}
+                                  className="btn btn-sm"
+                                  style={{
+                                    backgroundColor: '#0F2C59',
+                                    color: '#FFFFFF',
+                                    display: 'flex', alignItems: 'center', gap: '0.3rem',
+                                    padding: '0.35rem 0.65rem',
+                                    fontSize: '0.8rem',
+                                    fontWeight: '700',
+                                    borderRadius: '5px'
+                                  }}
+                                  title="Đổi mật khẩu cho tài khoản này"
+                                >
+                                  <FaKey style={{ color: '#FDE047' }} /> Đổi Mật Khẩu
+                                </button>
+
+                                <button
+                                  onClick={() => handleQuickResetPassword(acc)}
+                                  className="btn btn-secondary btn-sm"
+                                  style={{
+                                    display: 'flex', alignItems: 'center', gap: '0.25rem',
+                                    padding: '0.35rem 0.55rem',
+                                    fontSize: '0.8rem',
+                                    borderRadius: '5px'
+                                  }}
+                                  title="Đặt lại mật khẩu nhanh về '123'"
+                                >
+                                  <FaUnlockAlt /> Reset (123)
+                                </button>
+
+                                <button
+                                  onClick={() => handleOpenEditAccount(acc)}
+                                  className="btn btn-secondary btn-sm"
+                                  style={{
+                                    display: 'flex', alignItems: 'center', gap: '0.25rem',
+                                    padding: '0.35rem 0.55rem',
+                                    fontSize: '0.8rem',
+                                    borderRadius: '5px'
+                                  }}
+                                  title="Chỉnh sửa thông tin tài khoản"
+                                >
+                                  <FaEdit /> Sửa
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* MODAL: ĐỔI MẬT KHẨU TÀI KHOẢN (CHANGE PASSWORD MODAL)         */}
+      {/* ============================================================ */}
+      {pwdModalOpen && pwdAccount && (
+        <div style={{
+          position: 'fixed', inset: 0,
+          backgroundColor: 'rgba(15, 44, 89, 0.65)',
+          backdropFilter: 'blur(5px)',
+          zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem'
+        }}>
+          <div className="card animate-slide-up" style={{ width: '100%', maxWidth: '480px', padding: 0, overflow: 'hidden', boxShadow: 'var(--shadow-xl)', borderRadius: '12px' }}>
+            <div style={{
+              padding: '1.25rem 1.5rem',
+              backgroundColor: '#0F2C59',
+              color: 'white',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+            }}>
+              <h3 style={{ color: 'white', fontSize: '1.15rem', fontWeight: '800', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <FaKey style={{ color: '#FDE047' }} /> Đổi Mật Khẩu Tài Khoản
+              </h3>
+              <button onClick={() => setPwdModalOpen(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
+            </div>
+
+            <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+              {/* Account Info Box */}
+              <div style={{
+                backgroundColor: '#F8FAFC',
+                border: '1.5px solid #E2E8F0',
+                borderRadius: '8px',
+                padding: '0.85rem 1rem',
+                display: 'flex', flexDirection: 'column', gap: '0.35rem'
+              }}>
+                <div style={{ fontSize: '0.88rem', color: '#64748B' }}>
+                  Khoa / Phòng: <strong style={{ color: '#0F2C59', fontSize: '0.95rem' }}>{pwdAccount.department_name}</strong>
+                </div>
+                <div style={{ fontSize: '0.88rem', color: '#64748B' }}>
+                  Tên đăng nhập: <span style={{ fontFamily: 'monospace', fontWeight: '800', color: '#2563EB', fontSize: '1.05rem', backgroundColor: '#DBEAFE', padding: '0.1rem 0.4rem', borderRadius: '4px' }}>{pwdAccount.username}</span>
+                </div>
+              </div>
+
+              {/* Password Input */}
+              <div className="form-group">
+                <label style={{ fontWeight: '700', color: '#334155', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Mật khẩu mới <span style={{ color: 'var(--brand-red)' }}>*</span></span>
+                  <span style={{ fontSize: '0.78rem', color: '#64748B', fontWeight: 'normal' }}>(Có thể nhập tùy ý)</span>
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <FaLock style={{ position: 'absolute', top: '50%', left: '0.9rem', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+                  <input
+                    type={showNewPassword ? 'text' : 'password'}
+                    placeholder="Nhập mật khẩu mới..."
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '0.7rem 2.8rem 0.7rem 2.5rem',
+                      borderRadius: '6px',
+                      border: '1.5px solid #CBD5E1',
+                      fontSize: '1rem',
+                      fontWeight: '700',
+                      fontFamily: showNewPassword ? 'monospace' : 'inherit'
+                    }}
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    style={{
+                      position: 'absolute',
+                      top: '50%', right: '0.65rem',
+                      transform: 'translateY(-50%)',
+                      background: 'none',
+                      border: 'none',
+                      color: '#64748B',
+                      cursor: 'pointer',
+                      padding: '0.4rem'
+                    }}
+                  >
+                    {showNewPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Quick Password Presets */}
+              <div>
+                <label style={{ fontSize: '0.8rem', fontWeight: '700', color: '#64748B', textTransform: 'uppercase', marginBottom: '0.4rem', display: 'block' }}>
+                  ⚡ Gợi ý mật khẩu nhanh:
+                </label>
+                <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    onClick={() => setNewPassword('123')}
+                    style={{
+                      padding: '0.35rem 0.65rem',
+                      borderRadius: '5px',
+                      border: '1px solid #CBD5E1',
+                      backgroundColor: '#F1F5F9',
+                      fontSize: '0.82rem',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      color: '#0F2C59'
+                    }}
+                  >
+                    123 (Mặc định)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setNewPassword('bvbl@2026')}
+                    style={{
+                      padding: '0.35rem 0.65rem',
+                      borderRadius: '5px',
+                      border: '1px solid #CBD5E1',
+                      backgroundColor: '#F1F5F9',
+                      fontSize: '0.82rem',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      color: '#0F2C59'
+                    }}
+                  >
+                    bvbl@2026
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setNewPassword(`${pwdAccount.username}@123`)}
+                    style={{
+                      padding: '0.35rem 0.65rem',
+                      borderRadius: '5px',
+                      border: '1px solid #CBD5E1',
+                      backgroundColor: '#F1F5F9',
+                      fontSize: '0.82rem',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      color: '#0F2C59'
+                    }}
+                  >
+                    {pwdAccount.username}@123
+                  </button>
+                  <button
+                    type="button"
+                    onClick={generateRandomPassword}
+                    style={{
+                      padding: '0.35rem 0.65rem',
+                      borderRadius: '5px',
+                      border: '1px solid #DDD6FE',
+                      backgroundColor: '#FAF5FF',
+                      fontSize: '0.82rem',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      color: '#7C3AED',
+                      display: 'flex', alignItems: 'center', gap: '0.25rem'
+                    }}
+                  >
+                    <FaDice /> Tạo ngẫu nhiên
+                  </button>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.75rem', borderTop: '1px solid #E2E8F0', paddingTop: '1rem' }}>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setPwdModalOpen(false)}
+                  disabled={savingPassword}
+                >
+                  Hủy
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={handleSavePassword}
+                  disabled={savingPassword || !newPassword.trim()}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: '700', padding: '0.65rem 1.25rem' }}
+                >
+                  {savingPassword ? <><FaSpinner className="spinner" /> Đang cập nhật...</> : <><FaSave /> Cập Nhật Mật Khẩu</>}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* MODAL: THÊM / SỬA THÔNG TIN TÀI KHOẢN                        */}
+      {/* ============================================================ */}
+      {accModalOpen && (
+        <div style={{
+          position: 'fixed', inset: 0,
+          backgroundColor: 'rgba(15, 44, 89, 0.65)',
+          backdropFilter: 'blur(5px)',
+          zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem'
+        }}>
+          <div className="card animate-slide-up" style={{ width: '100%', maxWidth: '520px', padding: 0, overflow: 'hidden', boxShadow: 'var(--shadow-xl)', borderRadius: '12px' }}>
+            <div style={{
+              padding: '1.25rem 1.5rem',
+              backgroundColor: '#0F2C59',
+              color: 'white',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+            }}>
+              <h3 style={{ color: 'white', fontSize: '1.15rem', fontWeight: '800', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <FaUserShield /> {editingAccountId ? 'Chỉnh Sửa Tài Khoản' : 'Thêm Mới Tài Khoản Khoa Phòng'}
+              </h3>
+              <button onClick={() => setAccModalOpen(false)} style={{ background: 'none', border: 'none', color: 'white', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
+            </div>
+
+            <form onSubmit={handleSaveAccount} style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div className="form-group">
+                <label style={{ fontWeight: '700' }}>Tên Khoa / Phòng <span style={{ color: 'var(--brand-red)' }}>*</span></label>
+                <input
+                  type="text"
+                  placeholder="VD: Khoa Nội tổng hợp, Phòng Kế Hoạch..."
+                  value={accFormData.department_name}
+                  onChange={(e) => setAccFormData({ ...accFormData, department_name: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="form-group">
+                  <label style={{ fontWeight: '700' }}>Tên Đăng Nhập (Username) <span style={{ color: 'var(--brand-red)' }}>*</span></label>
+                  <input
+                    type="text"
+                    placeholder="VD: noi.bvbl, khnv..."
+                    value={accFormData.username}
+                    onChange={(e) => setAccFormData({ ...accFormData, username: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label style={{ fontWeight: '700' }}>Mã Khoa (Dept Code) <span style={{ color: 'var(--brand-red)' }}>*</span></label>
+                  <input
+                    type="text"
+                    placeholder="VD: noi, nhi, san..."
+                    value={accFormData.department_code}
+                    onChange={(e) => setAccFormData({ ...accFormData, department_code: e.target.value })}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="form-group">
+                  <label style={{ fontWeight: '700' }}>Vai Trò (Role)</label>
+                  <select
+                    value={accFormData.role}
+                    onChange={(e) => setAccFormData({ ...accFormData, role: e.target.value })}
+                    style={{ backgroundColor: '#FFFFFF' }}
+                  >
+                    <option value="department">Khoa phòng</option>
+                    <option value="admin">Quản trị viên (Admin)</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label style={{ fontWeight: '700' }}>
+                    {editingAccountId ? 'Mật khẩu mới (Nếu muốn đổi)' : 'Mật khẩu khởi tạo'}
+                  </label>
+                  <input
+                    type="text"
+                    placeholder={editingAccountId ? 'Để trống nếu giữ nguyên' : 'VD: 123'}
+                    value={accFormData.password}
+                    onChange={(e) => setAccFormData({ ...accFormData, password: e.target.value })}
+                    required={!editingAccountId}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem', borderTop: '1px solid #E2E8F0', paddingTop: '1rem' }}>
+                <button type="button" className="btn btn-secondary" onClick={() => setAccModalOpen(false)}>
+                  Hủy
+                </button>
+                <button type="submit" className="btn btn-primary" disabled={savingAccount} style={{ fontWeight: '700' }}>
+                  {savingAccount ? <><FaSpinner className="spinner" /> Đang lưu...</> : <><FaSave /> Lưu Tài Khoản</>}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
       {staffModalOpen && (
         <div style={{
           position: 'fixed', inset: 0,

@@ -250,4 +250,157 @@ const exportReports = async (req, res, next) => {
   }
 };
 
-module.exports = { getPresentationData, getDepartmentStatus, getDatabaseStats, exportReports };
+const bcrypt = require('bcryptjs');
+
+const getAllAccounts = async (req, res, next) => {
+  try {
+    const [users] = await pool.execute(
+      `SELECT id, username, department_code, department_name, role, created_at, updated_at 
+       FROM users 
+       ORDER BY role ASC, id ASC`
+    );
+
+    // Sort according to DEPARTMENT_ORDER for department accounts
+    users.sort((a, b) => {
+      if (a.role === 'admin' && b.role !== 'admin') return -1;
+      if (b.role === 'admin' && a.role !== 'admin') return 1;
+      const idxA = DEPARTMENT_ORDER.indexOf(a.department_code);
+      const idxB = DEPARTMENT_ORDER.indexOf(b.department_code);
+      return (idxA !== -1 ? idxA : 999) - (idxB !== -1 ? idxB : 999);
+    });
+
+    res.json({ success: true, data: users });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateAccountPassword = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { newPassword } = req.body;
+
+    if (!newPassword || String(newPassword).trim() === '') {
+      return res.status(400).json({ success: false, error: 'Mật khẩu mới không được để trống' });
+    }
+
+    const [existing] = await pool.execute('SELECT * FROM users WHERE id = ?', [id]);
+    if (existing.length === 0) {
+      return res.status(404).json({ success: false, error: 'Không tìm thấy tài khoản người dùng' });
+    }
+
+    const password_hash = await bcrypt.hash(String(newPassword).trim(), 10);
+    await pool.execute('UPDATE users SET password_hash = ? WHERE id = ?', [password_hash, id]);
+
+    res.json({
+      success: true,
+      message: `Đã cập nhật mật khẩu thành công cho tài khoản "${existing[0].username}" (${existing[0].department_name})!`
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const resetAccountPassword = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const defaultPassword = req.body.defaultPassword || '123';
+
+    const [existing] = await pool.execute('SELECT * FROM users WHERE id = ?', [id]);
+    if (existing.length === 0) {
+      return res.status(404).json({ success: false, error: 'Không tìm thấy tài khoản người dùng' });
+    }
+
+    const password_hash = await bcrypt.hash(String(defaultPassword).trim(), 10);
+    await pool.execute('UPDATE users SET password_hash = ? WHERE id = ?', [password_hash, id]);
+
+    res.json({
+      success: true,
+      message: `Đã đặt lại mật khẩu về "${defaultPassword}" cho tài khoản "${existing[0].username}"!`
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateAccountDetails = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { username, department_name, department_code, role, newPassword } = req.body;
+
+    const [existing] = await pool.execute('SELECT * FROM users WHERE id = ?', [id]);
+    if (existing.length === 0) {
+      return res.status(404).json({ success: false, error: 'Không tìm thấy tài khoản' });
+    }
+
+    let query = 'UPDATE users SET username = ?, department_name = ?, department_code = ?, role = ?';
+    const params = [
+      username || existing[0].username,
+      department_name || existing[0].department_name,
+      department_code || existing[0].department_code,
+      role || existing[0].role
+    ];
+
+    if (newPassword && String(newPassword).trim() !== '') {
+      const password_hash = await bcrypt.hash(String(newPassword).trim(), 10);
+      query += ', password_hash = ?';
+      params.push(password_hash);
+    }
+
+    query += ' WHERE id = ?';
+    params.push(id);
+
+    await pool.execute(query, params);
+
+    const [updated] = await pool.execute('SELECT id, username, department_code, department_name, role FROM users WHERE id = ?', [id]);
+
+    res.json({
+      success: true,
+      message: `Đã cập nhật thông tin tài khoản "${updated[0].username}" thành công!`,
+      data: updated[0]
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const createAccount = async (req, res, next) => {
+  try {
+    const { username, password, department_code, department_name, role } = req.body;
+
+    if (!username || !password || !department_code || !department_name) {
+      return res.status(400).json({ success: false, error: 'Vui lòng điền đầy đủ thông tin tài khoản và mật khẩu' });
+    }
+
+    const [existing] = await pool.execute('SELECT id FROM users WHERE username = ?', [username]);
+    if (existing.length > 0) {
+      return res.status(400).json({ success: false, error: 'Tên đăng nhập đã tồn tại trên hệ thống' });
+    }
+
+    const password_hash = await bcrypt.hash(String(password).trim(), 10);
+    const [result] = await pool.execute(
+      'INSERT INTO users (username, password_hash, department_code, department_name, role) VALUES (?, ?, ?, ?, ?)',
+      [username.trim(), password_hash, department_code.trim(), department_name.trim(), role || 'department']
+    );
+
+    res.json({
+      success: true,
+      message: `Đã tạo tài khoản "${username}" thành công!`,
+      data: { id: result.insertId, username, department_code, department_name, role: role || 'department' }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { 
+  getPresentationData, 
+  getDepartmentStatus, 
+  getDatabaseStats, 
+  exportReports,
+  getAllAccounts,
+  updateAccountPassword,
+  resetAccountPassword,
+  updateAccountDetails,
+  createAccount
+};
