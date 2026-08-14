@@ -31,6 +31,7 @@ import NoiForm from '../components/forms/departments/NoiForm';
 import LienChuyenKhoaForm from '../components/forms/departments/LienChuyenKhoaForm';
 import SurgeryCaseForm from '../components/forms/SurgeryCaseForm';
 import DeathCaseForm from '../components/forms/DeathCaseForm';
+import CriticalCaseForm from '../components/forms/CriticalCaseForm';
 import StaffSelectCombobox from '../components/common/StaffSelectCombobox';
 import Footer from '../components/common/Footer';
 
@@ -106,6 +107,7 @@ const ReportPage = () => {
   const [transferCases, setTransferCases] = useState([]);
   const [surgeryCases, setSurgeryCases] = useState([]);
   const [deathCases, setDeathCases] = useState([]);
+  const [criticalCases, setCriticalCases] = useState([]);
   const [loadingExistingReport, setLoadingExistingReport] = useState(false);
   const [existingReportLoaded, setExistingReportLoaded] = useState(false);
 
@@ -232,10 +234,28 @@ const ReportPage = () => {
             final_outcome: dc.finalOutcome || dc.final_outcome || ''
           }));
 
+          const normalizedCriticals = (report.criticalCases || []).map((cc, idx) => ({
+            _id: cc._id || cc.id || `cc_${Date.now()}_${idx}`,
+            patientName: cc.patientName || cc.patient_name || '',
+            patient_name: cc.patientName || cc.patient_name || '',
+            age: cc.age || '',
+            address: cc.address || '',
+            admissionTime: cc.admissionTime || cc.admission_time || '',
+            admission_time: cc.admissionTime || cc.admission_time || '',
+            medicalHistory: cc.medicalHistory || cc.medical_history || '',
+            medical_history: cc.medicalHistory || cc.medical_history || '',
+            diagnosis: cc.diagnosis || '',
+            conditionSummary: cc.conditionSummary || cc.condition_summary || '',
+            condition_summary: cc.conditionSummary || cc.condition_summary || '',
+            treatment: cc.treatment || '',
+            notes: cc.notes !== undefined ? cc.notes : 'Bàn giao tua sau theo dõi tiếp'
+          }));
+
           setFormData(parsedData);
           setTransferCases(normalizedTransfers);
           setSurgeryCases(normalizedSurgeries);
           setDeathCases(normalizedDeaths);
+          setCriticalCases(normalizedCriticals);
           setExistingReportLoaded(true);
         } else {
           // Ngày này chưa có báo cáo -> reset form về trống để nhập mới
@@ -244,6 +264,7 @@ const ReportPage = () => {
           setTransferCases([]);
           setSurgeryCases([]);
           setDeathCases([]);
+          setCriticalCases([]);
           setHeaderData(prev => ({
             ...prev,
             selectedDoctor: '',
@@ -380,7 +401,8 @@ const ReportPage = () => {
         reportData: formData,
         transferCases: transferCases,
         surgeryCases: surgeryCases,
-        deathCases: deathCases
+        deathCases: deathCases,
+        criticalCases: criticalCases
       });
       setSubmitted(true);
       setShowConfirm(false);
@@ -714,6 +736,14 @@ const ReportPage = () => {
 
             {/* Module Bệnh Tử Vong */}
             <DeathCaseForm deathCases={deathCases} setDeathCases={setDeathCases} />
+
+            {/* Module Bệnh Nặng Theo Dõi */}
+            <CriticalCaseForm 
+              criticalCases={criticalCases} 
+              setCriticalCases={setCriticalCases} 
+              departmentName={user?.departmentName}
+              reportDate={headerData.reportDate}
+            />
           </div>
 
           {/* Submit error */}

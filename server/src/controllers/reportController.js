@@ -16,7 +16,8 @@ const createOrUpdateReport = async (req, res, next) => {
       status,
       transferCases,
       surgeryCases,
-      deathCases
+      deathCases,
+      criticalCases
     } = req.body;
 
     // Helper: convert undefined/empty string to null for mysql2 (used for all inserts)
@@ -52,6 +53,7 @@ const createOrUpdateReport = async (req, res, next) => {
       await connection.execute('DELETE FROM transfer_cases WHERE report_id = ?', [reportId]);
       await connection.execute('DELETE FROM surgery_cases WHERE report_id = ?', [reportId]);
       await connection.execute('DELETE FROM death_cases WHERE report_id = ?', [reportId]);
+      await connection.execute('DELETE FROM critical_cases WHERE report_id = ?', [reportId]);
     } else {
       const [result] = await connection.execute(
         `INSERT INTO reports (department_code, report_date, doctor_name, nurse_name, overtime_staff, room, shift_time, report_data, status)
@@ -151,6 +153,32 @@ const createOrUpdateReport = async (req, res, next) => {
       }
     }
 
+    // Insert new critical cases (Bệnh nặng theo dõi)
+    if (criticalCases && Array.isArray(criticalCases) && criticalCases.length > 0) {
+      for (const cc of criticalCases) {
+        const patientName = safeVal(cc.patientName || cc.patient_name);
+        if (patientName || cc.admissionTime || cc.diagnosis || cc.conditionSummary || cc.condition_summary) {
+          await connection.execute(
+            `INSERT INTO critical_cases 
+             (report_id, patient_name, age, address, admission_time, medical_history, diagnosis, condition_summary, treatment, notes)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+              reportId,
+              patientName,
+              safeVal(cc.age),
+              safeVal(cc.address),
+              safeVal(cc.admissionTime || cc.admission_time),
+              safeVal(cc.medicalHistory || cc.medical_history),
+              safeVal(cc.diagnosis),
+              safeVal(cc.conditionSummary || cc.condition_summary),
+              safeVal(cc.treatment),
+              safeVal(cc.notes || 'Bàn giao tua sau theo dõi tiếp')
+            ]
+          );
+        }
+      }
+    }
+
     await connection.commit();
     res.json({ success: true, data: { id: reportId } });
   } catch (error) {
@@ -181,15 +209,19 @@ const getReport = async (req, res, next) => {
 
     const report = reports[0];
     const [transferCases] = await pool.execute(
-      'SELECT * FROM transfer_cases WHERE report_id = ?',
+      'SELECT * FROM transfer_cases WHERE report_id = ? ORDER BY id ASC',
       [report.id]
     );
     const [surgeryCases] = await pool.execute(
-      'SELECT * FROM surgery_cases WHERE report_id = ?',
+      'SELECT * FROM surgery_cases WHERE report_id = ? ORDER BY id ASC',
       [report.id]
     );
     const [deathCases] = await pool.execute(
-      'SELECT * FROM death_cases WHERE report_id = ?',
+      'SELECT * FROM death_cases WHERE report_id = ? ORDER BY id ASC',
+      [report.id]
+    );
+    const [criticalCases] = await pool.execute(
+      'SELECT * FROM critical_cases WHERE report_id = ? ORDER BY id ASC',
       [report.id]
     );
 
@@ -199,7 +231,8 @@ const getReport = async (req, res, next) => {
         ...report,
         transferCases,
         surgeryCases,
-        deathCases
+        deathCases,
+        criticalCases
       }
     });
   } catch (error) {

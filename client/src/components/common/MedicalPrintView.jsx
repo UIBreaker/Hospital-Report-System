@@ -37,6 +37,8 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
   const allDeathCases = [];
   // Collect all transfer cases across departments
   const allTransferCases = [];
+  // Collect all critical monitoring cases across departments
+  const allCriticalCases = [];
 
   sortedReports.forEach(report => {
     const deptName = DEPARTMENT_NAMES[report.department_code] || report.department_name || report.department_code;
@@ -54,6 +56,11 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
     if (report.transferCases && Array.isArray(report.transferCases)) {
       report.transferCases.forEach(tc => {
         allTransferCases.push({ ...tc, departmentName: deptName });
+      });
+    }
+    if (report.criticalCases && Array.isArray(report.criticalCases)) {
+      report.criticalCases.forEach(cc => {
+        allCriticalCases.push({ ...cc, departmentName: deptName });
       });
     }
   });
@@ -430,7 +437,55 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
           </div>
         )}
 
-        {/* Section V: Chữ ký bàn giao & phê duyệt */}
+        {/* Section V: Danh sách bệnh nhân nặng theo dõi (nếu có) */}
+        {allCriticalCases.length > 0 && (
+          <div style={{ marginTop: '1.5rem', pageBreakInside: 'avoid' }}>
+            <div style={{ fontSize: '11pt', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '0.4rem', color: '#5B21B6' }}>
+              V. DANH SÁCH BỆNH NHÂN NẶNG THEO DÕI ({allCriticalCases.length} ca)
+            </div>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10pt' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#F3E8FF', color: '#5B21B6', fontWeight: 'bold', textAlign: 'center' }}>
+                  <th style={{ border: '1px solid #000000', padding: '6px', width: '35px' }}>STT</th>
+                  <th style={{ border: '1px solid #000000', padding: '6px', width: '150px' }}>Họ Tên / Tuổi / Đ/C</th>
+                  <th style={{ border: '1px solid #000000', padding: '6px', width: '120px' }}>Khoa / Giờ Vào (VV)</th>
+                  <th style={{ border: '1px solid #000000', padding: '6px', width: '120px' }}>Tiền Căn / Chẩn Đoán</th>
+                  <th style={{ border: '1px solid #000000', padding: '6px' }}>Tình Trạng & Diễn Biến</th>
+                  <th style={{ border: '1px solid #000000', padding: '6px', width: '140px' }}>Xử Trí & Hướng Tiếp</th>
+                </tr>
+              </thead>
+              <tbody>
+                {allCriticalCases.map((cc, i) => (
+                  <tr key={i} style={{ backgroundColor: i % 2 === 0 ? '#FFFFFF' : '#FAF5FF' }}>
+                    <td style={{ border: '1px solid #000000', padding: '5px', textAlign: 'center' }}>{i + 1}</td>
+                    <td style={{ border: '1px solid #000000', padding: '5px' }}>
+                      <strong>{cc.patient_name || cc.patientName}</strong>
+                      <div style={{ fontSize: '9.5pt', color: '#374151' }}>Tuổi: {cc.age || '—'}</div>
+                      <div style={{ fontSize: '9pt', color: '#4B5563' }}>{cc.address}</div>
+                    </td>
+                    <td style={{ border: '1px solid #000000', padding: '5px', fontSize: '9.5pt' }}>
+                      <div><strong>{cc.departmentName}</strong></div>
+                      <div>{cc.admission_time || cc.admissionTime || '—'}</div>
+                    </td>
+                    <td style={{ border: '1px solid #000000', padding: '5px' }}>
+                      {cc.medical_history || cc.medicalHistory ? <div style={{ fontSize: '9pt', color: '#4B5563' }}><strong>TC:</strong> {cc.medical_history || cc.medicalHistory}</div> : null}
+                      <div><strong style={{ color: '#5B21B6' }}>CĐ:</strong> {cc.diagnosis || '—'}</div>
+                    </td>
+                    <td style={{ border: '1px solid #000000', padding: '5px', fontSize: '9.5pt' }}>
+                      {cc.condition_summary || cc.conditionSummary || '—'}
+                    </td>
+                    <td style={{ border: '1px solid #000000', padding: '5px', fontSize: '9.5pt' }}>
+                      <div><strong>Xử trí:</strong> {cc.treatment || '—'}</div>
+                      <div style={{ fontSize: '9pt', color: '#4B5563', marginTop: '2px' }}><em>{cc.notes || 'Bàn giao tua sau theo dõi tiếp'}</em></div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Section VI: Chữ ký bàn giao & phê duyệt */}
         <div style={{ marginTop: '2.5rem', pageBreakInside: 'avoid', backgroundColor: '#FFFFFF' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', backgroundColor: '#FFFFFF' }}>
             <tbody>

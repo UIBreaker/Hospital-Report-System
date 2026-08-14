@@ -450,6 +450,59 @@ export const exportPresentationToPowerPoint = async (slides = [], date = '', rep
         fontSize: 8.5, italic: true, color: '94A3B8', align: 'right', fontFace: 'Arial'
       });
     }
+
+    // =========================================================================
+    // 7. SLIDE CA BỆNH NẶNG THEO DÕI (PURPLE THEME)
+    // =========================================================================
+    else if (s.type === 'critical') {
+      const cc = s.criticalCase || {};
+      const deptName = s.deptName || 'KHOA PHÒNG';
+
+      // Header Banner (Purple Theme)
+      slide.addShape(pptx.ShapeType.rect, {
+        x: 0, y: 0, w: 10, h: 0.7,
+        fill: { color: '7C3AED' }, line: { color: '7C3AED' }
+      });
+      slide.addText(`⚡ BÁO CÁO BỆNH NHÂN NẶNG THEO DÕI • ${deptName.toUpperCase()} • Ca #${s.caseIndex}/${s.totalCases}`, {
+        x: 0.5, y: 0.1, w: 9.0, h: 0.5,
+        fontSize: 15, bold: true, color: 'FFFFFF', align: 'left', fontFace: 'Arial'
+      });
+
+      // Left Column: Hành chính & Tiền căn
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: 0.5, y: 0.9, w: 4.35, h: 4.0,
+        fill: { color: 'FAF5FF' }, line: { color: 'DDD6FE', width: 1.5 }, rectRadius: 0.1
+      });
+      slide.addText('👤 HÀNH CHÍNH & VÀO VIỆN', {
+        x: 0.7, y: 1.05, w: 3.95, h: 0.35,
+        fontSize: 12, bold: true, color: '5B21B6', fontFace: 'Arial'
+      });
+      const leftCritical = `Họ và tên BN: ${cc.patient_name || cc.patientName || '—'}\n\nTuổi / Năm sinh: ${cc.age || '—'}\n\nĐịa chỉ: ${cc.address || '—'}\n\nThời gian vào viện (VV): ${cc.admission_time || cc.admissionTime || '—'}\n\nTiền căn bệnh: ${cc.medical_history || cc.medicalHistory || 'Chưa ghi nhận tiền căn đặc biệt'}`;
+      slide.addText(leftCritical, {
+        x: 0.7, y: 1.45, w: 3.95, h: 3.2,
+        fontSize: 10.5, color: '1E293B', fontFace: 'Arial', valign: 'top'
+      });
+
+      // Right Column: Chẩn đoán, Diễn biến & Điều trị
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: 5.15, y: 0.9, w: 4.35, h: 4.0,
+        fill: { color: 'F5F3FF' }, line: { color: 'DDD6FE', width: 1.5 }, rectRadius: 0.1
+      });
+      slide.addText('📋 CHẨN ĐOÁN, DIỄN BIẾN & ĐIỀU TRỊ', {
+        x: 5.35, y: 1.05, w: 3.95, h: 0.35,
+        fontSize: 12, bold: true, color: '6D28D9', fontFace: 'Arial'
+      });
+      const rightCritical = `Chẩn đoán:\n${cc.diagnosis || '—'}\n\nTình trạng & Diễn biến:\n${cc.condition_summary || cc.conditionSummary || '—'}\n\nXử trí điều trị:\n${cc.treatment || '—'}\n\nHướng tiếp theo:\n${cc.notes || 'Bàn giao tua sau theo dõi tiếp'}`;
+      slide.addText(rightCritical, {
+        x: 5.35, y: 1.45, w: 3.95, h: 3.2,
+        fontSize: 10, color: '0F172A', fontFace: 'Arial', valign: 'top'
+      });
+
+      slide.addText(`Slide ${i + 1}/${slides.length} • Bệnh nhân nặng theo dõi • ${date}`, {
+        x: 0.5, y: 5.15, w: 9.0, h: 0.25,
+        fontSize: 8.5, italic: true, color: '94A3B8', align: 'right', fontFace: 'Arial'
+      });
+    }
   }
 
   // Xuất file PowerPoint

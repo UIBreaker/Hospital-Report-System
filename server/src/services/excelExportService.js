@@ -226,11 +226,13 @@ const generateHospitalExcelReport = async (date, deptUsers = [], detailedReports
   let totalTransfers = 0;
   let totalSurgeries = 0;
   let totalDeaths = 0;
+  let totalCriticalCases = 0;
 
   detailedReports.forEach(r => {
     totalTransfers += (r.transferCases?.length || 0);
     totalSurgeries += (r.surgeryCases?.length || 0);
     totalDeaths += (r.deathCases?.length || 0);
+    totalCriticalCases += (r.criticalCases?.length || 0);
   });
 
   // =========================================================================
@@ -956,17 +958,93 @@ const generateHospitalExcelReport = async (date, deptUsers = [], detailedReports
     currentRowIndex++;
   }
 
+  // Cách 1 dòng
+  ws3.addRow([]);
+  currentRowIndex++;
+
+  // --- MỤC IV: BỆNH NHÂN NẶNG THEO DÕI ---
+  ws3.mergeCells(`A${currentRowIndex}:I${currentRowIndex}`);
+  ws3.getCell(`A${currentRowIndex}`).value = `⚡ IV. DANH SÁCH BỆNH NHÂN NẶNG THEO DÕI (${totalCriticalCases} CA)`;
+  ws3.getCell(`A${currentRowIndex}`).font = { name: 'Arial', size: 12, bold: true, color: { argb: 'FFFFFFFF' } };
+  ws3.getCell(`A${currentRowIndex}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF7C3AED' } }; // Purple
+  ws3.getCell(`A${currentRowIndex}`).alignment = { vertical: 'middle', horizontal: 'left' };
+  ws3.getRow(currentRowIndex).height = 26;
+  currentRowIndex++;
+
+  const criticalHeaders = [
+    'STT',
+    'Khoa Báo Cáo',
+    'Họ Tên / Tuổi / Địa Chỉ',
+    'Thời Gian Vào Viện (VV)',
+    'Tiền Căn Bệnh',
+    'Chẩn Đoán',
+    'Tình Trạng & Diễn Biến (Giao Ban & Trong Ngày)',
+    'Xử Trí Điều Trị',
+    'Hướng Tiếp Theo / Ghi Chú'
+  ];
+
+  const cHeaderRow = ws3.addRow(criticalHeaders);
+  cHeaderRow.height = 24;
+  cHeaderRow.eachCell((cell) => {
+    cell.font = { name: 'Arial', size: 9.5, bold: true, color: { argb: 'FF5B21B6' } };
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF5F3FF' } };
+    cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+    cell.border = headerBorder;
+  });
+  currentRowIndex++;
+
+  let cCount = 0;
+  orderedDepartments.forEach(dept => {
+    const cCases = dept.report?.criticalCases || [];
+    cCases.forEach(cc => {
+      cCount++;
+      const patientInfo = `${cc.patient_name || cc.patientName || '—'}${cc.age ? ` (${cc.age} tuổi)` : ''}${cc.address ? `\nĐịa chỉ: ${cc.address}` : ''}`;
+      const row = ws3.addRow([
+        cCount,
+        dept.departmentName,
+        patientInfo,
+        cc.admission_time || cc.admissionTime || '—',
+        cc.medical_history || cc.medicalHistory || '—',
+        cc.diagnosis || '—',
+        cc.condition_summary || cc.conditionSummary || '—',
+        cc.treatment || '—',
+        cc.notes || 'Bàn giao tua sau theo dõi tiếp'
+      ]);
+      row.height = 42;
+      row.eachCell((cell, colNum) => {
+        cell.font = { name: 'Arial', size: 9.5 };
+        cell.border = thinBorder;
+        if (colNum === 1 || colNum === 4) {
+          cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        } else if (colNum === 3 || colNum === 6) {
+          cell.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+          cell.font = { name: 'Arial', size: 9.5, bold: true, color: { argb: 'FF6D28D9' } };
+        } else {
+          cell.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+        }
+      });
+      currentRowIndex++;
+    });
+  });
+
+  if (cCount === 0) {
+    const emptyRow = ws3.addRow(['', 'Không có ca bệnh nhân nặng theo dõi nào trong ngày.', '', '', '', '', '', '', '']);
+    emptyRow.height = 22;
+    emptyRow.eachCell(c => { c.font = { name: 'Arial', size: 9.5, italic: true, color: { argb: 'FF64748B' } }; c.border = thinBorder; });
+    currentRowIndex++;
+  }
+
   // Thiết lập độ rộng cột cho Sheet 3
   ws3.columns = [
     { width: 6 },   // STT
     { width: 26 },  // Khoa
     { width: 28 },  // Họ tên BN
     { width: 14 },  // Giờ vào
-    { width: 24 },  // Lý do / Tình trạng vào
-    { width: 30 },  // Cận lâm sàng / Tiền sử
-    { width: 30 },  // Chẩn đoán
+    { width: 24 },  // Lý do / Tình trạng vào / Tiền căn
+    { width: 30 },  // Cận lâm sàng / Tiền sử / Chẩn đoán
+    { width: 32 },  // Chẩn đoán / Tình trạng diễn biến
     { width: 32 },  // Xử trí
-    { width: 32 }   // Diễn biến / Kết quả
+    { width: 32 }   // Diễn biến / Kết quả / Hướng tiếp theo
   ];
 
   return workbook;

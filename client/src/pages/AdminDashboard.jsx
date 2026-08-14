@@ -386,6 +386,7 @@ const AdminDashboard = () => {
   const [editTransferCases, setEditTransferCases] = useState([]);
   const [editSurgeryCases, setEditSurgeryCases] = useState([]);
   const [editDeathCases, setEditDeathCases] = useState([]);
+  const [editCriticalCases, setEditCriticalCases] = useState([]);
   const [hasReport, setHasReport] = useState(false);
 
   // Print Modal State
@@ -606,6 +607,7 @@ const AdminDashboard = () => {
         setEditTransferCases(report.transferCases || []);
         setEditSurgeryCases(report.surgeryCases || []);
         setEditDeathCases(report.deathCases || []);
+        setEditCriticalCases(report.criticalCases || []);
       } else {
         setHasReport(false);
         setEditHeader({ reportDate: date, doctorName: '', nurseName: '', overtimeStaff: [], room: '', shiftTime: '' });
@@ -613,6 +615,7 @@ const AdminDashboard = () => {
         setEditTransferCases([]);
         setEditSurgeryCases([]);
         setEditDeathCases([]);
+        setEditCriticalCases([]);
       }
     } catch (err) {
       console.error('Lỗi khi tải chi tiết báo cáo:', err);
@@ -637,7 +640,8 @@ const AdminDashboard = () => {
         reportData: editReportData,
         transferCases: editTransferCases,
         surgeryCases: editSurgeryCases,
-        deathCases: editDeathCases
+        deathCases: editDeathCases,
+        criticalCases: editCriticalCases
       });
 
       // Nếu Admin đổi ngày báo cáo so với ngày đang xem, xóa bản ghi ở ngày cũ để tránh trùng lặp
@@ -762,6 +766,34 @@ const AdminDashboard = () => {
 
   const handleRemoveDeathCase = (idx) => {
     setEditDeathCases(editDeathCases.filter((_, i) => i !== idx));
+  };
+
+  // Critical cases helpers
+  const handleCriticalCaseChange = (idx, field, value) => {
+    const updated = [...editCriticalCases];
+    updated[idx][field] = value;
+    setEditCriticalCases(updated);
+  };
+
+  const handleAddCriticalCase = () => {
+    setEditCriticalCases([
+      ...editCriticalCases,
+      {
+        patientName: '',
+        age: '',
+        address: '',
+        admissionTime: '',
+        medicalHistory: '',
+        diagnosis: '',
+        conditionSummary: '',
+        treatment: '',
+        notes: 'Bàn giao tua sau theo dõi tiếp'
+      }
+    ]);
+  };
+
+  const handleRemoveCriticalCase = (idx) => {
+    setEditCriticalCases(editCriticalCases.filter((_, i) => i !== idx));
   };
 
   // -------------------------------------------------------------------------
@@ -1971,6 +2003,88 @@ const AdminDashboard = () => {
                               <div><strong>Chẩn đoán:</strong> <span style={{ color: '#DC2626', fontWeight: 'bold' }}>{dc.diagnosis || '—'}</span></div>
                               <div><strong>Xử trí:</strong> {dc.emergency_treatment || dc.emergencyTreatment || '—'}</div>
                               <div><strong>Kết quả:</strong> {dc.final_outcome || dc.finalOutcome || '—'}</div>
+                            </div>
+                          )}
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Section 6: Bệnh nhân nặng theo dõi */}
+                  <div className="sub-section" style={{ marginTop: '1.5rem', borderLeft: '3px solid #7C3AED' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                      <h4 style={{ fontSize: '1rem', color: '#6D28D9', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
+                        <FaHeartbeat style={{ color: '#7C3AED' }} /> Bệnh Nhân Nặng Theo Dõi ({editCriticalCases.length} ca)
+                      </h4>
+                      {isEditing && (
+                        <button type="button" className="btn btn-secondary btn-sm" onClick={handleAddCriticalCase} style={{ backgroundColor: '#EDE9FE', color: '#6D28D9', borderColor: '#DDD6FE' }}>
+                          <FaPlus /> Thêm ca nặng
+                        </button>
+                      )}
+                    </div>
+
+                    {editCriticalCases.length === 0 ? (
+                      <p style={{ color: 'var(--text-light)', fontStyle: 'italic' }}>Không có ca bệnh nhân nặng theo dõi.</p>
+                    ) : (
+                      editCriticalCases.map((cc, idx) => (
+                        <div key={idx} className="sub-section" style={{ marginBottom: '1rem', borderLeft: '3px solid #7C3AED', backgroundColor: '#FAF5FF' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                            <h5 style={{ color: '#5B21B6', fontWeight: '700', margin: 0 }}>
+                              Ca Nặng #{idx + 1} {cc.patient_name || cc.patientName ? `— ${cc.patient_name || cc.patientName}` : ''}
+                            </h5>
+                            {isEditing && (
+                              <button type="button" className="btn btn-danger btn-sm" onClick={() => handleRemoveCriticalCase(idx)}>
+                                <FaTrash /> Xóa
+                              </button>
+                            )}
+                          </div>
+                          {isEditing ? (
+                            <div className="form-grid">
+                              <div className="form-group">
+                                <label>Họ và tên bệnh nhân</label>
+                                <input type="text" value={cc.patientName || cc.patient_name || ''} onChange={(e) => handleCriticalCaseChange(idx, 'patientName', e.target.value)} />
+                              </div>
+                              <div className="form-group">
+                                <label>Tuổi / Năm sinh</label>
+                                <input type="text" value={cc.age || ''} onChange={(e) => handleCriticalCaseChange(idx, 'age', e.target.value)} />
+                              </div>
+                              <div className="form-group">
+                                <label>Giờ vào viện (VV)</label>
+                                <input type="text" value={cc.admissionTime || cc.admission_time || ''} onChange={(e) => handleCriticalCaseChange(idx, 'admissionTime', e.target.value)} />
+                              </div>
+                              <div className="form-group full-width">
+                                <label>Địa chỉ / Phường xã</label>
+                                <input type="text" value={cc.address || ''} onChange={(e) => handleCriticalCaseChange(idx, 'address', e.target.value)} />
+                              </div>
+                              <div className="form-group full-width">
+                                <label>Tiền căn</label>
+                                <input type="text" value={cc.medicalHistory || cc.medical_history || ''} onChange={(e) => handleCriticalCaseChange(idx, 'medicalHistory', e.target.value)} />
+                              </div>
+                              <div className="form-group full-width">
+                                <label>Chẩn đoán</label>
+                                <input type="text" value={cc.diagnosis || ''} onChange={(e) => handleCriticalCaseChange(idx, 'diagnosis', e.target.value)} />
+                              </div>
+                              <div className="form-group full-width">
+                                <label>Tình trạng bệnh & Diễn biến (Giao ban & Trong ngày)</label>
+                                <textarea rows={3} value={cc.conditionSummary || cc.condition_summary || ''} onChange={(e) => handleCriticalCaseChange(idx, 'conditionSummary', e.target.value)} />
+                              </div>
+                              <div className="form-group full-width">
+                                <label>Xử trí điều trị</label>
+                                <input type="text" value={cc.treatment || ''} onChange={(e) => handleCriticalCaseChange(idx, 'treatment', e.target.value)} />
+                              </div>
+                              <div className="form-group full-width">
+                                <label>Hướng tiếp theo / Ghi chú</label>
+                                <input type="text" value={cc.notes !== undefined ? cc.notes : 'Bàn giao tua sau theo dõi tiếp'} onChange={(e) => handleCriticalCaseChange(idx, 'notes', e.target.value)} />
+                              </div>
+                            </div>
+                          ) : (
+                            <div style={{ fontSize: '0.875rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                              <div><strong>Bệnh nhân:</strong> {cc.patient_name || cc.patientName || '—'}{cc.age ? ` (${cc.age} tuổi)` : ''}{cc.address ? ` - ${cc.address}` : ''}</div>
+                              <div><strong>Giờ vào:</strong> {cc.admission_time || cc.admissionTime || '—'} | <strong>Tiền căn:</strong> {cc.medical_history || cc.medicalHistory || 'Không'}</div>
+                              <div><strong>Chẩn đoán:</strong> <span style={{ color: '#6D28D9', fontWeight: 'bold' }}>{cc.diagnosis || '—'}</span></div>
+                              <div><strong>Tình trạng & Diễn biến:</strong> {cc.condition_summary || cc.conditionSummary || '—'}</div>
+                              <div><strong>Xử trí:</strong> {cc.treatment || '—'}</div>
+                              <div><strong>Hướng tiếp theo:</strong> {cc.notes || 'Bàn giao tua sau theo dõi tiếp'}</div>
                             </div>
                           )}
                         </div>

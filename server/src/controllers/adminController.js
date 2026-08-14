@@ -39,7 +39,11 @@ const getPresentationData = async (req, res, next) => {
         [report.id]
       );
       const [deathCases] = await pool.execute(
-        'SELECT * FROM death_cases WHERE report_id = ?',
+        'SELECT * FROM death_cases WHERE report_id = ? ORDER BY id ASC',
+        [report.id]
+      );
+      const [criticalCases] = await pool.execute(
+        'SELECT * FROM critical_cases WHERE report_id = ? ORDER BY id ASC',
         [report.id]
       );
 
@@ -53,7 +57,8 @@ const getPresentationData = async (req, res, next) => {
         overtime_staff: overtimeStaff,
         transferCases,
         surgeryCases,
-        deathCases
+        deathCases,
+        criticalCases
       });
     }
 
@@ -189,6 +194,10 @@ const exportReports = async (req, res, next) => {
         'SELECT * FROM death_cases WHERE report_id = ? ORDER BY id ASC',
         [report.id]
       );
+      const [criticalCases] = await pool.execute(
+        'SELECT * FROM critical_cases WHERE report_id = ? ORDER BY id ASC',
+        [report.id]
+      );
 
       let overtimeStaff = report.overtime_staff;
       if (typeof overtimeStaff === 'string') {
@@ -206,7 +215,8 @@ const exportReports = async (req, res, next) => {
         overtime_staff: overtimeStaff,
         transferCases,
         surgeryCases,
-        deathCases
+        deathCases,
+        criticalCases
       });
     }
 
