@@ -10,7 +10,8 @@ import {
   FaGithub, 
   FaPhoneAlt, 
   FaHospital, 
-  FaArrowRight 
+  FaArrowRight,
+  FaDatabase
 } from 'react-icons/fa';
 import { APP_VERSION } from '../config/version';
 import AIAssistant from '../components/common/AIAssistant';
@@ -59,12 +60,12 @@ const LoginPage = () => {
       <div 
         style={{
           position: 'absolute',
-          width: '500px',
-          height: '500px',
+          width: '450px',
+          height: '450px',
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0) 70%)',
-          bottom: '-100px',
-          left: '-100px',
+          background: 'radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, rgba(16, 185, 129, 0) 70%)',
+          bottom: '-80px',
+          left: '-80px',
           pointerEvents: 'none'
         }} 
         aria-hidden="true" 
@@ -73,19 +74,18 @@ const LoginPage = () => {
       {/* Main Login Card */}
       <div className="glass-card login-card animate-slide-up">
         {/* Hospital Branding Header */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '1.75rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '1.2rem' }}>
           <div style={{
-            width: '84px',
-            height: '84px',
-            borderRadius: '22px',
+            width: '68px',
+            height: '68px',
+            borderRadius: '18px',
             backgroundColor: '#FFFFFF',
-            boxShadow: '0 12px 28px rgba(15, 44, 89, 0.15), 0 0 0 1px #E2E8F0',
+            boxShadow: '0 8px 20px rgba(15, 44, 89, 0.12), 0 0 0 1px #E2E8F0',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '10px',
-            marginBottom: '1rem',
-            transition: 'transform 0.3s ease'
+            padding: '8px',
+            marginBottom: '0.65rem'
           }}>
             <img 
               src="/logo.png" 
@@ -97,45 +97,45 @@ const LoginPage = () => {
           <div style={{
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '0.35rem',
-            padding: '0.2rem 0.75rem',
+            gap: '0.3rem',
+            padding: '0.15rem 0.6rem',
             borderRadius: '999px',
             backgroundColor: '#EFF6FF',
             border: '1px solid #BFDBFE',
             color: '#1E40AF',
-            fontSize: '0.72rem',
+            fontSize: '0.68rem',
             fontWeight: '800',
-            letterSpacing: '0.8px',
+            letterSpacing: '0.6px',
             textTransform: 'uppercase',
-            marginBottom: '0.45rem'
+            marginBottom: '0.3rem'
           }}>
             <FaHospital style={{ color: '#2563EB' }} /> SỞ Y TẾ TỈNH BÌNH PHƯỚC
           </div>
 
-          <h2 style={{ color: '#0F2C59', fontSize: '0.88rem', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase', margin: '0 0 0.25rem' }}>
+          <h2 style={{ color: '#0F2C59', fontSize: '0.82rem', fontWeight: '800', letterSpacing: '0.4px', textTransform: 'uppercase', margin: '0 0 0.15rem' }}>
             TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG
           </h2>
-          <h1 style={{ color: '#DC2626', fontSize: '1.45rem', fontWeight: '900', margin: '0.15rem 0 0.35rem', letterSpacing: '-0.3px' }}>
+          <h1 style={{ color: '#DC2626', fontSize: '1.28rem', fontWeight: '900', margin: '0 0 0.2rem', letterSpacing: '-0.2px' }}>
             Hệ Thống Báo Cáo Giao Ban
           </h1>
-          <p style={{ color: '#64748B', fontSize: '0.82rem', margin: 0, lineHeight: 1.4 }}>
-            Cổng thông tin báo cáo ca trực & giao ban y tế trực tuyến
+          <p style={{ color: '#64748B', fontSize: '0.78rem', margin: 0 }}>
+            Đăng nhập tài khoản khoa phòng hoặc quản trị
           </p>
         </div>
 
         {/* Error Notification */}
         {error && (
-          <Notice tone="danger" style={{ marginBottom: '1.25rem' }} onClose={() => setError('')}>
+          <Notice tone="danger" style={{ marginBottom: '0.85rem', padding: '0.5rem 0.75rem', fontSize: '0.8rem' }} onClose={() => setError('')}>
             {error}
           </Notice>
         )}
 
         {/* Login Form */}
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.15rem' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
           {/* Username Field */}
           <div className="form-group" style={{ margin: 0 }}>
-            <label htmlFor="login-username" style={{ color: '#1E293B', fontWeight: '700', fontSize: '0.82rem', marginBottom: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <FaUser style={{ color: '#1E40AF', fontSize: '0.8rem' }} /> Tên đăng nhập khoa phòng / Quản trị
+            <label htmlFor="login-username" style={{ color: '#1E293B', fontWeight: '700', fontSize: '0.78rem', marginBottom: '0.3rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <FaUser style={{ color: '#1E40AF', fontSize: '0.75rem' }} /> Tên đăng nhập khoa phòng / Quản trị
             </label>
             <div style={{ position: 'relative' }}>
               <input 
@@ -145,12 +145,12 @@ const LoginPage = () => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 style={{ 
-                  paddingLeft: '1rem', 
-                  height: '46px', 
-                  borderRadius: '12px',
+                  paddingLeft: '0.85rem', 
+                  height: '42px', 
+                  borderRadius: '10px',
                   backgroundColor: '#F8FAFC',
                   border: '1.5px solid #CBD5E1',
-                  fontSize: '0.95rem',
+                  fontSize: '0.9rem',
                   fontWeight: '500',
                   color: '#0F172A',
                   transition: 'all 0.2s ease'
@@ -164,8 +164,8 @@ const LoginPage = () => {
           
           {/* Password Field */}
           <div className="form-group" style={{ margin: 0 }}>
-            <label htmlFor="login-password" style={{ color: '#1E293B', fontWeight: '700', fontSize: '0.82rem', marginBottom: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <FaLock style={{ color: '#1E40AF', fontSize: '0.8rem' }} /> Mật khẩu ca trực
+            <label htmlFor="login-password" style={{ color: '#1E293B', fontWeight: '700', fontSize: '0.78rem', marginBottom: '0.3rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <FaLock style={{ color: '#1E40AF', fontSize: '0.75rem' }} /> Mật khẩu ca trực
             </label>
             <div style={{ position: 'relative' }}>
               <input 
@@ -175,13 +175,13 @@ const LoginPage = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 style={{ 
-                  paddingLeft: '1rem', 
-                  paddingRight: '2.8rem', 
-                  height: '46px', 
-                  borderRadius: '12px',
+                  paddingLeft: '0.85rem', 
+                  paddingRight: '2.6rem', 
+                  height: '42px', 
+                  borderRadius: '10px',
                   backgroundColor: '#F8FAFC',
                   border: '1.5px solid #CBD5E1',
-                  fontSize: '0.95rem',
+                  fontSize: '0.9rem',
                   fontWeight: '500',
                   color: '#0F172A',
                   transition: 'all 0.2s ease'
@@ -195,17 +195,17 @@ const LoginPage = () => {
                 style={{ 
                   position: 'absolute', 
                   top: '50%', 
-                  right: '0.6rem', 
+                  right: '0.5rem', 
                   transform: 'translateY(-50%)', 
                   background: 'none', 
                   border: 'none', 
                   color: '#64748B', 
                   cursor: 'pointer', 
-                  padding: '0.5rem',
+                  padding: '0.4rem',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '1rem'
+                  fontSize: '0.95rem'
                 }}
                 aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
               >
@@ -222,98 +222,95 @@ const LoginPage = () => {
             disabled={!username || !password}
             fullWidth
             style={{ 
-              marginTop: '0.35rem', 
-              height: '48px', 
-              fontSize: '1rem', 
-              borderRadius: '12px',
+              marginTop: '0.2rem', 
+              height: '44px', 
+              fontSize: '0.95rem', 
+              borderRadius: '10px',
               fontWeight: '700',
-              boxShadow: '0 8px 20px rgba(15, 44, 89, 0.3)'
+              boxShadow: '0 6px 16px rgba(15, 44, 89, 0.25)'
             }}
           >
-            Đăng Nhập Hệ Thống <FaArrowRight style={{ marginLeft: '0.4rem', fontSize: '0.85rem' }} />
+            Đăng Nhập Hệ Thống <FaArrowRight style={{ marginLeft: '0.4rem', fontSize: '0.8rem' }} />
           </Button>
         </form>
 
-        {/* In-card Footer info */}
+        {/* Integrated Info Block inside Card */}
         <div style={{ 
-          marginTop: '1.5rem', 
-          paddingTop: '1rem', 
+          marginTop: '1.15rem', 
+          paddingTop: '0.85rem', 
           borderTop: '1px solid #E2E8F0', 
           display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          fontSize: '0.75rem', 
-          color: '#64748B' 
+          flexDirection: 'column',
+          gap: '0.55rem',
+          fontSize: '0.74rem'
         }}>
-          <Badge tone="primary" dot>
-            Phiên bản <strong>v{APP_VERSION}</strong>
-          </Badge>
-          <a
-            href="https://github.com/UIBreaker"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '0.35rem', 
-              color: '#0F2C59', 
-              fontWeight: '700', 
-              textDecoration: 'none',
-              padding: '0.2rem 0.5rem',
-              borderRadius: '6px',
-              backgroundColor: '#F1F5F9'
-            }}
-          >
-            <FaGithub /> UIBreaker
-          </a>
+          {/* Row 1: Version & Database SSL */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.4rem' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: '#1E40AF', fontWeight: '700', backgroundColor: '#EFF6FF', padding: '0.15rem 0.5rem', borderRadius: '6px', border: '1px solid #BFDBFE' }}>
+              <FaCodeBranch style={{ color: '#2563EB', fontSize: '0.7rem' }} /> Phiên bản <strong>v{APP_VERSION}</strong>
+            </span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', color: '#166534', fontWeight: '600', backgroundColor: '#F0FDF4', padding: '0.15rem 0.5rem', borderRadius: '6px', border: '1px solid #BBF7D0' }}>
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#16A34A', display: 'inline-block' }} />
+              Aiven Cloud MySQL SSL
+            </span>
+          </div>
+
+          {/* Row 2: Author GitHub & Phone Contact */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.4rem', paddingTop: '0.2rem' }}>
+            <a
+              href="https://github.com/UIBreaker"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="GitHub của tác giả Nguyễn Vũ Nhật Nam"
+              style={{ 
+                display: 'inline-flex', 
+                alignItems: 'center', 
+                gap: '0.35rem', 
+                color: '#0F2C59', 
+                fontWeight: '700', 
+                textDecoration: 'none',
+                padding: '0.15rem 0.45rem',
+                borderRadius: '6px',
+                backgroundColor: '#F1F5F9'
+              }}
+            >
+              <FaGithub style={{ fontSize: '0.85rem' }} />
+              <span>Phát triển bởi: <strong>Nguyễn Vũ Nhật Nam</strong> (UIBreaker)</span>
+            </a>
+
+            <a 
+              href="tel:0916337266" 
+              style={{ 
+                color: '#0D9488', 
+                fontWeight: '800', 
+                textDecoration: 'none', 
+                display: 'inline-flex', 
+                alignItems: 'center', 
+                gap: '0.3rem',
+                backgroundColor: '#F0FDFA',
+                padding: '0.15rem 0.55rem',
+                borderRadius: '6px',
+                border: '1px solid #99F6E4'
+              }}
+              title="Bấm để gọi hotline hỗ trợ kỹ thuật"
+            >
+              <FaPhoneAlt style={{ fontSize: '0.65rem' }} /> SĐT: 0916.337.266
+            </a>
+          </div>
         </div>
       </div>
       
-      {/* Bottom Copyright, Author Credit & Phone Contact */}
+      {/* Ultra-compact Footer (No Overflow) */}
       <footer style={{ 
-        marginTop: '1.5rem', 
-        color: 'rgba(255, 255, 255, 0.9)', 
-        fontSize: '0.82rem', 
+        marginTop: '0.75rem', 
+        color: 'rgba(255, 255, 255, 0.75)', 
+        fontSize: '0.72rem', 
         textAlign: 'center', 
-        display: 'flex', 
-        flexDirection: 'column', 
-        gap: '0.4rem',
         position: 'relative',
         zIndex: 10,
-        maxWidth: '520px',
-        padding: '0 1rem'
+        maxWidth: '460px'
       }}>
-        <div>&copy; 2026 <strong>Trung Tâm Y Tế Khu Vực Bình Long</strong>. Tất cả quyền được bảo lưu.</div>
-        <div style={{ 
-          fontSize: '0.78rem', 
-          color: 'rgba(255, 255, 255, 0.85)', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          gap: '0.5rem',
-          flexWrap: 'wrap'
-        }}>
-          <span>Phát triển bởi <strong>Nguyễn Vũ Nhật Nam</strong> (Phòng Kế Hoạch - Nghiệp Vụ)</span>
-          <span>•</span>
-          <a 
-            href="tel:0916337266" 
-            style={{ 
-              color: '#67E8F9', 
-              fontWeight: '800', 
-              textDecoration: 'none', 
-              display: 'inline-flex', 
-              alignItems: 'center', 
-              gap: '0.35rem',
-              backgroundColor: 'rgba(15, 44, 89, 0.6)',
-              padding: '0.2rem 0.65rem',
-              borderRadius: '999px',
-              border: '1px solid rgba(103, 232, 249, 0.4)'
-            }}
-            title="Bấm để gọi hỗ trợ kỹ thuật"
-          >
-            <FaPhoneAlt style={{ fontSize: '0.7rem' }} /> SĐT: 0916.337.266
-          </a>
-        </div>
+        &copy; 2026 <strong>Trung Tâm Y Tế Khu Vực Bình Long</strong> — Sở Y Tế Tỉnh Bình Phước.
       </footer>
 
       {/* Floating AI Assistant */}
