@@ -279,22 +279,26 @@ const LoginPage = () => {
             </a>
 
             <a 
-              href="tel:0916337266" 
+              href="https://zalo.me/0916337266" 
+              target="_blank"
+              rel="noopener noreferrer"
               style={{ 
-                color: '#0D9488', 
+                color: '#0284C7', 
                 fontWeight: '800', 
                 textDecoration: 'none', 
                 display: 'inline-flex', 
                 alignItems: 'center', 
-                gap: '0.3rem',
-                backgroundColor: '#F0FDFA',
+                gap: '0.35rem',
+                backgroundColor: '#F0F9FF',
                 padding: '0.15rem 0.55rem',
                 borderRadius: '6px',
-                border: '1px solid #99F6E4'
+                border: '1px solid #BAE6FD',
+                transition: 'all 0.2s ease'
               }}
-              title="Bấm để gọi hotline hỗ trợ kỹ thuật"
+              title="Nhắn tin Zalo tác giả: 0916337266"
             >
-              <FaPhoneAlt style={{ fontSize: '0.65rem' }} /> SĐT: 0916.337.266
+              <span style={{ backgroundColor: '#0284C7', color: '#FFFFFF', fontSize: '0.62rem', fontWeight: '900', padding: '1px 4px', borderRadius: '4px' }}>Zalo</span>
+              <span>0916.337.266</span>
             </a>
           </div>
         </div>

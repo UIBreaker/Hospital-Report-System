@@ -97,17 +97,19 @@ const Footer = () => {
             <FaExternalLinkAlt style={{ fontSize: '0.65rem', opacity: 0.6 }} />
           </a>
 
-          {/* Phone Contact Pill Badge */}
+          {/* Zalo Contact Pill Badge */}
           <a
-            href="tel:0916337266"
-            title="Gọi hotline hỗ trợ kỹ thuật"
+            href="https://zalo.me/0916337266"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Nhắn tin Zalo hỗ trợ kỹ thuật"
             style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.45rem',
-              backgroundColor: '#F0FDFA',
-              color: '#0D9488',
-              border: '1px solid #99F6E4',
+              backgroundColor: '#F0F9FF',
+              color: '#0284C7',
+              border: '1px solid #BAE6FD',
               padding: '0.3rem 0.85rem',
               borderRadius: '20px',
               textDecoration: 'none',
@@ -117,16 +119,16 @@ const Footer = () => {
               transition: 'all 0.2s ease'
             }}
             onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = '#CCFBF1';
-              e.currentTarget.style.boxShadow = '0 2px 8px rgba(13,148,136,0.2)';
+              e.currentTarget.style.backgroundColor = '#E0F2FE';
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(2,132,199,0.2)';
             }}
             onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = '#F0FDFA';
+              e.currentTarget.style.backgroundColor = '#F0F9FF';
               e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)';
             }}
           >
-            <FaPhoneAlt style={{ fontSize: '0.75rem', color: '#0D9488' }} />
-            <span>SĐT: <strong>0916.337.266</strong></span>
+            <span style={{ backgroundColor: '#0284C7', color: '#FFFFFF', fontSize: '0.65rem', fontWeight: '900', padding: '1px 5px', borderRadius: '4px' }}>Zalo</span>
+            <span><strong>0916.337.266</strong></span>
           </a>
 
           {/* Cloud Database Status Badge */}
