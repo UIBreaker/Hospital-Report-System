@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaExpand, FaCompress, FaPrint, FaChevronLeft, FaChevronRight, FaSpinner, FaAmbulance, FaArrowLeft, FaSearchPlus, FaSearchMinus, FaHeartbeat, FaProcedures, FaExclamationTriangle, FaFilePowerpoint } from 'react-icons/fa';
+import { FaExpand, FaCompress, FaPrint, FaChevronLeft, FaChevronRight, FaSpinner, FaAmbulance, FaArrowLeft, FaSearchPlus, FaSearchMinus, FaHeartbeat, FaProcedures, FaExclamationTriangle, FaFilePowerpoint, FaImages } from 'react-icons/fa';
 import reportService from '../services/reportService';
 import { exportPresentationToPowerPoint } from '../services/powerpointExportService';
+import ImageLightboxModal from '../components/common/ImageLightboxModal';
+import { normalizeImages } from '../utils/imageUtils';
 
 const DEPARTMENT_DISPLAY_NAMES = {
   lck: 'KHOA LIÊN CHUYÊN KHOA',
@@ -435,11 +437,133 @@ const PresentationPage = () => {
   const containerRef = useRef(null);
   const scrollContainerRef = useRef(null);
 
+// Slide Image Gallery Helper for high-visibility clinical presentation
+const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen }) => {
+  const norm = normalizeImages(images);
+  if (norm.length === 0) return null;
+
+  return (
+    <div style={{
+      marginTop: '1.25rem',
+      backgroundColor: '#FFFFFF',
+      borderRadius: '14px',
+      border: `2px solid ${themeColor}33`,
+      borderLeft: `8px solid ${themeColor}`,
+      padding: '1rem 1.25rem',
+      boxShadow: '0 6px 18px rgba(0,0,0,0.06)'
+    }}>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '0.75rem',
+        flexWrap: 'wrap',
+        gap: '0.5rem'
+      }}>
+        <div style={{ fontSize: '1.05rem', fontWeight: '800', color: themeColor, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <FaImages style={{ fontSize: '1.2rem' }} />
+          <span>HÌNH ẢNH Y KHOA MINH HỌA ({norm.length} ảnh)</span>
+        </div>
+        <button
+          onClick={() => onOpen(norm, 0, patientName ? `Ảnh bệnh nhân: ${patientName}` : 'Hình ảnh y khoa')}
+          style={{
+            backgroundColor: themeColor,
+            color: '#FFFFFF',
+            border: 'none',
+            borderRadius: '8px',
+            padding: '0.4rem 0.9rem',
+            fontSize: '0.85rem',
+            fontWeight: '800',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.4rem',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+          }}
+        >
+          <FaExpand /> Phóng to trình chiếu (HD Lightbox)
+        </button>
+      </div>
+
+      <div style={{ display: 'flex', gap: '0.85rem', overflowX: 'auto', paddingBottom: '0.4rem' }}>
+        {norm.map((img, idx) => {
+          const url = typeof img === 'string' ? img : img.url;
+          const name = typeof img === 'object' ? (img.name || `Ảnh ${idx + 1}`) : `Ảnh ${idx + 1}`;
+          return (
+            <div
+              key={idx}
+              onClick={() => onOpen(norm, idx, patientName ? `Ảnh bệnh nhân: ${patientName}` : 'Hình ảnh y khoa')}
+              style={{
+                position: 'relative',
+                width: '140px',
+                height: '105px',
+                borderRadius: '10px',
+                overflow: 'hidden',
+                cursor: 'pointer',
+                border: '2px solid #E2E8F0',
+                boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+                flexShrink: 0,
+                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                backgroundColor: '#0F172A'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = 'scale(1.05)';
+                e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.2)';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.boxShadow = '0 4px 10px rgba(0,0,0,0.1)';
+              }}
+              title="Nhấp để phóng to toàn màn hình"
+            >
+              <img src={url} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <div style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                backgroundColor: 'rgba(15, 23, 42, 0.85)',
+                color: '#FFFFFF',
+                fontSize: '0.72rem',
+                textAlign: 'center',
+                padding: '3px 4px',
+                fontWeight: '700',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.25rem'
+              }}>
+                <FaExpand style={{ fontSize: '0.65rem' }} /> #{idx + 1} Phóng to
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fontScale, setFontScale] = useState(1); // 1 = 100%, 1.15 = 115%, 1.3 = 130%
+
+  // Lightbox Modal State
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxImages, setLightboxImages] = useState([]);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [lightboxTitle, setLightboxTitle] = useState('');
+
+  const handleOpenLightbox = (images, index = 0, title = 'Hình ảnh y khoa') => {
+    const norm = normalizeImages(images);
+    if (norm.length > 0) {
+      setLightboxImages(norm);
+      setLightboxIndex(index);
+      setLightboxTitle(title);
+      setLightboxOpen(true);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -1351,6 +1475,14 @@ const PresentationPage = () => {
                     </div>
                   ))}
                 </div>
+
+                {/* Transfer Case Part 1 Image Gallery */}
+                <SlideImageGallery
+                  images={slide.transferCase.images}
+                  patientName={slide.transferCase.patient_name || slide.transferCase.patientName}
+                  themeColor="#D97706"
+                  onOpen={handleOpenLightbox}
+                />
               </div>
             )}
 
@@ -1448,6 +1580,14 @@ const PresentationPage = () => {
                     )}
                   </div>
                 </div>
+
+                {/* Transfer Case Part 2 Image Gallery */}
+                <SlideImageGallery
+                  images={slide.transferCase.images}
+                  patientName={slide.transferCase.patient_name || slide.transferCase.patientName}
+                  themeColor="#D97706"
+                  onOpen={handleOpenLightbox}
+                />
               </div>
             )}
 
@@ -1562,6 +1702,14 @@ const PresentationPage = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Surgery Case Image Gallery */}
+                <SlideImageGallery
+                  images={slide.surgeryCase.images}
+                  patientName={slide.surgeryCase.patient_name || slide.surgeryCase.patientName}
+                  themeColor="#0284C7"
+                  onOpen={handleOpenLightbox}
+                />
               </div>
             )}
 
@@ -1678,6 +1826,14 @@ const PresentationPage = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Death Case Image Gallery */}
+                <SlideImageGallery
+                  images={slide.deathCase.images}
+                  patientName={slide.deathCase.patient_name || slide.deathCase.patientName}
+                  themeColor="#DC2626"
+                  onOpen={handleOpenLightbox}
+                />
               </div>
             )}
 
@@ -1825,6 +1981,14 @@ const PresentationPage = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Critical Case Image Gallery */}
+                <SlideImageGallery
+                  images={slide.criticalCase.images}
+                  patientName={slide.criticalCase.patient_name || slide.criticalCase.patientName}
+                  themeColor="#7C3AED"
+                  onOpen={handleOpenLightbox}
+                />
               </div>
             )}
           </div>
@@ -1980,6 +2144,16 @@ const PresentationPage = () => {
             Slide tiếp <FaChevronRight />
           </button>
         </div>
+
+        {/* Full-screen HD Image Lightbox Modal */}
+        <ImageLightboxModal
+          isOpen={lightboxOpen}
+          onClose={() => setLightboxOpen(false)}
+          images={lightboxImages}
+          initialIndex={lightboxIndex}
+          title={lightboxTitle}
+          subtitle="Trình chiếu hình ảnh y khoa độ phân giải cao"
+        />
       </div>
     </div>
   );

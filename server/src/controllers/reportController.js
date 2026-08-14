@@ -73,6 +73,33 @@ const createOrUpdateReport = async (req, res, next) => {
       reportId = result.insertId;
     }
 
+const safeImages = (imgVal) => {
+  if (!imgVal) return null;
+  if (Array.isArray(imgVal)) {
+    return imgVal.length > 0 ? JSON.stringify(imgVal) : null;
+  }
+  if (typeof imgVal === 'string') {
+    return imgVal.trim() ? imgVal : null;
+  }
+  return null;
+};
+
+const parseCaseImages = (caseItem) => {
+  if (!caseItem) return caseItem;
+  let images = caseItem.images;
+  if (typeof images === 'string') {
+    try {
+      images = JSON.parse(images);
+    } catch (e) {
+      images = [images];
+    }
+  }
+  return {
+    ...caseItem,
+    images: Array.isArray(images) ? images : (images ? [images] : [])
+  };
+};
+
     // Insert new transfer cases
     if (transferCases && Array.isArray(transferCases) && transferCases.length > 0) {
       for (const tc of transferCases) {
@@ -80,8 +107,8 @@ const createOrUpdateReport = async (req, res, next) => {
         if (patientName || tc.admissionTime || tc.diagnosis) {
           await connection.execute(
             `INSERT INTO transfer_cases 
-             (report_id, patient_name, age, address, admission_time, reason, clinical_tests, diagnosis, initial_treatment, progress_notes)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             (report_id, patient_name, age, address, admission_time, reason, clinical_tests, diagnosis, initial_treatment, progress_notes, images)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
               reportId,
               patientName,
@@ -92,7 +119,8 @@ const createOrUpdateReport = async (req, res, next) => {
               safeVal(tc.clinicalTests || tc.clinical_tests),
               safeVal(tc.diagnosis),
               safeVal(tc.initialTreatment || tc.initial_treatment),
-              safeVal(tc.progressNotes || tc.progress_notes)
+              safeVal(tc.progressNotes || tc.progress_notes),
+              safeImages(tc.images || tc.image_url || tc.imageUrl)
             ]
           );
         }
@@ -106,8 +134,8 @@ const createOrUpdateReport = async (req, res, next) => {
         if (patientName || sc.admissionTime || sc.preoperativeDiagnosis || sc.preoperative_diagnosis) {
           await connection.execute(
             `INSERT INTO surgery_cases 
-             (report_id, patient_name, birth_year, address, admission_time, reason, preoperative_diagnosis, consultation_order, postoperative_diagnosis, current_status)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             (report_id, patient_name, birth_year, address, admission_time, reason, preoperative_diagnosis, consultation_order, postoperative_diagnosis, current_status, images)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
               reportId,
               patientName,
@@ -118,7 +146,8 @@ const createOrUpdateReport = async (req, res, next) => {
               safeVal(sc.preoperativeDiagnosis || sc.preoperative_diagnosis),
               safeVal(sc.consultationOrder || sc.consultation_order),
               safeVal(sc.postoperativeDiagnosis || sc.postoperative_diagnosis),
-              safeVal(sc.currentStatus || sc.current_status)
+              safeVal(sc.currentStatus || sc.current_status),
+              safeImages(sc.images || sc.image_url || sc.imageUrl)
             ]
           );
         }
@@ -132,8 +161,8 @@ const createOrUpdateReport = async (req, res, next) => {
         if (patientName || dc.admissionTime || dc.diagnosis) {
           await connection.execute(
             `INSERT INTO death_cases 
-             (report_id, patient_name, age, address, admission_time, reason, admission_status, medical_history, clinical_tests, diagnosis, emergency_treatment, final_outcome)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             (report_id, patient_name, age, address, admission_time, reason, admission_status, medical_history, clinical_tests, diagnosis, emergency_treatment, final_outcome, images)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
               reportId,
               patientName,
@@ -146,7 +175,8 @@ const createOrUpdateReport = async (req, res, next) => {
               safeVal(dc.clinicalTests || dc.clinical_tests),
               safeVal(dc.diagnosis),
               safeVal(dc.emergencyTreatment || dc.emergency_treatment),
-              safeVal(dc.finalOutcome || dc.final_outcome)
+              safeVal(dc.finalOutcome || dc.final_outcome),
+              safeImages(dc.images || dc.image_url || dc.imageUrl)
             ]
           );
         }
@@ -160,8 +190,8 @@ const createOrUpdateReport = async (req, res, next) => {
         if (patientName || cc.admissionTime || cc.diagnosis || cc.conditionSummary || cc.condition_summary) {
           await connection.execute(
             `INSERT INTO critical_cases 
-             (report_id, patient_name, age, address, admission_time, medical_history, diagnosis, condition_summary, treatment, notes)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             (report_id, patient_name, age, address, admission_time, medical_history, diagnosis, condition_summary, treatment, notes, images)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
               reportId,
               patientName,
@@ -172,7 +202,8 @@ const createOrUpdateReport = async (req, res, next) => {
               safeVal(cc.diagnosis),
               safeVal(cc.conditionSummary || cc.condition_summary),
               safeVal(cc.treatment),
-              safeVal(cc.notes || 'Bàn giao tua sau theo dõi tiếp')
+              safeVal(cc.notes || 'Bàn giao tua sau theo dõi tiếp'),
+              safeImages(cc.images || cc.image_url || cc.imageUrl)
             ]
           );
         }
@@ -229,10 +260,10 @@ const getReport = async (req, res, next) => {
       success: true,
       data: {
         ...report,
-        transferCases,
-        surgeryCases,
-        deathCases,
-        criticalCases
+        transferCases: (transferCases || []).map(parseCaseImages),
+        surgeryCases: (surgeryCases || []).map(parseCaseImages),
+        deathCases: (deathCases || []).map(parseCaseImages),
+        criticalCases: (criticalCases || []).map(parseCaseImages)
       }
     });
   } catch (error) {

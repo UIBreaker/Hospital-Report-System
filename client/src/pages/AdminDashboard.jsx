@@ -39,6 +39,7 @@ import {
 import reportService from '../services/reportService';
 import staffService from '../services/staffService';
 import MedicalPrintView from '../components/common/MedicalPrintView';
+import CaseImageUploader from '../components/common/CaseImageUploader';
 import Footer from '../components/common/Footer';
 
 import {
@@ -1846,6 +1847,13 @@ const AdminDashboard = () => {
                               {tc.progress_notes || tc.progressNotes ? <div><strong>Diễn biến / Hội chẩn:</strong> {tc.progress_notes || tc.progressNotes}</div> : null}
                             </div>
                           )}
+                          <CaseImageUploader
+                            images={tc.images}
+                            onChange={(newImgs) => handleTransferCaseChange(idx, 'images', newImgs)}
+                            theme="amber"
+                            patientName={tc.patientName || tc.patient_name}
+                            readOnly={!isEditing}
+                          />
                         </div>
                       ))
                     )}
@@ -1924,6 +1932,13 @@ const AdminDashboard = () => {
                               <div><strong>Hiện tại:</strong> {sc.current_status || sc.currentStatus || '—'}</div>
                             </div>
                           )}
+                          <CaseImageUploader
+                            images={sc.images}
+                            onChange={(newImgs) => handleSurgeryCaseChange(idx, 'images', newImgs)}
+                            theme="blue"
+                            patientName={sc.patientName || sc.patient_name}
+                            readOnly={!isEditing}
+                          />
                         </div>
                       ))
                     )}
@@ -2005,6 +2020,13 @@ const AdminDashboard = () => {
                               <div><strong>Kết quả:</strong> {dc.final_outcome || dc.finalOutcome || '—'}</div>
                             </div>
                           )}
+                          <CaseImageUploader
+                            images={dc.images}
+                            onChange={(newImgs) => handleDeathCaseChange(idx, 'images', newImgs)}
+                            theme="red"
+                            patientName={dc.patientName || dc.patient_name}
+                            readOnly={!isEditing}
+                          />
                         </div>
                       ))
                     )}
@@ -2087,6 +2109,13 @@ const AdminDashboard = () => {
                               <div><strong>Hướng tiếp theo:</strong> {cc.notes || 'Bàn giao tua sau theo dõi tiếp'}</div>
                             </div>
                           )}
+                          <CaseImageUploader
+                            images={cc.images}
+                            onChange={(newImgs) => handleCriticalCaseChange(idx, 'images', newImgs)}
+                            theme="purple"
+                            patientName={cc.patientName || cc.patient_name}
+                            readOnly={!isEditing}
+                          />
                         </div>
                       ))
                     )}

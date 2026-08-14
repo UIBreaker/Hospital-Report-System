@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { FaAmbulance, FaPlus, FaTrash, FaChevronDown, FaChevronUp, FaUserInjured } from 'react-icons/fa';
+import CaseImageUploader from '../common/CaseImageUploader';
 
 const TransferCaseForm = ({ transferCases = [], setTransferCases }) => {
   const [expanded, setExpanded] = useState({});
@@ -49,7 +50,8 @@ const TransferCaseForm = ({ transferCases = [], setTransferCases }) => {
         initialTreatment: '',
         initial_treatment: '',
         progressNotes: '',
-        progress_notes: ''
+        progress_notes: '',
+        images: []
       }
     ]);
     setExpanded(prev => ({ ...prev, [newId]: true }));
@@ -260,6 +262,14 @@ const TransferCaseForm = ({ transferCases = [], setTransferCases }) => {
                         className="note-field"
                       />
                     </div>
+
+                    {/* Hàng 8: Hình ảnh y khoa minh họa (X-Quang, CT, Vết thương...) */}
+                    <CaseImageUploader
+                      images={tCase.images}
+                      onChange={(newImgs) => handleChange(id, 'images', newImgs)}
+                      theme="amber"
+                      patientName={tCase.patientName || tCase.patient_name}
+                    />
                   </div>
                 )}
               </div>

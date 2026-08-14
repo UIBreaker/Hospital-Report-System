@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { FaHeartbeat, FaPlus, FaTrash, FaChevronDown, FaChevronUp, FaExclamationTriangle } from 'react-icons/fa';
+import CaseImageUploader from '../common/CaseImageUploader';
 
 const DeathCaseForm = ({ deathCases = [], setDeathCases }) => {
   const [expanded, setExpanded] = useState({});
@@ -10,7 +11,7 @@ const DeathCaseForm = ({ deathCases = [], setDeathCases }) => {
 
   const handleChange = useCallback((id, field, value) => {
     setDeathCases(prev =>
-      prev.map(dc => dc._id === id ? { ...dc, [field]: value } : dc)
+      prev.map(dc => (dc._id || dc.id) === id ? { ...dc, [field]: value } : dc)
     );
   }, [setDeathCases]);
 
@@ -30,7 +31,8 @@ const DeathCaseForm = ({ deathCases = [], setDeathCases }) => {
         clinicalTests: '',
         diagnosis: '',
         emergencyTreatment: '',
-        finalOutcome: ''
+        finalOutcome: '',
+        images: []
       }
     ]);
     setExpanded(prev => ({ ...prev, [newId]: true }));
@@ -242,6 +244,14 @@ const DeathCaseForm = ({ deathCases = [], setDeathCases }) => {
                         />
                       </div>
                     </div>
+
+                    {/* Hình ảnh y khoa minh họa (ECG, X-Quang, CT, hồ sơ...) */}
+                    <CaseImageUploader
+                      images={dCase.images}
+                      onChange={(newImgs) => handleChange(id, 'images', newImgs)}
+                      theme="red"
+                      patientName={dCase.patientName || dCase.patient_name}
+                    />
                   </div>
                 )}
               </div>

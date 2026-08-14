@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { FaProcedures, FaPlus, FaTrash, FaChevronDown, FaChevronUp, FaUserInjured, FaNotesMedical } from 'react-icons/fa';
+import CaseImageUploader from '../common/CaseImageUploader';
 
 const SurgeryCaseForm = ({ surgeryCases = [], setSurgeryCases }) => {
   const [expanded, setExpanded] = useState({});
@@ -10,7 +11,7 @@ const SurgeryCaseForm = ({ surgeryCases = [], setSurgeryCases }) => {
 
   const handleChange = useCallback((id, field, value) => {
     setSurgeryCases(prev =>
-      prev.map(sc => sc._id === id ? { ...sc, [field]: value } : sc)
+      prev.map(sc => (sc._id || sc.id) === id ? { ...sc, [field]: value } : sc)
     );
   }, [setSurgeryCases]);
 
@@ -28,7 +29,8 @@ const SurgeryCaseForm = ({ surgeryCases = [], setSurgeryCases }) => {
         preoperativeDiagnosis: '',
         consultationOrder: '',
         postoperativeDiagnosis: '',
-        currentStatus: ''
+        currentStatus: '',
+        images: []
       }
     ]);
     setExpanded(prev => ({ ...prev, [newId]: true }));
@@ -219,6 +221,14 @@ const SurgeryCaseForm = ({ surgeryCases = [], setSurgeryCases }) => {
                         />
                       </div>
                     </div>
+
+                    {/* Hình ảnh y khoa minh họa (Vết mổ, nội soi, X-Quang, CT...) */}
+                    <CaseImageUploader
+                      images={sCase.images}
+                      onChange={(newImgs) => handleChange(id, 'images', newImgs)}
+                      theme="blue"
+                      patientName={sCase.patientName || sCase.patient_name}
+                    />
                   </div>
                 )}
               </div>

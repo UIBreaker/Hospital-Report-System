@@ -189,7 +189,8 @@ const ReportPage = () => {
             initialTreatment: tc.initialTreatment || tc.initial_treatment || '',
             initial_treatment: tc.initialTreatment || tc.initial_treatment || '',
             progressNotes: tc.progressNotes || tc.progress_notes || '',
-            progress_notes: tc.progressNotes || tc.progress_notes || ''
+            progress_notes: tc.progressNotes || tc.progress_notes || '',
+            images: tc.images || []
           }));
 
           const normalizedSurgeries = (report.surgeryCases || []).map((sc, idx) => ({
@@ -209,7 +210,8 @@ const ReportPage = () => {
             postoperativeDiagnosis: sc.postoperativeDiagnosis || sc.postoperative_diagnosis || '',
             postoperative_diagnosis: sc.postoperativeDiagnosis || sc.postoperative_diagnosis || '',
             currentStatus: sc.currentStatus || sc.current_status || '',
-            current_status: sc.currentStatus || sc.current_status || ''
+            current_status: sc.currentStatus || sc.current_status || '',
+            images: sc.images || []
           }));
 
           const normalizedDeaths = (report.deathCases || []).map((dc, idx) => ({
@@ -231,7 +233,8 @@ const ReportPage = () => {
             emergencyTreatment: dc.emergencyTreatment || dc.emergency_treatment || '',
             emergency_treatment: dc.emergencyTreatment || dc.emergency_treatment || '',
             finalOutcome: dc.finalOutcome || dc.final_outcome || '',
-            final_outcome: dc.finalOutcome || dc.final_outcome || ''
+            final_outcome: dc.finalOutcome || dc.final_outcome || '',
+            images: dc.images || []
           }));
 
           const normalizedCriticals = (report.criticalCases || []).map((cc, idx) => ({
@@ -248,7 +251,8 @@ const ReportPage = () => {
             conditionSummary: cc.conditionSummary || cc.condition_summary || '',
             condition_summary: cc.conditionSummary || cc.condition_summary || '',
             treatment: cc.treatment || '',
-            notes: cc.notes !== undefined ? cc.notes : 'Bàn giao tua sau theo dõi tiếp'
+            notes: cc.notes !== undefined ? cc.notes : 'Bàn giao tua sau theo dõi tiếp',
+            images: cc.images || []
           }));
 
           setFormData(parsedData);

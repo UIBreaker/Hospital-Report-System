@@ -52,13 +52,29 @@ const getPresentationData = async (req, res, next) => {
         try { overtimeStaff = JSON.parse(overtimeStaff); } catch (e) { overtimeStaff = []; }
       }
       
+const parseCaseImages = (caseItem) => {
+  if (!caseItem) return caseItem;
+  let images = caseItem.images;
+  if (typeof images === 'string') {
+    try {
+      images = JSON.parse(images);
+    } catch (e) {
+      images = [images];
+    }
+  }
+  return {
+    ...caseItem,
+    images: Array.isArray(images) ? images : (images ? [images] : [])
+  };
+};
+
       presentationData.push({
         ...report,
         overtime_staff: overtimeStaff,
-        transferCases,
-        surgeryCases,
-        deathCases,
-        criticalCases
+        transferCases: (transferCases || []).map(parseCaseImages),
+        surgeryCases: (surgeryCases || []).map(parseCaseImages),
+        deathCases: (deathCases || []).map(parseCaseImages),
+        criticalCases: (criticalCases || []).map(parseCaseImages)
       });
     }
 
@@ -213,10 +229,10 @@ const exportReports = async (req, res, next) => {
         ...report,
         report_data: reportData,
         overtime_staff: overtimeStaff,
-        transferCases,
-        surgeryCases,
-        deathCases,
-        criticalCases
+        transferCases: (transferCases || []).map(parseCaseImages),
+        surgeryCases: (surgeryCases || []).map(parseCaseImages),
+        deathCases: (deathCases || []).map(parseCaseImages),
+        criticalCases: (criticalCases || []).map(parseCaseImages)
       });
     }
 

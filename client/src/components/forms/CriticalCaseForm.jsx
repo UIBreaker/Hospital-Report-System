@@ -16,6 +16,7 @@ import {
   FaClock, 
   FaMapMarkerAlt 
 } from 'react-icons/fa';
+import CaseImageUploader from '../common/CaseImageUploader';
 
 const CriticalCaseForm = ({ 
   criticalCases = [], 
@@ -71,7 +72,8 @@ const CriticalCaseForm = ({
         conditionSummary: '',
         condition_summary: '',
         treatment: '',
-        notes: 'Bàn giao tua sau theo dõi tiếp'
+        notes: 'Bàn giao tua sau theo dõi tiếp',
+        images: []
       }
     ]);
     setExpanded(prev => ({ ...prev, [newId]: true }));
@@ -450,6 +452,13 @@ const CriticalCaseForm = ({
                       />
                     </div>
 
+                    {/* Hàng 7: Hình ảnh y khoa minh họa (X-Quang, CT, ECG, sinh hiệu...) */}
+                    <CaseImageUploader
+                      images={cc.images}
+                      onChange={(newImgs) => handleChange(id, 'images', newImgs)}
+                      theme="purple"
+                      patientName={cc.patientName || cc.patient_name}
+                    />
                   </div>
                 )}
               </div>
