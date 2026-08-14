@@ -533,12 +533,6 @@ const parseDepartmentSections = (reportData, deptCode = '') => {
   return sections;
 };
 
-const PresentationPage = () => {
-  const { date } = useParams();
-  const navigate = useNavigate();
-  const containerRef = useRef(null);
-  const scrollContainerRef = useRef(null);
-
 // Slide Image Gallery Helper for high-visibility clinical presentation
 const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen }) => {
   const norm = normalizeImages(images);
@@ -645,7 +639,14 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
   );
 };
 
+const PresentationPage = () => {
+  const { date } = useParams();
+  const navigate = useNavigate();
+  const containerRef = useRef(null);
+  const scrollContainerRef = useRef(null);
+
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [slideDirection, setSlideDirection] = useState('next');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -656,6 +657,8 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
   const [lightboxImages, setLightboxImages] = useState([]);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [lightboxTitle, setLightboxTitle] = useState('');
+
+  const activeThumbRef = useRef(null);
 
   const handleOpenLightbox = (images, index = 0, title = 'Hình ảnh y khoa') => {
     const norm = normalizeImages(images);
@@ -690,6 +693,11 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
       document.removeEventListener('webkitfullscreenchange', handleFSChange);
     };
   }, []);
+
+  // Smooth scroll active slide into view in sidebar
+  useEffect(() => {
+    activeThumbRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, [currentSlide]);
 
   // Reset scroll container to top whenever slide changes (Fixed scroll stuck bug)
   useEffect(() => {
@@ -882,8 +890,24 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
     return s;
   }, [reports]);
 
-  const handleNext = () => { if (currentSlide < slides.length - 1) setCurrentSlide(p => p + 1); };
-  const handlePrev = () => { if (currentSlide > 0) setCurrentSlide(p => p - 1); };
+  const handleNext = () => {
+    if (currentSlide < slides.length - 1) {
+      setSlideDirection('next');
+      setCurrentSlide(p => p + 1);
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentSlide > 0) {
+      setSlideDirection('prev');
+      setCurrentSlide(p => p - 1);
+    }
+  };
+
+  const handleGoToSlide = (idx) => {
+    setSlideDirection(idx >= currentSlide ? 'next' : 'prev');
+    setCurrentSlide(idx);
+  };
 
   const [exportingPptx, setExportingPptx] = useState(false);
 
@@ -982,13 +1006,14 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
           </div>
 
           {/* Slide list */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '0.6rem' }}>
+          <div className="pres-sidebar-scroll" style={{ flex: 1, overflowY: 'auto', padding: '0.6rem' }}>
             {slides.map((s, i) => {
               const isActive = currentSlide === i;
               return (
                 <button
                   key={i}
-                  onClick={() => setCurrentSlide(i)}
+                  ref={isActive ? activeThumbRef : null}
+                  onClick={() => handleGoToSlide(i)}
                   style={{
                     width: '100%', textAlign: 'left',
                     padding: '0.65rem 0.85rem', marginBottom: '4px',
@@ -1065,9 +1090,15 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
       {/* ===================== MAIN STAGE ===================== */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100vh', position: 'relative' }}>
 
-        {/* Slide Canvas Stage - Optimized to fit 100% viewport without scrollbars */}
+        {/* Top Floating Progress Bar */}
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', backgroundColor: 'rgba(255,255,255,0.08)', zIndex: 30 }}>
+          <div style={{ height: '100%', width: `${progressPct}%`, backgroundColor: '#3B82F6', transition: 'width 0.35s cubic-bezier(0.16, 1, 0.3, 1)', boxShadow: '0 0 10px #60A5FA' }} />
+        </div>
+
+        {/* Slide Canvas Stage - Optimized to fit 100% viewport with smooth animation */}
         <div 
           ref={scrollContainerRef}
+          className="slide-stage-wrapper"
           style={{
             flex: 1,
             overflowY: 'hidden',
@@ -1079,25 +1110,28 @@ const SlideImageGallery = ({ images, patientName, themeColor = '#2563EB', onOpen
             boxSizing: 'border-box'
           }}
         >
-          <div style={{
-            width: '100%',
-            maxWidth: isFullscreen ? '1600px' : '1280px',
-            height: isFullscreen ? 'calc(100vh - 85px)' : 'calc(100vh - 125px)',
-            maxHeight: isFullscreen ? 'calc(100vh - 85px)' : 'calc(100vh - 125px)',
-            margin: '0 auto',
-            backgroundColor: '#FFFFFF', color: '#1E293B',
-            borderRadius: '18px',
-            padding: isFullscreen ? '1.4rem 2.2rem' : '1.15rem 1.65rem',
-            boxShadow: '0 20px 45px -10px rgba(0,0,0,0.35)',
-            animation: 'fadeIn 0.2s ease-out',
-            display: 'flex', flexDirection: 'column',
-            justifyContent: 'space-between',
-            position: 'relative',
-            boxSizing: 'border-box',
-            overflow: 'hidden',
-            zoom: fontScale,
-            WebkitZoom: fontScale,
-          }}>
+          <div 
+            key={currentSlide}
+            className={`slide-card-animated ${slideDirection === 'next' ? 'slide-enter-next' : 'slide-enter-prev'}`}
+            style={{
+              width: '100%',
+              maxWidth: isFullscreen ? '1600px' : '1280px',
+              height: isFullscreen ? 'calc(100vh - 85px)' : 'calc(100vh - 125px)',
+              maxHeight: isFullscreen ? 'calc(100vh - 85px)' : 'calc(100vh - 125px)',
+              margin: '0 auto',
+              backgroundColor: '#FFFFFF', color: '#1E293B',
+              borderRadius: '18px',
+              padding: isFullscreen ? '1.4rem 2.2rem' : '1.15rem 1.65rem',
+              boxShadow: '0 20px 45px -10px rgba(0,0,0,0.35)',
+              display: 'flex', flexDirection: 'column',
+              justifyContent: 'space-between',
+              position: 'relative',
+              boxSizing: 'border-box',
+              overflow: 'hidden',
+              zoom: fontScale,
+              WebkitZoom: fontScale,
+            }}
+          >
             {/* Top decorative gradient line */}
             <div style={{
               position: 'absolute', top: 0, left: 0, right: 0, height: '6px',
