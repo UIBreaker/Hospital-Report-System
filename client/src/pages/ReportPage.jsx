@@ -97,6 +97,7 @@ const ReportPage = () => {
 
   const [headerData, setHeaderData] = useState({
     reportDate: formattedYesterday,
+    selectedDoctors: [''], // Hỗ trợ nhiều Bác sĩ trực
     selectedDoctor: '',
     selectedNurses: [''], // Hỗ trợ nhiều điều dưỡng trực
     overtimeStaff: [], // Danh sách: [{ id, staffName, time }]
@@ -153,6 +154,15 @@ const ReportPage = () => {
             try { overtime = JSON.parse(overtime); } catch (e) { overtime = []; }
           }
 
+          // Parse danh sách bác sĩ nếu lưu dạng chuỗi phân cách bởi dấu phẩy
+          let doctors = [''];
+          if (report.doctor_name) {
+            const splitDocs = report.doctor_name.split(',').map(s => s.trim()).filter(Boolean);
+            if (splitDocs.length > 0) {
+              doctors = splitDocs;
+            }
+          }
+
           // Parse danh sách điều dưỡng nếu lưu dạng chuỗi phân cách bởi dấu phẩy
           let nurses = [''];
           if (report.nurse_name) {
@@ -164,7 +174,8 @@ const ReportPage = () => {
 
           setHeaderData(prev => ({
             ...prev,
-            selectedDoctor: report.doctor_name || '',
+            selectedDoctors: doctors,
+            selectedDoctor: doctors[0] || '',
             selectedNurses: nurses,
             overtimeStaff: Array.isArray(overtime) ? overtime : [],
             room: report.room || '',
@@ -272,6 +283,7 @@ const ReportPage = () => {
           setCriticalCases([]);
           setHeaderData(prev => ({
             ...prev,
+            selectedDoctors: [''],
             selectedDoctor: '',
             selectedNurses: [''],
             overtimeStaff: [],
@@ -322,16 +334,51 @@ const ReportPage = () => {
   }, [staffList]);
 
   // Tính toán tên bác sĩ và điều dưỡng thực tế (chuẩn hóa tên sạch)
-  const cleanDoctorName = extractCleanStaffName(headerData.selectedDoctor, staffList.allStaff);
+  const cleanDoctorNames = (headerData.selectedDoctors || [headerData.selectedDoctor || ''])
+    .map(d => extractCleanStaffName(d, staffList.allStaff))
+    .filter(Boolean);
+  const finalDoctorNameStr = cleanDoctorNames.join(', ');
+  const cleanDoctorName = cleanDoctorNames[0] || '';
+
   const cleanNurseNames = headerData.selectedNurses
     .map(n => extractCleanStaffName(n, staffList.allStaff))
     .filter(Boolean);
   const finalNurseNameStr = cleanNurseNames.join(', ');
 
   const handleNext = () => {
-    if (cleanDoctorName) {
+    if (cleanDoctorNames.length > 0) {
       setStep(2);
     }
+  };
+
+  // Thêm dòng Bác sĩ trực
+  const handleAddDoctor = () => {
+    setHeaderData({
+      ...headerData,
+      selectedDoctors: [...(headerData.selectedDoctors || ['']), '']
+    });
+  };
+
+  // Cập nhật Bác sĩ trực
+  const handleDoctorChange = (index, value) => {
+    const updated = [...(headerData.selectedDoctors || [''])];
+    updated[index] = value;
+    setHeaderData({ 
+      ...headerData, 
+      selectedDoctors: updated,
+      selectedDoctor: updated[0] || ''
+    });
+  };
+
+  // Xóa Bác sĩ trực
+  const handleRemoveDoctor = (index) => {
+    const updated = (headerData.selectedDoctors || ['']).filter((_, i) => i !== index);
+    const finalDocs = updated.length > 0 ? updated : [''];
+    setHeaderData({
+      ...headerData,
+      selectedDoctors: finalDocs,
+      selectedDoctor: finalDocs[0] || ''
+    });
   };
 
   // Thêm dòng điều dưỡng trực
@@ -398,7 +445,7 @@ const ReportPage = () => {
       await reportService.createOrUpdateReport({
         departmentCode: user.departmentCode,
         reportDate: headerData.reportDate,
-        doctorName: cleanDoctorName,
+        doctorName: finalDoctorNameStr || cleanDoctorName,
         nurseName: finalNurseNameStr || null,
         overtimeStaff: formattedOvertime.length > 0 ? formattedOvertime : null,
         room: headerData.room,
@@ -441,6 +488,7 @@ const ReportPage = () => {
                 setDeathCases([]);
                 setHeaderData({
                   ...headerData, 
+                  selectedDoctors: [''],
                   selectedDoctor: '', 
                   selectedNurses: [''], 
                   overtimeStaff: [], 
@@ -538,21 +586,54 @@ const ReportPage = () => {
               </div>
             </div>
 
-            {/* 2. Bác sĩ trực chính (Combobox tìm kiếm thông minh cao cấp) */}
+            {/* 2. Bác sĩ trực ca (Hỗ trợ nhiều Bác sĩ trực ca) */}
             <div className="form-group">
-              <StaffSelectCombobox
-                label="Tên Bác sĩ trực chính"
-                required={true}
-                placeholder="Gõ số (1, 2...) hoặc gõ tên Bác sĩ để chọn nhanh..."
-                value={headerData.selectedDoctor}
-                onChange={(val) => setHeaderData({ ...headerData, selectedDoctor: val })}
-                doctors={staffList.doctors}
-                nurses={staffList.nurses}
-                allStaff={staffList.allStaff}
-                type="doctor"
-                loading={loadingStaff}
-                helpText="💡 Gợi ý: Bấm số (1, 2...) hoặc gõ tên chữ cái để chọn nhanh bác sĩ trực."
-              />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.45rem' }}>
+                <label style={{ margin: 0, fontWeight: '600', fontSize: '0.9rem', color: '#1E293B', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <FaUserMd style={{ color: 'var(--brand-red)' }} /> Bác sĩ trực ca ({cleanDoctorNames.length || 0}) <span style={{ color: 'var(--brand-red)' }}>*</span>
+                </label>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={handleAddDoctor}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.8rem', padding: '0.3rem 0.75rem', borderColor: '#BFDBFE', color: '#1E40AF', backgroundColor: '#EFF6FF' }}
+                >
+                  <FaPlus /> Thêm Bác sĩ
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                {(headerData.selectedDoctors || ['']).map((docVal, idx) => (
+                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <div style={{ flex: 1 }}>
+                      <StaffSelectCombobox
+                        placeholder={idx === 0 ? "Gõ số (1, 2...) hoặc tên Bác sĩ trực chính..." : `Gõ số hoặc tên Bác sĩ ${idx + 1}...`}
+                        value={docVal}
+                        onChange={(val) => handleDoctorChange(idx, val)}
+                        doctors={staffList.doctors}
+                        nurses={staffList.nurses}
+                        allStaff={staffList.allStaff}
+                        type="doctor"
+                        loading={loadingStaff}
+                      />
+                    </div>
+                    {(headerData.selectedDoctors || []).length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveDoctor(idx)}
+                        className="btn btn-danger btn-sm"
+                        style={{ padding: '0.45rem 0.65rem', height: '44px', borderRadius: '8px', flexShrink: 0 }}
+                        title="Xóa Bác sĩ này"
+                      >
+                        <FaTrash />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <small style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '4px', display: 'block' }}>
+                💡 Gợi ý: Bấm nút <strong>"+ Thêm Bác sĩ"</strong> nếu ca trực có từ 2 Bác sĩ trở lên.
+              </small>
             </div>
 
             {/* 3. Điều dưỡng trực ca (Hỗ trợ nhiều điều dưỡng ca trực) */}
@@ -711,7 +792,7 @@ const ReportPage = () => {
             <button 
               className="btn btn-primary"
               onClick={handleNext}
-              disabled={!cleanDoctorName}
+              disabled={cleanDoctorNames.length === 0}
               style={{ fontSize: '1rem', padding: '0.75rem 2rem' }}
             >
               Tiếp tục nhập báo cáo <FaChevronRight />
@@ -724,7 +805,7 @@ const ReportPage = () => {
           <div className="card summary-bar" style={{ marginBottom: '1.5rem', padding: '1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(135deg, #EFF6FF, #F8FAFC)', borderLeft: '4px solid var(--brand-blue)' }}>
             <div className="summary-bar-info" style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap', fontSize: '0.9rem' }}>
               <div>📅 <strong>Ngày báo cáo:</strong> {headerData.reportDate}</div>
-              <div>👨‍⚕️ <strong>Bác sĩ trực:</strong> {cleanDoctorName}</div>
+              <div>👨‍⚕️ <strong>Bác sĩ trực ({cleanDoctorNames.length}):</strong> {finalDoctorNameStr || cleanDoctorName}</div>
               {finalNurseNameStr && <div>👩‍⚕️ <strong>Điều dưỡng ({cleanNurseNames.length}):</strong> {finalNurseNameStr}</div>}
               {headerData.overtimeStaff.length > 0 && (
                 <div>
@@ -744,7 +825,7 @@ const ReportPage = () => {
             {FormComponent ? (
               <FormComponent 
                 reportDate={headerData.reportDate}
-                doctorName={cleanDoctorName}
+                doctorName={finalDoctorNameStr || cleanDoctorName}
                 room={headerData.room}
                 shiftTime={headerData.shiftTime}
                 formData={formData}
@@ -817,7 +898,7 @@ const ReportPage = () => {
                 Báo cáo của khoa sẽ được lưu vào hệ thống dữ liệu toàn viện và đưa vào <strong>Trình Chiếu Giao Ban Sáng</strong> phục vụ Ban Giám Đốc.
               </p>
               <div style={{ backgroundColor: '#F8FAFC', padding: '0.85rem 1rem', borderRadius: '8px', border: '1px solid #E2E8F0', fontSize: '0.85rem' }}>
-                <div>👨‍⚕️ <strong>Bác sĩ trực:</strong> {cleanDoctorName}</div>
+                <div>👨‍⚕️ <strong>Bác sĩ trực:</strong> {finalDoctorNameStr || cleanDoctorName}</div>
                 {cleanNurseNames.length > 0 && <div style={{ marginTop: '3px' }}>👩‍⚕️ <strong>Điều dưỡng:</strong> {cleanNurseNames.join(', ')}</div>}
                 <div style={{ marginTop: '3px' }}>📋 <strong>Số ca lâm sàng:</strong> {transferCases.length} chuyển viện • {surgeryCases.length} ca mổ • {deathCases.length} tử vong • {criticalCases.length} bệnh nặng</div>
               </div>
