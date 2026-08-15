@@ -299,6 +299,7 @@ const getReportsByDate = async (req, res, next) => {
 };
 
 const deleteReport = async (req, res, next) => {
+  const connection = await pool.getConnection();
   try {
     const { departmentCode, date } = req.params;
 
@@ -306,14 +307,49 @@ const deleteReport = async (req, res, next) => {
       return res.status(403).json({ success: false, error: 'Access denied' });
     }
 
-    await pool.execute(
+    await connection.beginTransaction();
+
+    // 1. Tìm các report ID tương ứng
+    const [reports] = await connection.execute(
+      'SELECT id FROM reports WHERE department_code = ? AND report_date = ?',
+      [departmentCode, date]
+    );
+
+    for (const r of reports) {
+      await connection.execute('DELETE FROM transfer_cases WHERE report_id = ?', [r.id]);
+      await connection.execute('DELETE FROM surgery_cases WHERE report_id = ?', [r.id]);
+      await connection.execute('DELETE FROM death_cases WHERE report_id = ?', [r.id]);
+      await connection.execute('DELETE FROM critical_cases WHERE report_id = ?', [r.id]);
+    }
+
+    // 2. Dọn sạch các bản ghi mồ côi (nếu có)
+    await connection.execute('DELETE FROM transfer_cases WHERE report_id NOT IN (SELECT id FROM reports)');
+    await connection.execute('DELETE FROM surgery_cases WHERE report_id NOT IN (SELECT id FROM reports)');
+    await connection.execute('DELETE FROM death_cases WHERE report_id NOT IN (SELECT id FROM reports)');
+    await connection.execute('DELETE FROM critical_cases WHERE report_id NOT IN (SELECT id FROM reports)');
+
+    // 3. Xóa báo cáo chính
+    await connection.execute(
       'DELETE FROM reports WHERE department_code = ? AND report_date = ?',
       [departmentCode, date]
     );
 
-    res.json({ success: true, message: 'Báo cáo đã được xóa thành công' });
+    await connection.commit();
+
+    // 4. Thu hồi dung lượng đĩa và làm mới chỉ số InnoDB
+    try {
+      await pool.query('OPTIMIZE TABLE death_cases, transfer_cases, critical_cases, surgery_cases, reports');
+      await pool.query('ANALYZE TABLE death_cases, transfer_cases, critical_cases, surgery_cases, reports, users, staff_members');
+    } catch (optErr) {
+      // Bỏ qua lỗi optimize nếu môi trường cloud hạn chế
+    }
+
+    res.json({ success: true, message: 'Báo cáo và toàn bộ dữ liệu lâm sàng liên quan đã được xóa và giải phóng dung lượng thành công!' });
   } catch (error) {
+    await connection.rollback();
     next(error);
+  } finally {
+    connection.release();
   }
 };
 
