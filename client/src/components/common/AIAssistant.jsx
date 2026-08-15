@@ -31,13 +31,12 @@ const INITIAL_MESSAGES = [
 ];
 
 const QUICK_QUESTIONS = [
-  { id: 'author', label: '👨‍💻 Ai là tác giả phát triển phần mềm?' },
   { id: 'dept_account', label: '🔑 Cấp tài khoản cho khoa của tôi' },
-  { id: 'test_ui_guide', label: '🧪 Chạy Test Playwright UI Mode' },
-  { id: 'lorem_guide', label: '📝 Hướng dẫn phím tắt "lorem + Enter"' },
   { id: 'transfer_guide', label: '🚑 Hướng dẫn nhập ca Bệnh Chuyển Viện' },
   { id: 'presentation_guide', label: '📺 Hướng dẫn Trình Chiếu Giao Ban' },
-  { id: 'admin_info', label: '🛡️ Tài khoản Quản trị viên (Admin)' }
+  { id: 'lorem_guide', label: '📝 Hướng dẫn phím tắt "lorem + Enter"' },
+  { id: 'author', label: '👨‍💻 Ai là tác giả phát triển phần mềm?' },
+  { id: 'test_ui_guide', label: '🧪 Chạy Test Playwright UI Mode' }
 ];
 
 const AIAssistant = ({ onAutoFillLogin }) => {
@@ -93,9 +92,6 @@ const AIAssistant = ({ onAutoFillLogin }) => {
     } else if (qId === 'test_ui_guide') {
       userText = 'Cách chạy test quan sát click chuột (UI Mode)?';
       aiResponse = '🧪 HƯỚNG DẪN CHẠY TEST TỰ ĐỘNG VỚI PLAYWRIGHT UI MODE:\n\n1. Mở Terminal / PowerShell tại thư mục dự án.\n2. Chạy một trong các lệnh sau:\n\n   👉 Xem giao diện tương tác UI Mode (quan sát từng bước click chuột, xem timeline & chụp ảnh DOM):\n   npx playwright test --ui\n   (hoặc: npm run test:ui)\n\n   👉 Mở trình duyệt Chrome thật để nhìn chuột tự bấm trực tiếp:\n   npm run test:headed\n\n   👉 Chạy toàn bộ 48 bài test nhanh:\n   npm test\n\n✨ Playwright sẽ tự động mở cửa sổ trình duyệt, đăng nhập, nạp biểu mẫu và thực hiện mọi thao tác bấm chuột tự động 100%!';
-    } else if (qId === 'admin_info') {
-      userText = 'Tài khoản Quản trị viên (Admin) là gì?';
-      aiResponse = '🛡️ TÀI KHOẢN QUẢN TRỊ VIÊN (ADMIN):\n\n• Tài khoản Admin: Khnv / Mật khẩu: Khnv@2026\n• Dành riêng cho Ban Giám Đốc và Phòng Kế Hoạch Nghiệp Vụ (KHNV).\n• Admin có quyền tổng hợp toàn bộ các khoa phòng, chỉnh sửa báo cáo và điều khiển trình chiếu slide giao ban.';
     }
 
     const newMsgs = [
