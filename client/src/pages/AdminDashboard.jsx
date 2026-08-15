@@ -1001,7 +1001,7 @@ const AdminDashboard = () => {
   return (
     <div className="admin-container admin-dashboard-wrapper app-page" style={{ maxWidth: '1280px', margin: '0 auto', padding: '1.5rem' }}>
       {/* Top Header Card */}
-      <header className="card admin-header" style={{ marginBottom: '1.5rem', padding: '1.25rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#FFFFFF', flexWrap: 'wrap', gap: '1rem' }}>
+      <header className="card admin-header" style={{ marginBottom: '1.5rem', padding: '1.25rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#FFFFFF', flexWrap: 'wrap', gap: '1rem', position: 'relative', zIndex: 60, overflow: 'visible' }}>
         <div className="admin-header-left" style={{ display: 'flex', alignItems: 'center', gap: '1.2rem' }}>
           <img src="/logo.png" alt="Logo TTYT Bình Long" className="logo-img" style={{ width: '48px', height: '48px' }} />
           <div>
@@ -1030,7 +1030,7 @@ const AdminDashboard = () => {
           {activeTab === 'reports' && (
             <>
               {/* Dropdown Xuất Báo Cáo */}
-              <div style={{ position: 'relative', display: 'inline-block' }}>
+              <div style={{ position: 'relative', display: 'inline-block', zIndex: 70 }}>
                 <button 
                   className="btn btn-secondary" 
                   onClick={() => setExportDropdownOpen(!exportDropdownOpen)} 
@@ -1063,19 +1063,19 @@ const AdminDashboard = () => {
                 {exportDropdownOpen && (
                   <>
                     <div 
-                      style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 90 }} 
+                      style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 998 }} 
                       onClick={() => setExportDropdownOpen(false)} 
                     />
                     <div 
                       style={{
                         position: 'absolute',
-                        top: 'calc(100% + 6px)',
+                        top: 'calc(100% + 8px)',
                         right: 0,
                         backgroundColor: '#FFFFFF',
-                        borderRadius: '10px',
-                        boxShadow: '0 10px 30px rgba(0,0,0,0.2), 0 0 0 1px rgba(0,0,0,0.08)',
-                        zIndex: 100,
-                        minWidth: '240px',
+                        borderRadius: '12px',
+                        boxShadow: '0 12px 35px rgba(15, 44, 89, 0.22), 0 0 0 1px rgba(0,0,0,0.08)',
+                        zIndex: 999,
+                        minWidth: '260px',
                         overflow: 'hidden'
                       }}
                     >

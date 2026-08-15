@@ -15,7 +15,7 @@
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel%20App-0070F3?style=for-the-badge&logo=vercel&logoColor=white)](https://hospital-report-system.vercel.app/)
 [![Author](https://img.shields.io/badge/Author-Nguyen%20Vu%20Nhat%20Nam%20(2004)-0F2C59?style=for-the-badge&logo=github)](https://github.com/UIBreaker/Hospital-Report-System)
 [![Zalo Contact](https://img.shields.io/badge/Zalo-0916.337.266-0284C7?style=for-the-badge&logo=zalo&logoColor=white)](https://zalo.me/0916337266)
-[![Version](https://img.shields.io/badge/Version-1.28.7-10B981?style=for-the-badge)](https://hospital-report-system.vercel.app/)
+[![Version](https://img.shields.io/badge/Version-1.28.8-10B981?style=for-the-badge)](https://hospital-report-system.vercel.app/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
 </div>
@@ -169,6 +169,8 @@ npm run dev
 
 ## 7. 📜 Lịch Sử Phiên Bản (Changelog)
 
+* **`v1.28.8` (15/08/2026)**:
+  * Sửa lỗi menu dropdown **"Xuất Báo Cáo"** bị che/cắt góc ở bảng điều khiển Admin bằng cách thiết lập `overflow: visible !important` và nâng `z-index`.
 * **`v1.28.7` (15/08/2026)**:
   * Ẩn lựa chọn tài khoản Quản trị viên (Admin) khỏi gợi ý Chatbot AI để tăng cường bảo mật.
 * **`v1.28.6` (15/08/2026)**:
