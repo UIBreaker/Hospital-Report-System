@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { FaSpinner, FaTimes } from 'react-icons/fa';
 
 /* ==========================================================
@@ -147,7 +148,7 @@ export const Notice = ({
 };
 
 /* ==========================================================
-   MODAL COMPONENT (ACCESSIBLE & SMOOTH)
+   MODAL COMPONENT (ACCESSIBLE & SMOOTH - PORTALED TO BODY)
    ========================================================== */
 export const Modal = ({
   isOpen = false,
@@ -158,6 +159,12 @@ export const Modal = ({
   children,
   footer
 }) => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -172,9 +179,9 @@ export const Modal = ({
     }
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
+  const modalElement = (
     <div
       style={{
         position: 'fixed',
@@ -182,13 +189,16 @@ export const Modal = ({
         left: 0,
         right: 0,
         bottom: 0,
+        width: '100vw',
+        height: '100vh',
         backgroundColor: 'rgba(15, 23, 42, 0.65)',
         backdropFilter: 'blur(6px)',
+        WebkitBackdropFilter: 'blur(6px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         padding: '1rem',
-        zIndex: 9999,
+        zIndex: 99999,
         animation: 'fadeIn 0.2s ease-out'
       }}
       onClick={(e) => {
@@ -208,7 +218,8 @@ export const Modal = ({
           flexDirection: 'column',
           boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.35)',
           overflow: 'hidden',
-          animation: 'slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
+          animation: 'slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+          position: 'relative'
         }}
       >
         {/* Modal Header */}
@@ -256,6 +267,8 @@ export const Modal = ({
       </div>
     </div>
   );
+
+  return createPortal(modalElement, document.body);
 };
 
 /* ==========================================================

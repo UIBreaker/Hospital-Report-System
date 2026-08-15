@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   FaTimes, 
   FaSearchPlus, 
@@ -98,7 +99,7 @@ const ImageLightboxModal = ({
   const currentImgUrl = typeof currentImg === 'string' ? currentImg : currentImg?.url;
   const currentImgName = typeof currentImg === 'object' ? (currentImg?.name || `Ảnh ${currentIndex + 1}`) : `Ảnh ${currentIndex + 1}`;
 
-  return (
+  return createPortal(
     <div 
       style={{
         position: 'fixed',
@@ -106,6 +107,8 @@ const ImageLightboxModal = ({
         left: 0,
         right: 0,
         bottom: 0,
+        width: '100vw',
+        height: '100vh',
         backgroundColor: 'rgba(5, 10, 20, 0.95)',
         backdropFilter: 'blur(10px)',
         zIndex: 99999,
@@ -180,45 +183,36 @@ const ImageLightboxModal = ({
           </button>
           <button
             onClick={handleRotate}
-            title="Xoay 90° (Phím R)"
+            title="Xoay ảnh 90° (Phím R)"
             style={btnStyle}
           >
             <FaRedo />
           </button>
           <button
-            onClick={toggleFullscreen}
-            title="Toàn màn hình (Phím F)"
+            onClick={handleToggleFullscreen}
+            title={isFullscreen ? "Thoát toàn màn hình" : "Xem toàn màn hình (Phím F)"}
             style={btnStyle}
           >
             {isFullscreen ? <FaCompress /> : <FaExpand />}
           </button>
-          <a
-            href={currentImgUrl}
-            download={`medical_case_image_${currentIndex + 1}.jpg`}
-            title="Tải ảnh về máy"
-            style={{ ...btnStyle, textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+          <button
+            onClick={handleDownload}
+            title="Tải ảnh gốc về máy"
+            style={{ ...btnStyle, backgroundColor: '#0284C7' }}
           >
-            <FaDownload />
-          </a>
+            <FaDownload /> <span style={{ fontSize: '0.78rem' }}>Tải</span>
+          </button>
           <button
             onClick={onClose}
-            title="Đóng (ESC)"
-            style={{ 
-              ...btnStyle, 
-              backgroundColor: '#DC2626', 
-              borderColor: '#B91C1C', 
-              color: '#FFFFFF',
-              marginLeft: '0.5rem',
-              padding: '0.45rem 0.9rem',
-              fontWeight: '800'
-            }}
+            title="Đóng xem ảnh (Esc)"
+            style={{ ...btnStyle, backgroundColor: '#DC2626', marginLeft: '0.5rem' }}
           >
-            <FaTimes style={{ fontSize: '1.1rem' }} /> Đóng
+            <FaTimes />
           </button>
         </div>
       </div>
 
-      {/* Main Image Stage Container */}
+      {/* Main Image Stage */}
       <div 
         style={{
           flex: 1,
@@ -227,135 +221,120 @@ const ImageLightboxModal = ({
           justifyContent: 'center',
           position: 'relative',
           overflow: 'hidden',
-          padding: '1.5rem',
-          cursor: scale > 1 ? 'grab' : 'default'
-        }}
-        onClick={(e) => {
-          if (e.target === e.currentTarget) onClose();
+          padding: '1.5rem'
         }}
       >
-        {/* Navigation Previous Button */}
+        {/* Navigation Arrows */}
         {images.length > 1 && (
-          <button
-            onClick={(e) => { e.stopPropagation(); handlePrev(); }}
-            title="Ảnh trước (Mũi tên trái)"
-            style={{
-              position: 'absolute',
-              left: '1.5rem',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              width: '50px',
-              height: '50px',
-              borderRadius: '50%',
-              backgroundColor: 'rgba(15, 23, 42, 0.8)',
-              color: '#FFFFFF',
-              border: '1.5px solid rgba(255, 255, 255, 0.2)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '1.3rem',
-              zIndex: 20,
-              transition: 'all 0.2s ease',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.5)'
-            }}
-            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#2563EB'}
-            onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'rgba(15, 23, 42, 0.8)'}
-          >
-            <FaChevronLeft />
-          </button>
+          <>
+            <button
+              onClick={(e) => { e.stopPropagation(); handlePrev(); }}
+              title="Ảnh trước (Phím mũi tên Trái)"
+              style={{
+                position: 'absolute',
+                left: '1.5rem',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                backgroundColor: 'rgba(15, 23, 42, 0.75)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                color: '#FFFFFF',
+                fontSize: '1.25rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 20,
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#2563EB'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(15, 23, 42, 0.75)'; }}
+            >
+              <FaChevronLeft />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); handleNext(); }}
+              title="Ảnh kế tiếp (Phím mũi tên Phải)"
+              style={{
+                position: 'absolute',
+                right: '1.5rem',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                backgroundColor: 'rgba(15, 23, 42, 0.75)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                color: '#FFFFFF',
+                fontSize: '1.25rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 20,
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#2563EB'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(15, 23, 42, 0.75)'; }}
+            >
+              <FaChevronRight />
+            </button>
+          </>
         )}
 
-        {/* The Displayed Image */}
-        <div
-          style={{
-            maxWidth: '92vw',
-            maxHeight: '82vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'transform 0.2s cubic-bezier(0.2, 0, 0, 1)'
-          }}
-        >
+        {/* Display Image with Scale and Rotation */}
+        {currentImgUrl ? (
           <img
             src={currentImgUrl}
             alt={currentImgName}
             style={{
-              maxWidth: '100%',
-              maxHeight: '82vh',
+              maxWidth: '90vw',
+              maxHeight: '75vh',
               objectFit: 'contain',
+              transform: `scale(${scale}) rotate(${rotation}deg)`,
+              transition: 'transform 0.2s cubic-bezier(0.2, 0, 0, 1)',
               borderRadius: '8px',
               boxShadow: '0 20px 50px rgba(0, 0, 0, 0.8)',
-              transform: `scale(${scale}) rotate(${rotation}deg)`,
-              transition: 'transform 0.15s ease-out',
-              cursor: 'zoom-in'
+              cursor: scale > 1 ? 'grab' : 'default'
             }}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (scale === 1) setScale(1.6);
-              else setScale(1);
-            }}
+            onClick={(e) => e.stopPropagation()}
           />
-        </div>
-
-        {/* Navigation Next Button */}
-        {images.length > 1 && (
-          <button
-            onClick={(e) => { e.stopPropagation(); handleNext(); }}
-            title="Ảnh tiếp theo (Mũi tên phải)"
-            style={{
-              position: 'absolute',
-              right: '1.5rem',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              width: '50px',
-              height: '50px',
-              borderRadius: '50%',
-              backgroundColor: 'rgba(15, 23, 42, 0.8)',
-              color: '#FFFFFF',
-              border: '1.5px solid rgba(255, 255, 255, 0.2)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '1.3rem',
-              zIndex: 20,
-              transition: 'all 0.2s ease',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.5)'
-            }}
-            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#2563EB'}
-            onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'rgba(15, 23, 42, 0.8)'}
-          >
-            <FaChevronRight />
-          </button>
+        ) : (
+          <div style={{ color: '#94A3B8', fontSize: '1rem', fontStyle: 'italic' }}>
+            Không tìm thấy ảnh để hiển thị
+          </div>
         )}
       </div>
 
-      {/* Bottom Thumbnails Strip (if multiple images) */}
+      {/* Bottom Thumbnails Strip (If multiple images) */}
       {images.length > 1 && (
-        <div 
+        <div
           style={{
-            padding: '0.6rem 1.5rem',
-            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+            padding: '0.75rem 1.5rem',
+            backgroundColor: 'rgba(15, 23, 42, 0.85)',
             borderTop: '1px solid rgba(255, 255, 255, 0.1)',
             display: 'flex',
             justifyContent: 'center',
-            gap: '0.6rem',
+            gap: '0.65rem',
             overflowX: 'auto',
             zIndex: 10
           }}
+          onClick={(e) => e.stopPropagation()}
         >
           {images.map((img, idx) => {
             const thumbUrl = typeof img === 'string' ? img : img?.url;
-            const isSelected = currentIndex === idx;
+            const isSelected = idx === currentIndex;
             return (
               <img
                 key={idx}
                 src={thumbUrl}
-                alt={`Thumbnail ${idx + 1}`}
+                alt={`Thumb ${idx + 1}`}
                 onClick={() => {
                   setCurrentIndex(idx);
                   setScale(1);
+                  setRotation(0);
                 }}
                 style={{
                   width: '54px',
@@ -373,7 +352,8 @@ const ImageLightboxModal = ({
           })}
         </div>
       )}
-    </div>
+    </div>,
+    document.body
   );
 };
 
