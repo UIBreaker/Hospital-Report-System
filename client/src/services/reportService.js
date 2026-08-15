@@ -29,6 +29,10 @@ const reportService = {
     const response = await api.get('/admin/database-stats');
     return response.data;
   },
+  getReportsPayloadSize: async (date) => {
+    const response = await api.get(`/admin/reports-payload-size?date=${date}`);
+    return response.data;
+  },
   exportHospitalReportExcel: async (date) => {
     const response = await api.get(`/admin/export-reports?date=${date}`, {
       responseType: 'blob',
