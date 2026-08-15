@@ -140,6 +140,13 @@ const getDatabaseStats = async (req, res, next) => {
       }
     }
 
+    // Tự động làm mới thống kê InnoDB để cập nhật dung lượng ảnh và bản ghi mới tức thì
+    try {
+      await pool.query('ANALYZE TABLE death_cases, transfer_cases, critical_cases, surgery_cases, reports, users, staff_members');
+    } catch (analyzeErr) {
+      // Bỏ qua nếu môi trường DB không cho phép ANALYZE
+    }
+
     const [tables] = await pool.query(
       `SELECT 
          table_name AS tableName, 
@@ -154,8 +161,32 @@ const getDatabaseStats = async (req, res, next) => {
       [dbName]
     );
 
-    const totalSizeMb = tables.reduce((acc, t) => acc + (parseFloat(t.sizeMb) || 0), 0);
-    const totalRows = tables.reduce((acc, t) => acc + (parseInt(t.rowsCount, 10) || 0), 0);
+    // Lấy số dòng thực tế chính xác 100% cho từng bảng
+    const enhancedTables = await Promise.all(
+      tables.map(async (t) => {
+        let exactRows = parseInt(t.rowsCount, 10) || 0;
+        try {
+          // Thoát tên bảng an toàn
+          const validName = t.tableName.replace(/[^a-zA-Z0-9_]/g, '');
+          if (validName) {
+            const [cntRes] = await pool.query(`SELECT COUNT(*) AS total FROM \`${validName}\``);
+            if (cntRes && cntRes[0] && cntRes[0].total !== undefined) {
+              exactRows = Number(cntRes[0].total);
+            }
+          }
+        } catch (cntErr) {
+          // Dùng số ước tính từ information_schema nếu có lỗi
+        }
+
+        return {
+          ...t,
+          rowsCount: exactRows
+        };
+      })
+    );
+
+    const totalSizeMb = enhancedTables.reduce((acc, t) => acc + (parseFloat(t.sizeMb) || 0), 0);
+    const totalRows = enhancedTables.reduce((acc, t) => acc + (parseInt(t.rowsCount, 10) || 0), 0);
     const maxLimitMb = 1024; // 1024 MB (1GB default limit)
 
     res.json({
@@ -166,8 +197,8 @@ const getDatabaseStats = async (req, res, next) => {
         totalRows,
         maxLimitMb,
         usagePercentage: parseFloat(((totalSizeMb / maxLimitMb) * 100).toFixed(2)),
-        tablesCount: tables.length,
-        tables
+        tablesCount: enhancedTables.length,
+        tables: enhancedTables
       }
     });
   } catch (error) {
