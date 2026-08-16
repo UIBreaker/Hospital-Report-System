@@ -2576,20 +2576,16 @@ const PresentationPage = () => {
                         maxHeight: isFullscreen ? 'calc(100vh - 280px)' : 'calc(100vh - 310px)',
                         objectFit: 'contain',
                         borderRadius: '6px',
-                        boxShadow: '0 6px 25px rgba(0, 0, 0, 0.6)',
-                        cursor: 'zoom-in',
-                        transition: 'transform 0.2s ease'
+                        boxShadow: '0 6px 25px rgba(0, 0, 0, 0.6)'
                       }}
-                      onClick={() => handleOpenLightbox([slide.image], 0, `${slide.caseItem.patient_name || slide.caseItem.patientName || 'Bệnh nhân'} - Ảnh ${slide.imgIndex}/${slide.totalImages}`)}
-                      title="Nhấp để phóng to toàn màn hình (HD Lightbox)"
                     />
 
-                    {/* Caption & Full-screen trigger */}
+                    {/* Caption */}
                     <div style={{
                       marginTop: '0.6rem',
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'space-between',
+                      justifyContent: 'center',
                       width: '100%',
                       maxWidth: '900px',
                       color: '#94A3B8',
@@ -2598,26 +2594,6 @@ const PresentationPage = () => {
                       <span>
                         📷 Ảnh minh họa #{slide.imgIndex} / {slide.totalImages}
                       </span>
-
-                      <button
-                        onClick={() => handleOpenLightbox([slide.image], 0, `${slide.caseItem.patient_name || slide.caseItem.patientName || 'Bệnh nhân'} - Ảnh ${slide.imgIndex}/${slide.totalImages}`)}
-                        style={{
-                          backgroundColor: slide.themeColor,
-                          color: '#FFFFFF',
-                          border: 'none',
-                          borderRadius: '6px',
-                          padding: '0.35rem 0.85rem',
-                          fontSize: '0.82rem',
-                          fontWeight: '800',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.35rem',
-                          boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
-                        }}
-                      >
-                        <FaExpand /> Phóng to toàn màn hình (HD Lightbox)
-                      </button>
                     </div>
                   </div>
                 </div>
