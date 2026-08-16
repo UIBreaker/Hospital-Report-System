@@ -25,20 +25,40 @@ const ImageLightboxModal = ({
   const [scale, setScale] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
       setCurrentIndex(initialIndex || 0);
       setScale(1);
       setRotation(0);
-      document.body.style.overflow = 'hidden';
+      if (typeof document !== 'undefined') {
+        document.body.style.overflow = 'hidden';
+      }
     } else {
-      document.body.style.overflow = '';
+      if (typeof document !== 'undefined') {
+        document.body.style.overflow = '';
+      }
     }
     return () => {
-      document.body.style.overflow = '';
+      if (typeof document !== 'undefined') {
+        document.body.style.overflow = '';
+      }
     };
   }, [isOpen, initialIndex]);
+
+  // Fullscreen change listener
+  useEffect(() => {
+    const handleFsChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFsChange);
+    return () => document.removeEventListener('fullscreenchange', handleFsChange);
+  }, []);
 
   const handleNext = useCallback(() => {
     if (images.length > 1) {
@@ -64,15 +84,31 @@ const ImageLightboxModal = ({
   };
   const handleRotate = () => setRotation((prev) => (prev + 90) % 360);
 
-  const toggleFullscreen = () => {
+  const handleToggleFullscreen = () => {
     if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => {});
+      document.documentElement.requestFullscreen?.().catch(() => {});
       setIsFullscreen(true);
     } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen().catch(() => {});
-      }
+      document.exitFullscreen?.().catch(() => {});
       setIsFullscreen(false);
+    }
+  };
+
+  const currentImg = images && images.length > 0 ? images[currentIndex] : null;
+  const currentImgUrl = typeof currentImg === 'string' ? currentImg : currentImg?.url;
+  const currentImgName = typeof currentImg === 'object' ? (currentImg?.name || `Ảnh ${currentIndex + 1}`) : `Ảnh ${currentIndex + 1}`;
+
+  const handleDownload = () => {
+    if (!currentImgUrl) return;
+    try {
+      const link = document.createElement('a');
+      link.href = currentImgUrl;
+      link.download = (typeof currentImgName === 'string' ? currentImgName.replace(/[^a-zA-Z0-9._-]/g, '_') : 'medical-image') + '.jpg';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (e) {
+      console.error('Lỗi khi tải ảnh:', e);
     }
   };
 
@@ -80,24 +116,20 @@ const ImageLightboxModal = ({
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') onClose?.();
       if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); handleNext(); }
       if (e.key === 'ArrowLeft') { e.preventDefault(); handlePrev(); }
       if (e.key === '+' || e.key === '=') handleZoomIn();
       if (e.key === '-') handleZoomOut();
       if (e.key === '0') handleResetZoom();
       if (e.key === 'r' || e.key === 'R') handleRotate();
-      if (e.key === 'f' || e.key === 'F') toggleFullscreen();
+      if (e.key === 'f' || e.key === 'F') handleToggleFullscreen();
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, handleNext, handlePrev, onClose]);
 
-  if (!isOpen || !images || images.length === 0) return null;
-
-  const currentImg = images[currentIndex];
-  const currentImgUrl = typeof currentImg === 'string' ? currentImg : currentImg?.url;
-  const currentImgName = typeof currentImg === 'object' ? (currentImg?.name || `Ảnh ${currentIndex + 1}`) : `Ảnh ${currentIndex + 1}`;
+  if (!isOpen || !mounted || !images || images.length === 0 || typeof document === 'undefined') return null;
 
   return createPortal(
     <div 

@@ -15,7 +15,7 @@
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel%20App-0070F3?style=for-the-badge&logo=vercel&logoColor=white)](https://hospital-report-system.vercel.app/)
 [![Author](https://img.shields.io/badge/Author-Nguyen%20Vu%20Nhat%20Nam%20(2004)-0F2C59?style=for-the-badge&logo=github)](https://github.com/UIBreaker/Hospital-Report-System)
 [![Zalo Contact](https://img.shields.io/badge/Zalo-0916.337.266-0284C7?style=for-the-badge&logo=zalo&logoColor=white)](https://zalo.me/0916337266)
-[![Version](https://img.shields.io/badge/Version-1.29.0-10B981?style=for-the-badge)](https://hospital-report-system.vercel.app/)
+[![Version](https://img.shields.io/badge/Version-1.29.1-10B981?style=for-the-badge)](https://hospital-report-system.vercel.app/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
 </div>
@@ -169,6 +169,9 @@ npm run dev
 
 ## 7. 📜 Lịch Sử Phiên Bản (Changelog)
 
+* **`v1.29.1` (16/08/2026)**:
+  * Khắc phục triệt để lỗi màn hình trắng khi bấm **"Phóng to toàn màn hình (HD Lightbox)"** trong trang trình chiếu Presentation (`ImageLightboxModal`) bằng cách bổ sung đầy đủ hàm điều khiển toàn màn hình, tải ảnh gốc và kiểm tra `mounted` an toàn.
+  * Sửa lỗi thiếu import icon `FaEyeSlash` gây crash trắng trang khi bấm nút **"Đổi Mật Khẩu"** trong mục Quản Lý Tài Khoản Khoa Phòng, đồng thời bọc React Portal cho tất cả Modal quản trị.
 * **`v1.29.0` (15/08/2026)**:
   * **Tái cấu trúc Tab Quản Lý Database**:
     * Thay thế widget dung lượng logic cũ bằng **Dung Lượng Ổ Đĩa Aiven (Physical Storage)** với thanh trạng thái cảnh báo an toàn 3 mức (Xanh lá < 70%, Cam/Vàng 70-85%, Đỏ > 85%).

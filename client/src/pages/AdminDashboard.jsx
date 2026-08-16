@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 import { 
@@ -17,6 +18,7 @@ import {
   FaEdit, 
   FaSave, 
   FaEye, 
+  FaEyeSlash,
   FaPlus, 
   FaTrash, 
   FaAmbulance, 
@@ -342,6 +344,11 @@ const AdminDashboard = () => {
   const [statusList, setStatusList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // -------------------------------------------------------------------------
   // STAFF MANAGEMENT STATE
@@ -2276,12 +2283,13 @@ const AdminDashboard = () => {
       {/* ============================================================ */}
       {/* MODAL: ĐỔI MẬT KHẨU TÀI KHOẢN (CHANGE PASSWORD MODAL)         */}
       {/* ============================================================ */}
-      {pwdModalOpen && pwdAccount && (
+      {pwdModalOpen && pwdAccount && mounted && createPortal(
         <div style={{
           position: 'fixed', inset: 0,
           backgroundColor: 'rgba(15, 44, 89, 0.65)',
           backdropFilter: 'blur(5px)',
-          zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem'
+          WebkitBackdropFilter: 'blur(5px)',
+          zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem'
         }}>
           <div className="card animate-slide-up" style={{ width: '100%', maxWidth: '480px', padding: 0, overflow: 'hidden', boxShadow: 'var(--shadow-xl)', borderRadius: '12px' }}>
             <div style={{
@@ -2452,18 +2460,20 @@ const AdminDashboard = () => {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ============================================================ */}
       {/* MODAL: THÊM / SỬA THÔNG TIN TÀI KHOẢN                        */}
       {/* ============================================================ */}
-      {accModalOpen && (
+      {accModalOpen && mounted && createPortal(
         <div style={{
           position: 'fixed', inset: 0,
           backgroundColor: 'rgba(15, 44, 89, 0.65)',
           backdropFilter: 'blur(5px)',
-          zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem'
+          WebkitBackdropFilter: 'blur(5px)',
+          zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem'
         }}>
           <div className="card animate-slide-up" style={{ width: '100%', maxWidth: '520px', padding: 0, overflow: 'hidden', boxShadow: 'var(--shadow-xl)', borderRadius: '12px' }}>
             <div style={{
@@ -2551,14 +2561,16 @@ const AdminDashboard = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
-      {staffModalOpen && (
+      {staffModalOpen && mounted && createPortal(
         <div style={{
           position: 'fixed', inset: 0,
           backgroundColor: 'rgba(15, 44, 89, 0.6)',
           backdropFilter: 'blur(5px)',
-          zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem'
+          WebkitBackdropFilter: 'blur(5px)',
+          zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem'
         }}>
           <div className="card" style={{ width: '100%', maxWidth: '520px', padding: 0, overflow: 'hidden', boxShadow: 'var(--shadow-xl)' }}>
             <div style={{ padding: '1.25rem 1.5rem', backgroundColor: 'var(--brand-blue)', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -2655,18 +2667,20 @@ const AdminDashboard = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ============================================================ */}
       {/* MODAL: XÁC NHẬN XÓA NHÂN SỰ                                   */}
       {/* ============================================================ */}
-      {staffToDelete && (
+      {staffToDelete && mounted && createPortal(
         <div style={{
           position: 'fixed', inset: 0,
           backgroundColor: 'rgba(15, 44, 89, 0.6)',
           backdropFilter: 'blur(5px)',
-          zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem'
+          WebkitBackdropFilter: 'blur(5px)',
+          zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem'
         }}>
           <div className="card" style={{ maxWidth: '440px', textAlign: 'center', padding: '2rem' }}>
             <FaExclamationTriangle style={{ fontSize: '3rem', color: 'var(--brand-red)', marginBottom: '1rem' }} />
@@ -2683,7 +2697,8 @@ const AdminDashboard = () => {
               <button className="btn btn-secondary" onClick={() => setStaffToDelete(null)}>Hủy</button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ============================================================ */}
