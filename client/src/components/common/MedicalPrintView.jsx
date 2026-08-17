@@ -631,7 +631,7 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
               <tr style={{ verticalAlign: 'top', backgroundColor: '#FFFFFF' }}>
                 <td style={{ width: '45%', textAlign: 'center', backgroundColor: '#FFFFFF', color: '#000000', border: 'none', padding: 0 }}>
                   <div style={{ fontSize: '9.5pt', fontWeight: 'bold', textTransform: 'uppercase' }}>
-                    SỞ Y TẾ BÌNH PHƯỚC
+                    SỞ Y TẾ THÀNH PHỐ ĐỒNG NAI
                   </div>
                   <div style={{ fontSize: '10pt', fontWeight: 'bold', textTransform: 'uppercase', color: '#0F2C59' }}>
                     TTYT KHU VỰC BÌNH LONG

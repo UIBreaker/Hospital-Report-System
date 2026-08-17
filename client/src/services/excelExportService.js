@@ -165,7 +165,7 @@ export const generateAndDownloadHospitalExcel = async (date, detailedReports = [
   // Header Title
   wsSummary.mergeCells('A1:M1');
   const title1 = wsSummary.getCell('A1');
-  title1.value = 'SỞ Y TẾ TỈNH BÌNH PHƯỚC — TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG';
+  title1.value = 'SỞ Y TẾ THÀNH PHỐ ĐỒNG NAI — TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG';
   title1.font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FF1E3A8A' } };
   title1.alignment = { horizontal: 'center', vertical: 'middle' };
   wsSummary.getRow(1).height = 22;

@@ -2964,7 +2964,7 @@ const AdminDashboard = () => {
                               </div>
                               <div className="form-group full-width">
                                 <label>Địa chỉ thường trú</label>
-                                <input type="text" value={tc.address || ''} onChange={(e) => handleTransferCaseChange(idx, 'address', e.target.value)} placeholder="VD: P. An Lộc, Bình Long, Bình Phước" />
+                                <input type="text" value={tc.address || ''} onChange={(e) => handleTransferCaseChange(idx, 'address', e.target.value)} placeholder="VD: P. An Lộc, Bình Long, Thành Phố Đồng Nai" />
                               </div>
                               <div className="form-group">
                                 <label>Giờ vào viện</label>

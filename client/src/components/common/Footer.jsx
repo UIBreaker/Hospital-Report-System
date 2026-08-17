@@ -153,7 +153,7 @@ const Footer = () => {
 
         {/* Bottom Copyright Line */}
         <div style={{ fontSize: '0.75rem', color: '#94A3B8', marginTop: '0.2rem' }}>
-          &copy; 2026 <strong>Trung Tâm Y Tế Khu Vực Bình Long</strong> — Sở Y Tế Tỉnh Bình Phước. Phát triển cho công tác Báo cáo Giao ban Bệnh viện.
+          &copy; 2026 <strong>Trung Tâm Y Tế Khu Vực Bình Long</strong> — Sở Y Tế Thành Phố Đồng Nai. Phát triển cho công tác Báo cáo Giao ban Bệnh viện.
         </div>
       </div>
     </footer>

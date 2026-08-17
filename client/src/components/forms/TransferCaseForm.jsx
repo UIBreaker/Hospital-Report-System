@@ -200,7 +200,7 @@ const TransferCaseForm = ({ transferCases = [], setTransferCases }) => {
                         type="text"
                         value={tCase.address || ''}
                         onChange={(e) => handleChange(id, 'address', e.target.value)}
-                        placeholder="VD: P. An Lộc, Thị xã Bình Long, Tỉnh Bình Phước"
+                        placeholder="VD: P. An Lộc, Thị xã Bình Long, Thành Phố Đồng Nai"
                       />
                     </div>
 

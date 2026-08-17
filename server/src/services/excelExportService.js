@@ -244,7 +244,7 @@ const generateHospitalExcelReport = async (date, deptUsers = [], detailedReports
 
   // Tiêu đề đầu trang
   ws1.mergeCells('A1:M1');
-  ws1.getCell('A1').value = 'SỞ Y TẾ TỈNH BÌNH PHƯỚC — TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG';
+  ws1.getCell('A1').value = 'SỞ Y TẾ THÀNH PHỐ ĐỒNG NAI — TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG';
   ws1.getCell('A1').font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FF475569' } };
   ws1.getCell('A1').alignment = { vertical: 'middle', horizontal: 'left' };
 

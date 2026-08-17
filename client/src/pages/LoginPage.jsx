@@ -109,7 +109,7 @@ const LoginPage = () => {
             textTransform: 'uppercase',
             marginBottom: '0.3rem'
           }}>
-            <FaHospital style={{ color: '#2563EB' }} /> SỞ Y TẾ TỈNH BÌNH PHƯỚC
+            <FaHospital style={{ color: '#2563EB' }} /> SỞ Y TẾ THÀNH PHỐ ĐỒNG NAI
           </div>
 
           <h2 style={{ color: '#0F2C59', fontSize: '0.82rem', fontWeight: '800', letterSpacing: '0.4px', textTransform: 'uppercase', margin: '0 0 0.15rem' }}>
@@ -306,7 +306,7 @@ const LoginPage = () => {
       
       {/* Ultra-compact Footer (No Overflow) */}
       <footer style={{ 
-        marginTop: '0.75rem', 
+        marginTop: '1.2rem', 
         color: 'rgba(255, 255, 255, 0.75)', 
         fontSize: '0.72rem', 
         textAlign: 'center', 
@@ -314,7 +314,7 @@ const LoginPage = () => {
         zIndex: 10,
         maxWidth: '460px'
       }}>
-        &copy; 2026 <strong>Trung Tâm Y Tế Khu Vực Bình Long</strong> — Sở Y Tế Tỉnh Bình Phước.
+        &copy; 2026 <strong>Trung Tâm Y Tế Khu Vực Bình Long</strong> — Sở Y Tế Thành Phố Đồng Nai.
       </footer>
 
       {/* Floating AI Assistant */}

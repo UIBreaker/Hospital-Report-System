@@ -15,7 +15,7 @@
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel%20App-0070F3?style=for-the-badge&logo=vercel&logoColor=white)](https://hospital-report-system.vercel.app/)
 [![Author](https://img.shields.io/badge/Author-Nguyen%20Vu%20Nhat%20Nam%20(2004)-0F2C59?style=for-the-badge&logo=github)](https://github.com/UIBreaker/Hospital-Report-System)
 [![Zalo Contact](https://img.shields.io/badge/Zalo-0916.337.266-0284C7?style=for-the-badge&logo=zalo&logoColor=white)](https://zalo.me/0916337266)
-[![Version](https://img.shields.io/badge/Version-1.29.2-10B981?style=for-the-badge)](https://hospital-report-system.vercel.app/)
+[![Version](https://img.shields.io/badge/Version-1.29.3-10B981?style=for-the-badge)](https://hospital-report-system.vercel.app/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
 </div>
@@ -24,7 +24,7 @@
 
 ## 1. 🌟 Giới Thiệu & Bối Cảnh Dự Án
 
-**Hệ Thống Báo Cáo Giao Ban Trực Tuyến** là giải pháp phần mềm chuyển đổi số y tế hiện đại, thay thế hoàn toàn phương thức báo cáo giao ban truyền thống bằng giấy tờ và file bảng tính rời rạc tại **Trung Tâm Y Tế Khu Vực Bình Long (Sở Y Tế Tỉnh Bình Phước)**.
+**Hệ Thống Báo Cáo Giao Ban Trực Tuyến** là giải pháp phần mềm chuyển đổi số y tế hiện đại, thay thế hoàn toàn phương thức báo cáo giao ban truyền thống bằng giấy tờ và file bảng tính rời rạc tại **Trung Tâm Y Tế Khu Vực Bình Long (Sở Y Tế Thành Phố Đồng Nai)**.
 
 Phần mềm được thiết kế đồng bộ theo chuẩn **Clinical Design System (UI/UX Pro Max)**, cung cấp quy trình nhập liệu lâm sàng nhanh chóng cho các Bác sĩ & Điều dưỡng trực thuộc **12 khoa phòng chuyên môn**, đồng thời trang bị **Quản lý tài khoản các khoa với đổi mật khẩu tùy ý**, **Quản lý danh mục 185+ nhân sự**, **Trình chiếu hội trường Permanent Canvas chống chớp nháy**, **Quản lý đầy đủ 5 danh mục ca lâm sàng & hình ảnh y khoa HD**, **Xuất Excel đa Sheet chuyên môn (`ExcelJS`)**, **Xuất PowerPoint (.pptx) tự động**, và **Xuất Báo Cáo PDF y tế chuẩn in A4 (`html2pdf.js`)**.
 
@@ -50,7 +50,7 @@ graph TD
 ### 💎 2.2. Đại Tu Toàn Diện Màn Hình Đăng Nhập — Không Thanh Cuộn (`v1.28.4` - `v1.28.5`)
 * **Zero-Scrollbar Lock**: Khóa chiều cao cố định `100vh` và `overflow: hidden`, đảm bảo hiển thị trọn vẹn, không bị cuộn trang trên mọi độ phân giải (Laptop 1366x768, 1080p, 2K, Tablet).
 * **Atmospheric Clinical Mesh**: Nền không gian y tế chiều sâu cao cấp phối giữa xanh bóng đêm `#071328`, ánh sáng xanh lâm sàng và xanh ngọc dịu mắt.
-* **Thẻ Glass Card Nổi Khối**: Bo góc 20px, viền ánh sáng tinh tế, logo nổi khối 3D kèm huy hiệu `SỞ Y TẾ TỈNH BÌNH PHƯỚC`.
+* **Thẻ Glass Card Nổi Khối**: Bo góc 20px, viền ánh sáng tinh tế, logo nổi khối 3D kèm huy hiệu `SỞ Y TẾ THÀNH PHỐ ĐỒNG NAI`.
 * **Tích hợp Thông Tin Tác Giả & Kênh Hỗ Trợ**:
   * Tác giả: [**Nguyễn Vũ Nhật Nam (UIBreaker)**](https://github.com/UIBreaker).
   * Kênh hỗ trợ kỹ thuật: [**Zalo: 0916.337.266**](https://zalo.me/0916337266) (Bấm để mở chat Zalo ngay).
@@ -169,6 +169,8 @@ npm run dev
 
 ## 7. 📜 Lịch Sử Phiên Bản (Changelog)
 
+* **`v1.29.3` (17/08/2026)**:
+  * Cập nhật thông tin đơn vị chủ quản từ **Sở Y Tế Tỉnh Bình Phước** sang **Sở Y Tế Thành Phố Đồng Nai** đồng bộ trên toàn bộ hệ thống (Màn hình Đăng nhập, Chân trang Footer, Xuất Báo cáo Excel, Xuất PowerPoint, Bản In Y Tế PDF).
 * **`v1.29.2` (16/08/2026)**:
   * Ẩn hoàn toàn nút **"Phóng to toàn màn hình (HD Lightbox)"** ở các slide trình chiếu hình ảnh lâm sàng theo yêu cầu, tinh gọn bố cục giao diện trình chiếu báo cáo.
 * **`v1.29.1` (16/08/2026)**:
@@ -205,7 +207,7 @@ npm run dev
 
 ## 8. 👤 Tác Giả & Bản Quyền
 
-* **Đơn vị công tác**: Phòng Kế Hoạch - Nghiệp Vụ, Trung Tâm Y Tế Khu Vực Bình Long (Sở Y Tế Tỉnh Bình Phước).
+* **Đơn vị công tác**: Phòng Kế Hoạch - Nghiệp Vụ, Trung Tâm Y Tế Khu Vực Bình Long (Sở Y Tế Thành Phố Đồng Nai).
 * **Tác giả phát triển**: **Nguyễn Vũ Nhật Nam** (Sinh năm 2004).
 * **Kênh hỗ trợ / Zalo**: [**0916.337.266**](https://zalo.me/0916337266)
 * **Email liên hệ**: `nhatnam171217@gmail.com`

@@ -47,7 +47,7 @@ export const exportPresentationToPowerPoint = async (slides = [], date = '', rep
       slide.addShape(pptx.ShapeType.rect, { x: 7.5, y: 0, w: 2.5, h: 0.08, fill: { color: 'DC2626' }, line: { color: 'DC2626' } });
 
       // Tên cơ quan
-      slide.addText('SỞ Y TẾ TỈNH BÌNH PHƯỚC — TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG', {
+      slide.addText('SỞ Y TẾ THÀNH PHỐ ĐỒNG NAI — TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG', {
         x: 0.5, y: 0.6, w: 9.0, h: 0.4,
         fontSize: 13, bold: true, color: 'DC2626', align: 'center', fontFace: 'Arial'
       });
