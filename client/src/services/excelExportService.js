@@ -75,6 +75,12 @@ const FIELD_LABELS = {
   thoOxy: 'Thở Oxy',
   ctdk: 'Chạy thận định kỳ',
   bsTrucTNT: 'BS trực TNT',
+  pk21_tongSo: 'Tổng số khám (PK21)',
+  pk21_tongSoKham: 'Tổng số khám (PK21)',
+  pk21_ngoaiTru: 'Ngoại trú (PK21)',
+  pk21_nhapVien: 'Nhập viện (PK21)',
+  pk21_chuyenVien: 'Chuyển viện (PK21)',
+  nhapVien: 'Nhập viện',
 
   // San
   sanhThuong: 'Sanh thường',

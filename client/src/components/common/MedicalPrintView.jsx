@@ -93,6 +93,12 @@ const VIETNAMESE_DICTIONARY = {
   cpap: 'Thở CPAP',
   thoOxy: 'Thở Oxy',
   bsTrucTNT: 'Bác sĩ trực TNT',
+  pk21_tongSo: 'Tổng số khám (PK21)',
+  pk21_tongSoKham: 'Tổng số khám (PK21)',
+  pk21_ngoaiTru: 'Ngoại trú (PK21)',
+  pk21_nhapVien: 'Nhập viện (PK21)',
+  pk21_chuyenVien: 'Chuyển viện (PK21)',
+  nhapVien: 'Nhập viện',
 
   // --- Khoa Sản ---
   sanhThuong: 'Sanh thường',

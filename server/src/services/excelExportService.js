@@ -628,13 +628,10 @@ const generateHospitalExcelReport = async (date, deptUsers = [], detailedReports
       if (tnt.bsTrucTNT) addMetric('Khối Thận Nhân Tạo (TNT)', 'BS trực Thận nhân tạo', tnt.bsTrucTNT, 'Nhân sự');
 
       const pk = rd.pk21 || {};
-      addMetric('Phòng Khám 21 (Cấp cứu ngoại viện)', 'Tổng số khám PK21', safeNum(pk.tongSo), 'Lượt');
-      addMetric('Phòng Khám 21 (Cấp cứu ngoại viện)', 'Kê toa phòng khám', safeNum(pk.keToa), 'Toa');
-      addMetric('Phòng Khám 21 (Cấp cứu ngoại viện)', 'Truyền máu', safeNum(pk.truyenMau), 'Ca');
-      addMetric('Phòng Khám 21 (Cấp cứu ngoại viện)', 'Tiểu phẫu', safeNum(pk.tieuPhau), 'Ca');
-      addMetric('Phòng Khám 21 (Cấp cứu ngoại viện)', 'Bó bột', safeNum(pk.boBot), 'Ca');
-      addMetric('Phòng Khám 21 (Cấp cứu ngoại viện)', 'Cấp cứu ngoại viện (115)', safeNum(pk.ccNgoaiVien), 'Ca');
-      addMetric('Phòng Khám 21 (Cấp cứu ngoại viện)', 'Hiện còn PK21', safeNum(pk.hienCon), 'Người');
+      addMetric('Phòng Khám 21 (PK 21)', 'Tổng số khám', safeNum(pk.pk21_tongSo || pk.pk21_tongSoKham || pk.tongSo), 'Lượt');
+      addMetric('Phòng Khám 21 (PK 21)', 'Ngoại trú', safeNum(pk.pk21_ngoaiTru || pk.ngoaiTru), 'Lượt');
+      addMetric('Phòng Khám 21 (PK 21)', 'Nhập viện', safeNum(pk.pk21_nhapVien || pk.nhapVien), 'Người');
+      addMetric('Phòng Khám 21 (PK 21)', 'Chuyển viện', safeNum(pk.pk21_chuyenVien || pk.chuyenVien), 'Người');
     } else {
       // Duyệt qua TẤT CẢ các keys trong report_data của khoa
       const processedKeys = new Set();

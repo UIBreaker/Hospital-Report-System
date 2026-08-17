@@ -56,9 +56,9 @@ const FIELD_LABELS = {
   tnt_xuatVien: 'Xuất viện (TNT)', tnt_chuyenVien: 'Chuyển viện (TNT)',
   tnt_chuyenKhoa: 'Chuyển khoa (TNT)', tnt_hienCon: 'Hiện còn (TNT)',
   tnt_ctdk: 'Chạy thận định kỳ', tnt_noiTru: 'Nội trú (TNT)',
-  pk21_benhCu: 'Bệnh cũ (PK21)', pk21_benhMoi: 'Bệnh mới (PK21)',
-  pk21_xuatVien: 'Xuất viện (PK21)', pk21_hienCon: 'Hiện còn (PK21)',
-  pk21_tongSo: 'Tổng số khám (PK21)', pk21_ngoaiTru: 'Ngoại trú (PK21)',
+  pk21_tongSo: 'Tổng số khám (PK21)', pk21_tongSoKham: 'Tổng số khám (PK21)',
+  pk21_ngoaiTru: 'Ngoại trú (PK21)', pk21_nhapVien: 'Nhập viện (PK21)',
+  pk21_chuyenVien: 'Chuyển viện (PK21)',
 
   // YHCT - PHCN
   dieuTriPhcn: 'Điều trị PHCN', phcn_benhCu: 'Bệnh cũ (PHCN)',
@@ -289,8 +289,8 @@ const parseDepartmentSections = (reportData, deptCode = '') => {
     if (data.hscc && typeof data.hscc === 'object') {
       const hsccItems = [];
       const hsccKeyOrder = [
-        'tongSoKham', 'benhCu', 'benhMoi', 'xuatVien', 'chuyenVien', 'chuyenKhoa', 'hienCon',
-        'tuVong', 'keToa', 'ngoaiTru', 'tieuPhau', 'boBot', 'truyenMau', 'ccNgoaiVien'
+        'benhCu', 'benhMoi', 'tuVong', 'xuatVien', 'chuyenVien', 'chuyenKhoa', 'hienCon', 'keToa',
+        'ngoaiTru', 'truyenMau', 'tieuPhau', 'boBot', 'ccNgoaiVien', 'tongSoKham'
       ];
 
       const hsccKeys = Object.keys(data.hscc).filter(k => k !== '_id' && data.hscc[k] !== null && data.hscc[k] !== undefined && data.hscc[k] !== '');
@@ -347,10 +347,19 @@ const parseDepartmentSections = (reportData, deptCode = '') => {
     // 4. PHÒNG KHÁM 21 (nếu có)
     if (data.pk21 && typeof data.pk21 === 'object') {
       const pkItems = [];
-      Object.entries(data.pk21).forEach(([k, v]) => {
-        if (v !== null && v !== undefined && v !== '' && k !== '_id') {
-          pkItems.push({ key: k, label: getLabel(k), value: String(v) });
-        }
+      const pkKeyOrder = ['pk21_tongSo', 'pk21_tongSoKham', 'pk21_ngoaiTru', 'pk21_nhapVien', 'pk21_chuyenVien'];
+      const pkKeys = Object.keys(data.pk21).filter(k => k !== '_id' && data.pk21[k] !== null && data.pk21[k] !== undefined && data.pk21[k] !== '');
+      pkKeys.sort((a, b) => {
+        const idxA = pkKeyOrder.indexOf(a);
+        const idxB = pkKeyOrder.indexOf(b);
+        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        if (idxA !== -1) return -1;
+        if (idxB !== -1) return 1;
+        return 0;
+      });
+      pkKeys.forEach(k => {
+        if (k === 'pk21_tongSoKham' && data.pk21.pk21_tongSo !== undefined && data.pk21.pk21_tongSo !== '') return;
+        pkItems.push({ key: k, label: getLabel(k), value: String(data.pk21[k]) });
       });
       if (pkItems.length > 0) {
         sections.push({
