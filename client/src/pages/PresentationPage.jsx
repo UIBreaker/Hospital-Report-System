@@ -289,8 +289,8 @@ const parseDepartmentSections = (reportData, deptCode = '') => {
     if (data.hscc && typeof data.hscc === 'object') {
       const hsccItems = [];
       const hsccKeyOrder = [
-        'benhCu', 'benhMoi', 'tuVong', 'xuatVien', 'chuyenVien', 'chuyenKhoa', 'hienCon', 'keToa',
-        'ngoaiTru', 'truyenMau', 'tieuPhau', 'boBot', 'ccNgoaiVien', 'tongSoKham'
+        'benhCu', 'benhMoi', 'tuVong', 'xuatVien', 'chuyenVien', 'chuyenKhoa', 'hienCon', 'keToa', 'tongSoKham',
+        'ngoaiTru', 'truyenMau', 'tieuPhau', 'boBot', 'ccNgoaiVien'
       ];
 
       const hsccKeys = Object.keys(data.hscc).filter(k => k !== '_id' && data.hscc[k] !== null && data.hscc[k] !== undefined && data.hscc[k] !== '');

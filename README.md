@@ -15,7 +15,7 @@
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel%20App-0070F3?style=for-the-badge&logo=vercel&logoColor=white)](https://hospital-report-system.vercel.app/)
 [![Author](https://img.shields.io/badge/Author-Nguyen%20Vu%20Nhat%20Nam%20(2004)-0F2C59?style=for-the-badge&logo=github)](https://github.com/UIBreaker/Hospital-Report-System)
 [![Zalo Contact](https://img.shields.io/badge/Zalo-0916.337.266-0284C7?style=for-the-badge&logo=zalo&logoColor=white)](https://zalo.me/0916337266)
-[![Version](https://img.shields.io/badge/Version-1.29.6-10B981?style=for-the-badge)](https://hospital-report-system.vercel.app/)
+[![Version](https://img.shields.io/badge/Version-1.29.7-10B981?style=for-the-badge)](https://hospital-report-system.vercel.app/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
 </div>
@@ -169,6 +169,8 @@ npm run dev
 
 ## 7. 📜 Lịch Sử Phiên Bản (Changelog)
 
+* **`v1.29.7` (17/08/2026)**:
+  * Tinh chỉnh vị trí ô **Tổng số khám** trong khối HSCC nằm ngay phía sau ô **Kê toa** (trong nhóm chỉ số chính), tối ưu trải nghiệm nhập liệu chuyên môn cho khoa Hồi sức cấp cứu.
 * **`v1.29.6` (17/08/2026)**:
   * Tái cấu trúc biểu mẫu báo cáo **Hồi sức cấp cứu – Thận nhân tạo**:
     * **Khối HSCC**: Đưa ô **Tử vong** ra hàng chỉ số chính (phía sau Bệnh mới), chuyển ô **Kê toa** về phía sau Hiện còn, và đưa **Tổng số khám** xuống cuối cùng.

@@ -54,6 +54,17 @@ const HoiSucCapCuuForm = ({ doctorName, formData, setFormData, transferCases, se
           <div className="form-group"><label>Chuyển khoa</label><input type="number" min="0" step="1" value={hscc.chuyenKhoa || ''} onChange={(e) => handleHsccChange('chuyenKhoa', e.target.value)} /></div>
           <div className="form-group"><label>Hiện còn</label><input type="number" min="0" step="1" value={hscc.hienCon || ''} onChange={(e) => handleHsccChange('hienCon', e.target.value)} /></div>
           <div className="form-group"><label>Kê toa</label><input type="number" min="0" step="1" value={hscc.keToa || ''} onChange={(e) => handleHsccChange('keToa', e.target.value)} /></div>
+          <div className="form-group" style={{ backgroundColor: '#EFF6FF', padding: '6px 10px', borderRadius: '6px', border: '1px solid #BFDBFE' }}>
+            <label style={{ color: '#1D4ED8', fontWeight: '800' }}>Tổng số khám</label>
+            <input 
+              type="number" 
+              min="0" 
+              step="1" 
+              value={hscc.tongSoKham || ''} 
+              onChange={(e) => handleHsccChange('tongSoKham', e.target.value)} 
+              style={{ borderColor: '#3B82F6', fontWeight: '700' }}
+            />
+          </div>
         </div>
         
         <div className="sub-section" style={{ marginTop: '15px', padding: '10px', backgroundColor: '#f9f9f9', borderRadius: '5px' }}>
@@ -64,17 +75,6 @@ const HoiSucCapCuuForm = ({ doctorName, formData, setFormData, transferCases, se
             <div className="form-group"><label>Tiểu phẫu</label><input type="number" min="0" step="1" value={hscc.tieuPhau || ''} onChange={(e) => handleHsccChange('tieuPhau', e.target.value)} /></div>
             <div className="form-group"><label>Bó bột</label><input type="number" min="0" step="1" value={hscc.boBot || ''} onChange={(e) => handleHsccChange('boBot', e.target.value)} /></div>
             <div className="form-group"><label>CC ngoại viện</label><input type="number" min="0" step="1" value={hscc.ccNgoaiVien || ''} onChange={(e) => handleHsccChange('ccNgoaiVien', e.target.value)} /></div>
-            <div className="form-group" style={{ backgroundColor: '#EFF6FF', padding: '6px 10px', borderRadius: '6px', border: '1px solid #BFDBFE' }}>
-              <label style={{ color: '#1D4ED8', fontWeight: '800' }}>Tổng số khám</label>
-              <input 
-                type="number" 
-                min="0" 
-                step="1" 
-                value={hscc.tongSoKham || ''} 
-                onChange={(e) => handleHsccChange('tongSoKham', e.target.value)} 
-                style={{ borderColor: '#3B82F6', fontWeight: '700' }}
-              />
-            </div>
           </div>
         </div>
       </div>
