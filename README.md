@@ -15,7 +15,7 @@
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel%20App-0070F3?style=for-the-badge&logo=vercel&logoColor=white)](https://hospital-report-system.vercel.app/)
 [![Author](https://img.shields.io/badge/Author-Nguyen%20Vu%20Nhat%20Nam%20(2004)-0F2C59?style=for-the-badge&logo=github)](https://github.com/UIBreaker/Hospital-Report-System)
 [![Zalo Contact](https://img.shields.io/badge/Zalo-0916.337.266-0284C7?style=for-the-badge&logo=zalo&logoColor=white)](https://zalo.me/0916337266)
-[![Version](https://img.shields.io/badge/Version-1.29.3-10B981?style=for-the-badge)](https://hospital-report-system.vercel.app/)
+[![Version](https://img.shields.io/badge/Version-1.29.4-10B981?style=for-the-badge)](https://hospital-report-system.vercel.app/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
 </div>
@@ -169,6 +169,8 @@ npm run dev
 
 ## 7. 📜 Lịch Sử Phiên Bản (Changelog)
 
+* **`v1.29.4` (17/08/2026)**:
+  * Tinh chỉnh nhãn đăng nhập "Mật khẩu", hoàn thiện trải nghiệm giao diện người dùng và đồng bộ cập nhật phiên bản phát hành mới nhất.
 * **`v1.29.3` (17/08/2026)**:
   * Cập nhật thông tin đơn vị chủ quản từ **Sở Y Tế Tỉnh Bình Phước** sang **Sở Y Tế Thành Phố Đồng Nai** đồng bộ trên toàn bộ hệ thống (Màn hình Đăng nhập, Chân trang Footer, Xuất Báo cáo Excel, Xuất PowerPoint, Bản In Y Tế PDF).
 * **`v1.29.2` (16/08/2026)**:

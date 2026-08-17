@@ -165,13 +165,13 @@ const LoginPage = () => {
           {/* Password Field */}
           <div className="form-group" style={{ margin: 0 }}>
             <label htmlFor="login-password" style={{ color: '#1E293B', fontWeight: '700', fontSize: '0.78rem', marginBottom: '0.3rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-              <FaLock style={{ color: '#1E40AF', fontSize: '0.75rem' }} /> Mật khẩu ca trực
+              <FaLock style={{ color: '#1E40AF', fontSize: '0.75rem' }} /> Mật khẩu 
             </label>
             <div style={{ position: 'relative' }}>
               <input 
                 id="login-password"
                 type={showPassword ? "text" : "password"} 
-                placeholder="Nhập mật khẩu ca trực" 
+                placeholder="Nhập mật khẩu" 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 style={{ 
