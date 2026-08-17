@@ -276,15 +276,6 @@ const parseDepartmentSections = (reportData, deptCode = '') => {
 
   // ================= 3. HỒI SỨC CẤP CỨU – THẬN NHÂN TẠO (HSCC_TNT) =================
   if (normalizedDept === 'hscc_tnt' || (data.hscc && data.tnt)) {
-    // 1. Phân công bác sĩ trực TNT (nếu có)
-    if (data.bsTrucTNT) {
-      sections.push({
-        type: 'personnel',
-        title: 'BÁC SĨ TRỰC THẬN NHÂN TẠO (TNT)',
-        value: String(data.bsTrucTNT)
-      });
-    }
-
     // 2. KHỐI HỒI SỨC CẤP CỨU (HSCC) — ƯU TIÊN BÁO CÁO TRƯỚC
     if (data.hscc && typeof data.hscc === 'object') {
       const hsccItems = [];
@@ -1332,6 +1323,16 @@ const PresentationPage = () => {
                           👨‍⚕️ Bác sĩ trực: <strong>{slide.report.doctor_name}</strong>
                         </span>
 
+                        {(slide.report.report_data?.bsTrucTNT || slide.report.report_data?.tnt?.bsTrucTNT || slide.report.bs_truc_tnt) && (
+                          <span style={{
+                            backgroundColor: '#EEF2FF', color: '#4338CA',
+                            padding: '0.3rem 0.85rem', borderRadius: '999px', fontWeight: '700',
+                            fontSize: isFullscreen ? '1.05rem' : '0.88rem', border: '1px solid #C7D2FE'
+                          }}>
+                            🩺 BS trực TNT: <strong>{slide.report.report_data?.bsTrucTNT || slide.report.report_data?.tnt?.bsTrucTNT || slide.report.bs_truc_tnt}</strong>
+                          </span>
+                        )}
+
                         {slide.report.nurse_name && (
                           <span style={{
                             backgroundColor: '#F0FDF4', color: '#065F46',
@@ -1382,6 +1383,19 @@ const PresentationPage = () => {
 
                     // Tính toán kích thước thẻ card tự động theo số lượng chỉ số
                     const getCardDimensions = () => {
+                      if (metricSectionsCount >= 3 || totalMetricsCount >= 14) {
+                        return {
+                          padding: isFullscreen ? '0.45rem 0.85rem' : '0.32rem 0.65rem',
+                          minHeight: isFullscreen ? '48px' : '38px',
+                          labelSize: isFullscreen ? '0.94rem' : '0.78rem',
+                          valueSize: isFullscreen ? '1.75rem' : '1.32rem',
+                          badgeSize: '0.68rem',
+                          gap: isFullscreen ? '0.5rem' : '0.35rem',
+                          sectionHeaderMb: isFullscreen ? '0.32rem' : '0.2rem',
+                          sectionHeaderPad: isFullscreen ? '0.25rem 0.75rem' : '0.18rem 0.55rem',
+                          sectionHeaderFont: isFullscreen ? '1.05rem' : '0.85rem'
+                        };
+                      }
                       if (totalMetricsCount <= 6) {
                         return {
                           padding: isFullscreen ? '1.1rem 1.5rem' : '0.85rem 1.25rem',
@@ -1408,30 +1422,17 @@ const PresentationPage = () => {
                           sectionHeaderFont: isFullscreen ? '1.15rem' : '0.95rem'
                         };
                       }
-                      if (totalMetricsCount <= 14) {
-                        return {
-                          padding: isFullscreen ? '0.68rem 1.1rem' : '0.52rem 0.85rem',
-                          minHeight: isFullscreen ? '68px' : '56px',
-                          labelSize: isFullscreen ? '1.02rem' : '0.85rem',
-                          valueSize: isFullscreen ? '2rem' : '1.55rem',
-                          badgeSize: '0.72rem',
-                          gap: isFullscreen ? '0.75rem' : '0.55rem',
-                          sectionHeaderMb: isFullscreen ? '0.55rem' : '0.4rem',
-                          sectionHeaderPad: isFullscreen ? '0.4rem 0.9rem' : '0.3rem 0.75rem',
-                          sectionHeaderFont: isFullscreen ? '1.1rem' : '0.9rem'
-                        };
-                      }
-                      // Khoa nhiều chỉ số (HSCC - TNT: 16-18 items)
+                      // 11 - 13 items
                       return {
-                        padding: isFullscreen ? '0.52rem 0.9rem' : '0.38rem 0.68rem',
-                        minHeight: isFullscreen ? '56px' : '46px',
-                        labelSize: isFullscreen ? '0.94rem' : '0.78rem',
-                        valueSize: isFullscreen ? '1.8rem' : '1.38rem',
-                        badgeSize: '0.68rem',
-                        gap: isFullscreen ? '0.6rem' : '0.45rem',
-                        sectionHeaderMb: isFullscreen ? '0.45rem' : '0.32rem',
-                        sectionHeaderPad: isFullscreen ? '0.35rem 0.85rem' : '0.25rem 0.65rem',
-                        sectionHeaderFont: isFullscreen ? '1.05rem' : '0.86rem'
+                        padding: isFullscreen ? '0.65rem 1.05rem' : '0.48rem 0.8rem',
+                        minHeight: isFullscreen ? '60px' : '48px',
+                        labelSize: isFullscreen ? '1rem' : '0.82rem',
+                        valueSize: isFullscreen ? '1.95rem' : '1.45rem',
+                        badgeSize: '0.7rem',
+                        gap: isFullscreen ? '0.65rem' : '0.45rem',
+                        sectionHeaderMb: isFullscreen ? '0.45rem' : '0.3rem',
+                        sectionHeaderPad: isFullscreen ? '0.32rem 0.8rem' : '0.22rem 0.65rem',
+                        sectionHeaderFont: isFullscreen ? '1.1rem' : '0.88rem'
                       };
                     };
 
@@ -1465,7 +1466,8 @@ const PresentationPage = () => {
                       gap: dims.gap,
                       flex: 1,
                       justifyContent: totalMetricsCount <= 4 ? 'center' : 'flex-start',
-                      paddingTop: '0.25rem'
+                      paddingTop: '0.15rem',
+                      overflowY: 'auto'
                     }}>
                       {sections.map((section, sIdx) => {
                         // 1. PERSONNEL BANNER VIEW
