@@ -159,28 +159,6 @@ ${symptoms ? `- Lâm sàng: ${symptoms}\n` : ''}${tests ? `- Cận lâm sàng: $
         </h3>
 
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          {criticalCases.length > 0 && (
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={copyAllCases}
-              title="Sao chép toàn bộ danh sách ca nặng để gửi Zalo hoặc nhóm giao ban"
-              style={{
-                fontSize: '0.82rem',
-                padding: '0.45rem 0.85rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                backgroundColor: '#EDE9FE',
-                color: '#6D28D9',
-                borderColor: '#DDD6FE',
-                fontWeight: '700'
-              }}
-            >
-              {copiedAll ? <><FaCheck style={{ color: '#16A34A' }} /> Đã sao chép!</> : <><FaCopy /> Sao chép mẫu Zalo</>}
-            </button>
-          )}
-
           <button
             type="button"
             className="btn btn-secondary"
@@ -280,28 +258,6 @@ ${symptoms ? `- Lâm sàng: ${symptoms}\n` : ''}${tests ? `- Cận lâm sàng: $
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    {/* Copy Single Case Button */}
-                    <button
-                      type="button"
-                      onClick={(e) => copySingleCase(cc, index, e)}
-                      title="Sao chép ca bệnh này"
-                      style={{
-                        background: '#FFFFFF',
-                        border: '1px solid #DDD6FE',
-                        color: isThisCopied ? '#16A34A' : '#6D28D9',
-                        borderRadius: '6px',
-                        padding: '0.3rem 0.6rem',
-                        fontSize: '0.75rem',
-                        fontWeight: '700',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.3rem'
-                      }}
-                    >
-                      {isThisCopied ? <><FaCheck /> Đã chép</> : <><FaCopy /> Chép ca</>}
-                    </button>
-
                     {/* Delete button */}
                     <button
                       type="button"
