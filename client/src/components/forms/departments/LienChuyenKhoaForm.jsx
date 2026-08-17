@@ -137,14 +137,14 @@ const LienChuyenKhoaForm = ({ formData, setFormData, transferCases, setTransferC
         </div>
       </div>
 
-      {/* 3. RĂNG HÀM MẶT + NỘI */}
+      {/* 3. RĂNG HÀM MẶT */}
       <div className="form-section">
         <h3 className="section-title" style={{ color: '#0F2C59', borderLeft: '4px solid #7C3AED', paddingLeft: '0.6rem' }}>
-          🦷 RHM + NỘI (RĂNG HÀM MẶT + NỘI)
+          🦷 RĂNG HÀM MẶT (RHM)
         </h3>
         <div className="form-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
           <div className="form-group">
-            <label>Tổng số khám RHM + NỘI</label>
+            <label>Tổng số khám Răng Hàm Mặt</label>
             <input 
               type="number" 
               min="0" 
@@ -155,7 +155,7 @@ const LienChuyenKhoaForm = ({ formData, setFormData, transferCases, setTransferC
             />
           </div>
           <div className="form-group">
-            <label>Thủ thuật RHM + NỘI</label>
+            <label>Thủ thuật Răng Hàm Mặt</label>
             <input 
               type="number" 
               min="0" 
@@ -217,7 +217,7 @@ const LienChuyenKhoaForm = ({ formData, setFormData, transferCases, setTransferC
             📊 TỔNG SỐ 4 CHUYÊN KHOA (4CK)
           </h3>
           <span style={{ fontSize: '0.8rem', color: '#15803D', fontWeight: '600' }}>
-            ✨ Tự động cộng tổng (TMH + Mắt + RHM/Nội + Da liễu)
+            ✨ Tự động cộng tổng (TMH + Mắt + Răng Hàm Mặt + Da liễu)
           </span>
         </div>
 

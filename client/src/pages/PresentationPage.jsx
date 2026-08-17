@@ -28,8 +28,8 @@ const FIELD_LABELS = {
   tmh_thuThuat: 'Tai Mũi Họng (Thủ thuật)',
   mat_tongSo: 'Mắt (Tổng số khám)',
   mat_thuThuat: 'Mắt (Thủ thuật)',
-  rhm_noi_tongSo: 'RHM + Nội (Tổng số khám)',
-  rhm_noi_thuThuat: 'RHM + Nội (Thủ thuật)',
+  rhm_noi_tongSo: 'Răng Hàm Mặt (Tổng số khám)',
+  rhm_noi_thuThuat: 'Răng Hàm Mặt (Thủ thuật)',
   daLieu_tongSo: 'Da liễu (Tổng số khám)',
   nhapVien_tongSo: 'Số ca nhập viện',
   chuyenVien_tongSo: 'Số ca chuyển viện',
@@ -162,7 +162,7 @@ const parseDepartmentSections = (reportData, deptCode = '') => {
     // Top summary: TỔNG SỐ 4 CHUYÊN KHOA
     const sumMetrics = [];
     if (data.tong4ck_tongSo !== undefined && data.tong4ck_tongSo !== '') {
-      sumMetrics.push({ key: 'tong4ck_tongSo', label: 'TỔNG SỐ 4 CHUYÊN KHOA (TMH + Mắt + RHM/Nội + Da liễu)', value: String(data.tong4ck_tongSo) });
+      sumMetrics.push({ key: 'tong4ck_tongSo', label: 'TỔNG SỐ 4 CHUYÊN KHOA (TMH + Mắt + Răng Hàm Mặt + Da liễu)', value: String(data.tong4ck_tongSo) });
     }
     if (data.tong4ck_thuThuat !== undefined && data.tong4ck_thuThuat !== '') {
       sumMetrics.push({ key: 'tong4ck_thuThuat', label: 'TỔNG THỦ THUẬT 4 CHUYÊN KHOA', value: String(data.tong4ck_thuThuat) });
@@ -180,8 +180,8 @@ const parseDepartmentSections = (reportData, deptCode = '') => {
     if (data.tmh_thuThuat !== undefined && data.tmh_thuThuat !== '') detailMetrics.push({ key: 'tmh_thuThuat', label: '👂 Tai Mũi Họng (Thủ thuật)', value: String(data.tmh_thuThuat) });
     if (data.mat_tongSo !== undefined && data.mat_tongSo !== '') detailMetrics.push({ key: 'mat_tongSo', label: '👁️ Mắt (Tổng số)', value: String(data.mat_tongSo) });
     if (data.mat_thuThuat !== undefined && data.mat_thuThuat !== '') detailMetrics.push({ key: 'mat_thuThuat', label: '👁️ Mắt (Thủ thuật)', value: String(data.mat_thuThuat) });
-    if (data.rhm_noi_tongSo !== undefined && data.rhm_noi_tongSo !== '') detailMetrics.push({ key: 'rhm_noi_tongSo', label: '🦷 RHM + Nội (Tổng số)', value: String(data.rhm_noi_tongSo) });
-    if (data.rhm_noi_thuThuat !== undefined && data.rhm_noi_thuThuat !== '') detailMetrics.push({ key: 'rhm_noi_thuThuat', label: '🦷 RHM + Nội (Thủ thuật)', value: String(data.rhm_noi_thuThuat) });
+    if (data.rhm_noi_tongSo !== undefined && data.rhm_noi_tongSo !== '') detailMetrics.push({ key: 'rhm_noi_tongSo', label: '🦷 Răng Hàm Mặt (Tổng số)', value: String(data.rhm_noi_tongSo) });
+    if (data.rhm_noi_thuThuat !== undefined && data.rhm_noi_thuThuat !== '') detailMetrics.push({ key: 'rhm_noi_thuThuat', label: '🦷 Răng Hàm Mặt (Thủ thuật)', value: String(data.rhm_noi_thuThuat) });
     if (data.daLieu_tongSo !== undefined && data.daLieu_tongSo !== '') detailMetrics.push({ key: 'daLieu_tongSo', label: '🩺 Da Liễu (Tổng số)', value: String(data.daLieu_tongSo) });
     if (data.nhapVien_tongSo !== undefined && data.nhapVien_tongSo !== '') detailMetrics.push({ key: 'nhapVien_tongSo', label: '🏥 Nhập viện', value: String(data.nhapVien_tongSo) });
     if (data.chuyenVien_tongSo !== undefined && data.chuyenVien_tongSo !== '') detailMetrics.push({ key: 'chuyenVien_tongSo', label: '🚑 Chuyển viện', value: String(data.chuyenVien_tongSo) });
