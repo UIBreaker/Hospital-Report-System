@@ -125,6 +125,7 @@ const ReportPage = () => {
   const [criticalCases, setCriticalCases] = useState([]);
   const [loadingExistingReport, setLoadingExistingReport] = useState(false);
   const [existingReportLoaded, setExistingReportLoaded] = useState(false);
+  const [showPdfModal, setShowPdfModal] = useState(false);
 
   // Fetch danh sách nhân sự của khoa khi đăng nhập
   useEffect(() => {
