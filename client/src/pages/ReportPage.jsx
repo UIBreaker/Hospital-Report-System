@@ -12,7 +12,9 @@ import {
   FaPlus, 
   FaTrash, 
   FaClock, 
-  FaUsers 
+  FaUsers,
+  FaFilePdf,
+  FaDownload
 } from 'react-icons/fa';
 import reportService from '../services/reportService';
 import staffService from '../services/staffService';
@@ -34,7 +36,18 @@ import SurgeryCaseForm from '../components/forms/SurgeryCaseForm';
 import DeathCaseForm from '../components/forms/DeathCaseForm';
 import CriticalCaseForm from '../components/forms/CriticalCaseForm';
 import StaffSelectCombobox from '../components/common/StaffSelectCombobox';
+import DepartmentPrintView from '../components/common/DepartmentPrintView';
 import Footer from '../components/common/Footer';
+
+const formatDateDDMMYYYY = (dateStr) => {
+  if (!dateStr) return '';
+  const parts = String(dateStr).split('-');
+  if (parts.length === 3) {
+    const [y, m, d] = parts;
+    return `${d.padStart(2, '0')}-${m.padStart(2, '0')}-${y}`;
+  }
+  return dateStr;
+};
 
 const DEPARTMENT_FORMS = {
   lck: LienChuyenKhoaForm,
@@ -486,13 +499,21 @@ const ReportPage = () => {
   if (submitted) {
     return (
       <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
-        <div className="card animate-fade-in" style={{ maxWidth: '600px', margin: '4rem auto', textAlign: 'center', padding: '3rem' }}>
-          <FaCheckCircle style={{ fontSize: '4rem', color: 'var(--brand-green)', marginBottom: '1.5rem' }} />
-          <h2 style={{ marginBottom: '1rem', color: 'var(--brand-green)' }}>Gửi Báo Cáo Thành Công!</h2>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>
-            Báo cáo giao ban ngày <strong>{headerData.reportDate}</strong> của khoa <strong>{user?.departmentName}</strong> đã được ghi nhận vào hệ thống.
+        <div className="card animate-fade-in" style={{ maxWidth: '620px', margin: '3.5rem auto', textAlign: 'center', padding: '3rem 2.5rem', borderRadius: '16px', boxShadow: '0 12px 36px rgba(0, 0, 0, 0.08)', backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
+          <FaCheckCircle style={{ fontSize: '4.2rem', color: 'var(--brand-green)', marginBottom: '1.25rem' }} />
+          <h2 style={{ marginBottom: '0.85rem', color: 'var(--brand-green)', fontSize: '1.75rem', fontWeight: '800' }}>Gửi Báo Cáo Thành Công!</h2>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '2.25rem', fontSize: '1.05rem', lineHeight: '1.6' }}>
+            Báo cáo giao ban ngày <strong>{formatDateDDMMYYYY(headerData.reportDate)}</strong> của khoa <strong>{user?.departmentName}</strong> đã được ghi nhận vào hệ thống.
           </p>
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', gap: '0.85rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button 
+              type="button"
+              className="btn"
+              onClick={() => setShowPdfModal(true)}
+              style={{ backgroundColor: '#0284C7', color: '#FFFFFF', border: 'none', padding: '0.75rem 1.4rem', fontSize: '0.95rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.5rem', borderRadius: '8px', cursor: 'pointer' }}
+            >
+              <FaFilePdf style={{ fontSize: '1.15rem' }} /> 📄 Xuất File PDF
+            </button>
             <button 
               className="btn btn-primary" 
               onClick={() => { 
@@ -502,6 +523,7 @@ const ReportPage = () => {
                 setTransferCases([]); 
                 setSurgeryCases([]);
                 setDeathCases([]);
+                setCriticalCases([]);
                 setHeaderData({
                   ...headerData, 
                   selectedDoctors: [''],
@@ -520,6 +542,26 @@ const ReportPage = () => {
             </button>
           </div>
         </div>
+
+        {/* Modal Xem & Xuất File PDF Chuyên Môn */}
+        {showPdfModal && (
+          <DepartmentPrintView
+            reportDate={headerData.reportDate}
+            departmentName={user?.departmentName || ''}
+            departmentCode={user?.departmentCode || ''}
+            doctorName={finalDoctorNameStr || cleanDoctorName}
+            nurseName={finalNurseNameStr}
+            overtimeStaff={headerData.overtimeStaff || []}
+            room={headerData.room || ''}
+            shiftTime={headerData.shiftTime || ''}
+            formData={formData}
+            transferCases={transferCases}
+            surgeryCases={surgeryCases}
+            deathCases={deathCases}
+            criticalCases={criticalCases}
+            onClose={() => setShowPdfModal(false)}
+          />
+        )}
       </div>
     );
   }
@@ -539,9 +581,22 @@ const ReportPage = () => {
             </h2>
           </div>
         </div>
-        <button onClick={logout} className="btn btn-secondary" style={{ fontSize: '0.85rem' }}>
-          <FaSignOutAlt /> Đăng xuất
-        </button>
+        <div style={{ display: 'flex', gap: '0.65rem', alignItems: 'center' }}>
+          {existingReportLoaded && (
+            <button
+              type="button"
+              onClick={() => setShowPdfModal(true)}
+              className="btn btn-outline-primary"
+              style={{ fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem', borderColor: '#0284C7', color: '#0284C7', fontWeight: '700', padding: '0.45rem 0.9rem' }}
+              title="Xuất file PDF báo cáo đã nộp của ngày này"
+            >
+              <FaFilePdf /> 📄 Xuất PDF
+            </button>
+          )}
+          <button onClick={logout} className="btn btn-secondary" style={{ fontSize: '0.85rem' }}>
+            <FaSignOutAlt /> Đăng xuất
+          </button>
+        </div>
       </header>
 
       <div className="report-workflow" aria-label="Tiến độ nhập báo cáo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
@@ -921,6 +976,26 @@ const ReportPage = () => {
             </div>
           </Modal>
         </div>
+      )}
+
+      {/* Modal Xem & Xuất File PDF Chuyên Môn */}
+      {showPdfModal && (
+        <DepartmentPrintView
+          reportDate={headerData.reportDate}
+          departmentName={user?.departmentName || ''}
+          departmentCode={user?.departmentCode || ''}
+          doctorName={finalDoctorNameStr || cleanDoctorName}
+          nurseName={finalNurseNameStr}
+          overtimeStaff={headerData.overtimeStaff || []}
+          room={headerData.room || ''}
+          shiftTime={headerData.shiftTime || ''}
+          formData={formData}
+          transferCases={transferCases}
+          surgeryCases={surgeryCases}
+          deathCases={deathCases}
+          criticalCases={criticalCases}
+          onClose={() => setShowPdfModal(false)}
+        />
       )}
 
       {/* Hospital System Footer Section */}
