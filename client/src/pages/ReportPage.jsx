@@ -621,15 +621,42 @@ const ReportPage = () => {
           <div style={{ marginBottom: '1.25rem' }}>
             {loadingExistingReport ? (
               <Notice tone="info" icon={<FaSpinner className="spinner" />}>
-                Đang kiểm tra dữ liệu ngày {headerData.reportDate}...
+                Đang kiểm tra dữ liệu ngày {formatDateDDMMYYYY(headerData.reportDate)}...
               </Notice>
             ) : existingReportLoaded ? (
-              <Notice tone="success" icon={<FaCheckCircle />}>
-                <strong>Đã nạp dữ liệu báo cáo ngày {headerData.reportDate}:</strong> Toàn bộ thông tin ca trực và số liệu chuyên môn đã nộp trước đó đã được tải sẵn. Bạn có thể tiếp tục chỉnh sửa hoặc nộp bổ sung.
-              </Notice>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                <Notice tone="success" icon={<FaCheckCircle />}>
+                  <strong>Đã nạp dữ liệu báo cáo ngày {formatDateDDMMYYYY(headerData.reportDate)}:</strong> Toàn bộ thông tin ca trực và số liệu chuyên môn đã nộp trước đó đã được tải sẵn. Bạn có thể tiếp tục chỉnh sửa hoặc nộp bổ sung.
+                </Notice>
+                <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowPdfModal(true)}
+                    className="btn"
+                    style={{
+                      backgroundColor: '#0284C7',
+                      color: '#FFFFFF',
+                      border: 'none',
+                      padding: '0.55rem 1.2rem',
+                      fontSize: '0.88rem',
+                      fontWeight: '700',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      boxShadow: '0 2px 8px rgba(2, 132, 199, 0.3)',
+                      transition: 'all 0.2s'
+                    }}
+                    title="Xem và tải file PDF báo cáo đã nộp của ngày này"
+                  >
+                    <FaFilePdf style={{ fontSize: '1.05rem' }} /> 📄 Xuất File PDF
+                  </button>
+                </div>
+              </div>
             ) : (
               <Notice tone="info">
-                <strong>Ngày {headerData.reportDate} chưa có báo cáo:</strong> Vui lòng chọn Bác sĩ, Điều dưỡng trực và bấm <em>"Tiếp tục nhập báo cáo"</em> để nộp số liệu giao ban.
+                <strong>Ngày {formatDateDDMMYYYY(headerData.reportDate)} chưa có báo cáo:</strong> Vui lòng chọn Bác sĩ, Điều dưỡng trực và bấm <em>"Tiếp tục nhập báo cáo"</em> để nộp số liệu giao ban.
               </Notice>
             )}
           </div>
@@ -867,7 +894,7 @@ const ReportPage = () => {
           {/* Header summary bar */}
           <div className="card summary-bar" style={{ marginBottom: '1.5rem', padding: '1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(135deg, #EFF6FF, #F8FAFC)', borderLeft: '4px solid var(--brand-blue)' }}>
             <div className="summary-bar-info" style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap', fontSize: '0.9rem' }}>
-              <div>📅 <strong>Ngày báo cáo:</strong> {headerData.reportDate}</div>
+              <div>📅 <strong>Ngày báo cáo:</strong> {formatDateDDMMYYYY(headerData.reportDate)}</div>
               <div>👨‍⚕️ <strong>Bác sĩ trực ({cleanDoctorNames.length}):</strong> {finalDoctorNameStr || cleanDoctorName}</div>
               {finalNurseNameStr && <div>👩‍⚕️ <strong>Điều dưỡng ({cleanNurseNames.length}):</strong> {finalNurseNameStr}</div>}
               {(headerData.overtimeStaff || []).length > 0 && (
@@ -944,7 +971,7 @@ const ReportPage = () => {
             isOpen={showConfirm}
             onClose={() => setShowConfirm(false)}
             title="Xác Nhận Nộp Báo Cáo Giao Ban"
-            description={`Khoa: ${user?.departmentName} • Ngày báo cáo: ${headerData.reportDate}`}
+            description={`Khoa: ${user?.departmentName} • Ngày báo cáo: ${formatDateDDMMYYYY(headerData.reportDate)}`}
             footer={(
               <>
                 <Button variant="secondary" onClick={() => setShowConfirm(false)} disabled={submitting}>
