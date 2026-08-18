@@ -204,6 +204,15 @@ const DepartmentPrintView = ({
 }) => {
   const [downloadingPdf, setDownloadingPdf] = useState(false);
 
+  // Chuẩn hóa danh sách mảng dữ liệu an toàn 100%
+  const safeOvertime = Array.isArray(overtimeStaff)
+    ? overtimeStaff
+    : (typeof overtimeStaff === 'string' ? (() => { try { const p = JSON.parse(overtimeStaff); return Array.isArray(p) ? p : []; } catch (e) { return []; } })() : []);
+  const safeSurgeryCases = Array.isArray(surgeryCases) ? surgeryCases : [];
+  const safeTransferCases = Array.isArray(transferCases) ? transferCases : [];
+  const safeCriticalCases = Array.isArray(criticalCases) ? criticalCases : [];
+  const safeDeathCases = Array.isArray(deathCases) ? deathCases : [];
+
   // Xử lý ngày tháng định dạng chuẩn
   const dateStr = reportDate || new Date().toISOString().slice(0, 10);
   const formattedDateVN = formatDateDDMMYYYY(dateStr);
@@ -689,9 +698,9 @@ const DepartmentPrintView = ({
             <strong>🏥 Phòng trực:</strong> {room || '—'} {shiftTime ? `| ⏱️ Ca: ${shiftTime}` : ''}
           </div>
           <div>
-            <strong>⏰ Tăng cường:</strong> {overtimeStaff && overtimeStaff.length > 0 ? (
+            <strong>⏰ Tăng cường:</strong> {safeOvertime.length > 0 ? (
               <span style={{ color: '#92400E', fontWeight: '600' }}>
-                {overtimeStaff.map(o => `${o.staffName} (${o.time})`).join(', ')}
+                {safeOvertime.map(o => `${o?.staffName || ''} (${o?.time || ''})`).filter(s => s !== ' ()').join(', ')}
               </span>
             ) : 'Không'}
           </div>
@@ -718,7 +727,7 @@ const DepartmentPrintView = ({
         {/* =========================================================================
             PHẦN II: DANH SÁCH BỆNH NHÂN PHẪU THUẬT (MỔ)
         ========================================================================= */}
-        {surgeryCases && surgeryCases.length > 0 && (
+        {safeSurgeryCases.length > 0 && (
           <div className="report-section-box" style={{ marginBottom: '12px' }}>
             <div className="table-title" style={{
               fontSize: '9.5pt',
@@ -729,7 +738,7 @@ const DepartmentPrintView = ({
               paddingBottom: '2px',
               marginBottom: '6px'
             }}>
-              II. DANH SÁCH BỆNH NHÂN PHẪU THUẬT (MỔ) ({surgeryCases.length} ca)
+              II. DANH SÁCH BỆNH NHÂN PHẪU THUẬT (MỔ) ({safeSurgeryCases.length} ca)
             </div>
             <table className="pdf-table" style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #000000', fontSize: '8pt' }}>
               <thead>
@@ -744,7 +753,7 @@ const DepartmentPrintView = ({
                 </tr>
               </thead>
               <tbody>
-                {surgeryCases.map((sc, i) => (
+                {safeSurgeryCases.map((sc, i) => (
                   <tr key={i} className="patient-card" style={{ backgroundColor: i % 2 === 0 ? '#FFFFFF' : '#F8FAFC' }}>
                     <td style={{ textAlign: 'center' }}>{i + 1}</td>
                     <td>
@@ -784,7 +793,7 @@ const DepartmentPrintView = ({
         {/* =========================================================================
             PHẦN III: DANH SÁCH BỆNH NHÂN CHUYỂN VIỆN
         ========================================================================= */}
-        {transferCases && transferCases.length > 0 && (
+        {safeTransferCases.length > 0 && (
           <div className="report-section-box" style={{ marginBottom: '12px' }}>
             <div className="table-title" style={{
               fontSize: '9.5pt',
@@ -795,7 +804,7 @@ const DepartmentPrintView = ({
               paddingBottom: '2px',
               marginBottom: '6px'
             }}>
-              III. DANH SÁCH BỆNH NHÂN CHUYỂN VIỆN ({transferCases.length} ca)
+              III. DANH SÁCH BỆNH NHÂN CHUYỂN VIỆN ({safeTransferCases.length} ca)
             </div>
             <table className="pdf-table" style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #000000', fontSize: '8pt' }}>
               <thead>
@@ -809,7 +818,7 @@ const DepartmentPrintView = ({
                 </tr>
               </thead>
               <tbody>
-                {transferCases.map((tc, i) => (
+                {safeTransferCases.map((tc, i) => (
                   <tr key={i} className="patient-card" style={{ backgroundColor: i % 2 === 0 ? '#FFFFFF' : '#FAFAFA' }}>
                     <td style={{ textAlign: 'center' }}>{i + 1}</td>
                     <td>
@@ -848,7 +857,7 @@ const DepartmentPrintView = ({
         {/* =========================================================================
             PHẦN IV: DANH SÁCH BỆNH NHÂN NẶNG THEO DÕI
         ========================================================================= */}
-        {criticalCases && criticalCases.length > 0 && (
+        {safeCriticalCases.length > 0 && (
           <div className="report-section-box" style={{ marginBottom: '12px' }}>
             <div className="table-title" style={{
               fontSize: '9.5pt',
@@ -859,7 +868,7 @@ const DepartmentPrintView = ({
               paddingBottom: '2px',
               marginBottom: '6px'
             }}>
-              IV. DANH SÁCH BỆNH NHÂN NẶNG CẦN THEO DÕI ({criticalCases.length} ca)
+              IV. DANH SÁCH BỆNH NHÂN NẶNG CẦN THEO DÕI ({safeCriticalCases.length} ca)
             </div>
             <table className="pdf-table" style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #000000', fontSize: '8pt' }}>
               <thead>
@@ -873,7 +882,7 @@ const DepartmentPrintView = ({
                 </tr>
               </thead>
               <tbody>
-                {criticalCases.map((cc, i) => (
+                {safeCriticalCases.map((cc, i) => (
                   <tr key={i} className="patient-card" style={{ backgroundColor: i % 2 === 0 ? '#FFFFFF' : '#FAF5FF' }}>
                     <td style={{ textAlign: 'center' }}>{i + 1}</td>
                     <td>
@@ -915,7 +924,7 @@ const DepartmentPrintView = ({
         {/* =========================================================================
             PHẦN V: HỒ SƠ BỆNH NHÂN TỬ VONG
         ========================================================================= */}
-        {deathCases && deathCases.length > 0 && (
+        {safeDeathCases.length > 0 && (
           <div className="report-section-box" style={{ marginBottom: '12px' }}>
             <div className="table-title" style={{
               fontSize: '9.5pt',
@@ -926,9 +935,9 @@ const DepartmentPrintView = ({
               paddingBottom: '2px',
               marginBottom: '6px'
             }}>
-              V. HỒ SƠ BỆNH NHÂN TỬ VONG ({deathCases.length} trường hợp)
+              V. HỒ SƠ BỆNH NHÂN TỬ VONG ({safeDeathCases.length} trường hợp)
             </div>
-            {deathCases.map((dc, i) => (
+            {safeDeathCases.map((dc, i) => (
               <div key={i} className="patient-card patient-case-box" style={{
                 border: '1px solid #DC2626',
                 borderRadius: '4px',

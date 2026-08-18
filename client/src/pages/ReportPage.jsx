@@ -369,7 +369,7 @@ const ReportPage = () => {
   const finalDoctorNameStr = cleanDoctorNames.join(', ');
   const cleanDoctorName = cleanDoctorNames[0] || '';
 
-  const cleanNurseNames = headerData.selectedNurses
+  const cleanNurseNames = (headerData.selectedNurses || [])
     .map(n => extractCleanStaffName(n, staffList.allStaff))
     .filter(Boolean);
   const finalNurseNameStr = cleanNurseNames.join(', ');
@@ -414,20 +414,20 @@ const ReportPage = () => {
   const handleAddNurse = () => {
     setHeaderData({
       ...headerData,
-      selectedNurses: [...headerData.selectedNurses, '']
+      selectedNurses: [...(headerData.selectedNurses || ['']), '']
     });
   };
 
   // Cập nhật điều dưỡng trực
   const handleNurseChange = (index, value) => {
-    const updated = [...headerData.selectedNurses];
+    const updated = [...(headerData.selectedNurses || [''])];
     updated[index] = value;
     setHeaderData({ ...headerData, selectedNurses: updated });
   };
 
   // Xóa điều dưỡng trực
   const handleRemoveNurse = (index) => {
-    const updated = headerData.selectedNurses.filter((_, i) => i !== index);
+    const updated = (headerData.selectedNurses || []).filter((_, i) => i !== index);
     setHeaderData({
       ...headerData,
       selectedNurses: updated.length > 0 ? updated : ['']
@@ -439,7 +439,7 @@ const ReportPage = () => {
     setHeaderData({
       ...headerData,
       overtimeStaff: [
-        ...headerData.overtimeStaff,
+        ...(headerData.overtimeStaff || []),
         { id: Date.now(), staffName: '', time: '' }
       ]
     });
@@ -447,14 +447,16 @@ const ReportPage = () => {
 
   // Cập nhật dòng nhân sự tăng cường
   const handleOvertimeChange = (index, field, value) => {
-    const updated = [...headerData.overtimeStaff];
-    updated[index][field] = value;
+    const updated = [...(headerData.overtimeStaff || [])];
+    if (updated[index]) {
+      updated[index][field] = value;
+    }
     setHeaderData({ ...headerData, overtimeStaff: updated });
   };
 
   // Xóa dòng nhân sự tăng cường
   const handleRemoveOvertimeStaff = (index) => {
-    const updated = headerData.overtimeStaff.filter((_, i) => i !== index);
+    const updated = (headerData.overtimeStaff || []).filter((_, i) => i !== index);
     setHeaderData({ ...headerData, overtimeStaff: updated });
   };
 
@@ -463,10 +465,10 @@ const ReportPage = () => {
     setSubmitError('');
 
     // Chuẩn hóa danh sách nhân sự thêm giờ
-    const formattedOvertime = headerData.overtimeStaff
+    const formattedOvertime = (headerData.overtimeStaff || [])
       .map(item => ({
-        staffName: extractCleanStaffName(item.staffName, staffList.allStaff),
-        time: (item.time || '').trim()
+        staffName: extractCleanStaffName(item?.staffName, staffList.allStaff),
+        time: (item?.time || '').trim()
       }))
       .filter(item => item.staffName || item.time);
 
@@ -711,7 +713,7 @@ const ReportPage = () => {
             <div className="form-group">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.45rem' }}>
                 <label style={{ margin: 0, fontWeight: '600', fontSize: '0.9rem', color: '#1E293B', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  <FaUserNurse style={{ color: '#059669' }} /> Điều dưỡng trực ca ({cleanNurseNames.length || 0})
+                  <FaUserNurse style={{ color: '#059669' }} /> Điều dưỡng trực ca ({(headerData.selectedNurses || []).length || 0})
                 </label>
                 <button
                   type="button"
@@ -724,7 +726,7 @@ const ReportPage = () => {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-                {headerData.selectedNurses.map((nurseVal, idx) => (
+                {(headerData.selectedNurses || ['']).map((nurseVal, idx) => (
                   <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <div style={{ flex: 1 }}>
                       <StaffSelectCombobox
@@ -738,7 +740,7 @@ const ReportPage = () => {
                         loading={loadingStaff}
                       />
                     </div>
-                    {headerData.selectedNurses.length > 1 && (
+                    {(headerData.selectedNurses || []).length > 1 && (
                       <button
                         type="button"
                         onClick={() => handleRemoveNurse(idx)}
@@ -758,10 +760,10 @@ const ReportPage = () => {
             </div>
 
             {/* 4. Phần: Nhân sự trực thêm giờ / Tăng cường */}
-            <div className="sub-section" style={{ border: '1px solid #E2E8F0', borderRadius: '8px', padding: '1rem', background: '#F8FAFC' }}>
+            <div className="form-group" style={{ border: '1px solid #E2E8F0', borderRadius: '8px', padding: '1rem', background: '#F8FAFC' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
                 <label style={{ margin: 0, fontWeight: '700', color: 'var(--brand-blue)', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                  <FaUsers style={{ color: '#D97706' }} /> Nhân Sự Trực Thêm Giờ / Tăng Cường
+                  <FaClock style={{ color: '#D97706' }} /> Nhân sự trực thêm giờ / Tăng cường ({(headerData.overtimeStaff || []).length})
                 </label>
                 <button
                   type="button"
@@ -773,13 +775,13 @@ const ReportPage = () => {
                 </button>
               </div>
 
-              {headerData.overtimeStaff.length === 0 ? (
+              {(headerData.overtimeStaff || []).length === 0 ? (
                 <p style={{ color: 'var(--text-light)', fontSize: '0.85rem', fontStyle: 'italic', margin: 0 }}>
                   Chưa có nhân sự trực thêm giờ (Bấm nút trên nếu ca trực có nhân sự tăng cường).
                 </p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  {headerData.overtimeStaff.map((ot, idx) => (
+                  {(headerData.overtimeStaff || []).map((ot, idx) => (
                     <div 
                       key={ot.id || idx} 
                       style={{ 
@@ -843,7 +845,7 @@ const ReportPage = () => {
                 <input 
                   type="text" 
                   placeholder="VD: Phòng cấp cứu"
-                  value={headerData.room}
+                  value={headerData.room || ''}
                   onChange={(e) => setHeaderData({...headerData, room: e.target.value})}
                 />
               </div>
@@ -852,7 +854,7 @@ const ReportPage = () => {
                 <input 
                   type="text" 
                   placeholder="VD: 07h00 - 07h00"
-                  value={headerData.shiftTime}
+                  value={headerData.shiftTime || ''}
                   onChange={(e) => setHeaderData({...headerData, shiftTime: e.target.value})}
                 />
               </div>
@@ -878,9 +880,9 @@ const ReportPage = () => {
               <div>📅 <strong>Ngày báo cáo:</strong> {headerData.reportDate}</div>
               <div>👨‍⚕️ <strong>Bác sĩ trực ({cleanDoctorNames.length}):</strong> {finalDoctorNameStr || cleanDoctorName}</div>
               {finalNurseNameStr && <div>👩‍⚕️ <strong>Điều dưỡng ({cleanNurseNames.length}):</strong> {finalNurseNameStr}</div>}
-              {headerData.overtimeStaff.length > 0 && (
+              {(headerData.overtimeStaff || []).length > 0 && (
                 <div>
-                  ⏰ <strong>Tăng cường:</strong> {headerData.overtimeStaff.map(s => `${extractCleanStaffName(s.staffName, staffList.allStaff)} (${s.time})`).join(', ')}
+                  ⏰ <strong>Tăng cường:</strong> {(headerData.overtimeStaff || []).map(s => `${extractCleanStaffName(s.staffName, staffList.allStaff)} (${s.time})`).join(', ')}
                 </div>
               )}
               {headerData.room && <div>🏥 <strong>Phòng:</strong> {headerData.room}</div>}
