@@ -585,17 +585,6 @@ const ReportPage = () => {
           </div>
         </div>
         <div style={{ display: 'flex', gap: '0.65rem', alignItems: 'center' }}>
-          {existingReportLoaded && (
-            <button
-              type="button"
-              onClick={() => setShowPdfModal(true)}
-              className="btn btn-outline-primary"
-              style={{ fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem', borderColor: '#0284C7', color: '#0284C7', fontWeight: '700', padding: '0.45rem 0.9rem' }}
-              title="Xuất file PDF báo cáo đã nộp của ngày này"
-            >
-              <FaFilePdf /> 📄 Xuất PDF
-            </button>
-          )}
           <button onClick={logout} className="btn btn-secondary" style={{ fontSize: '0.85rem' }}>
             <FaSignOutAlt /> Đăng xuất
           </button>
