@@ -15,7 +15,7 @@
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel%20App-0070F3?style=for-the-badge&logo=vercel&logoColor=white)](https://hospital-report-system.vercel.app/)
 [![Author](https://img.shields.io/badge/Author-Nguyen%20Vu%20Nhat%20Nam%20(2004)-0F2C59?style=for-the-badge&logo=github)](https://github.com/UIBreaker/Hospital-Report-System)
 [![Zalo Contact](https://img.shields.io/badge/Zalo-0916.337.266-0284C7?style=for-the-badge&logo=zalo&logoColor=white)](https://zalo.me/0916337266)
-[![Version](https://img.shields.io/badge/Version-1.29.9-10B981?style=for-the-badge)](https://hospital-report-system.vercel.app/)
+[![Version](https://img.shields.io/badge/Version-1.29.10-10B981?style=for-the-badge)](https://hospital-report-system.vercel.app/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
 </div>
@@ -169,6 +169,8 @@ npm run dev
 
 ## 7. 📜 Lịch Sử Phiên Bản (Changelog)
 
+* **`v1.29.10` (18/08/2026)**:
+  * Khắc phục lỗi tải dữ liệu ca bệnh: Khôi phục và chuẩn hóa toàn bộ các trường **"Lâm Sàng / Triệu Chứng / Sinh Hiệu"** và **"Cận Lâm Sàng / XN / X-Quang"** khi khoa phòng mở lại báo cáo của ngày đã nộp để xem hoặc chỉnh sửa.
 * **`v1.29.9` (18/08/2026)**:
   * Khắc phục lỗi che khuất khối **Phòng Khám 21 (PK 21)** trên slide trình chiếu khoa **Hồi sức cấp cứu – Thận nhân tạo**: Chuyển thông tin "Bác sĩ trực TNT" lên huy hiệu đầu trang và tối ưu tỷ lệ co giãn thẻ dữ liệu, chống tràn viền.
 * **`v1.29.8` (17/08/2026)**:

@@ -187,6 +187,7 @@ const ReportPage = () => {
             : (report.report_data || {});
           
           const normalizedTransfers = (report.transferCases || []).map((tc, idx) => ({
+            ...tc,
             _id: tc._id || tc.id || `tc_${Date.now()}_${idx}`,
             patientName: tc.patientName || tc.patient_name || '',
             patient_name: tc.patientName || tc.patient_name || '',
@@ -195,6 +196,8 @@ const ReportPage = () => {
             admissionTime: tc.admissionTime || tc.admission_time || '',
             admission_time: tc.admissionTime || tc.admission_time || '',
             reason: tc.reason || '',
+            clinicalSymptoms: tc.clinicalSymptoms || tc.clinical_symptoms || '',
+            clinical_symptoms: tc.clinicalSymptoms || tc.clinical_symptoms || '',
             clinicalTests: tc.clinicalTests || tc.clinical_tests || '',
             clinical_tests: tc.clinicalTests || tc.clinical_tests || '',
             diagnosis: tc.diagnosis || '',
@@ -206,6 +209,7 @@ const ReportPage = () => {
           }));
 
           const normalizedSurgeries = (report.surgeryCases || []).map((sc, idx) => ({
+            ...sc,
             _id: sc._id || sc.id || `sc_${Date.now()}_${idx}`,
             patientName: sc.patientName || sc.patient_name || '',
             patient_name: sc.patientName || sc.patient_name || '',
@@ -215,6 +219,10 @@ const ReportPage = () => {
             admissionTime: sc.admissionTime || sc.admission_time || '',
             admission_time: sc.admissionTime || sc.admission_time || '',
             reason: sc.reason || '',
+            clinicalSymptoms: sc.clinicalSymptoms || sc.clinical_symptoms || '',
+            clinical_symptoms: sc.clinicalSymptoms || sc.clinical_symptoms || '',
+            clinicalTests: sc.clinicalTests || sc.clinical_tests || '',
+            clinical_tests: sc.clinicalTests || sc.clinical_tests || '',
             preoperativeDiagnosis: sc.preoperativeDiagnosis || sc.preoperative_diagnosis || '',
             preoperative_diagnosis: sc.preoperativeDiagnosis || sc.preoperative_diagnosis || '',
             consultationOrder: sc.consultationOrder || sc.consultation_order || '',
@@ -227,6 +235,7 @@ const ReportPage = () => {
           }));
 
           const normalizedDeaths = (report.deathCases || []).map((dc, idx) => ({
+            ...dc,
             _id: dc._id || dc.id || `dc_${Date.now()}_${idx}`,
             patientName: dc.patientName || dc.patient_name || '',
             patient_name: dc.patientName || dc.patient_name || '',
@@ -239,6 +248,8 @@ const ReportPage = () => {
             admission_status: dc.admissionStatus || dc.admission_status || '',
             medicalHistory: dc.medicalHistory || dc.medical_history || '',
             medical_history: dc.medicalHistory || dc.medical_history || '',
+            clinicalSymptoms: dc.clinicalSymptoms || dc.clinical_symptoms || '',
+            clinical_symptoms: dc.clinicalSymptoms || dc.clinical_symptoms || '',
             clinicalTests: dc.clinicalTests || dc.clinical_tests || '',
             clinical_tests: dc.clinicalTests || dc.clinical_tests || '',
             diagnosis: dc.diagnosis || '',
@@ -250,6 +261,7 @@ const ReportPage = () => {
           }));
 
           const normalizedCriticals = (report.criticalCases || []).map((cc, idx) => ({
+            ...cc,
             _id: cc._id || cc.id || `cc_${Date.now()}_${idx}`,
             patientName: cc.patientName || cc.patient_name || '',
             patient_name: cc.patientName || cc.patient_name || '',
@@ -259,6 +271,10 @@ const ReportPage = () => {
             admission_time: cc.admissionTime || cc.admission_time || '',
             medicalHistory: cc.medicalHistory || cc.medical_history || '',
             medical_history: cc.medicalHistory || cc.medical_history || '',
+            clinicalSymptoms: cc.clinicalSymptoms || cc.clinical_symptoms || '',
+            clinical_symptoms: cc.clinicalSymptoms || cc.clinical_symptoms || '',
+            clinicalTests: cc.clinicalTests || cc.clinical_tests || '',
+            clinical_tests: cc.clinicalTests || cc.clinical_tests || '',
             diagnosis: cc.diagnosis || '',
             conditionSummary: cc.conditionSummary || cc.condition_summary || '',
             condition_summary: cc.conditionSummary || cc.condition_summary || '',
