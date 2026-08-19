@@ -306,16 +306,17 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
         filename: `Bao_Cao_Giao_Ban_Y_Te_${date}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: {
-          scale: 2,
+          scale: 2.5, // Nâng scale lên 2.5 để chữ sắc nét chuẩn in ấn, không bị vỡ hạt
           useCORS: true,
           logging: false,
           letterRendering: true,
           backgroundColor: '#FFFFFF',
-          scrollY: 0
+          scrollY: 0,
+          windowWidth: 1024 // Giữ chiều rộng ảo cố định để layout không bị bóp méo
         },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true },
         pagebreak: { 
-          mode: ['css', 'legacy'], 
+          mode: ['avoid-all', 'css', 'legacy'],
           avoid: ['.dept-card', '.patient-card', '.patient-case-box', 'tr', 'thead', 'h1', 'h2', 'h3', 'h4', '.table-title', '.report-section-box', '.pdf-avoid-break'] 
         }
       };

@@ -79,9 +79,9 @@ const formatDateDDMMYYYY = (dateStr) => {
   return dateStr;
 };
 
-const CELL = { border: '1px solid #000', padding: '3px 5px', verticalAlign: 'top', fontSize: '8pt', lineHeight: '1.3' };
+const CELL = { border: '1px solid #000', padding: '5px 7px', verticalAlign: 'middle', fontSize: '8.5pt', lineHeight: '1.5', wordBreak: 'break-word', boxSizing: 'border-box' };
 const CELL_CENTER = { ...CELL, textAlign: 'center', verticalAlign: 'middle' };
-const TH = { border: '1px solid #000', padding: '4px 5px', textAlign: 'center', fontSize: '8pt', fontWeight: 'bold', backgroundColor: '#D9E8FB', color: '#0F2C59', verticalAlign: 'middle' };
+const TH = { border: '1px solid #000', padding: '6px 7px', textAlign: 'center', fontSize: '8.5pt', fontWeight: 'bold', backgroundColor: '#D9E8FB', color: '#0F2C59', verticalAlign: 'middle', lineHeight: '1.4', boxSizing: 'border-box' };
 
 const DepartmentPrintView = ({
   reportDate = '', departmentName = '', departmentCode = '',
@@ -137,12 +137,23 @@ const DepartmentPrintView = ({
         }
       }
       const opt = {
-        margin: [7, 7, 7, 7],
+        margin: [10, 10, 10, 10], // Lề 10mm chuẩn A4
         filename: `BaoCaoGiaoBan_${cleanDeptName}_${formattedDateVN}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, logging: false, letterRendering: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'], avoid: ['.dept-card', '.patient-card', '.patient-case-box', 'tr', 'thead', '.report-section-box', '.pdf-avoid-break'] }
+        html2canvas: {
+          scale: 2.5, // Nâng scale lên 2.5 để chữ sắc nét chuẩn in ấn, không bị vỡ hạt
+          useCORS: true,
+          letterRendering: true,
+          scrollY: 0,
+          windowWidth: 1024 // Giữ chiều rộng ảo cố định để layout không bị bóp méo
+        },
+        jsPDF: {
+          unit: 'mm',
+          format: 'a4',
+          orientation: 'portrait',
+          compress: true
+        },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
       };
       await html2pdfModule().set(opt).from(element).save();
     } catch (err) {
@@ -212,7 +223,7 @@ const DepartmentPrintView = ({
       display: 'flex', flexDirection: 'column', alignItems: 'center', boxSizing: 'border-box'
     }}>
       <style>{`
-        @page { size: A4 portrait; margin: 7mm 7mm; }
+        @page { size: A4 portrait; margin: 10mm 10mm; }
         @media print {
           body { background: #fff !important; color: #000 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
           .no-print, .department-print-modal-backdrop { background: none !important; padding: 0 !important; margin: 0 !important; position: static !important; overflow: visible !important; }
@@ -259,9 +270,9 @@ const DepartmentPrintView = ({
       {/* A4 Document */}
       <div className="printable-department-document" style={{
         width: '100%', maxWidth: '210mm', backgroundColor: '#FFFFFF', color: '#000',
-        padding: '10mm 12mm', boxSizing: 'border-box',
+        padding: '0', boxSizing: 'border-box',
         borderRadius: '6px', boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
-        fontFamily: "'Times New Roman', 'Arial', serif", fontSize: '9.5pt', lineHeight: 1.35
+        fontFamily: "'Times New Roman', 'Arial', serif", fontSize: '9.5pt', lineHeight: 1.55
       }}>
 
         {/* Header: State + Unit */}
