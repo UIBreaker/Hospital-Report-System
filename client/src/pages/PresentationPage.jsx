@@ -650,7 +650,7 @@ const PresentationPage = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [fontScale, setFontScale] = useState(1.15); // 1.15 = 115% default for large, crystal-clear presentation
+  const [fontScale, setFontScale] = useState(1); // 1 = 100% default standard presentation scale
 
   // Lightbox Modal State
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -2420,10 +2420,10 @@ const PresentationPage = () => {
                 <FaSearchMinus /> A-
               </button>
               <button
-                onClick={() => setFontScale(1.15)}
-                title="Đặt lại cỡ chữ chuẩn (115%)"
+                onClick={() => setFontScale(1)}
+                title="Đặt lại cỡ chữ mặc định (100%)"
                 style={{
-                  background: fontScale === 1.15 ? '#0F172A' : '#2563EB',
+                  background: fontScale === 1 ? '#0F172A' : '#2563EB',
                   color: '#FFFFFF', border: 'none',
                   padding: '0.35rem 0.65rem', cursor: 'pointer', borderRadius: '6px',
                   fontSize: '0.85rem', fontWeight: '800'
