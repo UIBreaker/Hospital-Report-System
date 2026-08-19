@@ -5,18 +5,18 @@
  */
 
 export const DEPARTMENT_ORDER = [
-  'hscc_tnt',
-  'ngoai_th',
-  'ctch',
-  'san',
-  'nhi',
-  'nhiem',
-  'noi',
-  'yhct_phcn',
-  'lck',
-  'xn',
-  'cdha',
-  'gmhs'
+  'lck',       // 1. Liên chuyên khoa
+  'xn',        // 2. Xét nghiệm
+  'cdha',      // 3. CĐHA (Chẩn đoán hình ảnh)
+  'hscc_tnt',  // 4. HSCC (Hồi sức cấp cứu)
+  'noi',       // 5. Nội
+  'nhi',       // 6. Nhi
+  'nhiem',     // 7. Nhiễm
+  'san',       // 8. Sản
+  'yhct_phcn', // 9. YHCT (Y học cổ truyền)
+  'ngoai_th',  // 10. Ngoại tổng hợp
+  'ctch',      // 11. CTCH (Chấn thương chỉnh hình)
+  'gmhs'       // 12. Gây mê
 ];
 
 export const DEPARTMENT_NAMES = {
