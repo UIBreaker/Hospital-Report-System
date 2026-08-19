@@ -50,6 +50,10 @@ const FIELD_LABELS = {
   sieuAm: 'Siêu âm', chuyenVienNgoaiTru: 'Chuyển viện ngoại trú', moLayThai: 'Mổ lấy thai',
 
   // HSCC - TNT - PK21
+  tongSoKham_tongCong: 'TỔNG SỐ KHÁM TOÀN KHOA',
+  tongSoKham_hscc: 'Khám Cấp cứu (HSCC)',
+  tongSoKham_tnt: 'Khám / Chạy thận (TNT)',
+  tongSoKham_pk21: 'Khám Phòng Khám 21',
   keToa: 'Kê toa', truyenMau: 'Truyền máu', tieuPhau: 'Tiểu phẫu', boBot: 'Bó bột',
   ccNgoaiVien: 'Cấp cứu ngoại viện', bsTrucTNT: 'Bác sĩ trực TNT',
   tnt_benhCu: 'Bệnh cũ (TNT)', tnt_benhMoi: 'Bệnh mới (TNT)',
@@ -131,6 +135,9 @@ const getMetricStyle = (key, value) => {
     return isPositive
       ? { bg: '#FEF3C7', border: '#D97706', text: '#B45309', label: '#92400E' }
       : { bg: '#F8FAFC', border: '#E2E8F0', text: '#64748B', label: '#475569' };
+  }
+  if (key === 'tongSoKham_tongCong' || key === 'tong4ck_tongSo') {
+    return { bg: '#DBEAFE', border: '#1D4ED8', text: '#1E3A8A', label: '#1E40AF', badge: '⭐ TỔNG CỘNG' };
   }
   if (key.toLowerCase().includes('benhmoi') || key.toLowerCase().includes('tongso') || key.toLowerCase().includes('tong_so') || key.toLowerCase().includes('tongsoca') || key.toLowerCase().includes('tong4ck')) {
     return { bg: '#EFF6FF', border: '#3B82F6', text: '#1D4ED8', label: '#1E40AF' };
@@ -276,15 +283,52 @@ const parseDepartmentSections = (reportData, deptCode = '') => {
 
   // ================= 3. HỒI SỨC CẤP CỨU – THẬN NHÂN TẠO (HSCC_TNT) =================
   if (normalizedDept === 'hscc_tnt' || (data.hscc && data.tnt)) {
-    // 2. KHỐI HỒI SỨC CẤP CỨU (HSCC) — ƯU TIÊN BÁO CÁO TRƯỚC
+    // 1. TỔNG SỐ KHÁM (Bóc tách riêng ra bên ngoài ở vị trí đầu tiên)
+    const tongKhamItems = [];
+    const hsccKham = data.hscc?.tongSoKham || data.hscc?.tongSo || '';
+    const tntKham = data.tnt?.tongSoKham || data.tnt?.tongSo || data.tnt?.tnt_ctdk || data.tnt?.ctdk || '';
+    const pk21Kham = data.pk21?.pk21_tongSo || data.pk21?.pk21_tongSoKham || data.pk21?.tongSo || '';
+
+    if (hsccKham !== '') {
+      tongKhamItems.push({ key: 'tongSoKham_hscc', label: 'Khám Cấp cứu (HSCC)', value: String(hsccKham) });
+    }
+    if (tntKham !== '') {
+      tongKhamItems.push({ key: 'tongSoKham_tnt', label: 'Khám / Chạy thận (TNT)', value: String(tntKham) });
+    }
+    if (pk21Kham !== '') {
+      tongKhamItems.push({ key: 'tongSoKham_pk21', label: 'Khám Phòng Khám 21', value: String(pk21Kham) });
+    }
+
+    // Tự động tính tổng cộng toàn khoa nếu có ít nhất 2 khối có số liệu
+    const validNums = [hsccKham, tntKham, pk21Kham].map(v => Number(v)).filter(n => !isNaN(n) && n > 0);
+    if (validNums.length >= 2) {
+      const sumAll = validNums.reduce((a, b) => a + b, 0);
+      tongKhamItems.unshift({ key: 'tongSoKham_tongCong', label: 'TỔNG SỐ KHÁM TOÀN KHOA', value: String(sumAll) });
+    }
+
+    if (tongKhamItems.length > 0) {
+      sections.push({
+        title: '📊 TỔNG SỐ KHÁM (HSCC • TNT • PK 21)',
+        items: tongKhamItems
+      });
+    }
+
+    // 2. KHỐI HỒI SỨC CẤP CỨU (HSCC) — Bố cục chuẩn: Bệnh cũ -> Bệnh mới -> Xuất viện -> Chuyển viện -> Chuyển khoa -> Hiện còn
     if (data.hscc && typeof data.hscc === 'object') {
       const hsccItems = [];
       const hsccKeyOrder = [
         'benhCu', 'benhMoi', 'xuatVien', 'chuyenVien', 'chuyenKhoa', 'hienCon',
-        'tuVong', 'tongSoKham', 'keToa', 'ngoaiTru', 'truyenMau', 'tieuPhau', 'boBot', 'ccNgoaiVien'
+        'tuVong', 'keToa', 'ngoaiTru', 'truyenMau', 'tieuPhau', 'boBot', 'ccNgoaiVien'
       ];
 
-      const hsccKeys = Object.keys(data.hscc).filter(k => k !== '_id' && data.hscc[k] !== null && data.hscc[k] !== undefined && data.hscc[k] !== '');
+      const hsccKeys = Object.keys(data.hscc).filter(k => 
+        k !== '_id' && 
+        k !== 'tongSoKham' && 
+        k !== 'tongSo' && 
+        data.hscc[k] !== null && 
+        data.hscc[k] !== undefined && 
+        data.hscc[k] !== ''
+      );
       hsccKeys.sort((a, b) => {
         const idxA = hsccKeyOrder.indexOf(a);
         const idxB = hsccKeyOrder.indexOf(b);
@@ -306,7 +350,7 @@ const parseDepartmentSections = (reportData, deptCode = '') => {
       }
     }
 
-    // 3. KHỐI THẬN NHÂN TẠO (TNT) — BÁO CÁO SAU
+    // 3. KHỐI THẬN NHÂN TẠO (TNT) — Bố cục chuẩn: Bệnh cũ -> Bệnh mới -> Xuất viện -> Chuyển viện -> Chuyển khoa -> Hiện còn
     if (data.tnt && typeof data.tnt === 'object') {
       const tntItems = [];
       const tntKeyOrder = [
@@ -321,7 +365,13 @@ const parseDepartmentSections = (reportData, deptCode = '') => {
         'tnt_tuVong', 'tuVong'
       ];
 
-      const tntKeys = Object.keys(data.tnt).filter(k => k !== '_id' && data.tnt[k] !== null && data.tnt[k] !== undefined && data.tnt[k] !== '');
+      const tntKeys = Object.keys(data.tnt).filter(k => 
+        k !== '_id' && 
+        k !== 'tongSoKham' && 
+        data.tnt[k] !== null && 
+        data.tnt[k] !== undefined && 
+        data.tnt[k] !== ''
+      );
       tntKeys.sort((a, b) => {
         const idxA = tntKeyOrder.indexOf(a);
         const idxB = tntKeyOrder.indexOf(b);
@@ -343,11 +393,19 @@ const parseDepartmentSections = (reportData, deptCode = '') => {
       }
     }
 
-    // 4. PHÒNG KHÁM 21 (nếu có)
+    // 4. PHÒNG KHÁM 21 (PK 21)
     if (data.pk21 && typeof data.pk21 === 'object') {
       const pkItems = [];
-      const pkKeyOrder = ['pk21_tongSo', 'pk21_tongSoKham', 'pk21_ngoaiTru', 'pk21_nhapVien', 'pk21_chuyenVien'];
-      const pkKeys = Object.keys(data.pk21).filter(k => k !== '_id' && data.pk21[k] !== null && data.pk21[k] !== undefined && data.pk21[k] !== '');
+      const pkKeyOrder = ['pk21_ngoaiTru', 'pk21_nhapVien', 'pk21_chuyenVien'];
+      const pkKeys = Object.keys(data.pk21).filter(k => 
+        k !== '_id' && 
+        k !== 'pk21_tongSo' && 
+        k !== 'pk21_tongSoKham' && 
+        k !== 'tongSo' &&
+        data.pk21[k] !== null && 
+        data.pk21[k] !== undefined && 
+        data.pk21[k] !== ''
+      );
       pkKeys.sort((a, b) => {
         const idxA = pkKeyOrder.indexOf(a);
         const idxB = pkKeyOrder.indexOf(b);
@@ -357,7 +415,6 @@ const parseDepartmentSections = (reportData, deptCode = '') => {
         return 0;
       });
       pkKeys.forEach(k => {
-        if (k === 'pk21_tongSoKham' && data.pk21.pk21_tongSo !== undefined && data.pk21.pk21_tongSo !== '') return;
         pkItems.push({ key: k, label: getLabel(k), value: String(data.pk21[k]) });
       });
       if (pkItems.length > 0) {
