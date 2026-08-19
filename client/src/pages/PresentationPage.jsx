@@ -280,8 +280,8 @@ const parseDepartmentSections = (reportData, deptCode = '') => {
     if (data.hscc && typeof data.hscc === 'object') {
       const hsccItems = [];
       const hsccKeyOrder = [
-        'benhCu', 'benhMoi', 'tuVong', 'xuatVien', 'chuyenVien', 'chuyenKhoa', 'hienCon', 'keToa', 'tongSoKham',
-        'ngoaiTru', 'truyenMau', 'tieuPhau', 'boBot', 'ccNgoaiVien'
+        'benhCu', 'benhMoi', 'xuatVien', 'chuyenVien', 'chuyenKhoa', 'hienCon',
+        'tuVong', 'tongSoKham', 'keToa', 'ngoaiTru', 'truyenMau', 'tieuPhau', 'boBot', 'ccNgoaiVien'
       ];
 
       const hsccKeys = Object.keys(data.hscc).filter(k => k !== '_id' && data.hscc[k] !== null && data.hscc[k] !== undefined && data.hscc[k] !== '');
@@ -310,7 +310,15 @@ const parseDepartmentSections = (reportData, deptCode = '') => {
     if (data.tnt && typeof data.tnt === 'object') {
       const tntItems = [];
       const tntKeyOrder = [
-        'tnt_ctdk', 'tnt_benhCu', 'tnt_benhMoi', 'tnt_xuatVien', 'tnt_chuyenVien', 'tnt_chuyenKhoa', 'tnt_noiTru', 'tnt_hienCon'
+        'tnt_benhCu', 'benhCu',
+        'tnt_benhMoi', 'benhMoi',
+        'tnt_xuatVien', 'xuatVien',
+        'tnt_chuyenVien', 'chuyenVien',
+        'tnt_chuyenKhoa', 'chuyenKhoa',
+        'tnt_hienCon', 'hienCon',
+        'tnt_ctdk', 'ctdk',
+        'tnt_noiTru', 'noiTru',
+        'tnt_tuVong', 'tuVong'
       ];
 
       const tntKeys = Object.keys(data.tnt).filter(k => k !== '_id' && data.tnt[k] !== null && data.tnt[k] !== undefined && data.tnt[k] !== '');
@@ -1438,25 +1446,25 @@ const PresentationPage = () => {
 
                     const dims = getCardDimensions();
 
-                    // Tính số cột tự động cho từng khối để vừa khít 100% chiều ngang, không để lại khoảng trống bên phải
+                    // Tính số cột tự động cho từng khối để vừa khít 100% chiều ngang, theo chuẩn 6 chỉ số trên 1 hàng
                     const getGridCols = (itemCount) => {
                       if (metricSectionsCount === 1) {
-                        if (itemCount === 9) return isFullscreen ? 'repeat(3, 1fr)' : 'repeat(3, 1fr)';
-                        if (itemCount === 10) return isFullscreen ? 'repeat(5, 1fr)' : 'repeat(5, 1fr)';
                         if (itemCount <= 4) return `repeat(${itemCount}, 1fr)`;
-                        if (itemCount <= 6) return 'repeat(3, 1fr)';
+                        if (itemCount <= 6) return 'repeat(6, 1fr)';
                         if (itemCount <= 8) return 'repeat(4, 1fr)';
-                        return isFullscreen ? 'repeat(4, 1fr)' : 'repeat(4, 1fr)';
+                        if (itemCount <= 12) return isFullscreen ? 'repeat(6, 1fr)' : 'repeat(4, 1fr)';
+                        return isFullscreen ? 'repeat(6, 1fr)' : 'repeat(4, 1fr)';
                       }
 
                       // Đa khối (LCK, YHCT, HSCC_TNT)
                       if (itemCount <= 2) return `repeat(${itemCount}, 1fr)`;
                       if (itemCount === 3) return 'repeat(3, 1fr)';
                       if (itemCount === 4) return 'repeat(4, 1fr)';
-                      if (itemCount === 6) return 'repeat(3, 1fr)';
-                      if (itemCount <= 8) return 'repeat(4, 1fr)';
-                      if (itemCount <= 12) return isFullscreen ? 'repeat(5, 1fr)' : 'repeat(4, 1fr)';
-                      return isFullscreen ? 'repeat(5, 1fr)' : 'repeat(4, 1fr)';
+                      if (itemCount === 5) return 'repeat(5, 1fr)';
+                      if (itemCount === 6) return 'repeat(6, 1fr)';
+                      if (itemCount <= 8) return isFullscreen ? 'repeat(6, 1fr)' : 'repeat(4, 1fr)';
+                      if (itemCount <= 12) return isFullscreen ? 'repeat(6, 1fr)' : 'repeat(6, 1fr)';
+                      return isFullscreen ? 'repeat(6, 1fr)' : 'repeat(6, 1fr)';
                     };
 
                     return (
