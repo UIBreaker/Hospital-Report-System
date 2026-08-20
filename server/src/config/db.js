@@ -55,14 +55,23 @@ const ensureSchema = async (connOrPool) => {
       'ALTER TABLE death_cases ADD COLUMN clinical_symptoms TEXT DEFAULT NULL AFTER admission_status',
       'ALTER TABLE death_cases ADD COLUMN clinical_tests TEXT DEFAULT NULL AFTER medical_history',
       'ALTER TABLE critical_cases ADD COLUMN clinical_symptoms TEXT DEFAULT NULL AFTER medical_history',
-      'ALTER TABLE critical_cases ADD COLUMN clinical_tests TEXT DEFAULT NULL AFTER clinical_symptoms'
+      'ALTER TABLE critical_cases ADD COLUMN clinical_tests TEXT DEFAULT NULL AFTER clinical_symptoms',
+      // Senior DBA Optimization Indexes
+      'ALTER TABLE reports ADD UNIQUE INDEX uq_dept_date (department_code, report_date)',
+      'ALTER TABLE reports ADD INDEX idx_report_date (report_date)',
+      'ALTER TABLE reports ADD INDEX idx_dept_code (department_code)',
+      'ALTER TABLE transfer_cases ADD INDEX idx_report_id (report_id)',
+      'ALTER TABLE surgery_cases ADD INDEX idx_report_id (report_id)',
+      'ALTER TABLE death_cases ADD INDEX idx_report_id (report_id)',
+      'ALTER TABLE critical_cases ADD INDEX idx_report_id (report_id)',
+      'ALTER TABLE users ADD INDEX idx_dept_code (department_code)'
     ];
 
     for (const sql of alters) {
       try {
         await connection.query(sql);
       } catch (e) {
-        // Ignore duplicate column errors
+        // Ignore duplicate column or index errors
       }
     }
     schemaInitialized = true;
