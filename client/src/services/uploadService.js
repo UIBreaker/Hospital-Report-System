@@ -6,8 +6,8 @@ import { compressImageFile } from '../utils/imageUtils';
  * Supports Direct Cloud Upload (Primary) and High-Compression Canvas Fallback (Zero-Fail Safety Net)
  */
 
-const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dt7x510s2'; // Default or Env Cloudinary name
-const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'hospital_reports'; // Unsigned upload preset
+const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'rcokvkdu';
+const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'hospital_reports';
 
 /**
  * Upload single medical image to Cloud Storage
