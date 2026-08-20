@@ -215,6 +215,9 @@ const createOrUpdateReport = async (req, res, next) => {
             ]
           );
         }
+      }
+    }
+
     // Medical Compliance Audit Log Recording
     try {
       const clientIp = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || null;
