@@ -434,25 +434,33 @@ const DatabaseTab = ({ date }) => {
               <div>
                 <div style={{ fontSize: '0.75rem', fontWeight: '700', color: '#64748B' }}>TỔNG DUNG LƯỢNG NGÀY</div>
                 <div style={{ fontSize: '1.3rem', fontWeight: '900', color: '#1E40AF', marginTop: '0.15rem' }}>
-                  {payloadData.totalDaySize || `${payloadData.totalKb || 0} KB`}
+                  {payloadData.grandTotalKb !== undefined
+                    ? (payloadData.grandTotalKb >= 1024
+                        ? `${(payloadData.grandTotalKb / 1024).toFixed(2)} MB`
+                        : `${payloadData.grandTotalKb} KB`)
+                    : `${payloadData.totalKb || 0} KB`}
                 </div>
               </div>
               <div>
                 <div style={{ fontSize: '0.75rem', fontWeight: '700', color: '#64748B' }}>DUNG LƯỢNG VĂN BẢN</div>
                 <div style={{ fontSize: '1.3rem', fontWeight: '900', color: '#475569', marginTop: '0.15rem' }}>
-                  {payloadData.totalTextKb ? `${payloadData.totalTextKb} KB` : '—'}
+                  {payloadData.grandTotalTextKb !== undefined
+                    ? `${payloadData.grandTotalTextKb} KB`
+                    : (payloadData.totalTextKb !== undefined ? `${payloadData.totalTextKb} KB` : '0 KB')}
                 </div>
               </div>
               <div>
                 <div style={{ fontSize: '0.75rem', fontWeight: '700', color: '#64748B' }}>DUNG LƯỢNG HÌNH ẢNH</div>
                 <div style={{ fontSize: '1.3rem', fontWeight: '900', color: '#7C3AED', marginTop: '0.15rem' }}>
-                  {payloadData.totalImageKb ? `${payloadData.totalImageKb} KB` : '—'}
+                  {payloadData.grandTotalImageKb !== undefined
+                    ? `${payloadData.grandTotalImageKb} KB`
+                    : (payloadData.totalImageKb !== undefined ? `${payloadData.totalImageKb} KB` : '0 KB')}
                 </div>
               </div>
               <div>
                 <div style={{ fontSize: '0.75rem', fontWeight: '700', color: '#64748B' }}>SỐ KHOA ĐÃ NỘP</div>
                 <div style={{ fontSize: '1.3rem', fontWeight: '900', color: '#15803D', marginTop: '0.15rem' }}>
-                  {payloadData.submittedCount || 0}/{payloadData.departments.length}
+                  {payloadData.submittedCount || 0}/{payloadData.totalDepartmentsCount || payloadData.departments?.length || 12}
                 </div>
               </div>
             </div>
