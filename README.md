@@ -1,234 +1,378 @@
-# 🏥 Hệ Thống Báo Cáo Giao Ban Trực Tuyến — TTYT Khu Vực Bình Long
+# 🏥 Hệ Thống Quản Lý & Trình Chiếu Báo Cáo Giao Ban Y Tế Toàn Viện
+### **Trung Tâm Y Tế Khu Vực Bình Long — Sở Y Tế Thành Phố Đồng Nai**
 
 <div align="center">
 
-![Trung Tâm Y Tế Khu Vực Bình Long](client/public/hospital.jpg)
+[![Version](https://img.shields.io/badge/Version-1.37.2-10B981?style=for-the-badge&logo=semver&logoColor=white)](https://github.com/UIBreaker/Hospital-Report-System)
+[![Author](https://img.shields.io/badge/Author-Nguyen%20Vu%20Nhat%20Nam-0F2C59?style=for-the-badge&logo=github&logoColor=white)](https://github.com/UIBreaker)
+[![Zalo Support](https://img.shields.io/badge/Zalo-0916.337.266-0284C7?style=for-the-badge&logo=zalo&logoColor=white)](https://zalo.me/0916337266)
+[![License](https://img.shields.io/badge/License-MIT-3B82F6?style=for-the-badge)](LICENSE)
 
 <br/>
 
-![Logo TTYT Bình Long](client/public/logo.png)
+[![React](https://img.shields.io/badge/React-18.3-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-6.x-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Node.js](https://img.shields.io/badge/Node.js-20.x%20%2F%2024.x-339933?style=flat-square&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![Express.js](https://img.shields.io/badge/Express.js-5.x-000000?style=flat-square&logo=express&logoColor=white)](https://expressjs.com/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.4%20Serverless-4479A1?style=flat-square&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![Aiven Cloud](https://img.shields.io/badge/Aiven-Cloud%20Database%20SSL-FF3554?style=flat-square&logo=aiven&logoColor=white)](https://aiven.io/)
+[![Cloudinary](https://img.shields.io/badge/Cloudinary-Medical%20CDN-3448C5?style=flat-square&logo=cloudinary&logoColor=white)](https://cloudinary.com/)
+[![ExcelJS](https://img.shields.io/badge/ExcelJS-4.4.x-107C41?style=flat-square&logo=microsoftexcel&logoColor=white)](https://github.com/exceljs/exceljs)
+[![html2pdf](https://img.shields.io/badge/html2pdf.js-0.10.x-DC2626?style=flat-square&logo=adobeacrobatreader&logoColor=white)](https://ekoopmans.github.io/html2pdf.js/)
+[![Vercel](https://img.shields.io/badge/Vercel-Edge%20Serverless-000000?style=flat-square&logo=vercel&logoColor=white)](https://vercel.com/)
 
-### **HỆ THỐNG QUẢN LÝ, TỔNG HỢP VÀ TRÌNH CHIẾU BÁO CÁO GIAO BAN Y TẾ TOÀN DIỆN**
+<br/>
 
-*Ứng dụng Web chuyển đổi số y tế toàn diện phục vụ 12 Khoa/Phòng chuyên môn & Phòng Kế Hoạch Nghiệp Vụ (KHNV) Trung Tâm Y Tế Khu Vực Bình Long.*
-
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel%20App-0070F3?style=for-the-badge&logo=vercel&logoColor=white)](https://hospital-report-system.vercel.app/)
-[![Author](https://img.shields.io/badge/Author-Nguyen%20Vu%20Nhat%20Nam%20(2004)-0F2C59?style=for-the-badge&logo=github)](https://github.com/UIBreaker/Hospital-Report-System)
-[![Zalo Contact](https://img.shields.io/badge/Zalo-0916.337.266-0284C7?style=for-the-badge&logo=zalo&logoColor=white)](https://zalo.me/0916337266)
-[![Version](https://img.shields.io/badge/Version-1.30.2-10B981?style=for-the-badge)](https://hospital-report-system.vercel.app/)
-[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
+*Giải pháp chuyển đổi số y tế toàn diện thay thế hoàn toàn báo cáo sổ sách truyền thống, phục vụ công tác giao ban chuyên môn hàng ngày cho 12 Khoa/Phòng & Phòng Kế Hoạch - Nghiệp Vụ.*
 
 </div>
 
 ---
 
-## 1. 🌟 Giới Thiệu & Bối Cảnh Dự Án
-
-**Hệ Thống Báo Cáo Giao Ban Trực Tuyến** là giải pháp phần mềm chuyển đổi số y tế hiện đại, thay thế hoàn toàn phương thức báo cáo giao ban truyền thống bằng giấy tờ và file bảng tính rời rạc tại **Trung Tâm Y Tế Khu Vực Bình Long (Sở Y Tế Thành Phố Đồng Nai)**.
-
-Phần mềm được thiết kế đồng bộ theo chuẩn **Clinical Design System (UI/UX Pro Max)**, cung cấp quy trình nhập liệu lâm sàng nhanh chóng cho các Bác sĩ & Điều dưỡng trực thuộc **12 khoa phòng chuyên môn**, đồng thời trang bị **Quản lý tài khoản các khoa với đổi mật khẩu tùy ý**, **Quản lý danh mục 185+ nhân sự**, **Trình chiếu hội trường Permanent Canvas chống chớp nháy**, **Quản lý đầy đủ 5 danh mục ca lâm sàng & hình ảnh y khoa HD**, **Xuất Excel đa Sheet chuyên môn (`ExcelJS`)**, **Xuất PowerPoint (.pptx) tự động**, và **Xuất Báo Cáo PDF y tế chuẩn in A4 (`html2pdf.js`)**.
+## 📌 Mục Lục
+- [1. Giới Thiệu & Bối Cảnh Hệ Thống](#1-giới-thiệu--bối-cảnh-hệ-thống)
+- [2. Nền Tảng Công Nghệ (Tech Stack)](#2-nền-tảng-công-nghệ-tech-stack)
+- [3. Tính Năng Kỹ Thuật Nổi Bật](#3-tính-năng-kỹ-thuật-nổi-bật)
+- [4. Cấu Trúc Thư Mục Dự Án](#4-cấu-trúc-thư-mục-dự-án)
+- [5. Thiết Kế Cơ Sở Dữ Liệu & Ràng Buộc Khóa Ngoại](#5-thiết-kế-cơ-sở-dữ-liệu--ràng-buộc-khóa-ngoại)
+- [6. Hướng Dẫn Cài Đặt & Chạy Môi Trường Phát Triển](#6-hướng-dẫn-cài-đặt--chạy-môi-trường-phát-triển)
+- [7. Cấu Hình Biến Môi Trường (.env)](#7-cấu-hình-biến-môi-trường-env)
+- [8. Danh Mục 12 Khoa Phòng Chuyên Môn](#8-danh-mục-12-khoa-phòng-chuyên-môn)
+- [9. Kế Hoạch Nâng Cấp (Roadmap)](#9-kế-hoạch-nâng-cấp-roadmap)
+- [10. Tác Giả & Hỗ Trợ Kỹ Thuật](#10-tác-giả--hỗ-trợ-kỹ-thuật)
 
 ---
 
-## 2. 🚀 Các Điểm Cải Tiến & Cập Nhật Gần Đây (v1.28.x)
+## 1. 🌟 Giới Thiệu & Bối Cảnh Hệ Thống
+
+Tại các bệnh viện và trung tâm y tế, công tác **Giao ban chuyên môn ca trực sáng (07:30 - 08:30)** là hoạt động mang tính sống còn để đánh giá tình hình cấp cứu, tiếp nhận bệnh nhân, theo dõi diễn biến chuyển biến nặng, phẫu thuật khẩn cấp và tử vong trong 24 giờ qua.
+
+**Hệ Thống Quản Lý Báo Cáo Giao Ban Trực Tuyến** được phát triển nhằm giải quyết triệt để các tồn đọng của quy trình thủ công:
+* ❌ **Thực trạng cũ:** Báo cáo bằng sổ viết tay hoặc nhập Excel rời rạc, tốn 45-60 phút tổng hợp, dễ sai sót số liệu, không thể đính kèm ảnh cận lâm sàng (X-quang, CT Scanner, siêu âm), không có cơ chế khóa sổ chống sửa số liệu hồi cứu.
+* ✅ **Giải pháp mới:** 12 Khoa phòng nhập liệu trực tiếp trên biểu mẫu điện tử chuyên khoa; hệ thống tự động tổng hợp số liệu toàn viện theo thời gian thực (Real-time); hỗ trợ chế độ **Trình chiếu hội trường thông minh**, **Xuất file Excel 3 Sheet** chuẩn định dạng Bộ Y Tế và **In/Xuất PDF chuẩn A4** chỉ với 1 cú click.
+
+---
+
+## 2. 🛡️ Nền Tảng Công Nghệ (Tech Stack)
+
+### **Frontend Client**
+* **React 18.3 & Vite 6 (Rolldown Engine):** Tối ưu hóa thời gian biên dịch Bundle (<800ms) và Hot Module Replacement (HMR).
+* **Code Splitting & Lazy Loading (`React.lazy` + `Suspense`):** Tách nhỏ mã nguồn trang quản trị thành các chunk độc lập (`ReportsTab`, `StaffTab`, `DatabaseTab`, `AccountsTab`), giảm 65% dung lượng nạp ban đầu.
+* **React Router v6:** Điều hướng Single Page Application (SPA) mượt mà với Route Guards bảo vệ phân quyền Admin/Department.
+* **ExcelJS Client Engine:** Tạo và định dạng trực tiếp file Excel 3 Sheet chuyên nghiệp trên trình duyệt mà không gây tải cho CPU máy chủ.
+* **html2pdf.js & jsPDF Engine:** Bộ xuất bản in A4 y tế chuẩn tỷ lệ phân trang thông minh, chống tràn viền và chống cắt đứt dòng chữ.
+* **React Icons:** Bộ biểu tượng vector thương hiệu sắc nét (`react-icons/fa`, `react-icons/si`).
+
+### **Backend RESTful API**
+* **Node.js 20+ & Express.js 5:** Khung kiến trúc API tách lớp chuẩn mực (Controller - Service - Model - Middleware).
+* **MySQL2 Connection Pool:** Quản lý kết nối cơ sở dữ liệu hiệu năng cao với cấu hình SSL đám mây.
+* **JSON Web Token (JWT) & Bcrypt:** Xác thực phân quyền đa tầng, mã hóa mật khẩu một chiều với salt rounds = 10, hỗ trợ kiểm tra dự phòng CSDL chống lỗi token cũ.
+* **Multer & Cloudinary SDK:** Xử lý nén và tải lên hình ảnh y khoa độ phân giải cao lên Cloud CDN với đường truyền bảo mật HTTPS.
+
+### **Cơ Sở Dữ Liệu & Hạ Tầng Máy Chủ**
+* **MySQL 8.4 Serverless (Aiven Cloud Managed DB / TiDB Cloud):** CSDL quan hệ chuẩn hóa mức 3NF, ràng buộc khóa ngoại `ON DELETE CASCADE`, chỉ mục Index tối ưu tốc độ truy vấn <10ms.
+* **Vercel Serverless Edge & On-Premise VM:** Tương thích cả hạ tầng đám mây không máy chủ và máy chủ vật lý nội bộ bệnh viện.
+
+---
+
+## 3. ⚡ Tính Năng Kỹ Thuật Nổi Bật
 
 ```mermaid
 graph TD
-    A[UI/UX Pro Max Clinical Design System] --> B[Atomic UI Library: components/ui/]
-    B --> C1[LoginPage: Không thanh cuộn 100vh, Glass Card, Zalo Hotline]
-    B --> C2[ReportPage: Thêm nhiều Bác sĩ & Điều dưỡng, Stepper 2 giai đoạn]
-    B --> C3[AdminDashboard: 4 Tabs Quản trị, Ma trận 12 khoa, KPI Stats]
-    B --> C4[PresentationPage: Permanent White Canvas, Zero-Shift Micro-Fade 140ms]
-    B --> C5[AIAssistant: Trợ lý thông minh, bảo mật tài khoản Admin]
+    A[Hệ Thống Giao Ban Toàn Viện] --> B[12 Khoa Phòng Chuyên Môn]
+    A --> C[Phòng Kế Hoạch Nghiệp Vụ - Admin]
+    
+    B --> B1[Biểu mẫu động chuyên khoa & Tự động tính toán]
+    B --> B2[Quản lý 4 nhóm ca bệnh & Upload ảnh Cloudinary]
+    B --> B3[In phiếu giao ban khoa phòng chuẩn A4]
+    
+    C --> C1[Ma trận theo dõi 12 khoa & Khóa sổ 08:30]
+    C --> C2[Trình chiếu giao ban hội trường Auto-Scale Font]
+    C --> C3[Xuất Excel 3 Sheet chuẩn BYT & PDF toàn viện]
+    C --> C4[Giám sát CSDL vật lý & Đo lường dung lượng byte theo ngày]
+    C --> C5[Quản lý 185+ nhân sự & Phân quyền tài khoản]
 ```
 
-### 💎 2.1. Nâng Cấp Báo Cáo Khoa Phòng — Thêm Nhiều Bác Sĩ Trực Ca (`v1.28.6`)
-* **Nút `+ Thêm Bác sĩ`**: Cho phép ca trực có từ 2 Bác sĩ trở lên (Bác sĩ trực chính, Bác sĩ trực phụ, Bác sĩ tăng cường) thao tác thêm/xóa linh hoạt tương tự như danh sách Điều dưỡng trực.
-* **Tự động chuẩn hóa & Lưu trữ**: Hệ thống tự động phân tách và lưu danh sách bác sĩ dưới dạng chuỗi chuẩn y tế, tự động nạp lại đầy đủ khi chỉnh sửa báo cáo cũ.
-* **Đồng bộ hiển thị toàn viện**: Tên các Bác sĩ trực ca xuất hiện đầy đủ trên màn hình Trình Chiếu Giao Ban, Bản In PDF và File Xuất Excel Tổng Hợp.
+### 1. Biểu Mẫu Nhập Liệu Chuyên Khoa Tự Động Hóa
+* Cung cấp 12 biểu mẫu đặc thù cho từng khối (Khoa Khám bệnh, HSCC - Thận nhân tạo, Sản, Nhi, Ngoại TH, CTCH, Mắt, TMH, RHM, YHCT, GMHS, Xét nghiệm, CĐHA).
+* Tự động tính toán số liệu: `Hiện còn = Bệnh cũ + Nhập viện - Xuất viện - Chuyển viện - Chuyển khoa` với cơ chế nhận diện can thiệp thủ công (Manual override).
 
-### 💎 2.2. Đại Tu Toàn Diện Màn Hình Đăng Nhập — Không Thanh Cuộn (`v1.28.4` - `v1.28.5`)
-* **Zero-Scrollbar Lock**: Khóa chiều cao cố định `100vh` và `overflow: hidden`, đảm bảo hiển thị trọn vẹn, không bị cuộn trang trên mọi độ phân giải (Laptop 1366x768, 1080p, 2K, Tablet).
-* **Atmospheric Clinical Mesh**: Nền không gian y tế chiều sâu cao cấp phối giữa xanh bóng đêm `#071328`, ánh sáng xanh lâm sàng và xanh ngọc dịu mắt.
-* **Thẻ Glass Card Nổi Khối**: Bo góc 20px, viền ánh sáng tinh tế, logo nổi khối 3D kèm huy hiệu `SỞ Y TẾ THÀNH PHỐ ĐỒNG NAI`.
-* **Tích hợp Thông Tin Tác Giả & Kênh Hỗ Trợ**:
-  * Tác giả: [**Nguyễn Vũ Nhật Nam (UIBreaker)**](https://github.com/UIBreaker).
-  * Kênh hỗ trợ kỹ thuật: [**Zalo: 0916.337.266**](https://zalo.me/0916337266) (Bấm để mở chat Zalo ngay).
-  * Trạng thái CSDL: **Aiven Cloud MySQL SSL** (Chấm xanh bảo mật).
+### 2. Quản Lý 4 Nhóm Ca Bệnh Lâm Sàng Kèm Ảnh Y Khoa HD
+* Quản lý chuyên sâu: **Ca Chuyển Viện**, **Ca Phẫu Thuật Mổ**, **Ca Tử Vong**, **Ca Bệnh Nặng Cần Theo Dõi**.
+* Tích hợp upload nhiều hình ảnh chụp X-quang, CT Scanner, siêu âm, vết thương qua Cloudinary CDN kèm bộ xem ảnh phóng to toàn màn hình (Image Lightbox Modal).
 
-### 💎 2.3. Khắc Phục Triệt Để Chớp Nháy Trình Chiếu Hội Trường (`v1.27.4` - `v1.28.0`)
-* **Kiến Trúc Permanent White Canvas**: Khung slide nền trắng được cố định vĩnh viễn (không unmount component khi chuyển slide), triệt tiêu hoàn toàn hiện tượng lộ nền tối gây chớp sáng/tối.
-* **Chuyển Slide Zero-Shift Micro-Fade (`140ms`)**: Giữ nguyên vị trí chữ và bảng số liệu 100%, hiệu ứng chuyển mờ êm dịu `0.14s`, chống mỏi mắt khi Ban Giám Đốc theo dõi giao ban liên tục.
-* **Xuất PowerPoint 1-Click (`pptxgenjs`)**: Tự động chuyển đổi toàn bộ báo cáo 12 khoa thành file thuyết trình Microsoft PowerPoint (`.pptx`) chuẩn tỷ lệ 16:9.
+### 3. Trình Chiếu Giao Ban Hội Trường (Presentation Engine)
+* **Permanent Canvas Architecture:** Cố định khung slide nền trắng, hiệu ứng chuyển cảnh Zero-Shift Micro-Fade (`140ms`), chống hoàn toàn hiện tượng chớp nháy màn hình máy chiếu.
+* **Auto-Scaling Typography:** Tự động đo độ dài văn bản chuyên môn (`contentLength`) để co giãn cỡ chữ thông minh từ `0.76rem` đến `1.65rem`, đảm bảo toàn bộ hội trường nhìn rõ mọi chi tiết ca bệnh.
 
-### 💎 2.4. Bảo Mật Trợ Lý Y Tế AI (`v1.28.7`)
-* Ẩn lựa chọn tài khoản Quản trị viên (Admin) khỏi danh sách câu hỏi nhanh của Chatbot AI để đảm bảo tính bảo mật nội bộ của Ban Giám Đốc và Phòng KHNV.
+### 4. Cơ Chế Khóa Sổ Toàn Viện Chống Sửa Số Liệu Hồi Cứu (`is_locked`)
+* Sau mốc **08:30 sáng**, toàn bộ báo cáo tự động chuyển sang trạng thái Khóa Sổ. Khoa phòng chỉ có thể xem, không thể thay đổi dữ liệu đã chốt.
+* Quản trị viên (Admin/Ban Giám Đốc) có đặc quyền tối cao: **Mở khóa từng khoa** hoặc **Mở khóa toàn viện** linh hoạt khi cần bổ sung số liệu.
 
----
+### 5. Xuất File Excel 3 Sheet & In Ấn PDF Y Tế Chuẩn A4
+* **ExcelJS Multi-Sheet:** Xuất file `.xlsx` gồm 3 Sheet: `Tổng Hợp Toàn Viện`, `Chi Tiết 12 Khoa Phòng`, `Danh Sách Ca Bệnh` với màu sắc nhận diện, căn lề và kẻ viền chuẩn mực.
+* **In / Tải PDF A4:** Tạo tài liệu A4 hoàn chỉnh có quốc hiệu, tiêu ngữ, chữ ký Bác sĩ - Điều dưỡng trưởng tua trực.
 
-## 3. 🛡️ Công Nghệ & Kiến Trúc Kỹ Thuật (Tech Stack)
-
-<div align="center">
-
-![React](https://img.shields.io/badge/React-18.x-61DAFB?style=flat-square&logo=react&logoColor=black)
-![Vite](https://img.shields.io/badge/Vite-8.x-646CFF?style=flat-square&logo=vite&logoColor=white)
-![Node.js](https://img.shields.io/badge/Node.js-20.x%20%2F%2024.x-339933?style=flat-square&logo=nodedotjs&logoColor=white)
-![Express.js](https://img.shields.io/badge/Express.js-5.x-000000?style=flat-square&logo=express&logoColor=white)
-![MySQL](https://img.shields.io/badge/MySQL-8.x%20%2F%20Aiven%20Cloud-4479A1?style=flat-square&logo=mysql&logoColor=white)
-![ExcelJS](https://img.shields.io/badge/ExcelJS-4.4.x-217346?style=flat-square&logo=microsoftexcel&logoColor=white)
-![pptxgenjs](https://img.shields.io/badge/pptxgenjs-3.12.x-D97706?style=flat-square&logo=microsoftpowerpoint&logoColor=white)
-![html2pdf.js](https://img.shields.io/badge/html2pdf.js-0.10.x-E11D48?style=flat-square&logo=adobeacrobatreader&logoColor=white)
-![JWT](https://img.shields.io/badge/JWT-30--Day%20Persistence-black?style=flat-square&logo=jsonwebtokens)
-![Responsive](https://img.shields.io/badge/Mobile--Optimized-100%25-brightgreen?style=flat-square)
-
-</div>
-
-* **Frontend**:
-  * **React 18** với **Vite 8** (Rolldown Bundler) tối ưu hóa tốc độ build (<800ms) và Hot Module Replacement.
-  * **Code Splitting & Lazy Loading (`React.lazy` + `Suspense`)**: Tải từng trang theo nhu cầu sử dụng.
-  * **Bộ thư viện UI Atomic nội bộ (`components/ui/index.jsx`)**: `Button`, `Card`, `Badge`, `Notice`, `Modal`, `Table`, `Tabs`, `Skeleton`, `EmptyState`, `FormField`, `Stepper`.
-  * **Tabular Figures (`tabular-nums`)**: Các chữ số thẳng hàng tuyệt đối trên toàn bộ bảng số liệu.
-  * **Axios** kết nối API với Interceptor xử lý xác thực bảo mật Bearer Token.
-* **Backend**:
-  * **Node.js & Express** kiến trúc RESTful API module hóa cao.
-  * **MySQL2 Connection Pool** hỗ trợ kết nối bảo mật SSL đám mây (**Aiven Cloud MySQL SSL / TiDB Cloud**).
-  * **JSON Web Token (JWT)** xác thực bảo mật với cơ chế duy trì phiên làm việc **30 ngày**.
-  * **Bcrypt** mã hóa mật khẩu một chiều tiêu chuẩn công nghiệp.
+### 6. Giám Sát Dung Lượng CSDL & Đo Lường Byte Dữ Liệu Theo Ngày
+* Bảng điều khiển phân tích chi tiết dung lượng ổ đĩa vật lý Cloud Aiven (Used / Free / Total 1.0 GB).
+* Đo lường chính xác dung lượng văn bản (Text KB) và hình ảnh (Image KB) phát sinh theo từng ngày của 12 khoa.
 
 ---
 
-## 4. 📋 Danh Sách 12 Khoa/Phòng Chuyên Môn Trong Hệ Thống
+## 4. 📂 Cấu Trúc Thư Mục Dự Án
 
-| STT | Mã Khoa | Tên Khoa / Phòng | Tài Khoản Đăng Nhập | Đặc Điểm Nghiệp Vụ Chuyên Môn |
-| :---: | :---: | :--- | :---: | :--- |
-| **1** | `lck` | **Khoa Liên Chuyên Khoa** | `lck.bvbl` | Mắt, Tai Mũi Họng (TMH), Răng Hàm Mặt (RHM), Da Liễu |
-| **2** | `xn` | **Khoa Xét nghiệm** | `xn.bvbl` | Tổng số lượt xét nghiệm, BHYT, Nội trú, Ngoại trú, Huyết học, Sinh hóa, Vi sinh |
-| **3** | `cdha` | **Chẩn đoán hình ảnh** | `cdha.bvbl` | CT Scan, X-quang, Siêu âm, Nội soi, Điện tim, BS trực phòng |
-| **4** | `hscc_tnt` | **Hồi sức cấp cứu – Thận nhân tạo** | `hscc.bvbl` | Khối HSCC (thở máy, CPAP, oxy), Khối Thận nhân tạo (lọc máu), Phòng khám 21 |
-| **5** | `noi` | **Khoa Nội tổng hợp** | `noi.bvbl` | Khu A, Khu B, bệnh cũ, bệnh mới, xuất viện, chuyển khoa, tự động tính `Hiện còn` |
-| **6** | `nhi` | **Khoa Nhi** | `nhi.bvbl` | Khám nhi, sơ sinh, thở oxy, chuyển viện, diễn biến nhi khoa |
-| **7** | `nhiem` | **Khoa Truyền nhiễm** | `nhiem.bvbl` | Sốt xuất huyết, tay chân miệng, truyền nhiễm, phòng cách ly |
-| **8** | `san` | **Khoa Sản** | `san.bvbl` | Sinh thường, mổ đẻ (mổ lấy thai), khám thai, cấp cứu sản khoa |
-| **9** | `yhct_phcn` | **Y học cổ truyền – PHCN** | `yhct.bvbl` | Khám ngoại trú, nội trú, châm cứu, xoa bóp bấm huyệt, vật lý trị liệu |
-| **10** | `ngoai_th` | **Ngoại tổng hợp** | `ngoai.bvbl` | Mổ cấp cứu, mổ chương trình, khám ngoại trú, hậu phẫu |
-| **11** | `ctch` | **Chấn thương chỉnh hình** | `ctch.bvbl` | Bó bột, nẹp bất động, kết hợp xương, phẫu thuật chỉnh hình |
-| **12** | `gmhs` | **Phẫu thuật, gây mê hồi sức** | `gmhs.bvbl` | Thống kê số ca mổ CC & CT (CTCH, Ngoại TH, Sản), kíp mổ, kỹ thuật viên gây mê |
-| **—** | `admin` | **Phòng Kế Hoạch Nghiệp Vụ** | `Khnv` | **Quản trị viện: Quản lý báo cáo, đổi mật khẩu 12 khoa, xuất Excel/PDF, trình chiếu** |
-
----
-
-## 5. ⚡ Các Tính Năng Nghiệp Vụ Trọng Tâm
-
-### 5.1. 🛡️ Quản Lý Toàn Diện Trong Bảng Điều Khiển Admin (4 Tabs)
-* **Tab 1: Báo Cáo Giao Ban**: Ma trận 12 khoa phòng kèm huy hiệu Đã nộp/Chưa nộp, xem chi tiết, chỉnh sửa số liệu và duyệt báo cáo.
-* **Tab 2: Quản Lý Nhân Sự (185+ cán bộ)**: Tìm kiếm tức thì, lọc theo khoa phòng và chức danh (Bác sĩ, Điều dưỡng, Kỹ thuật viên), thêm/sửa/xóa nhân sự.
-* **Tab 3: Quản Lý Database**: Theo dõi dung lượng bảng, số lượng bản ghi và trạng thái kết nối Cloud MySQL SSL.
-* **Tab 4: Quản Lý Tài Khoản 12 Khoa**: Đổi mật khẩu tùy ý, gợi ý mật khẩu nhanh 1-Click, reset mật khẩu về `123`.
-
-### 5.2. 📺 Trình Chiếu Giao Ban Hội Trường (Permanent Canvas & Micro-Fade)
-* **Sân khấu trình chiếu 16:9 sắc nét**: Tối ưu hiển thị cho máy chiếu hội trường và màn hình LED 4K.
-* **Permanent Canvas**: Nền thẻ trắng cố định vĩnh viễn, chuyển cảnh mờ siêu êm **140ms** không chớp nháy.
-* **Điều khiển chuyên nghiệp**: Phím tắt `← / → / Space`, `F` (Toàn màn hình), dock điều chỉnh cỡ chữ `80% - 180%`.
-* **Xuất PowerPoint (.pptx)**: Tạo file slide chuẩn hóa tự động phục vụ lưu trữ và thuyết trình ngoại tuyến.
-
-### 5.3. 🖨️ Mẫu In & Xuất Báo Cáo PDF Chuẩn A4
-* Bố cục 3 phần chuẩn y tế: Bảng tổng quan 12 khoa $\rightarrow$ Chỉ số chuyên môn $\rightarrow$ Danh sách ca bệnh & Chữ ký 3 bên.
-* Chống tràn trang, chống cắt đôi hàng bảng (`page-break-inside: avoid`), dịch 100% thuật ngữ y khoa tiếng Việt.
-
-### 5.4. 📊 Xuất Báo Cáo Excel Đa Sheet Động (`ExcelJS`)
-* Tự động sinh file Excel định dạng chuyên nghiệp với 3 Sheet: *Tổng Hợp Toàn Viện*, *Chi Tiết Ca Trực*, *Chi Tiết Bệnh Lý*.
+```text
+hospital-report-system/
+├── client/                               # Frontend React 18 + Vite SPA
+│   ├── public/                           # Static assets (logo.png, hospital.jpg, favicon)
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── admin/                    # Module Quản trị AdminDashboard
+│   │   │   │   ├── common/               # ReportDataViewer.jsx (Render chuyên môn đệ quy)
+│   │   │   │   ├── modals/               # AdminReportDetailModal, StaffFormModal, AccountFormModal
+│   │   │   │   └── tabs/                 # ReportsTab, StaffTab, DatabaseTab, AccountsTab
+│   │   │   ├── common/                   # MedicalPrintView, CaseImageUploader, Footer, AIAssistant
+│   │   │   ├── forms/departments/        # 12 Biểu mẫu chuyên khoa (LienChuyenKhoa, San, Noi...)
+│   │   │   └── ui/                       # Atomic UI System (Button, Card, Modal, Table, Notice...)
+│   │   ├── config/                       # version.js, api.js
+│   │   ├── contexts/                     # AuthContext.jsx (JWT Session Provider)
+│   │   ├── pages/                        # LoginPage, ReportPage, AdminDashboard, PresentationPage
+│   │   ├── services/                     # reportService, staffService, accountService, excelExportService
+│   │   └── utils/                        # medicalDictionary, medicalFormatters
+│   ├── package.json
+│   └── vite.config.js
+│
+├── server/                               # Backend Node.js Express REST API
+│   ├── src/
+│   │   ├── config/                       # db.js (MySQL2 Pool SSL), cloudinary.js
+│   │   ├── controllers/                  # authController, reportController, adminController, staffController
+│   │   ├── middleware/                   # auth.js (JWT Multi-criteria & Fallback Auth)
+│   │   ├── routes/                       # authRoutes, reportRoutes, adminRoutes, staffRoutes, accountRoutes
+│   │   ├── services/                     # excelExportService.js
+│   │   └── utils/                        # migrateCascade.js
+│   ├── server.js                         # Express Server Entry Point
+│   └── package.json
+│
+└── README.md                             # Tài liệu kỹ thuật dự án
+```
 
 ---
 
-## 6. 🚀 Hướng Dẫn Cài Đặt & Chạy Cục Bộ (Local Setup)
+## 5. 🗄️ Thiết Kế Cơ Sở Dữ Liệu & Ràng Buộc Khóa Ngoại
 
-### Yêu cầu:
-* **Node.js**: Phiên bản 18.x trở lên.
-* **MySQL**: Phiên bản 8.0 trở lên (hoặc Aiven / TiDB Cloud).
+Cơ sở dữ liệu được thiết lập với chuẩn toàn vẹn tham chiếu `ON DELETE CASCADE` và chỉ mục Index tối ưu hóa:
 
-### Khởi động dự án:
+```sql
+-- 1. Bảng Tài khoản người dùng (users)
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(50) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  department_code VARCHAR(50) NOT NULL,
+  department_name VARCHAR(100) NOT NULL,
+  role ENUM('admin', 'department') DEFAULT 'department',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Bảng Báo cáo giao ban trung tâm (reports)
+CREATE TABLE reports (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  department_code VARCHAR(50) NOT NULL,
+  report_date DATE NOT NULL,
+  doctor_name VARCHAR(255),
+  nurse_name VARCHAR(255),
+  overtime_staff JSON,
+  room VARCHAR(100),
+  shift_time VARCHAR(100),
+  report_data JSON,
+  status ENUM('draft', 'submitted') DEFAULT 'submitted',
+  is_locked TINYINT(1) DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY unique_dept_date (department_code, report_date)
+);
+
+-- 3. Các bảng ca bệnh đặc biệt liên kết Khóa ngoại ON DELETE CASCADE
+CREATE TABLE transfer_cases (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  report_id INT NOT NULL,
+  patient_name VARCHAR(150),
+  age VARCHAR(20),
+  address VARCHAR(255),
+  admission_time VARCHAR(50),
+  reason TEXT,
+  clinical_symptoms TEXT,
+  clinical_tests TEXT,
+  diagnosis TEXT,
+  initial_treatment TEXT,
+  progress_notes TEXT,
+  images JSON,
+  FOREIGN KEY (report_id) REFERENCES reports(id) ON DELETE CASCADE
+);
+
+CREATE TABLE surgery_cases (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  report_id INT NOT NULL,
+  patient_name VARCHAR(150),
+  birth_year VARCHAR(20),
+  address VARCHAR(255),
+  admission_time VARCHAR(50),
+  clinical_symptoms TEXT,
+  clinical_tests TEXT,
+  preoperative_diagnosis TEXT,
+  consultation_order TEXT,
+  postoperative_diagnosis TEXT,
+  current_status TEXT,
+  images JSON,
+  FOREIGN KEY (report_id) REFERENCES reports(id) ON DELETE CASCADE
+);
+
+CREATE TABLE death_cases (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  report_id INT NOT NULL,
+  patient_name VARCHAR(150),
+  age VARCHAR(20),
+  address VARCHAR(255),
+  admission_time VARCHAR(50),
+  admission_status TEXT,
+  medical_history TEXT,
+  clinical_symptoms TEXT,
+  clinical_tests TEXT,
+  diagnosis TEXT,
+  emergency_treatment TEXT,
+  final_outcome TEXT,
+  images JSON,
+  FOREIGN KEY (report_id) REFERENCES reports(id) ON DELETE CASCADE
+);
+
+CREATE TABLE critical_cases (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  report_id INT NOT NULL,
+  patient_name VARCHAR(150),
+  age VARCHAR(20),
+  address VARCHAR(255),
+  admission_time VARCHAR(50),
+  medical_history TEXT,
+  clinical_symptoms TEXT,
+  clinical_tests TEXT,
+  diagnosis TEXT,
+  condition_summary TEXT,
+  treatment TEXT,
+  notes TEXT,
+  images JSON,
+  FOREIGN KEY (report_id) REFERENCES reports(id) ON DELETE CASCADE
+);
+```
+
+---
+
+## 6. 🚀 Hướng Dẫn Cài Đặt & Chạy Môi Trường Phát Triển
+
+### **Yêu Cầu Tiên Quyết (Prerequisites)**
+* **Node.js:** Phiên bản `>= 18.x` (Khuyên dùng LTS Node 20.x hoặc 24.x).
+* **Cơ Sở Dữ Liệu:** MySQL `>= 8.0` trên máy cục bộ hoặc máy chủ Aiven Cloud MySQL / TiDB Cloud.
+* **Trình duyệt:** Google Chrome, Microsoft Edge, Safari bản mới nhất.
+
+### **Các Bước Triển Khai (Step-by-Step)**
+
+#### **Bước 1: Clone kho mã nguồn từ GitHub**
 ```bash
-# 1. Clone repository
 git clone https://github.com/UIBreaker/Hospital-Report-System.git
 cd Hospital-Report-System
+```
 
-# 2. Cài đặt và khởi chạy Backend (Terminal 1)
+#### **Bước 2: Cấu hình và khởi động Backend Máy Chủ**
+```bash
 cd server
 npm install
-node server.js
-# Backend chạy tại: http://localhost:3001
 
-# 3. Cài đặt và khởi chạy Frontend (Terminal 2)
+# Tạo file biến môi trường .env (tham khảo mẫu mục 7)
+cp .env.example .env
+
+# Khởi chạy server ở chế độ phát triển
+npm run dev
+# Máy chủ sẽ lắng nghe tại: http://localhost:5000
+```
+
+#### **Bước 3: Cấu hình và khởi động Frontend Giao Diện**
+```bash
+# Mở một cửa sổ Terminal mới
 cd ../client
 npm install
+
+# Khởi chạy giao diện với Vite HMR
 npm run dev
-# Frontend chạy tại: http://localhost:5173
+# Ứng dụng web sẵn sàng tại: http://localhost:5173
 ```
 
 ---
 
-## 7. 📜 Lịch Sử Phiên Bản (Changelog)
+## 7. ⚙️ Cấu Hình Biến Môi Trường (.env)
 
-* **`v1.30.2` (18/08/2026)**:
-  * Nâng cấp màn hình thông báo **"Gửi Báo Cáo Thành Công"**: Chuẩn hóa ngày hiển thị sang định dạng Việt Nam `DD-MM-YYYY`.
-  * Xây dựng tính năng **"📄 Xuất File PDF"** chuyên nghiệp cho từng khoa phòng: Xuất trọn vẹn 100% dữ liệu hoạt động chuyên môn, danh sách ca mổ, chuyển viện, bệnh nặng, tử vong và chữ ký bàn giao ca trực theo chuẩn in ấn A4 y tế.
-* **`v1.29.10` (18/08/2026)**:
-  * Khắc phục lỗi tải dữ liệu ca bệnh: Khôi phục và chuẩn hóa toàn bộ các trường **"Lâm Sàng / Triệu Chứng / Sinh Hiệu"** và **"Cận Lâm Sàng / XN / X-Quang"** khi khoa phòng mở lại báo cáo của ngày đã nộp để xem hoặc chỉnh sửa.
-* **`v1.29.9` (18/08/2026)**:
-  * Khắc phục lỗi che khuất khối **Phòng Khám 21 (PK 21)** trên slide trình chiếu khoa **Hồi sức cấp cứu – Thận nhân tạo**: Chuyển thông tin "Bác sĩ trực TNT" lên huy hiệu đầu trang và tối ưu tỷ lệ co giãn thẻ dữ liệu, chống tràn viền.
-* **`v1.29.8` (17/08/2026)**:
-  * Chuẩn hóa danh xưng chuyên môn khoa Liên Chuyên Khoa: Thay đổi toàn bộ nhãn **"RHM + Nội"** thành **"Răng Hàm Mặt"** trên Slide Báo cáo, Biểu mẫu nhập liệu, Bản in Y tế và File xuất Excel.
-* **`v1.29.7` (17/08/2026)**:
-  * Tinh chỉnh vị trí ô **Tổng số khám** trong khối HSCC nằm ngay phía sau ô **Kê toa** (trong nhóm chỉ số chính), tối ưu trải nghiệm nhập liệu chuyên môn cho khoa Hồi sức cấp cứu.
-* **`v1.29.6` (17/08/2026)**:
-  * Tái cấu trúc biểu mẫu báo cáo **Hồi sức cấp cứu – Thận nhân tạo**:
-    * **Khối HSCC**: Đưa ô **Tử vong** ra hàng chỉ số chính (phía sau Bệnh mới), chuyển ô **Kê toa** về phía sau Hiện còn, và đưa **Tổng số khám** xuống cuối cùng.
-    * **Khối PK 21**: Tinh gọn biểu mẫu PK 21 chỉ gồm 4 chỉ số chuẩn: **Tổng số khám**, **Ngoại trú**, **Nhập viện**, **Chuyển viện**.
-* **`v1.29.5` (17/08/2026)**:
-  * Ẩn các nút **"Sao chép mẫu Zalo"** và **"Chép ca"** trong biểu mẫu **Bệnh Nặng Theo Dõi**, tinh gọn tối đa giao diện nhập liệu lâm sàng cho khoa phòng.
-* **`v1.29.4` (17/08/2026)**:
-  * Tinh chỉnh nhãn đăng nhập "Mật khẩu", hoàn thiện trải nghiệm giao diện người dùng và đồng bộ cập nhật phiên bản phát hành mới nhất.
-* **`v1.29.3` (17/08/2026)**:
-  * Cập nhật thông tin đơn vị chủ quản từ **Sở Y Tế Tỉnh Bình Phước** sang **Sở Y Tế Thành Phố Đồng Nai** đồng bộ trên toàn bộ hệ thống (Màn hình Đăng nhập, Chân trang Footer, Xuất Báo cáo Excel, Xuất PowerPoint, Bản In Y Tế PDF).
-* **`v1.29.2` (16/08/2026)**:
-  * Ẩn hoàn toàn nút **"Phóng to toàn màn hình (HD Lightbox)"** ở các slide trình chiếu hình ảnh lâm sàng theo yêu cầu, tinh gọn bố cục giao diện trình chiếu báo cáo.
-* **`v1.29.1` (16/08/2026)**:
-  * Khắc phục triệt để lỗi màn hình trắng khi bấm **"Phóng to toàn màn hình (HD Lightbox)"** trong trang trình chiếu Presentation (`ImageLightboxModal`) bằng cách bổ sung đầy đủ hàm điều khiển toàn màn hình, tải ảnh gốc và kiểm tra `mounted` an toàn.
-  * Sửa lỗi thiếu import icon `FaEyeSlash` gây crash trắng trang khi bấm nút **"Đổi Mật Khẩu"** trong mục Quản Lý Tài Khoản Khoa Phòng, đồng thời bọc React Portal cho tất cả Modal quản trị.
-* **`v1.29.0` (15/08/2026)**:
-  * **Tái cấu trúc Tab Quản Lý Database**:
-    * Thay thế widget dung lượng logic cũ bằng **Dung Lượng Ổ Đĩa Aiven (Physical Storage)** với thanh trạng thái cảnh báo an toàn 3 mức (Xanh lá < 70%, Cam/Vàng 70-85%, Đỏ > 85%).
-    * Tích hợp công cụ **Đo Dung Lượng Báo Cáo Theo Ngày Của Từng Khoa** (`/api/admin/reports-payload-size`), phân tích chi tiết dung lượng văn bản (KB), dung lượng ảnh (KB) và tỷ lệ % phát sinh trong ngày.
-* **`v1.28.11` (15/08/2026)**:
-  * Khắc phục triệt để việc xóa báo cáo không giải phóng dung lượng bằng cách xóa liên hoàn (cascade) toàn bộ ca lâm sàng con (`death_cases`, `transfer_cases`, `surgery_cases`, `critical_cases`) và chạy `OPTIMIZE TABLE` thu hồi không gian đĩa tức thì.
-* **`v1.28.10` (15/08/2026)**:
-  * Tự động làm mới thống kê InnoDB (`ANALYZE TABLE`) và tính chính xác `COUNT(*)` số dòng thực tế ở trang Quản Lý Database, cập nhật dung lượng ảnh và bản ghi mới tức thì.
-* **`v1.28.9` (15/08/2026)**:
-  * Sửa lỗi Modal xác nhận nộp báo cáo bị trôi/lệch khỏi tầm nhìn bằng cơ chế **React Portal (`createPortal`)** gắn trực tiếp vào `document.body`.
-* **`v1.28.8` (15/08/2026)**:
-  * Sửa lỗi menu dropdown **"Xuất Báo Cáo"** bị che/cắt góc ở bảng điều khiển Admin bằng cách thiết lập `overflow: visible !important` và nâng `z-index`.
-* **`v1.28.7` (15/08/2026)**:
-  * Ẩn lựa chọn tài khoản Quản trị viên (Admin) khỏi gợi ý Chatbot AI để tăng cường bảo mật.
-* **`v1.28.6` (15/08/2026)**:
-  * Hỗ trợ thêm nhiều **Bác sĩ trực ca** (nút `+ Thêm Bác sĩ`) tương tự như phần thêm điều dưỡng trực.
-* **`v1.28.5` (15/08/2026)**:
-  * Chuyển đổi kênh liên hệ tác giả sang **Zalo: 0916.337.266** (kèm link mở Zalo trực tiếp).
-* **`v1.28.4` (15/08/2026)**:
-  * Khóa màn hình Đăng Nhập `100vh` không thanh cuộn (**Zero-Scrollbar Lock**), tích hợp thông tin tác giả và CSDL Aiven vào thẻ đăng nhập.
-* **`v1.28.0` - `v1.28.2` (15/08/2026)**:
-  * Đại tu toàn diện giao diện theo tiêu chuẩn **UI/UX Pro Max** (Clinical Design System, Tabular Figures, Glass Card).
-* **`v1.27.4` (14/08/2026)**:
-  * Khắc phục triệt để lỗi chớp nháy chuyển slide bằng kiến trúc **Permanent White Canvas** và **Zero-Shift Micro-Fade (`140ms`)**.
-* **`v1.26.0` (09/08/2026)**:
-  * Tích hợp xuất PowerPoint (.pptx) và bộ từ điển dịch bảng in PDF tiếng Việt.
+### **1. File cấu hình Server (`server/.env`)**
+| Biến Môi Trường | Ý Nghĩa / Giá Trị Mẫu | Ghi Chú |
+| :--- | :--- | :--- |
+| `PORT` | `5000` | Cổng HTTP Server của Express |
+| `DB_HOST` | `mysql-hospital-report.aivencloud.com` | Địa chỉ máy chủ CSDL MySQL |
+| `DB_PORT` | `15392` | Cổng kết nối CSDL (mặc định 3306 hoặc port Cloud) |
+| `DB_USER` | `avnadmin` | Tên người dùng CSDL |
+| `DB_PASSWORD` | `YOUR_SECURE_PASSWORD` | Mật khẩu truy cập CSDL |
+| `DB_NAME` | `hospital_report` | Tên Schema cơ sở dữ liệu |
+| `DB_SSL` | `true` | Bật mã hóa kết nối SSL bắt buộc trên Cloud |
+| `JWT_SECRET` | `SUPER_SECRET_KEY_HOSPITAL_2026` | Khóa bí mật ký mã hóa Token JWT |
+| `JWT_EXPIRES_IN` | `30d` | Thời hạn phiên đăng nhập (30 ngày) |
+| `CLOUDINARY_CLOUD_NAME` | `hospital-binh-long` | Tên Cloud lưu trữ ảnh y khoa Cloudinary |
+| `CLOUDINARY_API_KEY` | `123456789012345` | Khóa API Cloudinary |
+| `CLOUDINARY_API_SECRET` | `YOUR_CLOUDINARY_SECRET` | Khóa bí mật API Cloudinary |
+
+### **2. File cấu hình Client (`client/.env`)**
+| Biến Môi Trường | Ý Nghĩa / Giá Trị Mẫu | Ghi Chú |
+| :--- | :--- | :--- |
+| `VITE_API_URL` | `http://localhost:5000/api` | Đường dẫn kết nối API Gateway của Frontend |
 
 ---
 
-## 8. 👤 Tác Giả & Bản Quyền
+## 8. 🏥 Danh Mục 12 Khoa Phòng Chuyên Môn
 
-* **Đơn vị công tác**: Phòng Kế Hoạch - Nghiệp Vụ, Trung Tâm Y Tế Khu Vực Bình Long (Sở Y Tế Thành Phố Đồng Nai).
-* **Tác giả phát triển**: **Nguyễn Vũ Nhật Nam** (Sinh năm 2004).
-* **Kênh hỗ trợ / Zalo**: [**0916.337.266**](https://zalo.me/0916337266)
-* **Email liên hệ**: `nhatnam171217@gmail.com`
-* **Mã nguồn GitHub**: [https://github.com/UIBreaker/Hospital-Report-System](https://github.com/UIBreaker/Hospital-Report-System)
-* **Bản quyền**: Phát hành theo giấy phép **MIT License**.
+| STT | Mã Khoa (`department_code`) | Tên Khoa Phòng Đầy Đủ | Biểu Mẫu Nhập Liệu |
+| :---: | :--- | :--- | :--- |
+| **1** | `lck` | **Khoa Liên Chuyên Khoa** (Mắt - TMH - RHM - Da Liễu) | `LienChuyenKhoaForm.jsx` |
+| **2** | `xn` | **Khoa Xét Nghiệm** | `XetNghiemForm.jsx` |
+| **3** | `cdha` | **Khoa Chẩn Đoán Hình Ảnh** (X-Quang, Siêu âm, CT) | `ChuanDoanHinhAnhForm.jsx` |
+| **4** | `hscc_tnt` | **Khoa Hồi Sức Cấp Cứu – Thận Nhân Tạo** (Kèm PK21) | `HoiSucCapCuuForm.jsx` |
+| **5** | `noi` | **Khoa Nội Tổng Hợp** | `NoiForm.jsx` |
+| **6** | `nhi` | **Khoa Nhi** | `NhiForm.jsx` |
+| **7** | `nhiem` | **Khoa Truyền Nhiễm** | `NhiemForm.jsx` |
+| **8** | `san` | **Khoa Sản (Chăm Sóc Sức Khỏe Sinh Sản)** | `SanForm.jsx` |
+| **9** | `yhct_phcn` | **Khoa Y Học Cổ Truyền – Phục Hồi Chức Năng** | `YHocCoTruyenForm.jsx` |
+| **10** | `ngoai_th` | **Khoa Ngoại Tổng Hợp** | `NgoaiTongHopForm.jsx` |
+| **11** | `ctch` | **Khoa Chấn Thương Chỉnh Hình** | `ChanThuongChinhHinhForm.jsx` |
+| **12** | `gmhs` | **Khoa Phẫu Thuật — Gây Mê Hồi Sức** | `GayMeHoiSucForm.jsx` |
+
+---
+
+## 9. 🗺️ Kế Hoạch Nâng Cấp (Roadmap)
+
+- [x] **v1.34.3:** Chuẩn hóa cơ chế Khóa sổ toàn viện `is_locked` độc quyền kiểm soát bởi Admin.
+- [x] **v1.35.0:** Tái cấu trúc Module hóa `AdminDashboard` thành 4 tab chuyên biệt với `React.lazy` & `Suspense`.
+- [x] **v1.35.4:** Tối ưu hóa xuất file Excel 3 Sheet, In PDF A4 và biểu mẫu nhập liệu chuyên môn.
+- [x] **v1.36.0:** Bổ sung Footer nhận diện thương hiệu y tế và trình diễn 13 công nghệ vận hành.
+- [x] **v1.37.2:** Hoàn thiện tài liệu kỹ thuật chuẩn quốc tế và tinh chỉnh hiệu năng toàn diện.
+- [ ] **v1.38.0 (Dự kiến):** Tích hợp WebSocket Real-time thông báo tức thì khi có khoa nộp báo cáo ca bệnh nặng.
+- [ ] **v1.39.0 (Dự kiến):** Trợ lý AI phân tích tóm tắt diễn biến ca trực tự động ứng dụng Google Gemini 2.0 Flash.
+- [ ] **v1.40.0 (Dự kiến):** Kết nối chuẩn y tế HL7/DICOM tích hợp trực tiếp phần mềm quản lý bệnh viện (HIS/LIS/PACS).
+
+---
+
+## 10. 👨‍💻 Tác Giả & Hỗ Trợ Kỹ Thuật
+
+* **Tác giả phát triển:** **Nguyễn Vũ Nhật Nam** (Full-Stack Engineer / UI-UX Architect)
+* **Tổ chức:** Phòng Kế Hoạch - Nghiệp Vụ, **Trung Tâm Y Tế Khu Vực Bình Long**
+* **GitHub Repository:** [https://github.com/UIBreaker/Hospital-Report-System](https://github.com/UIBreaker/Hospital-Report-System)
+* **Kênh hỗ trợ kỹ thuật trực tiếp (Hotline / Zalo):** [**0916.337.266**](https://zalo.me/0916337266)
+
+---
+
+<div align="center">
+  <b>&copy; 2026 Trung Tâm Y Tế Khu Vực Bình Long — Sở Y Tế Thành Phố Đồng Nai. All rights reserved.</b>
+</div>
