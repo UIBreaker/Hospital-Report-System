@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/common/ProtectedRoute';
+import ErrorBoundary from './components/common/ErrorBoundary';
 import { FaSpinner } from 'react-icons/fa';
 
 const LoginPage = lazy(() => import('./pages/LoginPage'));
@@ -22,9 +23,10 @@ const PageLoadingFallback = () => (
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Suspense fallback={<PageLoadingFallback />}>
+    <ErrorBoundary>
+      <AuthProvider>
+        <Router>
+          <Suspense fallback={<PageLoadingFallback />}>
           <Routes>
             <Route path="/" element={<LoginPage />} />
             <Route 
@@ -56,6 +58,7 @@ function App() {
         </Suspense>
       </Router>
     </AuthProvider>
+  </ErrorBoundary>
   );
 }
 
