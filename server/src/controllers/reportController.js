@@ -215,7 +215,29 @@ const createOrUpdateReport = async (req, res, next) => {
             ]
           );
         }
-      }
+    // Medical Compliance Audit Log Recording
+    try {
+      const clientIp = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || null;
+      const actionType = existing.length > 0 ? 'UPDATE' : 'CREATE';
+      const changesSummary = `${actionType === 'CREATE' ? 'Nộp báo cáo lần đầu' : 'Cập nhật chỉnh sửa báo cáo'} bởi BS. ${doctorName || 'N/A'}, ĐD. ${nurseName || 'N/A'}`;
+
+      await connection.execute(
+        `INSERT INTO report_audit_logs 
+         (report_id, department_code, report_date, action_type, doctor_name, nurse_name, ip_address, changes_summary)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          reportId,
+          departmentCode,
+          reportDate,
+          actionType,
+          safeVal(doctorName),
+          safeVal(nurseName),
+          safeVal(clientIp),
+          changesSummary
+        ]
+      );
+    } catch (auditErr) {
+      console.warn('Audit log write warning:', auditErr.message);
     }
 
     await connection.commit();

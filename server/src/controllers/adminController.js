@@ -775,11 +775,39 @@ const createAccount = async (req, res, next) => {
   }
 };
 
+const getAuditLogs = async (req, res, next) => {
+  try {
+    const { date, departmentCode } = req.query;
+    let sql = `
+      SELECT a.*, u.department_name 
+      FROM report_audit_logs a
+      LEFT JOIN users u ON a.department_code = u.department_code
+      WHERE 1=1
+    `;
+    const params = [];
+    if (date) {
+      sql += ' AND a.report_date = ?';
+      params.push(date);
+    }
+    if (departmentCode) {
+      sql += ' AND a.department_code = ?';
+      params.push(departmentCode);
+    }
+    sql += ' ORDER BY a.created_at DESC LIMIT 100';
+
+    const [logs] = await pool.execute(sql, params);
+    res.json({ success: true, data: logs });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = { 
   getPresentationData, 
   getDepartmentStatus, 
   getDatabaseStats, 
   getReportsPayloadSize,
+  getAuditLogs,
   exportReports,
   getAllAccounts,
   updateAccountPassword,

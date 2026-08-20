@@ -5,6 +5,7 @@ const {
   getDepartmentStatus, 
   getDatabaseStats, 
   getReportsPayloadSize,
+  getAuditLogs,
   exportReports,
   getAllAccounts,
   updateAccountPassword,
@@ -21,6 +22,7 @@ router.get('/reports/:date', auth, adminOnly, getReportsByDate);
 router.get('/database-stats', auth, adminOnly, getDatabaseStats);
 router.get('/reports-payload-size', auth, adminOnly, getReportsPayloadSize);
 router.get('/reports-payload-size/:date', auth, adminOnly, getReportsPayloadSize);
+router.get('/audit-logs', auth, adminOnly, getAuditLogs);
 router.get('/export-reports', auth, adminOnly, exportReports);
 router.get('/export-reports/:date', auth, adminOnly, exportReports);
 

@@ -74,6 +74,32 @@ const ensureSchema = async (connOrPool) => {
         // Ignore duplicate column or index errors
       }
     }
+
+    // Create Audit Logs Table for Medical Compliance
+    const createAuditSql = `
+      CREATE TABLE IF NOT EXISTS report_audit_logs (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        report_id INT NOT NULL,
+        department_code VARCHAR(50) NOT NULL,
+        report_date DATE NOT NULL,
+        action_type ENUM('CREATE', 'UPDATE', 'DELETE') NOT NULL,
+        doctor_name VARCHAR(150) DEFAULT NULL,
+        nurse_name VARCHAR(150) DEFAULT NULL,
+        ip_address VARCHAR(45) DEFAULT NULL,
+        changes_summary TEXT DEFAULT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_report_id (report_id),
+        INDEX idx_dept_date (department_code, report_date),
+        INDEX idx_created_at (created_at)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `;
+
+    try {
+      await connection.query(createAuditSql);
+    } catch (auditErr) {
+      console.warn('Audit table check warning:', auditErr.message);
+    }
+
     schemaInitialized = true;
   } catch (err) {
     console.warn('Schema auto-migration check warning:', err.message);
