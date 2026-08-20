@@ -455,6 +455,9 @@ const AdminDashboard = () => {
   const [editDeathCases, setEditDeathCases] = useState([]);
   const [editCriticalCases, setEditCriticalCases] = useState([]);
   const [hasReport, setHasReport] = useState(false);
+  const [modalReportLocked, setModalReportLocked] = useState(false);
+  const [togglingModalLock, setTogglingModalLock] = useState(false);
+  const [lockingAll, setLockingAll] = useState(false);
 
   // Print Modal State
   const [showPrintModal, setShowPrintModal] = useState(false);
@@ -813,6 +816,7 @@ const AdminDashboard = () => {
       const report = res.data;
       if (report) {
         setHasReport(true);
+        setModalReportLocked(Boolean(report.is_locked || report.isLocked));
         let overtime = report.overtime_staff;
         if (typeof overtime === 'string') {
           try { overtime = JSON.parse(overtime); } catch (e) { overtime = []; }
@@ -833,6 +837,7 @@ const AdminDashboard = () => {
         setEditCriticalCases(report.criticalCases || []);
       } else {
         setHasReport(false);
+        setModalReportLocked(false);
         setEditHeader({ reportDate: date, doctorName: '', nurseName: '', overtimeStaff: [], room: '', shiftTime: '' });
         setEditReportData({});
         setEditTransferCases([]);
@@ -844,6 +849,52 @@ const AdminDashboard = () => {
       console.error('Lỗi khi tải chi tiết báo cáo:', err);
     } finally {
       setLoadingReport(false);
+    }
+  };
+
+  const handleToggleModalLock = async () => {
+    if (!hasReport) {
+      alert('Khoa phòng này chưa có báo cáo để khóa/mở khóa.');
+      return;
+    }
+    setTogglingModalLock(true);
+    try {
+      const targetDate = editHeader.reportDate || date;
+      const res = await reportService.toggleReportLock(modalDept.departmentCode, targetDate, !modalReportLocked);
+      if (res.success) {
+        setModalReportLocked(res.isLocked);
+        setSaveSuccess(res.message);
+        fetchStatus();
+      }
+    } catch (err) {
+      alert('Lỗi thay đổi trạng thái khóa sổ: ' + (err.response?.data?.error || err.message));
+    } finally {
+      setTogglingModalLock(false);
+    }
+  };
+
+  const handleToggleLockAll = async () => {
+    const submittedDepts = statusList.filter(s => s.status === 'submitted');
+    if (submittedDepts.length === 0) {
+      alert(`Ngày ${date} chưa có khoa phòng nào nộp báo cáo.`);
+      return;
+    }
+    const allLocked = submittedDepts.every(s => s.isLocked);
+    const actionText = allLocked ? 'MỞ KHÓA TOÀN VIỆN' : 'KHÓA SỔ TOÀN VIỆN';
+    if (!window.confirm(`Bạn có chắc chắn muốn ${actionText} cho tất cả báo cáo ngày ${date}?`)) {
+      return;
+    }
+    setLockingAll(true);
+    try {
+      const res = await reportService.toggleLockAllReports(date, !allLocked);
+      if (res.success) {
+        alert(res.message);
+        fetchStatus();
+      }
+    } catch (err) {
+      alert('Lỗi khóa sổ toàn viện: ' + (err.response?.data?.error || err.message));
+    } finally {
+      setLockingAll(false);
     }
   };
 
@@ -1036,6 +1087,8 @@ const AdminDashboard = () => {
   // -------------------------------------------------------------------------
   const totalCount = statusList.length;
   const submittedCount = statusList.filter(s => s.status === 'submitted').length;
+  const lockedCount = statusList.filter(s => s.status === 'submitted' && s.isLocked).length;
+  const allLocked = submittedCount > 0 && lockedCount === submittedCount;
 
   const totalStaffCount = staffList.length;
   const doctorCount = staffList.filter(s => s.position === 'Bác sĩ' || s.position?.toLowerCase().includes('bác sĩ')).length;
@@ -1057,7 +1110,7 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        <div className="admin-header-controls" style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+        <div className="admin-header-controls" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
           {activeTab === 'reports' && (
             <div className="date-picker-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#F8FAFC', padding: '0.35rem 0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
               <FaCalendarAlt style={{ color: 'var(--brand-blue)' }} />
@@ -1072,6 +1125,32 @@ const AdminDashboard = () => {
 
           {activeTab === 'reports' && (
             <>
+              {/* Nút Khóa Sổ / Mở Khóa Toàn Viện */}
+              <button
+                className="btn"
+                onClick={handleToggleLockAll}
+                disabled={lockingAll}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.45rem',
+                  backgroundColor: allLocked ? '#10B981' : '#F59E0B',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  boxShadow: allLocked ? '0 2px 8px rgba(16, 185, 129, 0.3)' : '0 2px 8px rgba(245, 158, 11, 0.3)',
+                  fontWeight: '700'
+                }}
+                title={allLocked ? 'Mở khóa cho toàn bộ khoa phòng' : 'Khóa sổ giao ban cho toàn bộ khoa phòng đã nộp'}
+              >
+                {lockingAll ? (
+                  <><FaSpinner className="spinner" /> Đang xử lý...</>
+                ) : allLocked ? (
+                  <><FaUnlockAlt /> Mở Khóa Toàn Viện</>
+                ) : (
+                  <><FaLock /> Khóa Sổ Toàn Viện</>
+                )}
+              </button>
+
               {/* Dropdown Xuất Báo Cáo */}
               <div style={{ position: 'relative', display: 'inline-block', zIndex: 70 }}>
                 <button 
@@ -1285,14 +1364,21 @@ const AdminDashboard = () => {
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.65rem' }}>
                       <h3 style={{ fontWeight: '700', fontSize: '0.95rem', color: 'var(--primary)', lineHeight: 1.3 }}>{dept.departmentName}</h3>
-                      {isSubmitted ? 
-                        <span className="badge badge-success" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', flexShrink: 0, marginLeft: '0.5rem' }}>
-                          <FaCheck size={10} /> Đã nộp
-                        </span> : 
-                        <span className="badge badge-warning" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', flexShrink: 0, marginLeft: '0.5rem' }}>
-                          <FaTimes size={10} /> Chưa nộp
-                        </span>
-                      }
+                      <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center', flexShrink: 0, marginLeft: '0.5rem' }}>
+                        {dept.isLocked && (
+                          <span style={{ backgroundColor: '#FEF3C7', color: '#92400E', border: '1px solid #FDE68A', padding: '0.15rem 0.45rem', borderRadius: '12px', fontSize: '0.7rem', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
+                            <FaLock size={8} /> Khóa sổ
+                          </span>
+                        )}
+                        {isSubmitted ? 
+                          <span className="badge badge-success" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <FaCheck size={10} /> Đã nộp
+                          </span> : 
+                          <span className="badge badge-warning" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <FaTimes size={10} /> Chưa nộp
+                          </span>
+                        }
+                      </div>
                     </div>
                     
                     {isSubmitted ? (
@@ -2743,25 +2829,70 @@ const AdminDashboard = () => {
               color: 'white',
               display: 'flex',
               justifyContent: 'space-between',
-              alignItems: 'center'
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '0.75rem'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <img src="/logo.png" alt="Logo" style={{ width: '36px', height: '36px' }} />
                 <div>
-                  <h3 style={{ color: 'white', fontSize: '1.1rem', fontWeight: '800', margin: 0 }}>
-                    {modalDept.departmentName}
-                  </h3>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <h3 style={{ color: 'white', fontSize: '1.1rem', fontWeight: '800', margin: 0 }}>
+                      {modalDept.departmentName}
+                    </h3>
+                    {hasReport && (
+                      <span style={{
+                        backgroundColor: modalReportLocked ? '#FEF3C7' : '#D1FAE5',
+                        color: modalReportLocked ? '#92400E' : '#065F46',
+                        fontSize: '0.72rem',
+                        fontWeight: '800',
+                        padding: '0.15rem 0.55rem',
+                        borderRadius: '12px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.25rem'
+                      }}>
+                        {modalReportLocked ? <><FaLock size={8} /> ĐÃ KHÓA SỔ</> : <><FaUnlockAlt size={8} /> ĐANG MỞ</>}
+                      </span>
+                    )}
+                  </div>
                   <p style={{ fontSize: '0.8rem', color: '#DBEAFE', margin: '0.2rem 0 0 0' }}>
                     Báo cáo giao ban ngày: <strong>{editHeader.reportDate || date}</strong>
                   </p>
                 </div>
               </div>
-              <button 
-                onClick={() => setModalOpen(false)}
-                style={{ background: 'none', border: 'none', color: 'white', fontSize: '1.2rem', cursor: 'pointer', opacity: 0.8 }}
-              >
-                ✕
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                {hasReport && (
+                  <button
+                    type="button"
+                    onClick={handleToggleModalLock}
+                    disabled={togglingModalLock}
+                    style={{
+                      backgroundColor: modalReportLocked ? '#059669' : '#F59E0B',
+                      color: '#FFFFFF',
+                      border: 'none',
+                      padding: '0.38rem 0.85rem',
+                      borderRadius: '20px',
+                      fontSize: '0.78rem',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.2)'
+                    }}
+                    title={modalReportLocked ? 'Bấm để MỞ KHÓA cho khoa phòng sửa số liệu' : 'Bấm để KHÓA SỔ báo cáo'}
+                  >
+                    {togglingModalLock ? <FaSpinner className="spinner" /> : modalReportLocked ? <><FaUnlockAlt size={11} /> 🔓 Mở Khóa Cho Khoa</> : <><FaLock size={11} /> 🔒 Khóa Sổ Báo Cáo</>}
+                  </button>
+                )}
+                <button 
+                  onClick={() => setModalOpen(false)}
+                  style={{ background: 'none', border: 'none', color: 'white', fontSize: '1.2rem', cursor: 'pointer', opacity: 0.8 }}
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
             {/* Modal Content */}

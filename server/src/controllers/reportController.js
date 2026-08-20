@@ -30,6 +30,30 @@ const parseCaseImages = (caseItem) => {
   };
 };
 
+const isReportLocked = (report, userRole) => {
+  if (userRole === 'admin') return false; // Admin always has bypass permission
+  if (!report) return false;
+  if (report.is_locked === 1 || report.is_locked === true) return true;
+  
+  // Auto-lock rule after 08:30 AM next day
+  const reportDateStr = report.report_date ? (typeof report.report_date === 'string' ? report.report_date.split('T')[0] : report.report_date) : '';
+  if (reportDateStr) {
+    const now = new Date();
+    // VN time (UTC+7)
+    const vnTime = new Date(now.getTime() + (7 * 60 + now.getTimezoneOffset()) * 60000);
+    const vnTodayStr = vnTime.toISOString().split('T')[0];
+    
+    if (reportDateStr < vnTodayStr) {
+      const [rY, rM, rD] = reportDateStr.split('-').map(Number);
+      const nextDay830 = new Date(rY, rM - 1, rD + 1, 8, 30, 0);
+      if (vnTime.getTime() > nextDay830.getTime()) {
+        return true;
+      }
+    }
+  }
+  return false;
+};
+
 const createOrUpdateReport = async (req, res, next) => {
   const connection = await pool.getConnection();
   try {
@@ -55,9 +79,28 @@ const createOrUpdateReport = async (req, res, next) => {
 
     // Check if report exists
     const [existing] = await connection.execute(
-      'SELECT id FROM reports WHERE department_code = ? AND report_date = ?',
+      'SELECT id, is_locked, report_date FROM reports WHERE department_code = ? AND report_date = ?',
       [departmentCode, reportDate]
     );
+
+    // Permission and lock check
+    if (req.user.role !== 'admin') {
+      if (existing.length > 0 && isReportLocked(existing[0], req.user.role)) {
+        await connection.rollback();
+        return res.status(403).json({
+          success: false,
+          error: 'Báo cáo ngày này đã bị KHÓA SỔ GIAO BAN. Chỉ Quản trị viên (Admin) mới có quyền mở khóa hoặc chỉnh sửa.',
+          isLocked: true
+        });
+      } else if (existing.length === 0 && isReportLocked({ report_date: reportDate, is_locked: 0 }, req.user.role)) {
+        await connection.rollback();
+        return res.status(403).json({
+          success: false,
+          error: 'Đã quá thời hạn nộp báo cáo giao ban (sau 08:30 sáng). Hệ thống đã khóa sổ. Vui lòng liên hệ Admin để mở khóa nếu cần nộp bổ sung.',
+          isLocked: true
+        });
+      }
+    }
 
     let reportId;
     if (existing.length > 0) {
@@ -272,6 +315,7 @@ const getReport = async (req, res, next) => {
     }
 
     const report = reports[0];
+    const isLocked = Boolean(report.is_locked || isReportLocked(report, 'department'));
     const [transferCases] = await pool.execute(
       'SELECT * FROM transfer_cases WHERE report_id = ? ORDER BY id ASC',
       [report.id]
@@ -293,6 +337,8 @@ const getReport = async (req, res, next) => {
       success: true,
       data: {
         ...report,
+        is_locked: report.is_locked ? 1 : (isLocked ? 1 : 0),
+        isLocked: isLocked,
         transferCases: (transferCases || []).map(parseCaseImages),
         surgeryCases: (surgeryCases || []).map(parseCaseImages),
         deathCases: (deathCases || []).map(parseCaseImages),
@@ -336,9 +382,17 @@ const deleteReport = async (req, res, next) => {
 
     // 1. Tìm các report ID tương ứng
     const [reports] = await connection.execute(
-      'SELECT id FROM reports WHERE department_code = ? AND report_date = ?',
+      'SELECT id, is_locked, report_date FROM reports WHERE department_code = ? AND report_date = ?',
       [departmentCode, date]
     );
+
+    if (reports.length > 0 && req.user.role !== 'admin' && isReportLocked(reports[0], req.user.role)) {
+      await connection.rollback();
+      return res.status(403).json({
+        success: false,
+        error: 'Báo cáo này đã bị KHÓA SỔ GIAO BAN. Chỉ Quản trị viên (Admin) mới có quyền xóa hoặc mở khóa.'
+      });
+    }
 
     for (const r of reports) {
       await connection.execute('DELETE FROM transfer_cases WHERE report_id = ?', [r.id]);

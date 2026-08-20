@@ -128,20 +128,35 @@ const getDepartmentStatus = async (req, res, next) => {
     );
 
     const [reports] = await pool.execute(
-      'SELECT department_code, status FROM reports WHERE report_date = ?',
+      'SELECT id, department_code, doctor_name, status, is_locked, locked_at, locked_by FROM reports WHERE report_date = ?',
       [date]
     );
 
     const reportMap = {};
+    const reportInfoMap = {};
     reports.forEach(r => {
       reportMap[r.department_code] = r.status;
+      reportInfoMap[r.department_code] = {
+        id: r.id,
+        doctorName: r.doctor_name,
+        isLocked: Boolean(r.is_locked),
+        lockedAt: r.locked_at,
+        lockedBy: r.locked_by
+      };
     });
 
-    const statusData = users.map(user => ({
-      departmentCode: user.department_code,
-      departmentName: user.department_name,
-      status: reportMap[user.department_code] || 'not_submitted'
-    }));
+    const statusData = users.map(user => {
+      const info = reportInfoMap[user.department_code] || {};
+      return {
+        departmentCode: user.department_code,
+        departmentName: user.department_name,
+        status: reportMap[user.department_code] || 'not_submitted',
+        doctorName: info.doctorName || '',
+        isLocked: info.isLocked || false,
+        lockedAt: info.lockedAt || null,
+        lockedBy: info.lockedBy || null
+      };
+    });
 
     // Sort by official 12-department sequence
     statusData.sort((a, b) => {
@@ -801,6 +816,99 @@ const getAuditLogs = async (req, res, next) => {
   }
 };
 
+const toggleReportLock = async (req, res, next) => {
+  try {
+    const { departmentCode, date } = req.params;
+    const { isLocked } = req.body;
+
+    const [existing] = await pool.execute(
+      'SELECT id, is_locked, doctor_name, nurse_name FROM reports WHERE department_code = ? AND report_date = ?',
+      [departmentCode, date]
+    );
+
+    if (existing.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: `Khoa phòng này chưa nộp báo cáo cho ngày ${date}, không thể thực hiện khóa/mở khóa.`
+      });
+    }
+
+    const report = existing[0];
+    const newLockedStatus = isLocked !== undefined ? (isLocked ? 1 : 0) : (report.is_locked ? 0 : 1);
+    const adminUser = req.user?.username || req.user?.doctor_name || 'Admin';
+    const clientIp = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || null;
+
+    await pool.execute(
+      `UPDATE reports 
+       SET is_locked = ?, locked_at = ${newLockedStatus ? 'NOW()' : 'NULL'}, locked_by = ? 
+       WHERE id = ?`,
+      [newLockedStatus, newLockedStatus ? adminUser : null, report.id]
+    );
+
+    // Write audit log
+    try {
+      const actionSummary = `[${newLockedStatus ? 'KHÓA SỔ GIAO BAN' : 'MỞ KHÓA BÁO CÁO'}] Admin "${adminUser}" đã ${newLockedStatus ? 'khóa sổ' : 'mở khóa'} báo cáo khoa ${departmentCode} ngày ${date}`;
+      await pool.execute(
+        `INSERT INTO report_audit_logs 
+         (report_id, department_code, report_date, action_type, doctor_name, ip_address, changes_summary)
+         VALUES (?, ?, ?, 'UPDATE', ?, ?, ?)`,
+        [report.id, departmentCode, date, adminUser, clientIp, actionSummary]
+      );
+    } catch (auditErr) {
+      console.warn('Audit log write warning:', auditErr.message);
+    }
+
+    res.json({
+      success: true,
+      isLocked: Boolean(newLockedStatus),
+      message: newLockedStatus 
+        ? `Đã KHÓA SỔ báo cáo khoa ${departmentCode} ngày ${date} thành công!` 
+        : `Đã MỞ KHÓA báo cáo khoa ${departmentCode} ngày ${date} thành công! Khoa phòng có thể chỉnh sửa lại số liệu.`
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const toggleLockAllReports = async (req, res, next) => {
+  try {
+    const { date } = req.params;
+    const { isLocked } = req.body;
+    const lockVal = isLocked ? 1 : 0;
+    const adminUser = req.user?.username || 'Admin';
+    const clientIp = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || null;
+
+    const [result] = await pool.execute(
+      `UPDATE reports 
+       SET is_locked = ?, locked_at = ${lockVal ? 'NOW()' : 'NULL'}, locked_by = ? 
+       WHERE report_date = ?`,
+      [lockVal, lockVal ? adminUser : null, date]
+    );
+
+    // Write audit log
+    try {
+      const actionSummary = `[${lockVal ? 'KHÓA SỔ TOÀN VIỆN' : 'MỞ KHÓA TOÀN VIỆN'}] Admin "${adminUser}" đã ${lockVal ? 'khóa sổ' : 'mở khóa'} toàn bộ báo cáo ngày ${date} (${result.affectedRows} khoa)`;
+      await pool.execute(
+        `INSERT INTO report_audit_logs 
+         (report_id, department_code, report_date, action_type, doctor_name, ip_address, changes_summary)
+         VALUES (0, 'ALL', ?, 'UPDATE', ?, ?, ?)`,
+        [date, adminUser, clientIp, actionSummary]
+      );
+    } catch (auditErr) {}
+
+    res.json({
+      success: true,
+      affectedRows: result.affectedRows,
+      isLocked: Boolean(lockVal),
+      message: lockVal 
+        ? `Đã KHÓA SỔ TOÀN VIỆN cho ${result.affectedRows} báo cáo ngày ${date}!`
+        : `Đã MỞ KHÓA TOÀN VIỆN cho ${result.affectedRows} báo cáo ngày ${date}!`
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = { 
   getPresentationData, 
   getDepartmentStatus, 
@@ -812,5 +920,7 @@ module.exports = {
   updateAccountPassword,
   resetAccountPassword,
   updateAccountDetails,
-  createAccount
+  createAccount,
+  toggleReportLock,
+  toggleLockAllReports
 };

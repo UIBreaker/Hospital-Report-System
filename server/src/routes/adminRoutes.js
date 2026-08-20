@@ -11,7 +11,9 @@ const {
   updateAccountPassword,
   resetAccountPassword,
   updateAccountDetails,
-  createAccount
+  createAccount,
+  toggleReportLock,
+  toggleLockAllReports
 } = require('../controllers/adminController');
 const { auth, adminOnly } = require('../middleware/auth');
 const { getReportsByDate } = require('../controllers/reportController');
@@ -25,6 +27,10 @@ router.get('/reports-payload-size/:date', auth, adminOnly, getReportsPayloadSize
 router.get('/audit-logs', auth, adminOnly, getAuditLogs);
 router.get('/export-reports', auth, adminOnly, exportReports);
 router.get('/export-reports/:date', auth, adminOnly, exportReports);
+
+// Briefing Report Lock / Unlock Management
+router.put('/reports/:departmentCode/:date/toggle-lock', auth, adminOnly, toggleReportLock);
+router.put('/reports/toggle-lock-all/:date', auth, adminOnly, toggleLockAllReports);
 
 // User Accounts Management
 router.get('/accounts', auth, adminOnly, getAllAccounts);

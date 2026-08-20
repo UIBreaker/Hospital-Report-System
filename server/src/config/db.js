@@ -56,7 +56,11 @@ const ensureSchema = async (connOrPool) => {
       'ALTER TABLE death_cases ADD COLUMN clinical_tests TEXT DEFAULT NULL AFTER medical_history',
       'ALTER TABLE critical_cases ADD COLUMN clinical_symptoms TEXT DEFAULT NULL AFTER medical_history',
       'ALTER TABLE critical_cases ADD COLUMN clinical_tests TEXT DEFAULT NULL AFTER clinical_symptoms',
-      // Senior DBA Optimization Indexes
+      // Senior DBA Optimization Indexes & Locking Columns
+      'ALTER TABLE reports ADD COLUMN is_locked TINYINT(1) DEFAULT 0 AFTER status',
+      'ALTER TABLE reports ADD COLUMN locked_at TIMESTAMP NULL DEFAULT NULL AFTER is_locked',
+      'ALTER TABLE reports ADD COLUMN locked_by VARCHAR(150) NULL DEFAULT NULL AFTER locked_at',
+      'ALTER TABLE reports ADD INDEX idx_is_locked (is_locked)',
       'ALTER TABLE reports ADD UNIQUE INDEX uq_dept_date (department_code, report_date)',
       'ALTER TABLE reports ADD INDEX idx_report_date (report_date)',
       'ALTER TABLE reports ADD INDEX idx_dept_code (department_code)',
@@ -64,7 +68,12 @@ const ensureSchema = async (connOrPool) => {
       'ALTER TABLE surgery_cases ADD INDEX idx_report_id (report_id)',
       'ALTER TABLE death_cases ADD INDEX idx_report_id (report_id)',
       'ALTER TABLE critical_cases ADD INDEX idx_report_id (report_id)',
-      'ALTER TABLE users ADD INDEX idx_dept_code (department_code)'
+      'ALTER TABLE users ADD INDEX idx_dept_code (department_code)',
+      // P0 Foreign Keys with ON DELETE CASCADE
+      'ALTER TABLE transfer_cases ADD CONSTRAINT fk_transfer_cases_report FOREIGN KEY (report_id) REFERENCES reports(id) ON DELETE CASCADE',
+      'ALTER TABLE surgery_cases ADD CONSTRAINT fk_surgery_cases_report FOREIGN KEY (report_id) REFERENCES reports(id) ON DELETE CASCADE',
+      'ALTER TABLE death_cases ADD CONSTRAINT fk_death_cases_report FOREIGN KEY (report_id) REFERENCES reports(id) ON DELETE CASCADE',
+      'ALTER TABLE critical_cases ADD CONSTRAINT fk_critical_cases_report FOREIGN KEY (report_id) REFERENCES reports(id) ON DELETE CASCADE'
     ];
 
     for (const sql of alters) {

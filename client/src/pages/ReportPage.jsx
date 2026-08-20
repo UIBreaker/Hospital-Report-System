@@ -126,6 +126,8 @@ const ReportPage = () => {
   const [loadingExistingReport, setLoadingExistingReport] = useState(false);
   const [existingReportLoaded, setExistingReportLoaded] = useState(false);
   const [showPdfModal, setShowPdfModal] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
+  const [lockInfo, setLockInfo] = useState({ lockedAt: null, lockedBy: null });
 
   // Fetch danh sách nhân sự của khoa khi đăng nhập
   useEffect(() => {
@@ -303,9 +305,24 @@ const ReportPage = () => {
           setDeathCases(normalizedDeaths);
           setCriticalCases(normalizedCriticals);
           setExistingReportLoaded(true);
+          setIsLocked(Boolean(report.is_locked || report.isLocked));
+          setLockInfo({ lockedAt: report.locked_at, lockedBy: report.locked_by });
         } else {
-          // Ngày này chưa có báo cáo -> reset form về trống để nhập mới
+          // Ngày này chưa có báo cáo -> kiểm tra xem có bị quá hạn khóa sổ tự động không
+          const now = new Date();
+          const todayStr = now.toISOString().split('T')[0];
+          let autoLocked = false;
+          if (headerData.reportDate < todayStr) {
+            const [rY, rM, rD] = headerData.reportDate.split('-').map(Number);
+            const nextDay830 = new Date(rY, rM - 1, rD + 1, 8, 30, 0);
+            if (now.getTime() > nextDay830.getTime()) {
+              autoLocked = true;
+            }
+          }
+
           setExistingReportLoaded(false);
+          setIsLocked(autoLocked);
+          setLockInfo({ lockedAt: null, lockedBy: null });
           setFormData({});
           setTransferCases([]);
           setSurgeryCases([]);
@@ -591,6 +608,58 @@ const ReportPage = () => {
         </div>
       </header>
 
+      {/* Lock Notification Banner */}
+      {isLocked && (
+        <div style={{
+          backgroundColor: '#FEF3C7',
+          border: '1.5px solid #F59E0B',
+          borderLeft: '6px solid #D97706',
+          borderRadius: '10px',
+          padding: '0.9rem 1.25rem',
+          marginBottom: '1.5rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '1rem',
+          boxShadow: '0 4px 14px rgba(217, 119, 6, 0.12)',
+          flexWrap: 'wrap'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+            <span style={{ fontSize: '1.8rem', lineHeight: 1 }}>🔒</span>
+            <div>
+              <h4 style={{ margin: 0, color: '#92400E', fontSize: '0.96rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
+                Báo Cáo Đã Khóa Sổ Giao Ban (Chế độ xem chỉ đọc)
+              </h4>
+              <p style={{ margin: '0.2rem 0 0 0', color: '#B45309', fontSize: '0.84rem', lineHeight: 1.4 }}>
+                Báo cáo ngày <strong>{formatDateDDMMYYYY(headerData.reportDate)}</strong> đã khóa sổ (sau 08:30 sáng hoặc do Ban Giám Đốc/Admin khóa). Mọi số liệu được bảo lưu pháp lý. Nếu cần chỉnh sửa, vui lòng liên hệ <strong>Phòng Kế Hoạch Nghiệp Vụ (Admin)</strong> để mở khóa.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowPdfModal(true)}
+            className="btn"
+            style={{
+              backgroundColor: '#0284C7',
+              color: '#FFFFFF',
+              border: 'none',
+              padding: '0.45rem 1rem',
+              fontSize: '0.85rem',
+              fontWeight: '700',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              borderRadius: '7px',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              flexShrink: 0
+            }}
+          >
+            <FaFilePdf /> Xuất File PDF
+          </button>
+        </div>
+      )}
+
       <div className="report-workflow" aria-label="Tiến độ nhập báo cáo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <div className={`workflow-step ${step === 1 ? 'is-active' : 'is-complete'}`} onClick={() => setStep(1)} style={{ cursor: 'pointer' }}>
@@ -603,9 +672,14 @@ const ReportPage = () => {
             <div><strong>2. Số liệu & Ca bệnh</strong><small>Chuyên môn khoa</small></div>
           </div>
         </div>
-        <div className="workflow-status">
+        <div className="workflow-status" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          {isLocked && (
+            <span style={{ backgroundColor: '#FEF3C7', color: '#92400E', border: '1px solid #FDE68A', padding: '0.25rem 0.65rem', borderRadius: '20px', fontWeight: '700', fontSize: '0.78rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+              🔒 Đã Khóa Sổ
+            </span>
+          )}
           <Badge tone={existingReportLoaded ? 'primary' : 'warning'} dot>
-            {existingReportLoaded ? 'Đã nộp trước đó (Chế độ sửa)' : 'Bản nháp chưa gửi'}
+            {existingReportLoaded ? 'Đã nộp trước đó' : 'Bản nháp chưa gửi'}
           </Badge>
         </div>
       </div>
@@ -954,16 +1028,44 @@ const ReportPage = () => {
           )}
 
           {/* Sticky/Bottom Submit button */}
-          <div className="submit-area" style={{ display: 'flex', justifyContent: 'center', padding: '1rem 0 2rem' }}>
-            <Button 
-              variant="primary"
-              size="lg"
-              icon={FaPaperPlane}
-              onClick={() => setShowConfirm(true)}
-              style={{ padding: '0.85rem 3rem', fontSize: '1.05rem', boxShadow: '0 8px 20px rgba(15, 44, 89, 0.25)' }}
-            >
-              Gửi Báo Cáo Giao Ban
-            </Button>
+          <div className="submit-area" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '1rem 0 2rem', gap: '0.5rem' }}>
+            {isLocked ? (
+              <div style={{ textAlign: 'center' }}>
+                <button 
+                  type="button"
+                  disabled
+                  className="btn"
+                  style={{
+                    backgroundColor: '#94A3B8',
+                    color: '#FFFFFF',
+                    padding: '0.85rem 2.5rem',
+                    fontSize: '1rem',
+                    fontWeight: '700',
+                    borderRadius: '8px',
+                    cursor: 'not-allowed',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    boxShadow: 'none'
+                  }}
+                >
+                  🔒 Báo Cáo Đã Khóa Sổ (Chỉ Đọc)
+                </button>
+                <p style={{ margin: '0.5rem 0 0', color: '#64748B', fontSize: '0.82rem', fontStyle: 'italic' }}>
+                  Liên hệ Admin (Phòng Kế Hoạch Nghiệp Vụ) nếu cần mở khóa báo cáo ngày này.
+                </p>
+              </div>
+            ) : (
+              <Button 
+                variant="primary"
+                size="lg"
+                icon={FaPaperPlane}
+                onClick={() => setShowConfirm(true)}
+                style={{ padding: '0.85rem 3rem', fontSize: '1.05rem', boxShadow: '0 8px 20px rgba(15, 44, 89, 0.25)' }}
+              >
+                Gửi Báo Cáo Giao Ban
+              </Button>
+            )}
           </div>
 
           {/* Confirm Submission Modal */}
