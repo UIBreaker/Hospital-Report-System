@@ -292,7 +292,7 @@ const ReportDataViewer = ({ data }) => {
             📝 {FIELD_LABELS[key] || key}
           </span>
           <p style={{ margin: 0, fontSize: '0.9rem', color: '#78350F', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
-            {val}
+            {typeof val === 'object' ? JSON.stringify(val, null, 2) : String(val)}
           </p>
         </div>
       ))}
@@ -512,7 +512,8 @@ const AdminDashboard = () => {
         setLastDbUpdate(new Date().toLocaleTimeString('vi-VN'));
       }
     } catch (err) {
-      setDbError(err.response?.data?.error || 'Không thể tải thông tin dung lượng database.');
+      const errMsg = err.response?.data?.error;
+      setDbError(typeof errMsg === 'string' ? errMsg : 'Không thể tải thông tin dung lượng database.');
     } finally {
       setLoadingDb(false);
     }
@@ -528,7 +529,8 @@ const AdminDashboard = () => {
         setPayloadData(res.data);
       }
     } catch (err) {
-      setPayloadError(err.response?.data?.error || 'Không thể tải thống kê dung lượng báo cáo theo ngày.');
+      const errMsg = err.response?.data?.error;
+      setPayloadError(typeof errMsg === 'string' ? errMsg : 'Không thể tải thống kê dung lượng báo cáo theo ngày.');
     } finally {
       setLoadingPayload(false);
     }
@@ -543,7 +545,8 @@ const AdminDashboard = () => {
         setAccountsList(res.data);
       }
     } catch (err) {
-      setAccountsError(err.response?.data?.error || 'Không thể tải danh sách tài khoản.');
+      const errMsg = err.response?.data?.error;
+      setAccountsError(typeof errMsg === 'string' ? errMsg : 'Không thể tải danh sách tài khoản.');
     } finally {
       setLoadingAccounts(false);
     }

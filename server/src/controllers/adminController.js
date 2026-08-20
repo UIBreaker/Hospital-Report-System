@@ -591,8 +591,6 @@ const exportReports = async (req, res, next) => {
   }
 };
 
-const bcrypt = require('bcryptjs');
-
 const OFFICIAL_DEPARTMENTS = [
   { code: 'lck', username: 'lck.bvbl', name: 'Khoa Liên Chuyên Khoa' },
   { code: 'xn', username: 'xn.bvbl', name: 'Khoa Xét nghiệm' },
