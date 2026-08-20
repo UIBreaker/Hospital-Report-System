@@ -1,19 +1,20 @@
 import React from 'react';
 import TransferCaseForm from '../TransferCaseForm';
 
-const HoiSucCapCuuForm = ({ doctorName, formData, setFormData, transferCases, setTransferCases }) => {
-  const hscc = formData.hscc || {};
-  const tnt = formData.tnt || {};
-  const pk21 = formData.pk21 || {};
+const HoiSucCapCuuForm = ({ doctorName, formData = {}, setFormData = () => {}, transferCases, setTransferCases }) => {
+  const safeData = formData || {};
+  const hscc = safeData.hscc || {};
+  const tnt = safeData.tnt || {};
+  const pk21 = safeData.pk21 || {};
 
   const handleHsccChange = (field, value) => {
-    setFormData({ ...formData, hscc: { ...hscc, [field]: value } });
+    setFormData({ ...(formData || {}), hscc: { ...hscc, [field]: value } });
   };
   const handleTntChange = (field, value) => {
-    setFormData({ ...formData, tnt: { ...tnt, [field]: value } });
+    setFormData({ ...(formData || {}), tnt: { ...tnt, [field]: value } });
   };
   const handlePk21Change = (field, value) => {
-    setFormData({ ...formData, pk21: { ...pk21, [field]: value } });
+    setFormData({ ...(formData || {}), pk21: { ...pk21, [field]: value } });
   };
 
   const chuyenVienCount = (Number(hscc.chuyenVien) || 0) + (Number(pk21.pk21_chuyenVien) || 0);

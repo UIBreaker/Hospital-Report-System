@@ -2,17 +2,18 @@ import React, { useEffect } from 'react';
 import TransferCaseForm from '../TransferCaseForm';
 import { FaCalculator, FaEye, FaTooth, FaHeadSideCough, FaUserMd } from 'react-icons/fa';
 
-const LienChuyenKhoaForm = ({ formData, setFormData, transferCases, setTransferCases }) => {
-  const tmh_tongSo = Number(formData.tmh_tongSo) || 0;
-  const tmh_thuThuat = Number(formData.tmh_thuThuat) || 0;
+const LienChuyenKhoaForm = ({ formData = {}, setFormData = () => {}, transferCases, setTransferCases }) => {
+  const safeData = formData || {};
+  const tmh_tongSo = Number(safeData.tmh_tongSo) || 0;
+  const tmh_thuThuat = Number(safeData.tmh_thuThuat) || 0;
 
-  const mat_tongSo = Number(formData.mat_tongSo) || 0;
-  const mat_thuThuat = Number(formData.mat_thuThuat) || 0;
+  const mat_tongSo = Number(safeData.mat_tongSo) || 0;
+  const mat_thuThuat = Number(safeData.mat_thuThuat) || 0;
 
-  const rhm_noi_tongSo = Number(formData.rhm_noi_tongSo) || 0;
-  const rhm_noi_thuThuat = Number(formData.rhm_noi_thuThuat) || 0;
+  const rhm_noi_tongSo = Number(safeData.rhm_noi_tongSo) || 0;
+  const rhm_noi_thuThuat = Number(safeData.rhm_noi_thuThuat) || 0;
 
-  const daLieu_tongSo = Number(formData.daLieu_tongSo) || 0;
+  const daLieu_tongSo = Number(safeData.daLieu_tongSo) || 0;
 
   // Auto calculate sum for 4 Chuyên Khoa
   const autoTong4CK_tongSo = tmh_tongSo + mat_tongSo + rhm_noi_tongSo + daLieu_tongSo;
@@ -21,15 +22,15 @@ const LienChuyenKhoaForm = ({ formData, setFormData, transferCases, setTransferC
   // Auto update when individual values change unless user manually overridden
   useEffect(() => {
     setFormData(prev => {
-      const updated = { ...prev };
+      const updated = { ...(prev || {}) };
       let changed = false;
 
-      if (!prev.manualTong4CK_tongSo && prev.tong4ck_tongSo !== autoTong4CK_tongSo) {
+      if (!updated.manualTong4CK_tongSo && updated.tong4ck_tongSo !== autoTong4CK_tongSo) {
         updated.tong4ck_tongSo = autoTong4CK_tongSo;
         changed = true;
       }
 
-      if (!prev.manualTong4CK_thuThuat && prev.tong4ck_thuThuat !== autoTong4CK_thuThuat) {
+      if (!updated.manualTong4CK_thuThuat && updated.tong4ck_thuThuat !== autoTong4CK_thuThuat) {
         updated.tong4ck_thuThuat = autoTong4CK_thuThuat;
         changed = true;
       }
@@ -40,7 +41,7 @@ const LienChuyenKhoaForm = ({ formData, setFormData, transferCases, setTransferC
 
   const handleChange = (field, value) => {
     const numValue = value === '' ? '' : Math.max(0, parseInt(value, 10) || 0);
-    const updated = { ...formData, [field]: numValue };
+    const updated = { ...(formData || {}), [field]: numValue };
 
     if (field === 'tong4ck_tongSo') {
       updated.manualTong4CK_tongSo = true;
@@ -52,7 +53,7 @@ const LienChuyenKhoaForm = ({ formData, setFormData, transferCases, setTransferC
   };
 
   const handleTextChange = (field, value) => {
-    setFormData({ ...formData, [field]: value });
+    setFormData({ ...(formData || {}), [field]: value });
   };
 
   const resetAutoCalcTongSo = () => {

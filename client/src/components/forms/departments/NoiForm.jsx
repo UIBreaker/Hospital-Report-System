@@ -2,27 +2,28 @@ import React, { useEffect } from 'react';
 import TransferCaseForm from '../TransferCaseForm';
 import { FaUserMd, FaCalculator } from 'react-icons/fa';
 
-const NoiForm = ({ doctorName, formData, setFormData, transferCases, setTransferCases }) => {
-  const benhCu = Number(formData.benhCu) || 0;
-  const benhMoi = Number(formData.benhMoi) || 0;
-  const chuyenKhoa = Number(formData.chuyenKhoa) || 0;
-  const xuatVien = Number(formData.xuatVien) || 0;
+const NoiForm = ({ doctorName, formData = {}, setFormData = () => {}, transferCases, setTransferCases }) => {
+  const safeData = formData || {};
+  const benhCu = Number(safeData.benhCu) || 0;
+  const benhMoi = Number(safeData.benhMoi) || 0;
+  const chuyenKhoa = Number(safeData.chuyenKhoa) || 0;
+  const xuatVien = Number(safeData.xuatVien) || 0;
 
   // Auto calculate 'hienCon' = benhCu + benhMoi - xuatVien - chuyenKhoa
   const autoHienCon = Math.max(0, benhCu + benhMoi - xuatVien - chuyenKhoa);
 
   // Update hienCon automatically when other values change (if hienCon isn't manually locked)
   useEffect(() => {
-    if (formData.benhCu !== undefined || formData.benhMoi !== undefined || formData.xuatVien !== undefined || formData.chuyenKhoa !== undefined) {
-      if (formData.manualHienCon === undefined) {
-        setFormData(prev => ({ ...prev, hienCon: autoHienCon }));
+    if (safeData.benhCu !== undefined || safeData.benhMoi !== undefined || safeData.xuatVien !== undefined || safeData.chuyenKhoa !== undefined) {
+      if (safeData.manualHienCon === undefined) {
+        setFormData(prev => ({ ...(prev || {}), hienCon: autoHienCon }));
       }
     }
-  }, [benhCu, benhMoi, chuyenKhoa, xuatVien, setFormData, autoHienCon, formData.manualHienCon]);
+  }, [benhCu, benhMoi, chuyenKhoa, xuatVien, setFormData, autoHienCon, safeData.manualHienCon]);
 
   const handleChange = (field, value) => {
     const numValue = value === '' ? '' : Math.max(0, parseInt(value, 10) || 0);
-    const updated = { ...formData, [field]: numValue };
+    const updated = { ...(formData || {}), [field]: numValue };
     
     if (field === 'hienCon') {
       updated.manualHienCon = true;

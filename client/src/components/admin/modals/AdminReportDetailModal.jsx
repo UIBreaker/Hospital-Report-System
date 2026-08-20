@@ -400,8 +400,20 @@ const AdminReportDetailModal = ({
 
                 {isEditing && DeptFormComponent ? (
                   <DeptFormComponent
-                    data={editReportData}
+                    formData={editReportData || {}}
+                    setFormData={setEditReportData}
+                    data={editReportData || {}}
                     onChange={handleDataChange}
+                    doctorName={editHeader?.doctorName}
+                    nurseName={editHeader?.nurseName}
+                    transferCases={editTransferCases}
+                    setTransferCases={setEditTransferCases}
+                    surgeryCases={editSurgeryCases}
+                    setSurgeryCases={setEditSurgeryCases}
+                    deathCases={editDeathCases}
+                    setDeathCases={setEditDeathCases}
+                    criticalCases={editCriticalCases}
+                    setCriticalCases={setEditCriticalCases}
                   />
                 ) : (
                   <ReportDataViewer data={editReportData} />
