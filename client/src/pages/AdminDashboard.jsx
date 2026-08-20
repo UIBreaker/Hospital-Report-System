@@ -472,13 +472,18 @@ const AdminDashboard = () => {
     setError('');
     try {
       const response = await reportService.getDepartmentStatus(date);
-      setStatusList(response.data || []);
+      if (response && response.data) {
+        setStatusList(response.data);
+      }
     } catch (err) {
-      setError('Không thể tải trạng thái báo cáo.');
+      console.error('fetchStatus error:', err);
+      const errMsg = err.response?.data?.error || err.message;
+      setError(typeof errMsg === 'string' ? `Không thể tải trạng thái báo cáo (${errMsg})` : 'Không thể tải trạng thái báo cáo.');
       setStatusList(DEPARTMENT_ORDER.map(code => ({
         departmentCode: code,
         departmentName: DEPARTMENT_MAP[code] || code,
-        status: 'not_submitted'
+        status: 'not_submitted',
+        isLocked: false
       })));
     } finally {
       setLoading(false);

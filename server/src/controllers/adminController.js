@@ -32,6 +32,21 @@ const DEPARTMENT_ORDER = [
   'gmhs'
 ];
 
+const OFFICIAL_DEPARTMENTS = [
+  { code: 'lck', username: 'lck.bvbl', name: 'Khoa Liên Chuyên Khoa' },
+  { code: 'xn', username: 'xn.bvbl', name: 'Khoa Xét nghiệm' },
+  { code: 'cdha', username: 'cdha.bvbl', name: 'Chẩn đoán hình ảnh' },
+  { code: 'hscc_tnt', username: 'hscc.bvbl', name: 'Hồi sức cấp cứu – Thận nhân tạo' },
+  { code: 'noi', username: 'noi.bvbl', name: 'Khoa Nội' },
+  { code: 'nhi', username: 'nhi.bvbl', name: 'Nhi' },
+  { code: 'nhiem', username: 'nhiem.bvbl', name: 'Nhiễm' },
+  { code: 'san', username: 'san.bvbl', name: 'Sản' },
+  { code: 'yhct_phcn', username: 'yhct.bvbl', name: 'Y học cổ truyền – Phục hồi chức năng' },
+  { code: 'ngoai_th', username: 'ngoai.bvbl', name: 'Ngoại tổng hợp' },
+  { code: 'ctch', username: 'ctch.bvbl', name: 'Chấn thương chỉnh hình' },
+  { code: 'gmhs', username: 'gmhs.bvbl', name: 'Gây mê Hồi sức' }
+];
+
 const getPresentationData = async (req, res, next) => {
   try {
     const { date } = req.params;
@@ -123,14 +138,48 @@ const getDepartmentStatus = async (req, res, next) => {
   try {
     const { date } = req.params;
 
-    const [users] = await pool.execute(
-      "SELECT department_code, department_name FROM users WHERE role = 'department'"
-    );
+    if (pool.ensureSchema) {
+      try { await pool.ensureSchema(); } catch (e) {}
+    }
 
-    const [reports] = await pool.execute(
-      'SELECT id, department_code, doctor_name, status, is_locked, locked_at, locked_by FROM reports WHERE report_date = ?',
-      [date]
-    );
+    let users = [];
+    try {
+      const [dbUsers] = await pool.execute(
+        "SELECT department_code, department_name FROM users WHERE role = 'department'"
+      );
+      users = dbUsers || [];
+    } catch (userErr) {
+      users = [];
+    }
+
+    // Merge DB users with official 12-department definitions so all 12 are always present
+    const deptMap = new Map();
+    OFFICIAL_DEPARTMENTS.forEach(d => {
+      deptMap.set(d.code, { department_code: d.code, department_name: d.name });
+    });
+    users.forEach(u => {
+      deptMap.set(u.department_code, { department_code: u.department_code, department_name: u.department_name });
+    });
+    const allDepts = Array.from(deptMap.values());
+
+    let reports = [];
+    try {
+      const [res] = await pool.execute(
+        'SELECT id, department_code, doctor_name, status, is_locked, locked_at, locked_by FROM reports WHERE report_date = ?',
+        [date]
+      );
+      reports = res || [];
+    } catch (e) {
+      try {
+        const [res] = await pool.execute(
+          'SELECT id, department_code, doctor_name, status FROM reports WHERE report_date = ?',
+          [date]
+        );
+        reports = (res || []).map(r => ({ ...r, is_locked: 0, locked_at: null, locked_by: null }));
+      } catch (e2) {
+        reports = [];
+      }
+    }
 
     const reportMap = {};
     const reportInfoMap = {};
@@ -145,7 +194,7 @@ const getDepartmentStatus = async (req, res, next) => {
       };
     });
 
-    const statusData = users.map(user => {
+    const statusData = allDepts.map(user => {
       const info = reportInfoMap[user.department_code] || {};
       return {
         departmentCode: user.department_code,
@@ -605,21 +654,6 @@ const exportReports = async (req, res, next) => {
     next(error);
   }
 };
-
-const OFFICIAL_DEPARTMENTS = [
-  { code: 'lck', username: 'lck.bvbl', name: 'Khoa Liên Chuyên Khoa' },
-  { code: 'xn', username: 'xn.bvbl', name: 'Khoa Xét nghiệm' },
-  { code: 'cdha', username: 'cdha.bvbl', name: 'Chẩn đoán hình ảnh' },
-  { code: 'hscc_tnt', username: 'hscc.bvbl', name: 'Hồi sức cấp cứu – Thận nhân tạo' },
-  { code: 'noi', username: 'noi.bvbl', name: 'Khoa Nội tổng hợp' },
-  { code: 'nhi', username: 'nhi.bvbl', name: 'Khoa Nhi' },
-  { code: 'nhiem', username: 'nhiem.bvbl', name: 'Khoa Truyền nhiễm' },
-  { code: 'san', username: 'san.bvbl', name: 'Khoa Sản (CSSK Sinh sản)' },
-  { code: 'yhct_phcn', username: 'yhct.bvbl', name: 'Y học cổ truyền – PHCN' },
-  { code: 'ngoai_th', username: 'ngoai.bvbl', name: 'Ngoại tổng hợp' },
-  { code: 'ctch', username: 'ctch.bvbl', name: 'Chấn thương chỉnh hình' },
-  { code: 'gmhs', username: 'gmhs.bvbl', name: 'Phẫu thuật, gây mê hồi sức' }
-];
 
 const DEFAULT_HASH_123 = '$2b$10$P6qiqatgseZ31AOk6DdQe.iosBVo0IL6yiQEvnJtdPxA/pOczEjWa'; // 123
 
