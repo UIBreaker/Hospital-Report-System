@@ -142,10 +142,107 @@ const AdminDashboard = () => {
     }
   };
 
-  // Open Detail Modal for Department Report
-  const handleOpenDetailModal = async (dept) => {
+  // Normalization Helpers for 4 Clinical Case Categories
+  const normalizeTransferCase = (c) => ({
+    _id: c._id || c.id || `tc_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    id: c.id,
+    patientName: c.patientName || c.patient_name || '',
+    patient_name: c.patientName || c.patient_name || '',
+    age: c.age || '',
+    address: c.address || '',
+    admissionTime: c.admissionTime || c.admission_time || '',
+    admission_time: c.admissionTime || c.admission_time || '',
+    reason: c.reason || '',
+    clinicalSymptoms: c.clinicalSymptoms || c.clinical_symptoms || '',
+    clinical_symptoms: c.clinicalSymptoms || c.clinical_symptoms || '',
+    clinicalTests: c.clinicalTests || c.clinical_tests || '',
+    clinical_tests: c.clinicalTests || c.clinical_tests || '',
+    diagnosis: c.diagnosis || '',
+    initialTreatment: c.initialTreatment || c.initial_treatment || '',
+    initial_treatment: c.initialTreatment || c.initial_treatment || '',
+    progressNotes: c.progressNotes || c.progress_notes || '',
+    progress_notes: c.progressNotes || c.progress_notes || '',
+    images: Array.isArray(c.images) ? c.images : (typeof c.images === 'string' ? (() => { try { return JSON.parse(c.images); } catch { return []; } })() : [])
+  });
+
+  const normalizeSurgeryCase = (sc) => ({
+    _id: sc._id || sc.id || `sc_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    id: sc.id,
+    patientName: sc.patientName || sc.patient_name || '',
+    patient_name: sc.patientName || sc.patient_name || '',
+    birthYear: sc.birthYear || sc.birth_year || sc.age || '',
+    birth_year: sc.birthYear || sc.birth_year || sc.age || '',
+    address: sc.address || '',
+    admissionTime: sc.admissionTime || sc.admission_time || '',
+    admission_time: sc.admissionTime || sc.admission_time || '',
+    reason: sc.reason || '',
+    clinicalSymptoms: sc.clinicalSymptoms || sc.clinical_symptoms || '',
+    clinical_symptoms: sc.clinicalSymptoms || sc.clinical_symptoms || '',
+    clinicalTests: sc.clinicalTests || sc.clinical_tests || '',
+    clinical_tests: sc.clinicalTests || sc.clinical_tests || '',
+    preoperativeDiagnosis: sc.preoperativeDiagnosis || sc.preoperative_diagnosis || '',
+    preoperative_diagnosis: sc.preoperativeDiagnosis || sc.preoperative_diagnosis || '',
+    consultationOrder: sc.consultationOrder || sc.consultation_order || '',
+    consultation_order: sc.consultationOrder || sc.consultation_order || '',
+    postoperativeDiagnosis: sc.postoperativeDiagnosis || sc.postoperative_diagnosis || '',
+    postoperative_diagnosis: sc.postoperativeDiagnosis || sc.postoperative_diagnosis || '',
+    currentStatus: sc.currentStatus || sc.current_status || '',
+    current_status: sc.currentStatus || sc.current_status || '',
+    images: Array.isArray(sc.images) ? sc.images : (typeof sc.images === 'string' ? (() => { try { return JSON.parse(sc.images); } catch { return []; } })() : [])
+  });
+
+  const normalizeDeathCase = (dc) => ({
+    _id: dc._id || dc.id || `dc_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    id: dc.id,
+    patientName: dc.patientName || dc.patient_name || '',
+    patient_name: dc.patientName || dc.patient_name || '',
+    age: dc.age || '',
+    address: dc.address || '',
+    admissionTime: dc.admissionTime || dc.admission_time || '',
+    admission_time: dc.admissionTime || dc.admission_time || '',
+    admissionStatus: dc.admissionStatus || dc.admission_status || '',
+    admission_status: dc.admissionStatus || dc.admission_status || '',
+    medicalHistory: dc.medicalHistory || dc.medical_history || '',
+    medical_history: dc.medicalHistory || dc.medical_history || '',
+    clinicalSymptoms: dc.clinicalSymptoms || dc.clinical_symptoms || '',
+    clinical_symptoms: dc.clinicalSymptoms || dc.clinical_symptoms || '',
+    clinicalTests: dc.clinicalTests || dc.clinical_tests || '',
+    clinical_tests: dc.clinicalTests || dc.clinical_tests || '',
+    diagnosis: dc.diagnosis || '',
+    emergencyTreatment: dc.emergencyTreatment || dc.emergency_treatment || '',
+    emergency_treatment: dc.emergencyTreatment || dc.emergency_treatment || '',
+    finalOutcome: dc.finalOutcome || dc.final_outcome || '',
+    final_outcome: dc.finalOutcome || dc.final_outcome || '',
+    images: Array.isArray(dc.images) ? dc.images : (typeof dc.images === 'string' ? (() => { try { return JSON.parse(dc.images); } catch { return []; } })() : [])
+  });
+
+  const normalizeCriticalCase = (cc) => ({
+    _id: cc._id || cc.id || `cc_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    id: cc.id,
+    patientName: cc.patientName || cc.patient_name || '',
+    patient_name: cc.patientName || cc.patient_name || '',
+    age: cc.age || '',
+    address: cc.address || '',
+    admissionTime: cc.admissionTime || cc.admission_time || '',
+    admission_time: cc.admissionTime || cc.admission_time || '',
+    medicalHistory: cc.medicalHistory || cc.medical_history || '',
+    medical_history: cc.medicalHistory || cc.medical_history || '',
+    clinicalSymptoms: cc.clinicalSymptoms || cc.clinical_symptoms || '',
+    clinical_symptoms: cc.clinicalSymptoms || cc.clinical_symptoms || '',
+    clinicalTests: cc.clinicalTests || cc.clinical_tests || '',
+    clinical_tests: cc.clinicalTests || cc.clinical_tests || '',
+    diagnosis: cc.diagnosis || '',
+    conditionSummary: cc.conditionSummary || cc.condition_summary || '',
+    condition_summary: cc.conditionSummary || cc.condition_summary || '',
+    treatment: cc.treatment || '',
+    notes: cc.notes || '',
+    images: Array.isArray(cc.images) ? cc.images : (typeof cc.images === 'string' ? (() => { try { return JSON.parse(cc.images); } catch { return []; } })() : [])
+  });
+
+  // Open Modal to View/Edit Department Report
+  const handleViewDepartmentReport = async (dept) => {
     setModalDept(dept);
-    setModalOpen(true);
+    setShowModal(true);
     setLoadingReport(true);
     setIsEditing(false);
     setShowDeleteConfirm(false);
@@ -170,10 +267,10 @@ const AdminDashboard = () => {
         });
         const parsedData = typeof report.report_data === 'string' ? JSON.parse(report.report_data) : (report.report_data || {});
         setEditReportData(parsedData);
-        setEditTransferCases(report.transferCases || []);
-        setEditSurgeryCases(report.surgeryCases || []);
-        setEditDeathCases(report.deathCases || []);
-        setEditCriticalCases(report.criticalCases || []);
+        setEditTransferCases((report.transferCases || []).map(normalizeTransferCase));
+        setEditSurgeryCases((report.surgeryCases || []).map(normalizeSurgeryCase));
+        setEditDeathCases((report.deathCases || []).map(normalizeDeathCase));
+        setEditCriticalCases((report.criticalCases || []).map(normalizeCriticalCase));
       } else {
         setHasReport(false);
         setModalReportLocked(false);
@@ -258,8 +355,8 @@ const AdminDashboard = () => {
       const res = await reportService.deleteReport(modalDept.departmentCode, targetDate);
       if (res.success) {
         alert('Đã xóa báo cáo thành công.');
-        setModalOpen(false);
         setShowDeleteConfirm(false);
+        setShowModal(false);
         fetchStatus();
       }
     } catch (err) {
@@ -277,14 +374,23 @@ const AdminDashboard = () => {
   const handleAddTransferCase = () => {
     setEditTransferCases(prev => [
       ...prev,
-      { patientName: '', age: '', address: '', admissionTime: '', reason: '', clinicalSymptoms: '', clinicalTests: '', diagnosis: '', initialTreatment: '', progressNotes: '', images: [] }
+      { patientName: '', patient_name: '', age: '', address: '', admissionTime: '', admission_time: '', reason: '', clinicalSymptoms: '', clinical_symptoms: '', clinicalTests: '', clinical_tests: '', diagnosis: '', initialTreatment: '', initial_treatment: '', progressNotes: '', progress_notes: '', images: [] }
     ]);
   };
 
   const handleTransferCaseChange = (idx, field, val) => {
     setEditTransferCases(prev => {
       const next = [...prev];
-      next[idx] = { ...next[idx], [field]: val };
+      next[idx] = { 
+        ...next[idx], 
+        [field]: val,
+        ...(field === 'patientName' ? { patient_name: val } : {}),
+        ...(field === 'admissionTime' ? { admission_time: val } : {}),
+        ...(field === 'clinicalSymptoms' ? { clinical_symptoms: val } : {}),
+        ...(field === 'clinicalTests' ? { clinical_tests: val } : {}),
+        ...(field === 'initialTreatment' ? { initial_treatment: val } : {}),
+        ...(field === 'progressNotes' ? { progress_notes: val } : {})
+      };
       return next;
     });
   };
@@ -296,14 +402,26 @@ const AdminDashboard = () => {
   const handleAddSurgeryCase = () => {
     setEditSurgeryCases(prev => [
       ...prev,
-      { patientName: '', birthYear: '', address: '', admissionTime: '', clinicalSymptoms: '', clinicalTests: '', preoperativeDiagnosis: '', consultationOrder: '', postoperativeDiagnosis: '', currentStatus: '', images: [] }
+      { patientName: '', patient_name: '', birthYear: '', birth_year: '', address: '', admissionTime: '', admission_time: '', reason: '', clinicalSymptoms: '', clinical_symptoms: '', clinicalTests: '', clinical_tests: '', preoperativeDiagnosis: '', preoperative_diagnosis: '', consultationOrder: '', consultation_order: '', postoperativeDiagnosis: '', postoperative_diagnosis: '', currentStatus: '', current_status: '', images: [] }
     ]);
   };
 
   const handleSurgeryCaseChange = (idx, field, val) => {
     setEditSurgeryCases(prev => {
       const next = [...prev];
-      next[idx] = { ...next[idx], [field]: val };
+      next[idx] = { 
+        ...next[idx], 
+        [field]: val,
+        ...(field === 'patientName' ? { patient_name: val } : {}),
+        ...(field === 'birthYear' ? { birth_year: val } : {}),
+        ...(field === 'admissionTime' ? { admission_time: val } : {}),
+        ...(field === 'clinicalSymptoms' ? { clinical_symptoms: val } : {}),
+        ...(field === 'clinicalTests' ? { clinical_tests: val } : {}),
+        ...(field === 'preoperativeDiagnosis' ? { preoperative_diagnosis: val } : {}),
+        ...(field === 'consultationOrder' ? { consultation_order: val } : {}),
+        ...(field === 'postoperativeDiagnosis' ? { postoperative_diagnosis: val } : {}),
+        ...(field === 'currentStatus' ? { current_status: val } : {})
+      };
       return next;
     });
   };
@@ -315,14 +433,25 @@ const AdminDashboard = () => {
   const handleAddDeathCase = () => {
     setEditDeathCases(prev => [
       ...prev,
-      { patientName: '', age: '', address: '', admissionTime: '', admissionStatus: '', medicalHistory: '', clinicalSymptoms: '', clinicalTests: '', diagnosis: '', emergencyTreatment: '', finalOutcome: '', images: [] }
+      { patientName: '', patient_name: '', age: '', address: '', admissionTime: '', admission_time: '', admissionStatus: '', admission_status: '', medicalHistory: '', medical_history: '', clinicalSymptoms: '', clinical_symptoms: '', clinicalTests: '', clinical_tests: '', diagnosis: '', emergencyTreatment: '', emergency_treatment: '', finalOutcome: '', final_outcome: '', images: [] }
     ]);
   };
 
   const handleDeathCaseChange = (idx, field, val) => {
     setEditDeathCases(prev => {
       const next = [...prev];
-      next[idx] = { ...next[idx], [field]: val };
+      next[idx] = { 
+        ...next[idx], 
+        [field]: val,
+        ...(field === 'patientName' ? { patient_name: val } : {}),
+        ...(field === 'admissionTime' ? { admission_time: val } : {}),
+        ...(field === 'admissionStatus' ? { admission_status: val } : {}),
+        ...(field === 'medicalHistory' ? { medical_history: val } : {}),
+        ...(field === 'clinicalSymptoms' ? { clinical_symptoms: val } : {}),
+        ...(field === 'clinicalTests' ? { clinical_tests: val } : {}),
+        ...(field === 'emergencyTreatment' ? { emergency_treatment: val } : {}),
+        ...(field === 'finalOutcome' ? { final_outcome: val } : {})
+      };
       return next;
     });
   };
@@ -334,14 +463,23 @@ const AdminDashboard = () => {
   const handleAddCriticalCase = () => {
     setEditCriticalCases(prev => [
       ...prev,
-      { patientName: '', age: '', address: '', admissionTime: '', medicalHistory: '', clinicalSymptoms: '', clinicalTests: '', diagnosis: '', conditionSummary: '', treatment: '', notes: 'Bàn giao tua sau theo dõi tiếp', images: [] }
+      { patientName: '', patient_name: '', age: '', address: '', admissionTime: '', admission_time: '', medicalHistory: '', medical_history: '', clinicalSymptoms: '', clinical_symptoms: '', clinicalTests: '', clinical_tests: '', diagnosis: '', conditionSummary: '', condition_summary: '', treatment: '', notes: 'Bàn giao tua sau theo dõi tiếp', images: [] }
     ]);
   };
 
   const handleCriticalCaseChange = (idx, field, val) => {
     setEditCriticalCases(prev => {
       const next = [...prev];
-      next[idx] = { ...next[idx], [field]: val };
+      next[idx] = { 
+        ...next[idx], 
+        [field]: val,
+        ...(field === 'patientName' ? { patient_name: val } : {}),
+        ...(field === 'admissionTime' ? { admission_time: val } : {}),
+        ...(field === 'medicalHistory' ? { medical_history: val } : {}),
+        ...(field === 'clinicalSymptoms' ? { clinical_symptoms: val } : {}),
+        ...(field === 'clinicalTests' ? { clinical_tests: val } : {}),
+        ...(field === 'conditionSummary' ? { condition_summary: val } : {})
+      };
       return next;
     });
   };
