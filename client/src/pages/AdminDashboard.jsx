@@ -6,6 +6,7 @@ import {
   FaSignOutAlt, 
   FaTv, 
   FaPrint,
+  FaFilePdf,
   FaFileExcel,
   FaChevronDown,
   FaSpinner, 
@@ -349,29 +350,53 @@ const AdminDashboard = () => {
     setEditCriticalCases(prev => prev.filter((_, i) => i !== idx));
   };
 
-  // Export Excel
+  // Export Excel (In-browser 3-sheet generator with Server fallback)
   const handleExportExcel = async (exportType) => {
     setExportingExcel(true);
     setShowExportMenu(false);
     try {
-      await generateAndDownloadHospitalExcel(date, exportType);
+      // 1. Fetch live full details / presentation data
+      const res = await reportService.getPresentationData(date);
+      const reports = (res && res.data) ? res.data : [];
+
+      // 2. Generate with exceljs in browser (3 Sheets, professional hospital layout)
+      await generateAndDownloadHospitalExcel(date, reports, statusList);
     } catch (err) {
-      alert('Lỗi xuất file Excel: ' + (err.message || 'Lỗi server'));
+      console.warn('Client Excel generation failed, falling back to server export:', err);
+      try {
+        const response = await reportService.exportHospitalReportExcel(date);
+        const blob = new Blob([response.data], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.setAttribute('download', `Bao_Cao_Giao_Ban_Tong_Hop_${date}.xlsx`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(downloadUrl);
+      } catch (fallbackErr) {
+        alert('Không thể xuất file Excel: ' + (fallbackErr.response?.data?.error || fallbackErr.message || err.message || 'Lỗi hệ thống'));
+      }
     } finally {
       setExportingExcel(false);
     }
   };
 
-  // Medical Print View
+  // Medical Print View & PDF Modal
   const handlePrintReport = async () => {
     try {
-      const res = await reportService.getAllReportsByDate(date);
+      const res = await reportService.getPresentationData(date);
       if (res && res.data) {
         setPrintReports(res.data);
         setShowPrintModal(true);
+      } else {
+        alert('Không có dữ liệu báo cáo cho ngày này để in / xuất PDF.');
       }
     } catch (err) {
-      alert('Không thể tải dữ liệu để in báo cáo.');
+      console.error('Lỗi khi tải dữ liệu in báo cáo:', err);
+      alert('Không thể tải dữ liệu để in báo cáo: ' + (err.response?.data?.error || err.message));
     }
   };
 
@@ -492,13 +517,14 @@ const AdminDashboard = () => {
                 )}
               </div>
 
-              {/* Print View */}
+              {/* Print / PDF View */}
               <button
                 className="btn btn-secondary btn-sm"
                 onClick={handlePrintReport}
                 style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: '700', padding: '0.5rem 0.85rem' }}
+                title="Xem bản in toàn viện & Tải file PDF A4 chuẩn"
               >
-                <FaPrint /> In Báo Cáo
+                <FaFilePdf style={{ color: '#EF4444' }} /> In / Tải PDF
               </button>
 
               {/* Presentation Mode */}
