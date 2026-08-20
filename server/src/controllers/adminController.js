@@ -43,40 +43,67 @@ const getPresentationData = async (req, res, next) => {
       [date]
     );
 
-    const presentationData = [];
+    if (!reports || reports.length === 0) {
+      return res.json({ success: true, data: [] });
+    }
 
-    for (const report of reports) {
-      const [transferCases] = await pool.execute(
-        'SELECT * FROM transfer_cases WHERE report_id = ?',
-        [report.id]
-      );
-      const [surgeryCases] = await pool.execute(
-        'SELECT * FROM surgery_cases WHERE report_id = ?',
-        [report.id]
-      );
-      const [deathCases] = await pool.execute(
-        'SELECT * FROM death_cases WHERE report_id = ? ORDER BY id ASC',
-        [report.id]
-      );
-      const [criticalCases] = await pool.execute(
-        'SELECT * FROM critical_cases WHERE report_id = ? ORDER BY id ASC',
-        [report.id]
-      );
+    const reportIds = reports.map(r => r.id);
+    const placeholders = reportIds.map(() => '?').join(',');
 
+    // Parallel Batch Queries (Replaces 48 round trips with 4 single queries)
+    const [
+      [allTransfers],
+      [allSurgeries],
+      [allDeaths],
+      [allCriticals]
+    ] = await Promise.all([
+      pool.query(`SELECT * FROM transfer_cases WHERE report_id IN (${placeholders})`, reportIds),
+      pool.query(`SELECT * FROM surgery_cases WHERE report_id IN (${placeholders})`, reportIds),
+      pool.query(`SELECT * FROM death_cases WHERE report_id IN (${placeholders}) ORDER BY id ASC`, reportIds),
+      pool.query(`SELECT * FROM critical_cases WHERE report_id IN (${placeholders}) ORDER BY id ASC`, reportIds)
+    ]);
+
+    // In-memory Grouping by report_id (O(1) lookups)
+    const transfersByReportId = new Map();
+    const surgeriesByReportId = new Map();
+    const deathsByReportId = new Map();
+    const criticalsByReportId = new Map();
+
+    (allTransfers || []).forEach(t => {
+      if (!transfersByReportId.has(t.report_id)) transfersByReportId.set(t.report_id, []);
+      transfersByReportId.get(t.report_id).push(parseCaseImages(t));
+    });
+
+    (allSurgeries || []).forEach(s => {
+      if (!surgeriesByReportId.has(s.report_id)) surgeriesByReportId.set(s.report_id, []);
+      surgeriesByReportId.get(s.report_id).push(parseCaseImages(s));
+    });
+
+    (allDeaths || []).forEach(d => {
+      if (!deathsByReportId.has(d.report_id)) deathsByReportId.set(d.report_id, []);
+      deathsByReportId.get(d.report_id).push(parseCaseImages(d));
+    });
+
+    (allCriticals || []).forEach(c => {
+      if (!criticalsByReportId.has(c.report_id)) criticalsByReportId.set(c.report_id, []);
+      criticalsByReportId.get(c.report_id).push(parseCaseImages(c));
+    });
+
+    const presentationData = reports.map(report => {
       let overtimeStaff = report.overtime_staff;
       if (typeof overtimeStaff === 'string') {
         try { overtimeStaff = JSON.parse(overtimeStaff); } catch (e) { overtimeStaff = []; }
       }
 
-      presentationData.push({
+      return {
         ...report,
         overtime_staff: overtimeStaff,
-        transferCases: (transferCases || []).map(parseCaseImages),
-        surgeryCases: (surgeryCases || []).map(parseCaseImages),
-        deathCases: (deathCases || []).map(parseCaseImages),
-        criticalCases: (criticalCases || []).map(parseCaseImages)
-      });
-    }
+        transferCases: transfersByReportId.get(report.id) || [],
+        surgeryCases: surgeriesByReportId.get(report.id) || [],
+        deathCases: deathsByReportId.get(report.id) || [],
+        criticalCases: criticalsByReportId.get(report.id) || []
+      };
+    });
 
     // Sort by official 12-department sequence
     presentationData.sort((a, b) => {
@@ -296,6 +323,44 @@ const getReportsPayloadSize = async (req, res, next) => {
     let grandTotalTextBytes = 0;
     let grandTotalImageBytes = 0;
 
+    const reportIds = (reports || []).map(r => r.id);
+    const transfersByReportId = new Map();
+    const surgeriesByReportId = new Map();
+    const deathsByReportId = new Map();
+    const criticalsByReportId = new Map();
+
+    if (reportIds.length > 0) {
+      const placeholders = reportIds.map(() => '?').join(',');
+      const [
+        [allTransfers],
+        [allSurgeries],
+        [allDeaths],
+        [allCriticals]
+      ] = await Promise.all([
+        pool.query(`SELECT * FROM transfer_cases WHERE report_id IN (${placeholders})`, reportIds),
+        pool.query(`SELECT * FROM surgery_cases WHERE report_id IN (${placeholders})`, reportIds),
+        pool.query(`SELECT * FROM death_cases WHERE report_id IN (${placeholders})`, reportIds),
+        pool.query(`SELECT * FROM critical_cases WHERE report_id IN (${placeholders})`, reportIds)
+      ]);
+
+      (allTransfers || []).forEach(t => {
+        if (!transfersByReportId.has(t.report_id)) transfersByReportId.set(t.report_id, []);
+        transfersByReportId.get(t.report_id).push(t);
+      });
+      (allSurgeries || []).forEach(s => {
+        if (!surgeriesByReportId.has(s.report_id)) surgeriesByReportId.set(s.report_id, []);
+        surgeriesByReportId.get(s.report_id).push(s);
+      });
+      (allDeaths || []).forEach(d => {
+        if (!deathsByReportId.has(d.report_id)) deathsByReportId.set(d.report_id, []);
+        deathsByReportId.get(d.report_id).push(d);
+      });
+      (allCriticals || []).forEach(c => {
+        if (!criticalsByReportId.has(c.report_id)) criticalsByReportId.set(c.report_id, []);
+        criticalsByReportId.get(c.report_id).push(c);
+      });
+    }
+
     for (const u of users) {
       const report = reports.find(r => r.department_code === u.department_code);
       if (!report) {
@@ -324,11 +389,11 @@ const getReportsPayloadSize = async (req, res, next) => {
         continue;
       }
 
-      // Query sub-records
-      const [transferCases] = await pool.execute('SELECT * FROM transfer_cases WHERE report_id = ?', [report.id]);
-      const [surgeryCases] = await pool.execute('SELECT * FROM surgery_cases WHERE report_id = ?', [report.id]);
-      const [deathCases] = await pool.execute('SELECT * FROM death_cases WHERE report_id = ?', [report.id]);
-      const [criticalCases] = await pool.execute('SELECT * FROM critical_cases WHERE report_id = ?', [report.id]);
+      // Read from O(1) in-memory maps instead of running DB queries in loop
+      const transferCases = transfersByReportId.get(report.id) || [];
+      const surgeryCases = surgeriesByReportId.get(report.id) || [];
+      const deathCases = deathsByReportId.get(report.id) || [];
+      const criticalCases = criticalsByReportId.get(report.id) || [];
 
       let textBytes = 0;
       let imageBytes = 0;
