@@ -1,7 +1,17 @@
-# 🏥 Hệ Thống Quản Lý & Trình Chiếu Báo Cáo Giao Ban Y Tế Toàn Viện
-### **Trung Tâm Y Tế Khu Vực Bình Long — Sở Y Tế Thành Phố Đồng Nai**
-
 <div align="center">
+
+<img src="client/public/hospital.jpg" alt="Trung Tâm Y Tế Khu Vực Bình Long" width="100%" style="max-height: 420px; object-fit: cover; border-radius: 14px; box-shadow: 0 8px 30px rgba(0,0,0,0.25);" />
+
+<br/><br/>
+
+<img src="client/public/logo.png" alt="Logo TTYT Bình Long" width="100px" height="100px" style="filter: drop-shadow(0 4px 10px rgba(0,0,0,0.15));" />
+
+# 🏥 HỆ THỐNG QUẢN LÝ, TỔNG HỢP & TRÌNH CHIẾU BÁO CÁO GIAO BAN Y TẾ TOÀN VIỆN
+### **TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG — SỞ Y TẾ THÀNH PHỐ ĐỒNG NAI**
+
+<p align="center">
+  <em>Giải pháp chuyển đổi số y tế toàn diện thay thế hoàn toàn báo cáo sổ sách truyền thống, phục vụ công tác giao ban chuyên môn hàng ngày cho 12 Khoa/Phòng & Phòng Kế Hoạch - Nghiệp Vụ.</em>
+</p>
 
 [![Version](https://img.shields.io/badge/Version-1.37.2-10B981?style=for-the-badge&logo=semver&logoColor=white)](https://github.com/UIBreaker/Hospital-Report-System)
 [![Author](https://img.shields.io/badge/Author-Nguyen%20Vu%20Nhat%20Nam-0F2C59?style=for-the-badge&logo=github&logoColor=white)](https://github.com/UIBreaker)
@@ -20,10 +30,6 @@
 [![ExcelJS](https://img.shields.io/badge/ExcelJS-4.4.x-107C41?style=flat-square&logo=microsoftexcel&logoColor=white)](https://github.com/exceljs/exceljs)
 [![html2pdf](https://img.shields.io/badge/html2pdf.js-0.10.x-DC2626?style=flat-square&logo=adobeacrobatreader&logoColor=white)](https://ekoopmans.github.io/html2pdf.js/)
 [![Vercel](https://img.shields.io/badge/Vercel-Edge%20Serverless-000000?style=flat-square&logo=vercel&logoColor=white)](https://vercel.com/)
-
-<br/>
-
-*Giải pháp chuyển đổi số y tế toàn diện thay thế hoàn toàn báo cáo sổ sách truyền thống, phục vụ công tác giao ban chuyên môn hàng ngày cho 12 Khoa/Phòng & Phòng Kế Hoạch - Nghiệp Vụ.*
 
 </div>
 
