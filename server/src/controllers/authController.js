@@ -69,8 +69,15 @@ const login = async (req, res, next) => {
       return res.status(401).json({ success: false, error: 'Tên đăng nhập hoặc mật khẩu không chính xác' });
     }
 
+    const userRole = (user.role || (['admin', 'khnv'].includes(String(user.username || '').toLowerCase()) || String(user.department_code || '').toLowerCase() === 'admin' ? 'admin' : 'department')).toLowerCase();
+
     const token = jwt.sign(
-      { userId: user.id, departmentCode: user.department_code, role: user.role },
+      { 
+        userId: user.id, 
+        username: user.username,
+        departmentCode: user.department_code, 
+        role: userRole 
+      },
       process.env.JWT_SECRET || 'hospital_report_secret_key_2026',
       { expiresIn: '30d' }
     );
@@ -84,7 +91,7 @@ const login = async (req, res, next) => {
           username: user.username,
           departmentCode: user.department_code,
           departmentName: user.department_name,
-          role: user.role
+          role: userRole
         }
       }
     });
