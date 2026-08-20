@@ -821,7 +821,7 @@ const AdminDashboard = () => {
       const report = res.data;
       if (report) {
         setHasReport(true);
-        setModalReportLocked(Boolean(report.is_locked || report.isLocked));
+        setModalReportLocked(Boolean(Number(report.is_locked) === 1));
         let overtime = report.overtime_staff;
         if (typeof overtime === 'string') {
           try { overtime = JSON.parse(overtime); } catch (e) { overtime = []; }
@@ -865,11 +865,12 @@ const AdminDashboard = () => {
     setTogglingModalLock(true);
     try {
       const targetDate = editHeader.reportDate || date;
-      const res = await reportService.toggleReportLock(modalDept.departmentCode, targetDate, !modalReportLocked);
+      const nextLocked = !modalReportLocked;
+      const res = await reportService.toggleReportLock(modalDept.departmentCode, targetDate, nextLocked);
       if (res.success) {
-        setModalReportLocked(res.isLocked);
+        setModalReportLocked(Boolean(res.isLocked));
         setSaveSuccess(res.message);
-        fetchStatus();
+        await fetchStatus();
       }
     } catch (err) {
       alert('Lỗi thay đổi trạng thái khóa sổ: ' + (err.response?.data?.error || err.message));
@@ -885,16 +886,17 @@ const AdminDashboard = () => {
       return;
     }
     const allLocked = submittedDepts.every(s => s.isLocked);
+    const nextLocked = !allLocked;
     const actionText = allLocked ? 'MỞ KHÓA TOÀN VIỆN' : 'KHÓA SỔ TOÀN VIỆN';
     if (!window.confirm(`Bạn có chắc chắn muốn ${actionText} cho tất cả báo cáo ngày ${date}?`)) {
       return;
     }
     setLockingAll(true);
     try {
-      const res = await reportService.toggleLockAllReports(date, !allLocked);
+      const res = await reportService.toggleLockAllReports(date, nextLocked);
       if (res.success) {
         alert(res.message);
-        fetchStatus();
+        await fetchStatus();
       }
     } catch (err) {
       alert('Lỗi khóa sổ toàn viện: ' + (err.response?.data?.error || err.message));

@@ -305,23 +305,11 @@ const ReportPage = () => {
           setDeathCases(normalizedDeaths);
           setCriticalCases(normalizedCriticals);
           setExistingReportLoaded(true);
-          setIsLocked(Boolean(report.is_locked || report.isLocked));
+          setIsLocked(Boolean(Number(report.is_locked) === 1));
           setLockInfo({ lockedAt: report.locked_at, lockedBy: report.locked_by });
         } else {
-          // Ngày này chưa có báo cáo -> kiểm tra xem có bị quá hạn khóa sổ tự động không
-          const now = new Date();
-          const todayStr = now.toISOString().split('T')[0];
-          let autoLocked = false;
-          if (headerData.reportDate < todayStr) {
-            const [rY, rM, rD] = headerData.reportDate.split('-').map(Number);
-            const nextDay830 = new Date(rY, rM - 1, rD + 1, 8, 30, 0);
-            if (now.getTime() > nextDay830.getTime()) {
-              autoLocked = true;
-            }
-          }
-
           setExistingReportLoaded(false);
-          setIsLocked(autoLocked);
+          setIsLocked(false);
           setLockInfo({ lockedAt: null, lockedBy: null });
           setFormData({});
           setTransferCases([]);

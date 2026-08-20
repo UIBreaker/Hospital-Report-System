@@ -33,25 +33,7 @@ const parseCaseImages = (caseItem) => {
 const isReportLocked = (report, userRole) => {
   if (userRole === 'admin') return false; // Admin always has bypass permission
   if (!report) return false;
-  if (report.is_locked === 1 || report.is_locked === true) return true;
-  
-  // Auto-lock rule after 08:30 AM next day
-  const reportDateStr = report.report_date ? (typeof report.report_date === 'string' ? report.report_date.split('T')[0] : report.report_date) : '';
-  if (reportDateStr) {
-    const now = new Date();
-    // VN time (UTC+7)
-    const vnTime = new Date(now.getTime() + (7 * 60 + now.getTimezoneOffset()) * 60000);
-    const vnTodayStr = vnTime.toISOString().split('T')[0];
-    
-    if (reportDateStr < vnTodayStr) {
-      const [rY, rM, rD] = reportDateStr.split('-').map(Number);
-      const nextDay830 = new Date(rY, rM - 1, rD + 1, 8, 30, 0);
-      if (vnTime.getTime() > nextDay830.getTime()) {
-        return true;
-      }
-    }
-  }
-  return false;
+  return Number(report.is_locked) === 1;
 };
 
 const createOrUpdateReport = async (req, res, next) => {
@@ -315,7 +297,7 @@ const getReport = async (req, res, next) => {
     }
 
     const report = reports[0];
-    const isLocked = Boolean(report.is_locked || isReportLocked(report, 'department'));
+    const isLocked = Number(report.is_locked) === 1;
     const [transferCases] = await pool.execute(
       'SELECT * FROM transfer_cases WHERE report_id = ? ORDER BY id ASC',
       [report.id]
@@ -337,7 +319,7 @@ const getReport = async (req, res, next) => {
       success: true,
       data: {
         ...report,
-        is_locked: report.is_locked ? 1 : (isLocked ? 1 : 0),
+        is_locked: report.is_locked ? 1 : 0,
         isLocked: isLocked,
         transferCases: (transferCases || []).map(parseCaseImages),
         surgeryCases: (surgeryCases || []).map(parseCaseImages),
