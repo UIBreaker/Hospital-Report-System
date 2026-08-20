@@ -301,6 +301,29 @@ const CaseImageUploader = ({
                 onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
                 title="Nhấp để phóng to toàn màn hình (Lightbox)"
               >
+                {/* Cloud Status Badge */}
+                {typeof url === 'string' && url.startsWith('http') && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '3px',
+                    left: '3px',
+                    backgroundColor: 'rgba(5, 150, 105, 0.92)',
+                    color: '#FFFFFF',
+                    fontSize: '0.62rem',
+                    fontWeight: '800',
+                    padding: '1px 5px',
+                    borderRadius: '4px',
+                    boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '2px',
+                    zIndex: 2,
+                    backdropFilter: 'blur(2px)'
+                  }}>
+                    ☁️ Cloud
+                  </div>
+                )}
+
                 {/* Image element */}
                 <img
                   src={url}
