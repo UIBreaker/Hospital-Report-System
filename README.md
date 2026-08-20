@@ -13,7 +13,7 @@
   <em>Giải pháp chuyển đổi số y tế toàn diện thay thế hoàn toàn báo cáo sổ sách truyền thống, phục vụ công tác giao ban chuyên môn hàng ngày cho 12 Khoa/Phòng & Phòng Kế Hoạch - Nghiệp Vụ.</em>
 </p>
 
-[![Version](https://img.shields.io/badge/Version-1.37.3-10B981?style=for-the-badge&logo=semver&logoColor=white)](https://github.com/UIBreaker/Hospital-Report-System)
+[![Version](https://img.shields.io/badge/Version-1.37.4-10B981?style=for-the-badge&logo=semver&logoColor=white)](https://github.com/UIBreaker/Hospital-Report-System)
 [![Author](https://img.shields.io/badge/Author-Nguyen%20Vu%20Nhat%20Nam-0F2C59?style=for-the-badge&logo=github&logoColor=white)](https://github.com/UIBreaker)
 [![Zalo Support](https://img.shields.io/badge/Zalo-0916.337.266-0284C7?style=for-the-badge&logo=zalo&logoColor=white)](https://zalo.me/0916337266)
 [![License](https://img.shields.io/badge/License-MIT-3B82F6?style=for-the-badge)](LICENSE)
