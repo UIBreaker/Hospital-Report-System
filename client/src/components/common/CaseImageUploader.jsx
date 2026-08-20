@@ -8,7 +8,8 @@ import {
   FaImage,
   FaPlus 
 } from 'react-icons/fa';
-import { processImageFiles, normalizeImages } from '../../utils/imageUtils';
+import { normalizeImages } from '../../utils/imageUtils';
+import { uploadMultipleMedicalImages } from '../../services/uploadService';
 import ImageLightboxModal from './ImageLightboxModal';
 
 const THEME_STYLES = {
@@ -58,6 +59,7 @@ const CaseImageUploader = ({
   readOnly = false 
 }) => {
   const [processing, setProcessing] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const fileInputRef = useRef(null);
@@ -69,8 +71,11 @@ const CaseImageUploader = ({
   const handleFiles = async (files) => {
     if (!files || files.length === 0) return;
     setProcessing(true);
+    setUploadProgress(0);
     try {
-      const processed = await processImageFiles(files);
+      const processed = await uploadMultipleMedicalImages(files, (pct) => {
+        setUploadProgress(pct);
+      });
       const updated = [...imageList, ...processed];
       onChange(updated);
     } catch (err) {
@@ -78,6 +83,7 @@ const CaseImageUploader = ({
       alert('Không thể xử lý hình ảnh. Vui lòng thử lại.');
     } finally {
       setProcessing(false);
+      setUploadProgress(0);
     }
   };
 
@@ -205,6 +211,32 @@ const CaseImageUploader = ({
           </div>
         )}
       </div>
+
+      {/* Upload Progress Bar Banner */}
+      {processing && (
+        <div style={{
+          marginBottom: '0.65rem',
+          backgroundColor: '#EFF6FF',
+          border: '1px solid #BFDBFE',
+          borderRadius: '7px',
+          padding: '0.5rem 0.85rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          boxShadow: '0 2px 8px rgba(37,99,235,0.08)'
+        }}>
+          <FaSpinner className="spinner" style={{ color: '#2563EB', fontSize: '1.1rem', flexShrink: 0 }} />
+          <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: '700', color: '#1E40AF', marginBottom: '4px' }}>
+              <span>☁️ Đang nén & tải ảnh lên Cloud Storage...</span>
+              <span style={{ fontFamily: 'monospace' }}>{uploadProgress}%</span>
+            </div>
+            <div style={{ width: '100%', height: '5px', backgroundColor: '#DBEAFE', borderRadius: '3px', overflow: 'hidden' }}>
+              <div style={{ width: `${uploadProgress}%`, height: '100%', backgroundColor: '#2563EB', transition: 'width 0.2s ease', borderRadius: '3px' }} />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Image Thumbnails Strip & Drop Area */}
       {imageList.length === 0 ? (
