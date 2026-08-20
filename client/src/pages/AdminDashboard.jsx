@@ -239,10 +239,10 @@ const AdminDashboard = () => {
     images: Array.isArray(cc.images) ? cc.images : (typeof cc.images === 'string' ? (() => { try { return JSON.parse(cc.images); } catch { return []; } })() : [])
   });
 
-  // Open Modal to View/Edit Department Report
-  const handleViewDepartmentReport = async (dept) => {
+  // Open Detail Modal for Department Report
+  const handleOpenDetailModal = async (dept) => {
     setModalDept(dept);
-    setShowModal(true);
+    setModalOpen(true);
     setLoadingReport(true);
     setIsEditing(false);
     setShowDeleteConfirm(false);
@@ -287,6 +287,8 @@ const AdminDashboard = () => {
       setLoadingReport(false);
     }
   };
+
+  const handleViewDepartmentReport = handleOpenDetailModal;
 
   // Toggle Lock inside Modal
   const handleToggleModalLock = async () => {
@@ -356,7 +358,7 @@ const AdminDashboard = () => {
       if (res.success) {
         alert('Đã xóa báo cáo thành công.');
         setShowDeleteConfirm(false);
-        setShowModal(false);
+        setModalOpen(false);
         fetchStatus();
       }
     } catch (err) {
