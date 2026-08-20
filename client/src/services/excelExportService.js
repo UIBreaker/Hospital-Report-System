@@ -89,6 +89,7 @@ const FIELD_LABELS = {
   moDe: 'Mổ đẻ',
   choSanh: 'Chờ sanh',
   sieuAm: 'Siêu âm sản',
+  datThaoVong: 'Đặt và tháo vòng',
 
   // GMHS / Ngoai / CTCH
   tongSoCaMo: 'Tổng số ca mổ',

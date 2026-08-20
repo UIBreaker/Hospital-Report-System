@@ -35,6 +35,7 @@ const SanForm = ({ formData, setFormData, transferCases, setTransferCases }) => 
           <div className="form-group"><label>Sanh hút</label><input type="number" min="0" step="1" value={formData.sanhHut || ''} onChange={(e) => handleChange('sanhHut', e.target.value)} /></div>
           <div className="form-group"><label>Chờ sanh</label><input type="number" min="0" step="1" value={formData.choSanh || ''} onChange={(e) => handleChange('choSanh', e.target.value)} /></div>
           <div className="form-group"><label>Siêu âm</label><input type="number" min="0" step="1" value={formData.sieuAm || ''} onChange={(e) => handleChange('sieuAm', e.target.value)} /></div>
+          <div className="form-group"><label>Đặt và tháo vòng</label><input type="text" value={formData.datThaoVong || ''} onChange={(e) => handleChange('datThaoVong', e.target.value)} placeholder="0" /></div>
           <div className="form-group"><label>Chuyển viện ngoại trú</label><input type="number" min="0" step="1" value={formData.chuyenVienNgoaiTru || ''} onChange={(e) => handleChange('chuyenVienNgoaiTru', e.target.value)} /></div>
         </div>
       </div>

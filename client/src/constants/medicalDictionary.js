@@ -102,6 +102,7 @@ export const FIELD_LABELS = {
   hauPhau: 'Hậu phẫu',
   chuyenVienNgoaiTru: 'Chuyển viện ngoại trú',
   moLayThai: 'Mổ lấy thai',
+  datThaoVong: 'Đặt và tháo vòng',
 
   // HSCC - TNT - PK21 details
   keToa: 'Kê toa',
