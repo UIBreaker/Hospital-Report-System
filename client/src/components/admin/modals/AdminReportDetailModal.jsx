@@ -20,6 +20,7 @@ import {
   FaClock,
   FaDoorOpen,
   FaUserNurse,
+  FaUserPlus,
   FaMapMarkerAlt
 } from 'react-icons/fa';
 import CaseImageUploader from '../../common/CaseImageUploader';
@@ -113,6 +114,35 @@ const AdminReportDetailModal = ({
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Overtime staff handlers for Admin
+  const handleAddOvertime = () => {
+    const current = Array.isArray(editHeader?.overtimeStaff) ? editHeader.overtimeStaff : [];
+    setEditHeader({
+      ...editHeader,
+      overtimeStaff: [
+        ...current,
+        { id: `ot_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`, staffName: '', time: '' }
+      ]
+    });
+  };
+
+  const handleOvertimeChange = (idx, field, val) => {
+    const current = Array.isArray(editHeader?.overtimeStaff) ? [...editHeader.overtimeStaff] : [];
+    current[idx] = { ...current[idx], [field]: val };
+    setEditHeader({
+      ...editHeader,
+      overtimeStaff: current
+    });
+  };
+
+  const handleRemoveOvertime = (idx) => {
+    const current = Array.isArray(editHeader?.overtimeStaff) ? editHeader.overtimeStaff.filter((_, i) => i !== idx) : [];
+    setEditHeader({
+      ...editHeader,
+      overtimeStaff: current
+    });
+  };
 
   if (!isOpen || !modalDept) return null;
 
@@ -323,6 +353,7 @@ const AdminReportDetailModal = ({
                   <FaUserMd /> THÔNG TIN TUA TRỰC & NHÂN SỰ
                 </h4>
 
+                {/* Core Shift Info */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
                   <div>
                     <label style={{ fontSize: '0.8rem', fontWeight: '700', color: '#64748B', display: 'block', marginBottom: '0.25rem' }}>
@@ -403,6 +434,120 @@ const AdminReportDetailModal = ({
                       </div>
                     )}
                   </div>
+                </div>
+
+                {/* Overtime / Reinforced Staff Section */}
+                <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px dashed #CBD5E1' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    <label style={{ margin: 0, fontWeight: '700', fontSize: '0.88rem', color: '#B45309', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                      <FaClock style={{ color: '#D97706' }} /> NHÂN SỰ TRỰC THÊM GIỜ / TĂNG CƯỜNG ({(editHeader?.overtimeStaff || []).length})
+                    </label>
+                    {isEditing && (
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-sm"
+                        onClick={handleAddOvertime}
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.78rem', padding: '0.3rem 0.75rem', backgroundColor: '#FEF3C7', color: '#92400E', borderColor: '#FDE68A', fontWeight: '700' }}
+                      >
+                        <FaPlus /> Thêm nhân sự tăng cường
+                      </button>
+                    )}
+                  </div>
+
+                  {isEditing ? (
+                    <div>
+                      {(editHeader?.overtimeStaff || []).length === 0 ? (
+                        <p style={{ color: '#94A3B8', fontSize: '0.84rem', fontStyle: 'italic', margin: 0, padding: '0.65rem 0.85rem', backgroundColor: '#F8FAFC', borderRadius: '6px', border: '1px dashed #CBD5E1' }}>
+                          Chưa có nhân sự trực thêm giờ (Bấm nút <strong>"+ Thêm nhân sự tăng cường"</strong> nếu ca trực có nhân sự hỗ trợ thêm).
+                        </p>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                          {(editHeader?.overtimeStaff || []).map((ot, otIdx) => (
+                            <div
+                              key={ot.id || otIdx}
+                              style={{
+                                display: 'grid',
+                                gridTemplateColumns: '1.5fr 1fr auto',
+                                gap: '0.65rem',
+                                alignItems: 'center',
+                                backgroundColor: '#FFFDF5',
+                                padding: '0.65rem 0.85rem',
+                                borderRadius: '8px',
+                                border: '1px solid #FDE68A'
+                              }}
+                            >
+                              <div>
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  placeholder="Nhập họ và tên nhân sự tăng cường..."
+                                  value={ot.staffName || ot.name || ''}
+                                  onChange={(e) => handleOvertimeChange(otIdx, 'staffName', e.target.value)}
+                                  style={{ width: '100%', fontSize: '0.85rem' }}
+                                />
+                              </div>
+                              <div style={{ position: 'relative' }}>
+                                <FaClock style={{ position: 'absolute', top: '50%', left: '0.65rem', transform: 'translateY(-50%)', color: '#B45309', fontSize: '0.8rem' }} />
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  placeholder="Thời gian: VD 17h - 21h, 4h MRT..."
+                                  value={ot.time || ''}
+                                  onChange={(e) => handleOvertimeChange(otIdx, 'time', e.target.value)}
+                                  style={{ width: '100%', paddingLeft: '1.85rem', fontSize: '0.85rem' }}
+                                />
+                              </div>
+                              <button
+                                type="button"
+                                className="btn btn-danger btn-sm"
+                                onClick={() => handleRemoveOvertime(otIdx)}
+                                style={{ padding: '0.35rem 0.55rem', height: '36px', borderRadius: '6px' }}
+                                title="Xóa nhân sự này"
+                              >
+                                <FaTrash size={12} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <small style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '6px', display: 'block' }}>
+                        💡 Ghi nhận các Bác sĩ, Điều dưỡng trực tăng cường hoặc làm thêm giờ ngoài ca trực chính.
+                      </small>
+                    </div>
+                  ) : (
+                    <div>
+                      {(editHeader?.overtimeStaff || []).length > 0 ? (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.65rem' }}>
+                          {(editHeader?.overtimeStaff || []).map((ot, otIdx) => (
+                            <div
+                              key={otIdx}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                backgroundColor: '#FFFDF5',
+                                border: '1px solid #FDE68A',
+                                borderLeft: '4px solid #D97706',
+                                borderRadius: '8px',
+                                padding: '0.5rem 0.85rem'
+                              }}
+                            >
+                              <div style={{ fontWeight: '700', color: '#0F2C59', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                                <FaUserPlus style={{ color: '#D97706' }} /> {ot.staffName || ot.name || '—'}
+                              </div>
+                              <span style={{ backgroundColor: '#FEF3C7', color: '#92400E', border: '1px solid #FDE68A', padding: '0.15rem 0.5rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '700' }}>
+                                ⏰ {ot.time || 'Tăng cường'}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p style={{ color: '#94A3B8', fontSize: '0.85rem', fontStyle: 'italic', margin: 0 }}>
+                          Không có nhân sự trực thêm giờ / tăng cường.
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
