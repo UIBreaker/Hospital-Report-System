@@ -99,52 +99,51 @@ const LoginPage = () => {
         style={{
           position: 'absolute',
           inset: 0,
-          background: 'radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.85) 0%, rgba(224, 242, 254, 0.5) 35%, transparent 65%), radial-gradient(circle at 82% 18%, rgba(29, 78, 216, 0.6) 0%, rgba(59, 130, 246, 0.35) 40%, transparent 65%), radial-gradient(circle at 92% 88%, rgba(16, 185, 129, 0.55) 0%, rgba(52, 211, 153, 0.25) 35%, transparent 60%)',
+          background: 'radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.88) 0%, rgba(224, 242, 254, 0.5) 35%, transparent 65%), radial-gradient(circle at 82% 18%, rgba(29, 78, 216, 0.6) 0%, rgba(59, 130, 246, 0.35) 40%, transparent 65%), radial-gradient(circle at 92% 88%, rgba(16, 185, 129, 0.55) 0%, rgba(52, 211, 153, 0.25) 35%, transparent 60%)',
           pointerEvents: 'none',
           zIndex: 1
         }}
         aria-hidden="true"
       />
 
-      {/* 2. Concentric Wave Arcs on the Left matching Image 2 */}
+      {/* 2. Concentric Wave Arcs on the Left */}
       <svg 
         style={{ 
           position: 'absolute', 
-          top: 0, 
-          left: 0, 
-          width: '700px', 
-          height: '650px', 
+          inset: 0, 
+          width: '100%', 
+          height: '100%', 
           pointerEvents: 'none', 
           zIndex: 2,
-          opacity: 0.65
+          opacity: 0.7
         }} 
-        viewBox="0 0 700 650" 
+        viewBox="0 0 1440 900" 
+        preserveAspectRatio="none"
         fill="none"
         aria-hidden="true"
       >
-        <circle cx="110" cy="180" r="130" stroke="#38BDF8" strokeWidth="1.5" opacity="0.5" strokeDasharray="3 3" />
-        <circle cx="110" cy="180" r="210" stroke="#60A5FA" strokeWidth="1.5" opacity="0.45" />
-        <circle cx="110" cy="180" r="300" stroke="#93C5FD" strokeWidth="1" opacity="0.35" />
-        <circle cx="110" cy="180" r="410" stroke="#BAE6FD" strokeWidth="1" opacity="0.25" />
+        <circle cx="120" cy="190" r="140" stroke="#38BDF8" strokeWidth="1.5" opacity="0.5" strokeDasharray="3 3" />
+        <circle cx="120" cy="190" r="230" stroke="#60A5FA" strokeWidth="1.5" opacity="0.45" />
+        <circle cx="120" cy="190" r="340" stroke="#93C5FD" strokeWidth="1" opacity="0.35" />
+        <circle cx="120" cy="190" r="480" stroke="#BAE6FD" strokeWidth="1" opacity="0.25" />
+        <path d="M-50,340 Q250,180 600,320 T1300,240" stroke="rgba(56, 189, 248, 0.3)" strokeWidth="1.5" fill="none" />
       </svg>
 
-      {/* 3. Hospital Building Image spanning from left:0 across bottom-center */}
+      {/* 3. Hospital Building Image - Full Canvas with Smooth Gradient Mask (No cut lines) */}
       <div 
         style={{
           position: 'absolute',
-          bottom: 0,
-          left: 0,
-          width: '68%',
-          maxWidth: '1000px',
-          height: '66%',
+          inset: 0,
+          width: '100%',
+          height: '100%',
           backgroundImage: "url('/hospital_building_new.jpg')",
           backgroundSize: 'cover',
-          backgroundPosition: 'left 25% bottom',
+          backgroundPosition: 'left 20% bottom',
           backgroundRepeat: 'no-repeat',
-          opacity: 0.36,
+          opacity: 0.38,
           filter: 'contrast(1.08) brightness(1.03)',
-          WebkitMaskImage: 'radial-gradient(ellipse at 40% 100%, rgba(0,0,0,1) 35%, rgba(0,0,0,0.5) 65%, rgba(0,0,0,0) 90%)',
-          maskImage: 'radial-gradient(ellipse at 40% 100%, rgba(0,0,0,1) 35%, rgba(0,0,0,0.5) 65%, rgba(0,0,0,0) 90%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 75% 70% at 30% 90%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 90%)',
+          maskImage: 'radial-gradient(ellipse 75% 70% at 30% 90%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 90%)',
           pointerEvents: 'none',
           zIndex: 2
         }}
