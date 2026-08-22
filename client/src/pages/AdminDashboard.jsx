@@ -285,10 +285,29 @@ const AdminDashboard = () => {
         });
 
         setEditReportData(rawData || {});
-        setEditTransferCases((r.transfer_cases || []).map(normalizeTransferCase));
-        setEditSurgeryCases((r.surgery_cases || []).map(normalizeSurgeryCase));
-        setEditDeathCases((r.death_cases || []).map(normalizeDeathCase));
-        setEditCriticalCases((r.critical_cases || []).map(normalizeCriticalCase));
+
+        const safeCaseArray = (val) => {
+          if (Array.isArray(val)) return val;
+          if (typeof val === 'string') {
+            try {
+              const parsed = JSON.parse(val);
+              return Array.isArray(parsed) ? parsed : [];
+            } catch {
+              return [];
+            }
+          }
+          return [];
+        };
+
+        const rawTransfers = safeCaseArray(r.transferCases || r.transfer_cases || rawData.transferCases || rawData.transfer_cases);
+        const rawSurgeries = safeCaseArray(r.surgeryCases || r.surgery_cases || rawData.surgeryCases || rawData.surgery_cases);
+        const rawDeaths = safeCaseArray(r.deathCases || r.death_cases || rawData.deathCases || rawData.death_cases);
+        const rawCriticals = safeCaseArray(r.criticalCases || r.critical_cases || rawData.criticalCases || rawData.critical_cases);
+
+        setEditTransferCases(rawTransfers.map(normalizeTransferCase));
+        setEditSurgeryCases(rawSurgeries.map(normalizeSurgeryCase));
+        setEditDeathCases(rawDeaths.map(normalizeDeathCase));
+        setEditCriticalCases(rawCriticals.map(normalizeCriticalCase));
       } else {
         setHasReport(false);
         setModalReportLocked(false);

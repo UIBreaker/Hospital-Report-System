@@ -194,8 +194,36 @@ const getDepartmentStatus = async (req, res, next) => {
       };
     });
 
+    const reportIds = reports.map(r => r.id).filter(Boolean);
+    let transferCounts = {}, surgeryCounts = {}, deathCounts = {}, criticalCounts = {};
+
+    if (reportIds.length > 0) {
+      try {
+        const placeholders = reportIds.map(() => '?').join(',');
+        const [
+          [tcRows],
+          [scRows],
+          [dcRows],
+          [ccRows]
+        ] = await Promise.all([
+          pool.query(`SELECT report_id, COUNT(*) as cnt FROM transfer_cases WHERE report_id IN (${placeholders}) GROUP BY report_id`, reportIds),
+          pool.query(`SELECT report_id, COUNT(*) as cnt FROM surgery_cases WHERE report_id IN (${placeholders}) GROUP BY report_id`, reportIds),
+          pool.query(`SELECT report_id, COUNT(*) as cnt FROM death_cases WHERE report_id IN (${placeholders}) GROUP BY report_id`, reportIds),
+          pool.query(`SELECT report_id, COUNT(*) as cnt FROM critical_cases WHERE report_id IN (${placeholders}) GROUP BY report_id`, reportIds)
+        ]);
+
+        (tcRows || []).forEach(r => { transferCounts[r.report_id] = r.cnt; });
+        (scRows || []).forEach(r => { surgeryCounts[r.report_id] = r.cnt; });
+        (dcRows || []).forEach(r => { deathCounts[r.report_id] = r.cnt; });
+        (ccRows || []).forEach(r => { criticalCounts[r.report_id] = r.cnt; });
+      } catch (countErr) {
+        console.warn('Could not query case counts:', countErr.message);
+      }
+    }
+
     const statusData = allDepts.map(user => {
       const info = reportInfoMap[user.department_code] || {};
+      const rId = info.id;
       return {
         departmentCode: user.department_code,
         departmentName: user.department_name,
@@ -203,7 +231,11 @@ const getDepartmentStatus = async (req, res, next) => {
         doctorName: info.doctorName || '',
         isLocked: info.isLocked || false,
         lockedAt: info.lockedAt || null,
-        lockedBy: info.lockedBy || null
+        lockedBy: info.lockedBy || null,
+        transferCasesCount: rId ? (transferCounts[rId] || 0) : 0,
+        surgeryCasesCount: rId ? (surgeryCounts[rId] || 0) : 0,
+        deathCasesCount: rId ? (deathCounts[rId] || 0) : 0,
+        criticalCasesCount: rId ? (criticalCounts[rId] || 0) : 0
       };
     });
 
