@@ -8,6 +8,7 @@ import {
 import reportService from '../services/reportService';
 import { exportPresentationToPowerPoint } from '../services/powerpointExportService';
 import ImageLightboxModal from '../components/common/ImageLightboxModal';
+import MedicalLoader from '../components/common/MedicalLoader';
 
 // Shared Constants & Formatters
 import { DEPARTMENT_ORDER, DEPARTMENT_NAMES, DEPARTMENT_THEMES } from '../constants/medicalDictionary';
@@ -330,16 +331,12 @@ const PresentationPage = () => {
 
   if (loading) {
     return (
-      <div style={{
-        width: '100vw', height: '100vh',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        backgroundColor: '#0F172A', color: '#F8FAFC', gap: '1rem'
-      }}>
-        <FaSpinner className="spinner" style={{ fontSize: '3rem', color: '#38BDF8' }} />
-        <h2 style={{ fontSize: '1.25rem', fontWeight: '700', letterSpacing: '0.5px' }}>
-          Đang tải dữ liệu trình chiếu giao ban ngày {formatDate(date)}...
-        </h2>
-      </div>
+      <MedicalLoader
+        fullScreen={true}
+        dark={true}
+        text={`Đang nạp slide giao ban ngày ${formatDate(date)}...`}
+        subtext="TTYT Khu Vực Bình Long • Phiên Họp Giao Ban Chuyên Môn"
+      />
     );
   }
 

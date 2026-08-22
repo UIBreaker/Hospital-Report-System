@@ -13,6 +13,7 @@ import {
   FaCheckCircle
 } from 'react-icons/fa';
 import reportService from '../../../services/reportService';
+import MedicalLoader from '../../common/MedicalLoader';
 
 const DatabaseTab = ({ date }) => {
   const [loadingDb, setLoadingDb] = useState(false);
@@ -453,10 +454,11 @@ const DatabaseTab = ({ date }) => {
         )}
 
         {loadingPayload ? (
-          <div style={{ textAlign: 'center', padding: '3rem' }}>
-            <FaSpinner className="spinner" style={{ fontSize: '2rem', color: '#2563EB' }} />
-            <p style={{ marginTop: '0.75rem', color: '#64748B', fontSize: '0.85rem' }}>Đang tính toán dung lượng báo cáo...</p>
-          </div>
+          <MedicalLoader
+            text="Đang tính toán dung lượng báo cáo các khoa phòng..."
+            subtext="Hệ thống đang quét kích thước văn bản và tệp hình ảnh"
+            minHeight="280px"
+          />
         ) : !payloadData || !payloadData.departments || payloadData.departments.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#64748B' }}>
             <FaTable style={{ fontSize: '2.5rem', color: '#CBD5E1', marginBottom: '0.5rem' }} />

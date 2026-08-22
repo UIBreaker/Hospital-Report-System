@@ -23,6 +23,7 @@ import { generateAndDownloadHospitalExcel } from '../services/excelExportService
 import MedicalPrintView from '../components/common/MedicalPrintView';
 import Footer from '../components/common/Footer';
 import AdminReportDetailModal from '../components/admin/modals/AdminReportDetailModal';
+import MedicalLoader from '../components/common/MedicalLoader';
 
 // Lazy-loaded Tab components for performance and code splitting
 const ReportsTab = lazy(() => import('../components/admin/tabs/ReportsTab'));
@@ -31,12 +32,11 @@ const DatabaseTab = lazy(() => import('../components/admin/tabs/DatabaseTab'));
 const AccountsTab = lazy(() => import('../components/admin/tabs/AccountsTab'));
 
 const TabLoadingFallback = () => (
-  <div style={{ textAlign: 'center', padding: '4rem', backgroundColor: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
-    <FaSpinner className="spinner" style={{ fontSize: '2.5rem', color: 'var(--brand-blue)' }} />
-    <p style={{ marginTop: '0.85rem', color: 'var(--text-muted)', fontWeight: '600', fontSize: '0.95rem' }}>
-      Đang tải dữ liệu phân hệ quản trị...
-    </p>
-  </div>
+  <MedicalLoader
+    text="Đang tải dữ liệu phân hệ quản trị..."
+    subtext="Vui lòng chờ trong giây lát"
+    minHeight="380px"
+  />
 );
 
 const AdminDashboard = () => {

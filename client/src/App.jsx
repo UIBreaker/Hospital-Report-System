@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import ErrorBoundary from './components/common/ErrorBoundary';
-import { FaSpinner } from 'react-icons/fa';
+import MedicalLoader from './components/common/MedicalLoader';
 
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const ReportPage = lazy(() => import('./pages/ReportPage'));
@@ -11,14 +11,12 @@ const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const PresentationPage = lazy(() => import('./pages/PresentationPage'));
 
 const PageLoadingFallback = () => (
-  <div style={{
-    height: '100vh', width: '100vw',
-    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-    backgroundColor: '#0F2C59', color: '#FFFFFF', gap: '1rem'
-  }}>
-    <FaSpinner className="spinner" style={{ fontSize: '2.5rem', color: '#60A5FA' }} />
-    <span style={{ fontSize: '1rem', fontWeight: '600', letterSpacing: '0.5px' }}>Đang nạp ứng dụng...</span>
-  </div>
+  <MedicalLoader
+    fullScreen={true}
+    dark={true}
+    text="Đang nạp hệ thống giao ban..."
+    subtext="Sở Y Tế Bình Phước • TTYT Khu Vực Bình Long"
+  />
 );
 
 function App() {

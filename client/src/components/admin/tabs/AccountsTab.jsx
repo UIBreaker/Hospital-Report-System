@@ -15,6 +15,7 @@ import {
 } from 'react-icons/fa';
 import accountService from '../../../services/accountService';
 import AccountFormModal from '../modals/AccountFormModal';
+import MedicalLoader from '../../common/MedicalLoader';
 
 const AccountsTab = () => {
   const [accountsList, setAccountsList] = useState([]);
@@ -369,12 +370,11 @@ const AccountsTab = () => {
         overflow: 'hidden'
       }}>
         {loadingAccounts ? (
-          <div style={{ textAlign: 'center', padding: '4rem' }}>
-            <FaSpinner className="spinner" style={{ fontSize: '2.5rem', color: '#2563EB' }} />
-            <p style={{ marginTop: '0.85rem', color: '#64748B', fontWeight: '600', fontSize: '0.9rem' }}>
-              Đang tải danh sách tài khoản...
-            </p>
-          </div>
+          <MedicalLoader
+            text="Đang tải danh sách tài khoản hệ thống..."
+            subtext="Hệ thống đang tải quyền truy cập của các khoa phòng"
+            minHeight="320px"
+          />
         ) : accountsError ? (
           <div style={{ padding: '2rem', textAlign: 'center', color: '#DC2626' }}>
             ⚠️ {accountsError}

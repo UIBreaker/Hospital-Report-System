@@ -28,6 +28,7 @@ import {
   FaNotesMedical
 } from 'react-icons/fa';
 import { Notice } from '../../ui';
+import MedicalLoader from '../../common/MedicalLoader';
 
 const DEPARTMENT_ORDER = [
   'lck',
@@ -398,10 +399,11 @@ const ReportsTab = ({
 
       {/* 3. 12 Department Cards Grid (4 Columns x 3 Rows) */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '4rem', backgroundColor: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
-          <FaSpinner className="spinner" style={{ fontSize: '2.5rem', color: 'var(--brand-blue)' }} />
-          <p style={{ marginTop: '1rem', color: 'var(--text-muted)', fontWeight: '600' }}>Đang tải dữ liệu báo cáo...</p>
-        </div>
+        <MedicalLoader
+          text="Đang tải dữ liệu báo cáo 12 khoa phòng..."
+          subtext="Hệ thống đang đồng bộ trạng thái nộp báo cáo từ máy chủ"
+          minHeight="340px"
+        />
       ) : (
         <div style={{
           display: 'grid',

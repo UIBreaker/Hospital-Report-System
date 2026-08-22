@@ -16,6 +16,7 @@ import {
 } from 'react-icons/fa';
 import staffService from '../../../services/staffService';
 import StaffFormModal from '../modals/StaffFormModal';
+import MedicalLoader from '../../common/MedicalLoader';
 
 const DEPARTMENT_MAP = {
   lck: 'Khoa Liên Chuyên Khoa',
@@ -432,12 +433,11 @@ const StaffTab = () => {
         overflow: 'hidden'
       }}>
         {loadingStaff ? (
-          <div style={{ textAlign: 'center', padding: '4rem' }}>
-            <FaSpinner className="spinner" style={{ fontSize: '2.5rem', color: '#2563EB' }} />
-            <p style={{ marginTop: '0.85rem', color: '#64748B', fontWeight: '600', fontSize: '0.9rem' }}>
-              Đang tải danh sách nhân sự...
-            </p>
-          </div>
+          <MedicalLoader
+            text="Đang tải danh bạ nhân sự khoa phòng..."
+            subtext="Hệ thống đang tải danh sách bác sĩ, điều dưỡng từ cơ sở dữ liệu"
+            minHeight="320px"
+          />
         ) : staffList.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '3.5rem 1rem' }}>
             <FaUsers style={{ fontSize: '3rem', color: '#CBD5E1', marginBottom: '0.75rem' }} />
