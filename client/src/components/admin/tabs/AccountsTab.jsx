@@ -8,7 +8,10 @@ import {
   FaUnlockAlt,
   FaEdit,
   FaCopy,
-  FaCheckCircle
+  FaCheckCircle,
+  FaUserShield,
+  FaHospital,
+  FaUserTie
 } from 'react-icons/fa';
 import accountService from '../../../services/accountService';
 import AccountFormModal from '../modals/AccountFormModal';
@@ -100,106 +103,156 @@ const AccountsTab = () => {
     );
   });
 
+  const deptAccountsCount = accountsList.filter((a) => a.role === 'department').length;
+  const adminAccountsCount = accountsList.filter((a) => a.role === 'admin').length;
+
   return (
-    <div className="animate-fade-in">
-      {/* Stats Summary Grid */}
-      <div className="admin-stats-grid" style={{ marginBottom: '1.25rem' }}>
-        <div
-          className="card admin-stats-card"
-          style={{
-            textAlign: 'center',
-            background: 'linear-gradient(135deg, #EFF6FF, #DBEAFE)',
-            borderLeft: '4px solid var(--brand-blue)'
-          }}
-        >
-          <div className="stats-num" style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--brand-blue)' }}>
-            {accountsList.length}
+    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      
+      {/* 1. Summary Stat Cards Grid (3 Cards) */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+        gap: '1.25rem'
+      }}>
+        {/* Card 1: Total Accounts */}
+        <div style={{
+          backgroundColor: '#FFFFFF',
+          borderRadius: '16px',
+          padding: '1.25rem 1.5rem',
+          border: '1px solid #E2E8F0',
+          borderLeft: '4px solid #2563EB',
+          boxShadow: '0 2px 10px rgba(15, 44, 89, 0.04)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '1.25rem'
+        }}>
+          <div style={{
+            width: '54px',
+            height: '54px',
+            borderRadius: '50%',
+            backgroundColor: '#EFF6FF',
+            color: '#2563EB',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '1.5rem',
+            flexShrink: 0
+          }}>
+            <FaUserShield />
           </div>
-          <div
-            className="stats-lbl"
-            style={{
-              color: 'var(--text-muted)',
-              fontSize: '0.8rem',
-              fontWeight: '700',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px'
-            }}
-          >
-            Tổng số tài khoản
-          </div>
-        </div>
-        <div
-          className="card admin-stats-card"
-          style={{
-            textAlign: 'center',
-            background: 'linear-gradient(135deg, #E8F5E9, #C8E6C9)',
-            borderLeft: '4px solid var(--brand-green)'
-          }}
-        >
-          <div className="stats-num" style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--brand-green)' }}>
-            {accountsList.filter((a) => a.role === 'department').length}
-          </div>
-          <div
-            className="stats-lbl"
-            style={{
-              color: 'var(--brand-green)',
-              fontSize: '0.8rem',
-              fontWeight: '700',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px'
-            }}
-          >
-            Tài khoản Khoa/Phòng
+          <div>
+            <div style={{ fontSize: '2rem', fontWeight: '900', color: '#0F2C59', lineHeight: '1.1' }}>
+              {accountsList.length}
+            </div>
+            <div style={{ fontSize: '0.82rem', fontWeight: '800', color: '#0F2C59', textTransform: 'uppercase', letterSpacing: '0.4px', marginTop: '0.2rem' }}>
+              TỔNG SỐ TÀI KHOẢN
+            </div>
+            <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '0.1rem' }}>
+              Phân quyền truy cập hệ thống
+            </div>
           </div>
         </div>
-        <div
-          className="card admin-stats-card"
-          style={{
-            textAlign: 'center',
-            background: 'linear-gradient(135deg, #FAF5FF, #E9D5FF)',
-            borderLeft: '4px solid #7C3AED'
-          }}
-        >
-          <div className="stats-num" style={{ fontSize: '2rem', fontWeight: '800', color: '#7C3AED' }}>
-            {accountsList.filter((a) => a.role === 'admin').length}
+
+        {/* Card 2: Department Accounts */}
+        <div style={{
+          backgroundColor: '#FFFFFF',
+          borderRadius: '16px',
+          padding: '1.25rem 1.5rem',
+          border: '1px solid #E2E8F0',
+          borderLeft: '4px solid #10B981',
+          boxShadow: '0 2px 10px rgba(15, 44, 89, 0.04)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '1.25rem'
+        }}>
+          <div style={{
+            width: '54px',
+            height: '54px',
+            borderRadius: '50%',
+            backgroundColor: '#DCFCE7',
+            color: '#10B981',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '1.5rem',
+            flexShrink: 0
+          }}>
+            <FaHospital />
           </div>
-          <div
-            className="stats-lbl"
-            style={{
-              color: '#7C3AED',
-              fontSize: '0.8rem',
-              fontWeight: '700',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px'
-            }}
-          >
-            Quản trị viên (KHNV)
+          <div>
+            <div style={{ fontSize: '2rem', fontWeight: '900', color: '#10B981', lineHeight: '1.1' }}>
+              {deptAccountsCount}
+            </div>
+            <div style={{ fontSize: '0.82rem', fontWeight: '800', color: '#065F46', textTransform: 'uppercase', letterSpacing: '0.4px', marginTop: '0.2rem' }}>
+              TÀI KHOẢN KHOA PHÒNG
+            </div>
+            <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '0.1rem' }}>
+              Nhập và gửi báo cáo trực
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3: Admin Accounts */}
+        <div style={{
+          backgroundColor: '#FFFFFF',
+          borderRadius: '16px',
+          padding: '1.25rem 1.5rem',
+          border: '1px solid #E2E8F0',
+          borderLeft: '4px solid #7C3AED',
+          boxShadow: '0 2px 10px rgba(15, 44, 89, 0.04)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '1.25rem'
+        }}>
+          <div style={{
+            width: '54px',
+            height: '54px',
+            borderRadius: '50%',
+            backgroundColor: '#EDE9FE',
+            color: '#7C3AED',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '1.5rem',
+            flexShrink: 0
+          }}>
+            <FaUserTie />
+          </div>
+          <div>
+            <div style={{ fontSize: '2rem', fontWeight: '900', color: '#6D28D9', lineHeight: '1.1' }}>
+              {adminAccountsCount}
+            </div>
+            <div style={{ fontSize: '0.82rem', fontWeight: '800', color: '#6D28D9', textTransform: 'uppercase', letterSpacing: '0.4px', marginTop: '0.2rem' }}>
+              QUẢN TRỊ VIÊN (KHNV)
+            </div>
+            <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '0.1rem' }}>
+              Ban giám đốc & Phòng KHNV
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Action Message Banner */}
+      {/* 2. Action Message Banner */}
       {accountActionMsg.text && (
-        <div
-          style={{
-            padding: '0.85rem 1.25rem',
-            borderRadius: '8px',
-            marginBottom: '1.25rem',
-            fontSize: '0.92rem',
-            fontWeight: '600',
-            backgroundColor:
-              accountActionMsg.type === 'error' ? 'var(--danger-light)' : 'var(--brand-green-subtle)',
-            color: accountActionMsg.type === 'error' ? 'var(--danger)' : 'var(--brand-green)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}
-        >
+        <div style={{
+          padding: '0.85rem 1.25rem',
+          borderRadius: '10px',
+          fontSize: '0.86rem',
+          fontWeight: '700',
+          backgroundColor: accountActionMsg.type === 'error' ? '#FEF2F2' : '#F0FDF4',
+          border: `1px solid ${accountActionMsg.type === 'error' ? '#FECACA' : '#BBF7D0'}`,
+          color: accountActionMsg.type === 'error' ? '#DC2626' : '#166534',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
           <span>
             {accountActionMsg.type === 'error' ? '⚠️ ' : '✓ '}
             {accountActionMsg.text}
           </span>
           <button
+            type="button"
             onClick={() => setAccountActionMsg({ type: '', text: '' })}
             style={{ background: 'none', border: 'none', cursor: 'pointer', fontWeight: 'bold', color: 'inherit' }}
           >
@@ -208,30 +261,22 @@ const AccountsTab = () => {
         </div>
       )}
 
-      {/* Search & Filter Bar */}
-      <div
-        className="card"
-        style={{
-          marginBottom: '1.25rem',
-          padding: '1rem 1.25rem',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '1rem'
-        }}
-      >
-        <div style={{ display: 'flex', gap: '0.75rem', flex: 1, minWidth: '280px', flexWrap: 'wrap' }}>
+      {/* 3. Search & Filter Bar */}
+      <div style={{
+        backgroundColor: '#FFFFFF',
+        borderRadius: '14px',
+        border: '1px solid #E2E8F0',
+        padding: '0.85rem 1.25rem',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '0.85rem',
+        boxShadow: '0 2px 8px rgba(15, 44, 89, 0.04)'
+      }}>
+        <div style={{ display: 'flex', gap: '0.65rem', flex: 1, minWidth: '280px', flexWrap: 'wrap' }}>
           <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
-            <FaSearch
-              style={{
-                position: 'absolute',
-                top: '50%',
-                left: '0.85rem',
-                transform: 'translateY(-50%)',
-                color: 'var(--text-muted)'
-              }}
-            />
+            <FaSearch style={{ position: 'absolute', top: '50%', left: '0.85rem', transform: 'translateY(-50%)', color: '#94A3B8', fontSize: '0.85rem' }} />
             <input
               type="text"
               placeholder="Tìm theo tên khoa, username..."
@@ -239,11 +284,13 @@ const AccountsTab = () => {
               onChange={(e) => setAccountSearch(e.target.value)}
               style={{
                 width: '100%',
-                paddingLeft: '2.4rem',
-                borderRadius: '6px',
-                border: '1px solid var(--border)',
-                padding: '0.55rem 0.75rem 0.55rem 2.4rem',
-                fontSize: '0.9rem'
+                padding: '0.48rem 0.85rem 0.48rem 2.2rem',
+                borderRadius: '8px',
+                border: '1.5px solid #CBD5E1',
+                fontSize: '0.85rem',
+                color: '#0F2C59',
+                outline: 'none',
+                boxSizing: 'border-box'
               }}
             />
           </div>
@@ -252,11 +299,15 @@ const AccountsTab = () => {
             value={accountRoleFilter}
             onChange={(e) => setAccountRoleFilter(e.target.value)}
             style={{
-              padding: '0.55rem 0.85rem',
-              borderRadius: '6px',
-              border: '1px solid var(--border)',
-              fontSize: '0.9rem',
-              backgroundColor: '#FFFFFF'
+              padding: '0.48rem 0.85rem',
+              borderRadius: '8px',
+              border: '1.5px solid #CBD5E1',
+              fontSize: '0.85rem',
+              fontWeight: '600',
+              color: '#0F2C59',
+              outline: 'none',
+              backgroundColor: '#FFFFFF',
+              cursor: 'pointer'
             }}
           >
             <option value="all">Tất cả vai trò</option>
@@ -265,51 +316,87 @@ const AccountsTab = () => {
           </select>
 
           <button
+            type="button"
             onClick={fetchAccounts}
-            className="btn btn-secondary btn-sm"
-            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+            disabled={loadingAccounts}
+            style={{
+              backgroundColor: '#FFFFFF',
+              border: '1.5px solid #CBD5E1',
+              color: '#334155',
+              borderRadius: '8px',
+              padding: '0.48rem 0.85rem',
+              fontWeight: '700',
+              fontSize: '0.82rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.35rem'
+            }}
             title="Tải lại danh sách tài khoản"
           >
-            <FaSync /> Làm mới
+            <FaSync className={loadingAccounts ? 'spinner' : ''} size={11} /> Làm mới
           </button>
         </div>
 
         <button
+          type="button"
           onClick={handleOpenAddAccount}
-          className="btn btn-primary"
-          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: '700' }}
+          style={{
+            backgroundColor: '#2563EB',
+            color: '#FFFFFF',
+            border: 'none',
+            borderRadius: '8px',
+            padding: '0.48rem 0.95rem',
+            fontWeight: '800',
+            fontSize: '0.82rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.4rem',
+            boxShadow: '0 2px 8px rgba(37, 99, 235, 0.3)'
+          }}
         >
-          <FaPlus /> Thêm Tài Khoản Mới
+          <FaPlus size={11} /> Thêm Tài Khoản Mới
         </button>
       </div>
 
-      {/* Accounts Table Card */}
-      <div className="card" style={{ padding: 0, overflow: 'hidden', boxShadow: 'var(--shadow-md)' }}>
+      {/* 4. Accounts Data Table */}
+      <div style={{
+        backgroundColor: '#FFFFFF',
+        borderRadius: '14px',
+        border: '1px solid #E2E8F0',
+        boxShadow: '0 2px 8px rgba(15, 44, 89, 0.04)',
+        overflow: 'hidden'
+      }}>
         {loadingAccounts ? (
           <div style={{ textAlign: 'center', padding: '4rem' }}>
-            <FaSpinner className="spinner" style={{ fontSize: '2.5rem', color: 'var(--brand-blue)' }} />
-            <p style={{ marginTop: '1rem', color: 'var(--text-muted)' }}>Đang tải danh sách tài khoản...</p>
+            <FaSpinner className="spinner" style={{ fontSize: '2.5rem', color: '#2563EB' }} />
+            <p style={{ marginTop: '0.85rem', color: '#64748B', fontWeight: '600', fontSize: '0.9rem' }}>
+              Đang tải danh sách tài khoản...
+            </p>
           </div>
         ) : accountsError ? (
-          <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--danger)' }}>⚠️ {accountsError}</div>
+          <div style={{ padding: '2rem', textAlign: 'center', color: '#DC2626' }}>
+            ⚠️ {accountsError}
+          </div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.92rem' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
               <thead>
-                <tr style={{ backgroundColor: 'var(--brand-blue)', color: '#FFFFFF', textAlign: 'left' }}>
-                  <th style={{ padding: '0.9rem 1rem', width: '50px', textAlign: 'center' }}>STT</th>
-                  <th style={{ padding: '0.9rem 1rem' }}>Khoa / Phòng</th>
-                  <th style={{ padding: '0.9rem 1rem' }}>Tên Đăng Nhập (Username)</th>
-                  <th style={{ padding: '0.9rem 1rem', width: '140px', textAlign: 'center' }}>Vai Trò</th>
-                  <th style={{ padding: '0.9rem 1rem', width: '280px', textAlign: 'center' }}>
-                    Quản Lý Mật Khẩu & Thao Tác
+                <tr style={{ backgroundColor: '#F8FAFC', borderBottom: '2px solid #E2E8F0', color: '#0F2C59' }}>
+                  <th style={{ padding: '0.75rem 1rem', width: '50px', textAlign: 'center', fontWeight: '800' }}>STT</th>
+                  <th style={{ padding: '0.75rem 1rem', fontWeight: '800', width: '28%' }}>KHOA / PHÒNG</th>
+                  <th style={{ padding: '0.75rem 1rem', fontWeight: '800', width: '24%' }}>TÊN ĐĂNG NHẬP (USERNAME)</th>
+                  <th style={{ padding: '0.75rem 1rem', width: '140px', textAlign: 'center', fontWeight: '800' }}>VAI TRÒ</th>
+                  <th style={{ padding: '0.75rem 1rem', width: '280px', textAlign: 'center', fontWeight: '800' }}>
+                    QUẢN LÝ MẬT KHẨU & THAO TÁC
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {filteredAccounts.length === 0 ? (
                   <tr>
-                    <td colSpan="5" style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--text-muted)' }}>
+                    <td colSpan="5" style={{ textAlign: 'center', padding: '3rem 1rem', color: '#64748B' }}>
                       Không tìm thấy tài khoản nào phù hợp.
                     </td>
                   </tr>
@@ -318,165 +405,175 @@ const AccountsTab = () => {
                     const isAdmin = acc.role === 'admin';
                     return (
                       <tr
-                        key={acc.id}
+                        key={acc.id || index}
                         style={{
                           borderBottom: '1px solid #F1F5F9',
-                          backgroundColor: index % 2 === 0 ? '#FFFFFF' : '#F8FAFC',
-                          transition: 'background-color 0.15s'
+                          backgroundColor: index % 2 === 0 ? '#FFFFFF' : '#FAFAFA',
+                          transition: 'background-color 0.15s ease'
                         }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = '#EFF6FF';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = index % 2 === 0 ? '#FFFFFF' : '#F8FAFC';
-                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F0F7FF'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = index % 2 === 0 ? '#FFFFFF' : '#FAFAFA'}
                       >
-                        <td style={{ padding: '0.85rem 1rem', textAlign: 'center', color: '#94A3B8', fontWeight: '600' }}>
+                        <td style={{ padding: '0.75rem 1rem', textAlign: 'center', color: '#94A3B8', fontWeight: '600' }}>
                           {index + 1}
                         </td>
-                        <td style={{ padding: '0.85rem 1rem' }}>
-                          <div style={{ fontWeight: '700', color: isAdmin ? '#7C3AED' : '#0F2C59' }}>
+
+                        <td style={{ padding: '0.75rem 1rem' }}>
+                          <div style={{ fontWeight: '800', color: isAdmin ? '#6D28D9' : '#0F2C59' }}>
                             {isAdmin ? '🛡️ ' : '🏥 '}
                             {acc.department_name}
                           </div>
                           {acc.department_code && (
-                            <span
-                              style={{
-                                fontSize: '0.75rem',
-                                color: '#64748B',
-                                backgroundColor: '#E2E8F0',
-                                padding: '0.1rem 0.4rem',
-                                borderRadius: '4px',
-                                fontWeight: '600'
-                              }}
-                            >
+                            <span style={{
+                              fontSize: '0.72rem',
+                              color: '#64748B',
+                              backgroundColor: '#F1F5F9',
+                              padding: '0.1rem 0.4rem',
+                              borderRadius: '4px',
+                              fontWeight: '600',
+                              marginTop: '2px',
+                              display: 'inline-block'
+                            }}>
                               Mã: {acc.department_code}
                             </span>
                           )}
                         </td>
-                        <td style={{ padding: '0.85rem 1rem' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <span
-                              style={{
-                                fontFamily: 'monospace',
-                                fontWeight: '800',
-                                fontSize: '0.98rem',
-                                backgroundColor: '#F1F5F9',
-                                padding: '0.25rem 0.6rem',
-                                borderRadius: '6px',
-                                border: '1px solid #CBD5E1',
-                                color: '#0F2C59'
-                              }}
-                            >
+
+                        <td style={{ padding: '0.75rem 1rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                            <span style={{
+                              fontFamily: "'Roboto Mono', monospace",
+                              fontWeight: '800',
+                              fontSize: '0.88rem',
+                              backgroundColor: '#F8FAFC',
+                              padding: '0.2rem 0.55rem',
+                              borderRadius: '6px',
+                              border: '1.5px solid #CBD5E1',
+                              color: '#0F2C59'
+                            }}>
                               {acc.username}
                             </span>
                             <button
+                              type="button"
                               onClick={() => handleCopyAccount(acc.username, `user_${acc.id}`)}
                               style={{
                                 background: 'none',
                                 border: 'none',
                                 cursor: 'pointer',
-                                color: copiedAccount === `user_${acc.id}` ? 'var(--brand-green)' : '#94A3B8',
+                                color: copiedAccount === `user_${acc.id}` ? '#10B981' : '#94A3B8',
                                 padding: '0.25rem',
                                 display: 'flex',
-                                alignItems: 'center'
+                                alignItems: 'center',
+                                fontSize: '0.85rem'
                               }}
                               title="Copy tên đăng nhập"
                             >
                               {copiedAccount === `user_${acc.id}` ? (
-                                <FaCheckCircle style={{ color: '#16A34A' }} />
+                                <FaCheckCircle style={{ color: '#10B981' }} />
                               ) : (
                                 <FaCopy />
                               )}
                             </button>
                           </div>
                         </td>
-                        <td style={{ padding: '0.85rem 1rem', textAlign: 'center' }}>
+
+                        <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>
                           {isAdmin ? (
-                            <span
-                              className="badge"
-                              style={{
-                                backgroundColor: '#EDE9FE',
-                                color: '#6D28D9',
-                                border: '1px solid #C4B5FD',
-                                padding: '0.35rem 0.65rem'
-                              }}
-                            >
+                            <span style={{
+                              backgroundColor: '#EDE9FE',
+                              color: '#6D28D9',
+                              border: '1px solid #C4B5FD',
+                              padding: '0.2rem 0.6rem',
+                              borderRadius: '999px',
+                              fontSize: '0.72rem',
+                              fontWeight: '800'
+                            }}>
                               🛡️ Quản Trị Viên
                             </span>
                           ) : (
-                            <span
-                              className="badge"
-                              style={{
-                                backgroundColor: '#E0F2FE',
-                                color: '#0369A1',
-                                border: '1px solid #BAE6FD',
-                                padding: '0.35rem 0.65rem'
-                              }}
-                            >
+                            <span style={{
+                              backgroundColor: '#EFF6FF',
+                              color: '#1E40AF',
+                              border: '1px solid #BFDBFE',
+                              padding: '0.2rem 0.6rem',
+                              borderRadius: '999px',
+                              fontSize: '0.72rem',
+                              fontWeight: '800'
+                            }}>
                               🏥 Khoa Phòng
                             </span>
                           )}
                         </td>
-                        <td style={{ padding: '0.85rem 1rem', textAlign: 'center' }}>
-                          <div
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: '0.45rem',
-                              flexWrap: 'wrap'
-                            }}
-                          >
+
+                        <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '0.4rem',
+                            flexWrap: 'wrap'
+                          }}>
                             <button
+                              type="button"
                               onClick={() => handleOpenChangePassword(acc)}
-                              className="btn btn-sm"
                               style={{
                                 backgroundColor: '#0F2C59',
                                 color: '#FFFFFF',
+                                border: 'none',
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '0.3rem',
-                                padding: '0.35rem 0.65rem',
-                                fontSize: '0.8rem',
+                                padding: '0.3rem 0.6rem',
+                                fontSize: '0.75rem',
                                 fontWeight: '700',
-                                borderRadius: '5px'
+                                borderRadius: '6px',
+                                cursor: 'pointer'
                               }}
                               title="Đổi mật khẩu cho tài khoản này"
                             >
-                              <FaKey style={{ color: '#FDE047' }} /> Đổi Mật Khẩu
+                              <FaKey style={{ color: '#FDE047' }} size={10} /> Đổi Mật Khẩu
                             </button>
 
                             <button
+                              type="button"
                               onClick={() => handleQuickResetPassword(acc)}
-                              className="btn btn-secondary btn-sm"
                               style={{
+                                backgroundColor: '#F8FAFC',
+                                border: '1px solid #CBD5E1',
+                                color: '#334155',
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '0.25rem',
-                                padding: '0.35rem 0.55rem',
-                                fontSize: '0.8rem',
-                                borderRadius: '5px'
+                                padding: '0.3rem 0.55rem',
+                                fontSize: '0.75rem',
+                                fontWeight: '700',
+                                borderRadius: '6px',
+                                cursor: 'pointer'
                               }}
                               title="Đặt lại mật khẩu nhanh về '123'"
                             >
-                              <FaUnlockAlt /> Reset (123)
+                              <FaUnlockAlt size={10} /> Reset (123)
                             </button>
 
                             <button
+                              type="button"
                               onClick={() => handleOpenEditAccount(acc)}
-                              className="btn btn-secondary btn-sm"
                               style={{
+                                backgroundColor: '#EFF6FF',
+                                border: '1px solid #BFDBFE',
+                                color: '#2563EB',
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '0.25rem',
-                                padding: '0.35rem 0.55rem',
-                                fontSize: '0.8rem',
-                                borderRadius: '5px'
+                                padding: '0.3rem 0.55rem',
+                                fontSize: '0.75rem',
+                                fontWeight: '700',
+                                borderRadius: '6px',
+                                cursor: 'pointer'
                               }}
                               title="Chỉnh sửa thông tin tài khoản"
                             >
-                              <FaEdit /> Sửa
+                              <FaEdit size={10} /> Sửa
                             </button>
                           </div>
                         </td>
