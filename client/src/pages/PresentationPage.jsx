@@ -121,12 +121,15 @@ const PresentationPage = () => {
       }));
 
       // 1. Department Overview Slide
+      const deptSections = parseDepartmentSections(rawData, r.department_code);
       s.push({
         type: 'department',
         title: deptName,
         deptCode: r.department_code,
         deptName,
         theme,
+        report: r,
+        sections: deptSections,
         doctorName: r.doctor_name,
         nurseName: r.nurse_name,
         overtimeStaff: r.overtime_staff,
