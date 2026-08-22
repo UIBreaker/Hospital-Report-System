@@ -89,92 +89,116 @@ const LoginPage = () => {
       justifyContent: 'space-between',
       position: 'relative',
       overflow: 'hidden',
-      background: 'linear-gradient(115deg, #F0F9FF 0%, #E0F2FE 30%, #93C5FD 70%, #3B82F6 90%, #10B981 100%)',
+      background: 'linear-gradient(125deg, #DCEEFE 0%, #C7E5FD 18%, #93C5FD 42%, #3B82F6 72%, #10B981 100%)',
       fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
       boxSizing: 'border-box'
     }}>
 
-      {/* 1. Large Ambient Background Gradients matching Image 2 */}
+      {/* 1. Ambient Radial Lighting Layers covering entire canvas */}
       <div 
         style={{
           position: 'absolute',
           inset: 0,
-          background: 'radial-gradient(circle at 15% 30%, rgba(255, 255, 255, 0.95) 0%, rgba(240, 249, 255, 0.6) 45%, transparent 70%), radial-gradient(circle at 85% 20%, rgba(37, 99, 235, 0.75) 0%, rgba(59, 130, 246, 0.4) 40%, transparent 65%), radial-gradient(circle at 95% 85%, rgba(16, 185, 129, 0.65) 0%, rgba(52, 211, 153, 0.3) 35%, transparent 60%)',
+          background: 'radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.85) 0%, rgba(224, 242, 254, 0.5) 35%, transparent 65%), radial-gradient(circle at 82% 18%, rgba(29, 78, 216, 0.6) 0%, rgba(59, 130, 246, 0.35) 40%, transparent 65%), radial-gradient(circle at 92% 88%, rgba(16, 185, 129, 0.55) 0%, rgba(52, 211, 153, 0.25) 35%, transparent 60%)',
           pointerEvents: 'none',
           zIndex: 1
         }}
         aria-hidden="true"
       />
 
-      {/* 2. Hospital Building Image in Center-Bottom with Vivid Clarity */}
+      {/* 2. Concentric Wave Arcs on the Left matching Image 2 */}
+      <svg 
+        style={{ 
+          position: 'absolute', 
+          top: 0, 
+          left: 0, 
+          width: '700px', 
+          height: '650px', 
+          pointerEvents: 'none', 
+          zIndex: 2,
+          opacity: 0.65
+        }} 
+        viewBox="0 0 700 650" 
+        fill="none"
+        aria-hidden="true"
+      >
+        <circle cx="110" cy="180" r="130" stroke="#38BDF8" strokeWidth="1.5" opacity="0.5" strokeDasharray="3 3" />
+        <circle cx="110" cy="180" r="210" stroke="#60A5FA" strokeWidth="1.5" opacity="0.45" />
+        <circle cx="110" cy="180" r="300" stroke="#93C5FD" strokeWidth="1" opacity="0.35" />
+        <circle cx="110" cy="180" r="410" stroke="#BAE6FD" strokeWidth="1" opacity="0.25" />
+      </svg>
+
+      {/* 3. Hospital Building Image spanning from left:0 across bottom-center */}
       <div 
         style={{
           position: 'absolute',
           bottom: 0,
-          left: '15%',
-          width: '58%',
-          maxWidth: '900px',
-          height: '68%',
+          left: 0,
+          width: '68%',
+          maxWidth: '1000px',
+          height: '66%',
           backgroundImage: "url('/hospital_building_new.jpg')",
           backgroundSize: 'cover',
-          backgroundPosition: 'center bottom',
+          backgroundPosition: 'left 25% bottom',
           backgroundRepeat: 'no-repeat',
-          opacity: 0.48,
-          filter: 'contrast(1.1) brightness(1.02)',
-          WebkitMaskImage: 'radial-gradient(ellipse at center bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0.4) 70%, rgba(0,0,0,0) 95%)',
-          maskImage: 'radial-gradient(ellipse at center bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0.4) 70%, rgba(0,0,0,0) 95%)',
+          opacity: 0.36,
+          filter: 'contrast(1.08) brightness(1.03)',
+          WebkitMaskImage: 'radial-gradient(ellipse at 40% 100%, rgba(0,0,0,1) 35%, rgba(0,0,0,0.5) 65%, rgba(0,0,0,0) 90%)',
+          maskImage: 'radial-gradient(ellipse at 40% 100%, rgba(0,0,0,1) 35%, rgba(0,0,0,0.5) 65%, rgba(0,0,0,0) 90%)',
           pointerEvents: 'none',
           zIndex: 2
         }}
         aria-hidden="true"
       />
 
-      {/* 3. Top-Right Decorative Dot Grid Pattern over Deep Blue */}
+      {/* 4. Top-Right Decorative Dot Grid Pattern over Deep Blue */}
       <div 
         style={{
           position: 'absolute',
           top: '2rem',
           right: '2.5rem',
-          width: '260px',
-          height: '200px',
+          width: '280px',
+          height: '220px',
           backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.55) 1.5px, transparent 1.5px)',
           backgroundSize: '16px 16px',
-          opacity: 0.7,
+          opacity: 0.65,
           pointerEvents: 'none',
           zIndex: 3
         }}
         aria-hidden="true"
       />
 
-      {/* 4. Decorative Glowing Cyan Accent Dot on the Left */}
+      {/* 5. Glowing Cyan Dot on Left Arc */}
       <div 
         style={{
           position: 'absolute',
           top: '18%',
-          left: '4.5%',
+          left: '4.8%',
           width: '16px',
           height: '16px',
           borderRadius: '50%',
           backgroundColor: '#06B6D4',
-          boxShadow: '0 0 20px rgba(6, 182, 212, 0.8), 0 0 40px rgba(6, 182, 212, 0.4)',
+          boxShadow: '0 0 20px rgba(6, 182, 212, 0.85), 0 0 35px rgba(6, 182, 212, 0.45)',
           pointerEvents: 'none',
-          zIndex: 3
+          zIndex: 4
         }}
         aria-hidden="true"
       />
 
-      {/* 5. Subtle Delicate Wave Accent Line */}
+      {/* 6. Subtle Geometric Accent on center-left */}
       <div 
         style={{
           position: 'absolute',
-          top: '32%',
-          left: '36%',
-          width: '280px',
-          height: '280px',
-          borderRadius: '50%',
-          border: '1.5px solid rgba(56, 189, 248, 0.25)',
+          top: '35%',
+          left: '37.5%',
+          width: '22px',
+          height: '22px',
+          borderTop: '2px solid #38BDF8',
+          borderRight: '2px solid #38BDF8',
+          transform: 'rotate(25deg)',
+          opacity: 0.5,
           pointerEvents: 'none',
-          zIndex: 2
+          zIndex: 3
         }}
         aria-hidden="true"
       />
@@ -182,12 +206,12 @@ const LoginPage = () => {
       {/* Main Two-Column Content Grid */}
       <main style={{
         flex: 1,
-        maxWidth: '1260px',
+        maxWidth: '1280px',
         margin: '0 auto',
-        padding: '0.85rem 2rem',
+        padding: '0.85rem 2.5rem',
         width: '100%',
         display: 'grid',
-        gridTemplateColumns: '1.05fr 1fr',
+        gridTemplateColumns: '1.1fr 1fr',
         gap: '3.5rem',
         alignItems: 'center',
         position: 'relative',
@@ -197,19 +221,19 @@ const LoginPage = () => {
       }}>
 
         {/* ================= LEFT COLUMN: BRAND IDENTITY & FEATURE PILLS ================= */}
-        <section style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '460px' }}>
+        <section style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '470px' }}>
           
           {/* Logo with Soft Glow */}
           <div style={{
-            width: '68px',
-            height: '68px',
+            width: '72px',
+            height: '72px',
             borderRadius: '50%',
             backgroundColor: '#FFFFFF',
-            boxShadow: '0 8px 24px rgba(2, 132, 199, 0.25), 0 0 0 3px rgba(255, 255, 255, 0.95)',
+            boxShadow: '0 10px 25px rgba(2, 132, 199, 0.22), 0 0 0 3.5px rgba(255, 255, 255, 0.95)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '9px',
+            padding: '10px',
             marginBottom: '0.15rem'
           }}>
             <img 
@@ -225,9 +249,9 @@ const LoginPage = () => {
               display: 'inline-block',
               backgroundColor: '#DBEAFE',
               color: '#1D4ED8',
-              padding: '0.22rem 0.75rem',
+              padding: '0.24rem 0.8rem',
               borderRadius: '999px',
-              fontSize: '0.74rem',
+              fontSize: '0.75rem',
               fontWeight: '800',
               letterSpacing: '0.5px',
               textTransform: 'uppercase',
@@ -238,7 +262,7 @@ const LoginPage = () => {
             </div>
 
             <h1 style={{
-              fontSize: '1.85rem',
+              fontSize: '1.9rem',
               fontWeight: '900',
               color: '#0F2C59',
               margin: '0 0 0.25rem 0',
@@ -262,31 +286,31 @@ const LoginPage = () => {
             </h2>
 
             <p style={{
-              fontSize: '0.86rem',
+              fontSize: '0.88rem',
               color: '#475569',
               lineHeight: '1.45',
               margin: 0,
-              maxWidth: '420px'
+              maxWidth: '430px'
             }}>
               Nền tảng quản lý báo cáo giao ban nhanh chóng, chính xác và hiệu quả cho các đơn vị y tế.
             </p>
           </div>
 
-          {/* 3 Translucent Frosted Glass Feature Cards (Compact width so hospital is visible behind) */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem', marginTop: '0.25rem', maxWidth: '390px' }}>
+          {/* 3 Translucent Frosted Glass Feature Cards */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem', marginTop: '0.25rem', maxWidth: '385px' }}>
             
             {/* Feature 1 */}
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.8rem',
-              backgroundColor: 'rgba(255, 255, 255, 0.65)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-              padding: '0.5rem 0.85rem',
-              borderRadius: '12px',
-              border: '1px solid rgba(255, 255, 255, 0.85)',
-              boxShadow: '0 4px 15px rgba(15, 44, 89, 0.05)'
+              gap: '0.85rem',
+              backgroundColor: 'rgba(255, 255, 255, 0.72)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              padding: '0.55rem 0.9rem',
+              borderRadius: '14px',
+              border: '1px solid rgba(255, 255, 255, 0.9)',
+              boxShadow: '0 4px 14px rgba(15, 44, 89, 0.04)'
             }}>
               <div style={{
                 width: '34px',
@@ -303,8 +327,8 @@ const LoginPage = () => {
                 <FaShieldAlt />
               </div>
               <div>
-                <div style={{ fontWeight: '800', color: '#0F2C59', fontSize: '0.84rem' }}>Bảo mật & An toàn</div>
-                <div style={{ color: '#64748B', fontSize: '0.74rem' }}>Dữ liệu được mã hóa và bảo vệ theo tiêu chuẩn cao nhất</div>
+                <div style={{ fontWeight: '800', color: '#0F2C59', fontSize: '0.85rem' }}>Bảo mật & An toàn</div>
+                <div style={{ color: '#64748B', fontSize: '0.75rem' }}>Dữ liệu được mã hóa và bảo vệ theo tiêu chuẩn cao nhất</div>
               </div>
             </div>
 
@@ -312,14 +336,14 @@ const LoginPage = () => {
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.8rem',
-              backgroundColor: 'rgba(255, 255, 255, 0.65)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-              padding: '0.5rem 0.85rem',
-              borderRadius: '12px',
-              border: '1px solid rgba(255, 255, 255, 0.85)',
-              boxShadow: '0 4px 15px rgba(15, 44, 89, 0.05)'
+              gap: '0.85rem',
+              backgroundColor: 'rgba(255, 255, 255, 0.72)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              padding: '0.55rem 0.9rem',
+              borderRadius: '14px',
+              border: '1px solid rgba(255, 255, 255, 0.9)',
+              boxShadow: '0 4px 14px rgba(15, 44, 89, 0.04)'
             }}>
               <div style={{
                 width: '34px',
@@ -336,8 +360,8 @@ const LoginPage = () => {
                 <FaClock />
               </div>
               <div>
-                <div style={{ fontWeight: '800', color: '#0F2C59', fontSize: '0.84rem' }}>Nhanh chóng & Hiệu quả</div>
-                <div style={{ color: '#64748B', fontSize: '0.74rem' }}>Tối ưu quy trình, tiết kiệm thời gian và nâng cao hiệu suất</div>
+                <div style={{ fontWeight: '800', color: '#0F2C59', fontSize: '0.85rem' }}>Nhanh chóng & Hiệu quả</div>
+                <div style={{ color: '#64748B', fontSize: '0.75rem' }}>Tối ưu quy trình, tiết kiệm thời gian và nâng cao hiệu suất</div>
               </div>
             </div>
 
@@ -345,14 +369,14 @@ const LoginPage = () => {
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.8rem',
-              backgroundColor: 'rgba(255, 255, 255, 0.65)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-              padding: '0.5rem 0.85rem',
-              borderRadius: '12px',
-              border: '1px solid rgba(255, 255, 255, 0.85)',
-              boxShadow: '0 4px 15px rgba(15, 44, 89, 0.05)'
+              gap: '0.85rem',
+              backgroundColor: 'rgba(255, 255, 255, 0.72)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              padding: '0.55rem 0.9rem',
+              borderRadius: '14px',
+              border: '1px solid rgba(255, 255, 255, 0.9)',
+              boxShadow: '0 4px 14px rgba(15, 44, 89, 0.04)'
             }}>
               <div style={{
                 width: '34px',
@@ -369,8 +393,8 @@ const LoginPage = () => {
                 <FaChartBar />
               </div>
               <div>
-                <div style={{ fontWeight: '800', color: '#0F2C59', fontSize: '0.84rem' }}>Báo cáo chính xác</div>
-                <div style={{ color: '#64748B', fontSize: '0.74rem' }}>Thống kê và tổng hợp dữ liệu trực quan, chính xác</div>
+                <div style={{ fontWeight: '800', color: '#0F2C59', fontSize: '0.85rem' }}>Báo cáo chính xác</div>
+                <div style={{ color: '#64748B', fontSize: '0.75rem' }}>Thống kê và tổng hợp dữ liệu trực quan, chính xác</div>
               </div>
             </div>
 
@@ -381,11 +405,11 @@ const LoginPage = () => {
         <section style={{ display: 'flex', justifyContent: 'center' }}>
           <div style={{
             width: '100%',
-            maxWidth: '480px',
+            maxWidth: '485px',
             backgroundColor: '#FFFFFF',
             borderRadius: '24px',
             padding: '1.75rem 2rem',
-            boxShadow: '0 25px 60px rgba(15, 44, 89, 0.18), 0 2px 6px rgba(0, 0, 0, 0.04)',
+            boxShadow: '0 25px 60px rgba(15, 44, 89, 0.16), 0 2px 6px rgba(0, 0, 0, 0.04)',
             border: '1px solid rgba(255, 255, 255, 0.95)',
             boxSizing: 'border-box'
           }}>
@@ -401,7 +425,7 @@ const LoginPage = () => {
               alignItems: 'center',
               justifyContent: 'center',
               margin: '0 auto 0.75rem auto',
-              boxShadow: '0 4px 14px rgba(37, 99, 235, 0.14)'
+              boxShadow: '0 4px 14px rgba(37, 99, 235, 0.12)'
             }}>
               <FaShieldAlt style={{ fontSize: '1.65rem', color: '#2563EB' }} />
             </div>
