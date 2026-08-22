@@ -23,6 +23,7 @@ import SurgerySlide from '../components/presentation/slides/SurgerySlide';
 import DeathSlide from '../components/presentation/slides/DeathSlide';
 import CriticalSlide from '../components/presentation/slides/CriticalSlide';
 import FullScreenImageSlide from '../components/presentation/slides/FullScreenImageSlide';
+import SummarySlide from '../components/presentation/slides/SummarySlide';
 
 const PresentationPage = () => {
   const { date } = useParams();
@@ -101,6 +102,22 @@ const PresentationPage = () => {
       return (idxA !== -1 ? idxA : 999) - (idxB !== -1 ? idxB : 999);
     });
 
+    const safeCaseArray = (val) => {
+      if (Array.isArray(val)) return val;
+      if (typeof val === 'string') {
+        try {
+          const parsed = JSON.parse(val);
+          return Array.isArray(parsed) ? parsed : [];
+        } catch {
+          return [];
+        }
+      }
+      return [];
+    };
+
+    let totalKham = 0, totalBenhCu = 0, totalBenhMoi = 0, totalXuatVien = 0;
+    let totalChuyenVien = 0, totalPhauThuat = 0, totalHienCon = 0, totalTuVong = 0;
+
     sortedReports.forEach((r) => {
       const rawData = typeof r.report_data === 'string' ? JSON.parse(r.report_data || '{}') : (r.report_data || {});
       const deptName = r.department_name || DEPARTMENT_NAMES[r.department_code] || r.department_code;
@@ -108,18 +125,101 @@ const PresentationPage = () => {
         main: '#0284C7', light: '#EFF6FF', dark: '#0C4A6E', border: '#BAE6FD', text: '#0369A1'
       };
 
-      const transferCases = (r.transfer_cases || []).map(c => ({
-        ...c, images: normalizeImages(c.images)
+      // Comprehensive extraction supporting camelCase, snake_case, and JSON sub-fields
+      const rawTransfers = safeCaseArray(r.transferCases || r.transfer_cases || rawData.transferCases || rawData.transfer_cases);
+      const rawSurgeries = safeCaseArray(r.surgeryCases || r.surgery_cases || rawData.surgeryCases || rawData.surgery_cases);
+      const rawDeaths = safeCaseArray(r.deathCases || r.death_cases || rawData.deathCases || rawData.death_cases);
+      const rawCriticals = safeCaseArray(r.criticalCases || r.critical_cases || rawData.criticalCases || rawData.critical_cases);
+
+      const transferCases = rawTransfers.map(c => ({
+        ...c,
+        patientName: c.patientName || c.patient_name || '',
+        patient_name: c.patientName || c.patient_name || '',
+        admissionTime: c.admissionTime || c.admission_time || '',
+        admission_time: c.admissionTime || c.admission_time || '',
+        clinicalSymptoms: c.clinicalSymptoms || c.clinical_symptoms || '',
+        clinical_symptoms: c.clinicalSymptoms || c.clinical_symptoms || '',
+        clinicalTests: c.clinicalTests || c.clinical_tests || '',
+        clinical_tests: c.clinicalTests || c.clinical_tests || '',
+        initialTreatment: c.initialTreatment || c.initial_treatment || '',
+        initial_treatment: c.initialTreatment || c.initial_treatment || '',
+        progressNotes: c.progressNotes || c.progress_notes || '',
+        progress_notes: c.progressNotes || c.progress_notes || '',
+        images: normalizeImages(c.images || c.image_url || c.imageUrl)
       }));
-      const surgeryCases = (r.surgery_cases || []).map(c => ({
-        ...c, images: normalizeImages(c.images)
+
+      const surgeryCases = rawSurgeries.map(c => ({
+        ...c,
+        patientName: c.patientName || c.patient_name || '',
+        patient_name: c.patientName || c.patient_name || '',
+        birthYear: c.birthYear || c.birth_year || c.age || '',
+        birth_year: c.birthYear || c.birth_year || c.age || '',
+        admissionTime: c.admissionTime || c.admission_time || '',
+        admission_time: c.admissionTime || c.admission_time || '',
+        clinicalSymptoms: c.clinicalSymptoms || c.clinical_symptoms || '',
+        clinical_symptoms: c.clinicalSymptoms || c.clinical_symptoms || '',
+        clinicalTests: c.clinicalTests || c.clinical_tests || '',
+        clinical_tests: c.clinicalTests || c.clinical_tests || '',
+        preoperativeDiagnosis: c.preoperativeDiagnosis || c.preoperative_diagnosis || '',
+        preoperative_diagnosis: c.preoperativeDiagnosis || c.preoperative_diagnosis || '',
+        consultationOrder: c.consultationOrder || c.consultation_order || '',
+        consultation_order: c.consultationOrder || c.consultation_order || '',
+        postoperativeDiagnosis: c.postoperativeDiagnosis || c.postoperative_diagnosis || '',
+        postoperative_diagnosis: c.postoperativeDiagnosis || c.postoperative_diagnosis || '',
+        currentStatus: c.currentStatus || c.current_status || '',
+        current_status: c.currentStatus || c.current_status || '',
+        images: normalizeImages(c.images || c.image_url || c.imageUrl)
       }));
-      const deathCases = (r.death_cases || []).map(c => ({
-        ...c, images: normalizeImages(c.images)
+
+      const deathCases = rawDeaths.map(c => ({
+        ...c,
+        patientName: c.patientName || c.patient_name || '',
+        patient_name: c.patientName || c.patient_name || '',
+        admissionTime: c.admissionTime || c.admission_time || '',
+        admission_time: c.admissionTime || c.admission_time || '',
+        admissionStatus: c.admissionStatus || c.admission_status || '',
+        admission_status: c.admissionStatus || c.admission_status || '',
+        medicalHistory: c.medicalHistory || c.medical_history || '',
+        medical_history: c.medicalHistory || c.medical_history || '',
+        clinicalSymptoms: c.clinicalSymptoms || c.clinical_symptoms || '',
+        clinical_symptoms: c.clinicalSymptoms || c.clinical_symptoms || '',
+        clinicalTests: c.clinicalTests || c.clinical_tests || '',
+        clinical_tests: c.clinicalTests || c.clinical_tests || '',
+        emergencyTreatment: c.emergencyTreatment || c.emergency_treatment || '',
+        emergency_treatment: c.emergencyTreatment || c.emergency_treatment || '',
+        finalOutcome: c.finalOutcome || c.final_outcome || '',
+        final_outcome: c.finalOutcome || c.final_outcome || '',
+        images: normalizeImages(c.images || c.image_url || c.imageUrl)
       }));
-      const criticalCases = (r.critical_cases || []).map(c => ({
-        ...c, images: normalizeImages(c.images)
+
+      const criticalCases = rawCriticals.map(c => ({
+        ...c,
+        patientName: c.patientName || c.patient_name || '',
+        patient_name: c.patientName || c.patient_name || '',
+        admissionTime: c.admissionTime || c.admission_time || '',
+        admission_time: c.admissionTime || c.admission_time || '',
+        medicalHistory: c.medicalHistory || c.medical_history || '',
+        medical_history: c.medicalHistory || c.medical_history || '',
+        clinicalSymptoms: c.clinicalSymptoms || c.clinical_symptoms || '',
+        clinical_symptoms: c.clinicalSymptoms || c.clinical_symptoms || '',
+        clinicalTests: c.clinicalTests || c.clinical_tests || '',
+        clinical_tests: c.clinicalTests || c.clinical_tests || '',
+        conditionSummary: c.conditionSummary || c.condition_summary || '',
+        condition_summary: c.conditionSummary || c.condition_summary || '',
+        treatment: c.treatment || '',
+        notes: c.notes || '',
+        images: normalizeImages(c.images || c.image_url || c.imageUrl)
       }));
+
+      // Accumulate totals for hospital-wide summary slide
+      totalKham += Number(rawData.tongSoKham || rawData.tongSo || rawData.soCaKham || 0);
+      totalBenhCu += Number(rawData.benhCu || 0);
+      totalBenhMoi += Number(rawData.benhMoi || 0);
+      totalXuatVien += Number(rawData.xuatVien || 0);
+      totalChuyenVien += transferCases.length || Number(rawData.chuyenVien || 0);
+      totalPhauThuat += surgeryCases.length || Number(rawData.tongSoCaMo || rawData.phauThuat || 0);
+      totalTuVong += deathCases.length || Number(rawData.tuVong || 0);
+      totalHienCon += criticalCases.length || Number(rawData.hienCon || 0);
 
       // 1. Department Overview Slide
       const deptSections = parseDepartmentSections(rawData, r.department_code);
@@ -275,6 +375,27 @@ const PresentationPage = () => {
         });
       });
     });
+
+    // 6. Hospital-Wide Summary Slide at the End
+    if (sortedReports.length > 0) {
+      s.push({
+        type: 'summary',
+        title: 'TỔNG HỢP TOÀN VIỆN',
+        summary: {
+          tongSoKham: totalKham,
+          benhCu: totalBenhCu,
+          benhMoi: totalBenhMoi,
+          xuatVien: totalXuatVien,
+          chuyenVien: totalChuyenVien,
+          phauThuat: totalPhauThuat,
+          hienCon: totalHienCon,
+          tuVong: totalTuVong
+        },
+        totalDepts: 12,
+        submittedCount: sortedReports.length,
+        selectedDate: date
+      });
+    }
 
     return s;
   }, [reports]);
@@ -613,6 +734,11 @@ const PresentationPage = () => {
               {/* 6. Critical Care Monitored Case Slide */}
               {slide.type === 'critical' && (
                 <CriticalSlide slide={slide} isFullscreen={isFullscreen} />
+              )}
+
+              {/* 6.5 Hospital-Wide Summary Slide */}
+              {slide.type === 'summary' && (
+                <SummarySlide slide={slide} isFullscreen={isFullscreen} />
               )}
 
               {/* 7. Dedicated Full-Screen Clinical Image Slide */}
