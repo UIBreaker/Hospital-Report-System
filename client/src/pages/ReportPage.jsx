@@ -5,6 +5,7 @@ import {
   FaUserMd, 
   FaUserNurse, 
   FaChevronRight, 
+  FaChevronLeft,
   FaSignOutAlt, 
   FaSpinner, 
   FaPaperPlane, 
@@ -14,7 +15,13 @@ import {
   FaClock, 
   FaUsers,
   FaFilePdf,
-  FaDownload
+  FaDownload,
+  FaNotesMedical,
+  FaCheck,
+  FaLock,
+  FaHospital,
+  FaEdit,
+  FaExclamationCircle
 } from 'react-icons/fa';
 import reportService from '../services/reportService';
 import staffService from '../services/staffService';
@@ -38,6 +45,7 @@ import CriticalCaseForm from '../components/forms/CriticalCaseForm';
 import StaffSelectCombobox from '../components/common/StaffSelectCombobox';
 import DepartmentPrintView from '../components/common/DepartmentPrintView';
 import Footer from '../components/common/Footer';
+import MedicalLoader from '../components/common/MedicalLoader';
 
 const formatDateDDMMYYYY = (dateStr) => {
   if (!dateStr) return '';
@@ -575,34 +583,133 @@ const ReportPage = () => {
   }
 
   return (
-    <div className="report-page-wrapper app-page" style={{ maxWidth: '1200px', margin: '0 auto' }}>
-      {/* Brand Header */}
-      <header className="card report-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', padding: '1rem 1.5rem', background: '#FFFFFF' }}>
-        <div className="report-header-left" style={{ display: 'flex', alignItems: 'center', gap: '1.2rem' }}>
-          <img src="/logo.png" alt="Logo TTYT Bình Long" className="logo-img" />
+    <div className="report-page-wrapper app-page" style={{ maxWidth: '1200px', margin: '0 auto', padding: '1.25rem 1rem 4rem' }}>
+      
+      {/* 1. Brand Header Navbar (Synchronized with Admin Header) */}
+      <header style={{
+        backgroundColor: '#FFFFFF',
+        borderRadius: '16px',
+        border: '1px solid #E2E8F0',
+        padding: '1rem 1.5rem',
+        marginBottom: '1.5rem',
+        boxShadow: '0 2px 10px rgba(15, 44, 89, 0.04)',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '1rem'
+      }}>
+        {/* Left Side: Hospital Logo & Title */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <img 
+            src="/logo.png" 
+            alt="Logo TTYT Bình Long" 
+            style={{ 
+              width: '46px', 
+              height: '46px', 
+              borderRadius: '50%',
+              boxShadow: '0 2px 8px rgba(15, 44, 89, 0.15)',
+              flexShrink: 0
+            }} 
+          />
           <div>
-            <h4 style={{ fontSize: '0.8rem', color: 'var(--brand-red)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <h1 style={{
+              fontSize: '1.05rem',
+              fontWeight: '900',
+              color: '#0F2C59',
+              margin: 0,
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              lineHeight: 1.2
+            }}>
               TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG
-            </h4>
-            <h2 style={{ fontSize: '1.25rem', color: 'var(--brand-blue)', fontWeight: '800' }}>
-              {user?.departmentName}
-            </h2>
+            </h1>
+            <p style={{
+              fontSize: '0.8rem',
+              color: '#64748B',
+              margin: '2px 0 0 0',
+              fontWeight: '500'
+            }}>
+              Hệ Thống Báo Cáo Giao Ban Ca Trực Khoa Phòng
+            </p>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '0.65rem', alignItems: 'center' }}>
-          <button onClick={logout} className="btn btn-secondary" style={{ fontSize: '0.85rem' }}>
+
+        {/* Right Side: Department Badge & Action Buttons */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+          {/* Department Name Badge */}
+          <div style={{
+            backgroundColor: '#EFF6FF',
+            border: '1px solid #BFDBFE',
+            color: '#1E40AF',
+            padding: '0.45rem 0.9rem',
+            borderRadius: '10px',
+            fontWeight: '800',
+            fontSize: '0.88rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.45rem'
+          }}>
+            <FaHospital /> {user?.departmentName || 'Khoa Phòng'}
+          </div>
+
+          {/* Quick PDF Button if loaded */}
+          {existingReportLoaded && (
+            <button
+              type="button"
+              onClick={() => setShowPdfModal(true)}
+              style={{
+                backgroundColor: '#0284C7',
+                color: '#FFFFFF',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '0.45rem 0.85rem',
+                fontWeight: '700',
+                fontSize: '0.82rem',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                boxShadow: '0 2px 6px rgba(2, 132, 199, 0.25)',
+                transition: 'all 0.2s'
+              }}
+              title="Xuất file PDF báo cáo của ngày này"
+            >
+              <FaFilePdf /> Xuất PDF
+            </button>
+          )}
+
+          {/* Logout Button */}
+          <button 
+            type="button"
+            onClick={logout} 
+            style={{
+              backgroundColor: '#FFFFFF',
+              color: '#DC2626',
+              border: '1px solid #FECACA',
+              borderRadius: '8px',
+              padding: '0.45rem 0.85rem',
+              fontWeight: '700',
+              fontSize: '0.82rem',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              transition: 'all 0.2s'
+            }}
+          >
             <FaSignOutAlt /> Đăng xuất
           </button>
         </div>
       </header>
 
-      {/* Lock Notification Banner */}
+      {/* 2. Lock Notification Banner */}
       {isLocked && (
         <div style={{
           backgroundColor: '#FEF3C7',
           border: '1.5px solid #F59E0B',
           borderLeft: '6px solid #D97706',
-          borderRadius: '10px',
+          borderRadius: '12px',
           padding: '0.9rem 1.25rem',
           marginBottom: '1.5rem',
           display: 'flex',
@@ -626,21 +733,21 @@ const ReportPage = () => {
           <button
             type="button"
             onClick={() => setShowPdfModal(true)}
-            className="btn"
             style={{
               backgroundColor: '#0284C7',
               color: '#FFFFFF',
               border: 'none',
-              padding: '0.45rem 1rem',
+              padding: '0.5rem 1.1rem',
               fontSize: '0.85rem',
               fontWeight: '700',
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.4rem',
-              borderRadius: '7px',
+              borderRadius: '8px',
               cursor: 'pointer',
               whiteSpace: 'nowrap',
-              flexShrink: 0
+              flexShrink: 0,
+              boxShadow: '0 2px 8px rgba(2, 132, 199, 0.3)'
             }}
           >
             <FaFilePdf /> Xuất File PDF
@@ -648,107 +755,267 @@ const ReportPage = () => {
         </div>
       )}
 
-      <div className="report-workflow" aria-label="Tiến độ nhập báo cáo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div className={`workflow-step ${step === 1 ? 'is-active' : 'is-complete'}`} onClick={() => setStep(1)} style={{ cursor: 'pointer' }}>
-            <span>{step > 1 ? '✓' : '1'}</span>
-            <div><strong>1. Ca trực</strong><small>Nhân sự & thời gian</small></div>
-          </div>
-          <div className="workflow-line" />
-          <div className={`workflow-step ${step === 2 ? 'is-active' : ''}`} onClick={() => { if (cleanDoctorName) setStep(2); }} style={{ cursor: cleanDoctorName ? 'pointer' : 'default' }}>
-            <span>2</span>
-            <div><strong>2. Số liệu & Ca bệnh</strong><small>Chuyên môn khoa</small></div>
-          </div>
+      {/* 3. Modern Stepper Workflow Tabs */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: '1.5rem',
+        flexWrap: 'wrap',
+        gap: '0.85rem'
+      }}>
+        {/* Step Tabs */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          backgroundColor: '#FFFFFF',
+          padding: '0.35rem',
+          borderRadius: '14px',
+          border: '1px solid #E2E8F0',
+          boxShadow: '0 2px 8px rgba(15, 44, 89, 0.04)',
+          gap: '0.35rem'
+        }}>
+          {/* Step 1 Button */}
+          <button
+            type="button"
+            onClick={() => setStep(1)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.55rem',
+              padding: '0.55rem 1.15rem',
+              borderRadius: '10px',
+              border: 'none',
+              cursor: 'pointer',
+              fontWeight: '800',
+              fontSize: '0.86rem',
+              transition: 'all 0.2s',
+              background: step === 1 
+                ? 'linear-gradient(135deg, #2563EB, #1D4ED8)' 
+                : '#FFFFFF',
+              color: step === 1 ? '#FFFFFF' : '#64748B',
+              boxShadow: step === 1 ? '0 3px 10px rgba(37, 99, 235, 0.25)' : 'none'
+            }}
+          >
+            <FaUserMd style={{ fontSize: '1rem' }} />
+            <span>1. Hành Chính Ca Trực</span>
+            {step > 1 && (
+              <span style={{ backgroundColor: 'rgba(22, 163, 74, 0.2)', color: '#15803D', padding: '0.1rem 0.4rem', borderRadius: '10px', fontSize: '0.72rem' }}>
+                ✓
+              </span>
+            )}
+          </button>
+
+          {/* Step 2 Button */}
+          <button
+            type="button"
+            onClick={() => { if (cleanDoctorName) setStep(2); }}
+            disabled={!cleanDoctorName}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.55rem',
+              padding: '0.55rem 1.15rem',
+              borderRadius: '10px',
+              border: 'none',
+              cursor: cleanDoctorName ? 'pointer' : 'not-allowed',
+              fontWeight: '800',
+              fontSize: '0.86rem',
+              transition: 'all 0.2s',
+              background: step === 2 
+                ? 'linear-gradient(135deg, #2563EB, #1D4ED8)' 
+                : '#FFFFFF',
+              color: step === 2 ? '#FFFFFF' : (cleanDoctorName ? '#64748B' : '#CBD5E1'),
+              boxShadow: step === 2 ? '0 3px 10px rgba(37, 99, 235, 0.25)' : 'none'
+            }}
+          >
+            <FaNotesMedical style={{ fontSize: '1rem' }} />
+            <span>2. Số Liệu & Ca Bệnh</span>
+          </button>
         </div>
-        <div className="workflow-status" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+
+        {/* Status Indicators */}
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           {isLocked && (
-            <span style={{ backgroundColor: '#FEF3C7', color: '#92400E', border: '1px solid #FDE68A', padding: '0.25rem 0.65rem', borderRadius: '20px', fontWeight: '700', fontSize: '0.78rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+            <span style={{ backgroundColor: '#FEF3C7', color: '#92400E', border: '1px solid #FDE68A', padding: '0.3rem 0.75rem', borderRadius: '20px', fontWeight: '800', fontSize: '0.78rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
               🔒 Đã Khóa Sổ
             </span>
           )}
-          <Badge tone={existingReportLoaded ? 'primary' : 'warning'} dot>
-            {existingReportLoaded ? 'Đã nộp trước đó' : 'Bản nháp chưa gửi'}
-          </Badge>
+          <span style={{
+            backgroundColor: existingReportLoaded ? '#EFF6FF' : '#FFFBEB',
+            color: existingReportLoaded ? '#1E40AF' : '#B45309',
+            border: `1px solid ${existingReportLoaded ? '#BFDBFE' : '#FDE68A'}`,
+            padding: '0.3rem 0.75rem',
+            borderRadius: '20px',
+            fontWeight: '700',
+            fontSize: '0.78rem',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.35rem'
+          }}>
+            <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: existingReportLoaded ? '#2563EB' : '#F59E0B' }} />
+            {existingReportLoaded ? 'Đã có báo cáo' : 'Bản nháp chưa gửi'}
+          </span>
         </div>
       </div>
 
+      {/* 4. STEP 1: HÀNH CHÍNH CA TRỰC */}
       {step === 1 ? (
-        <div className="card animate-fade-in" style={{ maxWidth: '680px', margin: '0 auto', backgroundColor: '#FFFFFF' }}>
-          <h3 style={{ fontSize: '1.2rem', marginBottom: '1.5rem', borderBottom: '2px solid var(--primary-lighter)', paddingBottom: '0.75rem', color: 'var(--brand-blue)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <FaUserMd style={{ color: 'var(--brand-red)' }} />
-            Thông Tin Hành Chính Ca Trực
-          </h3>
+        <div className="animate-fade-in" style={{
+          maxWidth: '720px',
+          margin: '0 auto',
+          backgroundColor: '#FFFFFF',
+          borderRadius: '16px',
+          border: '1px solid #E2E8F0',
+          padding: '1.75rem 2rem',
+          boxShadow: '0 4px 20px rgba(15, 44, 89, 0.04)'
+        }}>
+          {/* Card Header */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '1.5rem',
+            borderBottom: '2px solid #EFF6FF',
+            paddingBottom: '0.85rem'
+          }}>
+            <h2 style={{
+              fontSize: '1.2rem',
+              fontWeight: '900',
+              color: '#0F2C59',
+              margin: 0,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}>
+              <FaUserMd style={{ color: '#2563EB' }} />
+              Thông Tin Hành Chính Ca Trực
+            </h2>
+            <span style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: '600' }}>
+              Bước 1 / 2
+            </span>
+          </div>
           
-          {/* Thông báo tải lại báo cáo cũ */}
-          <div style={{ marginBottom: '1.25rem' }}>
+          {/* Notice: Status of current selected date */}
+          <div style={{ marginBottom: '1.5rem' }}>
             {loadingExistingReport ? (
-              <Notice tone="info" icon={<FaSpinner className="spinner" />}>
-                Đang kiểm tra dữ liệu ngày {formatDateDDMMYYYY(headerData.reportDate)}...
-              </Notice>
+              <div style={{
+                backgroundColor: '#EFF6FF',
+                border: '1px solid #BFDBFE',
+                borderRadius: '10px',
+                padding: '0.85rem 1.15rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                color: '#1E40AF',
+                fontSize: '0.88rem'
+              }}>
+                <FaSpinner className="spinner" />
+                <span>Đang kiểm tra dữ liệu ngày <strong>{formatDateDDMMYYYY(headerData.reportDate)}</strong>...</span>
+              </div>
             ) : existingReportLoaded ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-                <Notice tone="success" icon={<FaCheckCircle />}>
-                  <strong>Đã nạp dữ liệu báo cáo ngày {formatDateDDMMYYYY(headerData.reportDate)}:</strong> Toàn bộ thông tin ca trực và số liệu chuyên môn đã nộp trước đó đã được tải sẵn. Bạn có thể tiếp tục chỉnh sửa hoặc nộp bổ sung.
-                </Notice>
-                <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+              <div style={{
+                backgroundColor: '#F0FDF4',
+                border: '1.5px solid #BBF7D0',
+                borderRadius: '12px',
+                padding: '0.95rem 1.25rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.65rem'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#166534', fontWeight: '700', fontSize: '0.9rem' }}>
+                  <FaCheckCircle style={{ color: '#16A34A', fontSize: '1.1rem' }} />
+                  <span>Đã nạp dữ liệu báo cáo ngày {formatDateDDMMYYYY(headerData.reportDate)}</span>
+                </div>
+                <p style={{ margin: 0, color: '#15803D', fontSize: '0.84rem', lineHeight: '1.5' }}>
+                  Toàn bộ thông tin ca trực và số liệu chuyên môn đã nộp trước đó đã được tải sẵn. Bạn có thể tiếp tục chỉnh sửa hoặc nộp bổ sung.
+                </p>
+                <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '0.25rem' }}>
                   <button
                     type="button"
                     onClick={() => setShowPdfModal(true)}
-                    className="btn"
                     style={{
                       backgroundColor: '#0284C7',
                       color: '#FFFFFF',
                       border: 'none',
-                      padding: '0.55rem 1.2rem',
-                      fontSize: '0.88rem',
+                      padding: '0.45rem 0.95rem',
+                      fontSize: '0.82rem',
                       fontWeight: '700',
                       display: 'inline-flex',
                       alignItems: 'center',
-                      gap: '0.5rem',
-                      borderRadius: '8px',
+                      gap: '0.4rem',
+                      borderRadius: '7px',
                       cursor: 'pointer',
-                      boxShadow: '0 2px 8px rgba(2, 132, 199, 0.3)',
-                      transition: 'all 0.2s'
+                      boxShadow: '0 2px 6px rgba(2, 132, 199, 0.25)'
                     }}
-                    title="Xem và tải file PDF báo cáo đã nộp của ngày này"
                   >
-                    <FaFilePdf style={{ fontSize: '1.05rem' }} /> 📄 Xuất File PDF
+                    <FaFilePdf /> Xuất File PDF
                   </button>
                 </div>
               </div>
             ) : (
-              <Notice tone="info">
-                <strong>Ngày {formatDateDDMMYYYY(headerData.reportDate)} chưa có báo cáo:</strong> Vui lòng chọn Bác sĩ, Điều dưỡng trực và bấm <em>"Tiếp tục nhập báo cáo"</em> để nộp số liệu giao ban.
-              </Notice>
+              <div style={{
+                backgroundColor: '#EFF6FF',
+                border: '1px solid #BFDBFE',
+                borderRadius: '10px',
+                padding: '0.85rem 1.15rem',
+                color: '#1E40AF',
+                fontSize: '0.86rem',
+                lineHeight: '1.5'
+              }}>
+                💡 <strong>Ngày {formatDateDDMMYYYY(headerData.reportDate)} chưa có báo cáo:</strong> Vui lòng chọn Bác sĩ, Điều dưỡng trực và bấm <em>"Tiếp tục nhập số liệu chuyên môn"</em> để hoàn tất nộp giao ban.
+              </div>
             )}
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '2rem' }}>
+          {/* Form Fields */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.35rem', marginBottom: '2rem' }}>
+            
             {/* 1. Ngày báo cáo */}
             <div className="form-group">
-              <label>Ngày báo cáo <span style={{ color: 'var(--brand-red)' }}>*</span> ( Lưu ý chọn đúng ngày trực giao ban )</label>
+              <label style={{ fontWeight: '700', color: '#1E293B', fontSize: '0.88rem', marginBottom: '0.35rem', display: 'block' }}>
+                Ngày báo cáo <span style={{ color: '#DC2626' }}>*</span> <span style={{ fontWeight: 'normal', color: '#64748B', fontSize: '0.8rem' }}>(Chọn đúng ngày trực giao ban)</span>
+              </label>
               <div style={{ position: 'relative' }}>
-                <FaCalendarAlt style={{ position: 'absolute', top: '50%', left: '1rem', transform: 'translateY(-50%)', color: 'var(--text-muted)', zIndex: 1 }} />
+                <FaCalendarAlt style={{ position: 'absolute', top: '50%', left: '1rem', transform: 'translateY(-50%)', color: '#2563EB', zIndex: 1 }} />
                 <input 
                   type="date" 
                   value={headerData.reportDate}
                   onChange={(e) => setHeaderData({...headerData, reportDate: e.target.value})}
-                  style={{ paddingLeft: '2.6rem' }}
+                  style={{
+                    paddingLeft: '2.8rem',
+                    height: '46px',
+                    borderRadius: '10px',
+                    border: '1.5px solid #CBD5E1',
+                    fontWeight: '600',
+                    fontSize: '0.95rem'
+                  }}
                 />
               </div>
             </div>
 
-            {/* 2. Bác sĩ trực ca (Hỗ trợ nhiều Bác sĩ trực ca) */}
+            {/* 2. Bác sĩ trực ca */}
             <div className="form-group">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.45rem' }}>
-                <label style={{ margin: 0, fontWeight: '600', fontSize: '0.9rem', color: '#1E293B', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  <FaUserMd style={{ color: 'var(--brand-red)' }} /> Bác sĩ trực ca ({cleanDoctorNames.length || 0}) <span style={{ color: 'var(--brand-red)' }}>*</span>
+                <label style={{ margin: 0, fontWeight: '700', fontSize: '0.88rem', color: '#1E293B', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <FaUserMd style={{ color: '#2563EB' }} /> Bác sĩ trực ca ({cleanDoctorNames.length || 0}) <span style={{ color: '#DC2626' }}>*</span>
                 </label>
                 <button
                   type="button"
-                  className="btn btn-secondary btn-sm"
                   onClick={handleAddDoctor}
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.8rem', padding: '0.3rem 0.75rem', borderColor: '#BFDBFE', color: '#1E40AF', backgroundColor: '#EFF6FF' }}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                    fontSize: '0.8rem',
+                    padding: '0.3rem 0.75rem',
+                    border: '1px solid #BFDBFE',
+                    borderRadius: '7px',
+                    color: '#1E40AF',
+                    backgroundColor: '#EFF6FF',
+                    fontWeight: '700',
+                    cursor: 'pointer'
+                  }}
                 >
                   <FaPlus /> Thêm Bác sĩ
                 </button>
@@ -773,8 +1040,16 @@ const ReportPage = () => {
                       <button
                         type="button"
                         onClick={() => handleRemoveDoctor(idx)}
-                        className="btn btn-danger btn-sm"
-                        style={{ padding: '0.45rem 0.65rem', height: '44px', borderRadius: '8px', flexShrink: 0 }}
+                        style={{
+                          padding: '0.45rem 0.65rem',
+                          height: '44px',
+                          borderRadius: '8px',
+                          border: '1px solid #FECACA',
+                          backgroundColor: '#FFF5F5',
+                          color: '#DC2626',
+                          cursor: 'pointer',
+                          flexShrink: 0
+                        }}
                         title="Xóa Bác sĩ này"
                       >
                         <FaTrash />
@@ -788,17 +1063,28 @@ const ReportPage = () => {
               </small>
             </div>
 
-            {/* 3. Điều dưỡng trực ca (Hỗ trợ nhiều điều dưỡng ca trực) */}
+            {/* 3. Điều dưỡng trực ca */}
             <div className="form-group">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.45rem' }}>
-                <label style={{ margin: 0, fontWeight: '600', fontSize: '0.9rem', color: '#1E293B', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <label style={{ margin: 0, fontWeight: '700', fontSize: '0.88rem', color: '#1E293B', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                   <FaUserNurse style={{ color: '#059669' }} /> Điều dưỡng trực ca ({(headerData.selectedNurses || []).length || 0})
                 </label>
                 <button
                   type="button"
-                  className="btn btn-secondary btn-sm"
                   onClick={handleAddNurse}
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.8rem', padding: '0.3rem 0.75rem', borderColor: '#BBF7D0', color: '#166534', backgroundColor: '#F0FDF4' }}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                    fontSize: '0.8rem',
+                    padding: '0.3rem 0.75rem',
+                    border: '1px solid #BBF7D0',
+                    borderRadius: '7px',
+                    color: '#166534',
+                    backgroundColor: '#F0FDF4',
+                    fontWeight: '700',
+                    cursor: 'pointer'
+                  }}
                 >
                   <FaPlus /> Thêm điều dưỡng
                 </button>
@@ -823,8 +1109,16 @@ const ReportPage = () => {
                       <button
                         type="button"
                         onClick={() => handleRemoveNurse(idx)}
-                        className="btn btn-danger btn-sm"
-                        style={{ padding: '0.45rem 0.65rem', height: '44px', borderRadius: '8px', flexShrink: 0 }}
+                        style={{
+                          padding: '0.45rem 0.65rem',
+                          height: '44px',
+                          borderRadius: '8px',
+                          border: '1px solid #FECACA',
+                          backgroundColor: '#FFF5F5',
+                          color: '#DC2626',
+                          cursor: 'pointer',
+                          flexShrink: 0
+                        }}
                         title="Xóa điều dưỡng này"
                       >
                         <FaTrash />
@@ -838,24 +1132,40 @@ const ReportPage = () => {
               </small>
             </div>
 
-            {/* 4. Phần: Nhân sự trực thêm giờ / Tăng cường */}
-            <div className="form-group" style={{ border: '1px solid #E2E8F0', borderRadius: '8px', padding: '1rem', background: '#F8FAFC' }}>
+            {/* 4. Nhân sự trực thêm giờ / Tăng cường */}
+            <div style={{
+              border: '1px solid #E2E8F0',
+              borderRadius: '12px',
+              padding: '1.15rem',
+              backgroundColor: '#F8FAFC'
+            }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                <label style={{ margin: 0, fontWeight: '700', color: 'var(--brand-blue)', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                <label style={{ margin: 0, fontWeight: '700', color: '#0F2C59', display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.88rem' }}>
                   <FaClock style={{ color: '#D97706' }} /> Nhân sự trực thêm giờ / Tăng cường ({(headerData.overtimeStaff || []).length})
                 </label>
                 <button
                   type="button"
-                  className="btn btn-secondary btn-sm"
                   onClick={handleAddOvertimeStaff}
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.8rem', padding: '0.35rem 0.75rem' }}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                    fontSize: '0.8rem',
+                    padding: '0.3rem 0.75rem',
+                    border: '1px solid #CBD5E1',
+                    borderRadius: '7px',
+                    backgroundColor: '#FFFFFF',
+                    color: '#334155',
+                    fontWeight: '700',
+                    cursor: 'pointer'
+                  }}
                 >
-                  <FaPlus /> Thêm nhân sự tăng cường
+                  <FaPlus /> Thêm tăng cường
                 </button>
               </div>
 
               {(headerData.overtimeStaff || []).length === 0 ? (
-                <p style={{ color: 'var(--text-light)', fontSize: '0.85rem', fontStyle: 'italic', margin: 0 }}>
+                <p style={{ color: '#94A3B8', fontSize: '0.84rem', fontStyle: 'italic', margin: 0 }}>
                   Chưa có nhân sự trực thêm giờ (Bấm nút trên nếu ca trực có nhân sự tăng cường).
                 </p>
               ) : (
@@ -868,13 +1178,12 @@ const ReportPage = () => {
                         gridTemplateColumns: '1.4fr 1fr auto', 
                         gap: '0.5rem', 
                         alignItems: 'center',
-                        background: '#FFFFFF',
+                        backgroundColor: '#FFFFFF',
                         padding: '0.65rem',
-                        borderRadius: '6px',
+                        borderRadius: '8px',
                         border: '1px solid #CBD5E1'
                       }}
                     >
-                      {/* Chọn nhân sự với StaffSelectCombobox */}
                       <div>
                         <StaffSelectCombobox
                           placeholder="Gõ số (1, 2...) hoặc tên..."
@@ -887,26 +1196,31 @@ const ReportPage = () => {
                         />
                       </div>
 
-                      {/* Nhập thời gian trực thêm giờ */}
                       <div>
                         <div style={{ position: 'relative' }}>
                           <FaClock style={{ position: 'absolute', top: '50%', left: '0.6rem', transform: 'translateY(-50%)', color: '#94A3B8', fontSize: '0.8rem' }} />
                           <input
                             type="text"
-                            placeholder="VD: 17h - 21h hoặc 4h MRT"
+                            placeholder="VD: 17h - 21h"
                             value={ot.time}
                             onChange={(e) => handleOvertimeChange(idx, 'time', e.target.value)}
-                            style={{ paddingLeft: '1.8rem', fontSize: '0.85rem', width: '100%' }}
+                            style={{ paddingLeft: '1.8rem', fontSize: '0.85rem', height: '40px', borderRadius: '8px' }}
                           />
                         </div>
                       </div>
 
-                      {/* Nút xóa dòng */}
                       <button
                         type="button"
                         onClick={() => handleRemoveOvertimeStaff(idx)}
-                        className="btn btn-danger btn-sm"
-                        style={{ padding: '0.4rem 0.6rem', height: '36px' }}
+                        style={{
+                          padding: '0.4rem 0.6rem',
+                          height: '40px',
+                          borderRadius: '8px',
+                          border: '1px solid #FECACA',
+                          backgroundColor: '#FFF5F5',
+                          color: '#DC2626',
+                          cursor: 'pointer'
+                        }}
                         title="Xóa nhân sự này"
                       >
                         <FaTrash />
@@ -918,62 +1232,116 @@ const ReportPage = () => {
             </div>
 
             {/* 5. Phòng buồng & Thời gian trực */}
-            <div className="header-step-row" style={{ display: 'flex', gap: '1rem' }}>
-              <div className="form-group" style={{ flex: 1 }}>
-                <label>Phòng / Buồng trực (Không bắt buộc)</label>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+              <div className="form-group">
+                <label style={{ fontWeight: '700', color: '#1E293B', fontSize: '0.88rem', marginBottom: '0.35rem', display: 'block' }}>Phòng / Buồng trực <span style={{ fontWeight: 'normal', color: '#94A3B8' }}>(Tùy chọn)</span></label>
                 <input 
                   type="text" 
                   placeholder="VD: Phòng cấp cứu"
                   value={headerData.room || ''}
                   onChange={(e) => setHeaderData({...headerData, room: e.target.value})}
+                  style={{ height: '44px', borderRadius: '8px' }}
                 />
               </div>
-              <div className="form-group" style={{ flex: 1 }}>
-                <label>Thời gian trực (Không bắt buộc)</label>
+              <div className="form-group">
+                <label style={{ fontWeight: '700', color: '#1E293B', fontSize: '0.88rem', marginBottom: '0.35rem', display: 'block' }}>Thời gian trực <span style={{ fontWeight: 'normal', color: '#94A3B8' }}>(Tùy chọn)</span></label>
                 <input 
                   type="text" 
-                  placeholder="VD: 07h00 - 07h00"
+                  placeholder="VD: 07h00 - 07h00 (24/24)"
                   value={headerData.shiftTime || ''}
                   onChange={(e) => setHeaderData({...headerData, shiftTime: e.target.value})}
+                  style={{ height: '44px', borderRadius: '8px' }}
                 />
               </div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          {/* Bottom Action Button */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid #F1F5F9', paddingTop: '1.25rem' }}>
             <button 
-              className="btn btn-primary"
+              type="button"
               onClick={handleNext}
               disabled={cleanDoctorNames.length === 0}
-              style={{ fontSize: '1rem', padding: '0.75rem 2rem' }}
+              style={{
+                background: cleanDoctorNames.length === 0 
+                  ? '#CBD5E1' 
+                  : 'linear-gradient(135deg, #2563EB, #1D4ED8)',
+                color: '#FFFFFF',
+                border: 'none',
+                padding: '0.85rem 2.25rem',
+                fontSize: '1rem',
+                fontWeight: '800',
+                borderRadius: '10px',
+                cursor: cleanDoctorNames.length === 0 ? 'not-allowed' : 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                boxShadow: cleanDoctorNames.length === 0 ? 'none' : '0 6px 20px rgba(37, 99, 235, 0.3)',
+                transition: 'all 0.2s'
+              }}
             >
-              Tiếp tục nhập báo cáo <FaChevronRight />
+              Tiếp tục nhập số liệu chuyên môn <FaChevronRight />
             </button>
           </div>
         </div>
       ) : (
+        /* 5. STEP 2: SỐ LIỆU CHUYÊN MÔN & CA BỆNH */
         <div className="animate-slide-up">
-          {/* Header summary bar */}
-          <div className="card summary-bar" style={{ marginBottom: '1.5rem', padding: '1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'linear-gradient(135deg, #EFF6FF, #F8FAFC)', borderLeft: '4px solid var(--brand-blue)' }}>
-            <div className="summary-bar-info" style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap', fontSize: '0.9rem' }}>
-              <div>📅 <strong>Ngày báo cáo:</strong> {formatDateDDMMYYYY(headerData.reportDate)}</div>
-              <div>👨‍⚕️ <strong>Bác sĩ trực ({cleanDoctorNames.length}):</strong> {finalDoctorNameStr || cleanDoctorName}</div>
-              {finalNurseNameStr && <div>👩‍⚕️ <strong>Điều dưỡng ({cleanNurseNames.length}):</strong> {finalNurseNameStr}</div>}
+          {/* Top Sticky/Summary Bar */}
+          <div style={{
+            backgroundColor: '#FFFFFF',
+            borderRadius: '14px',
+            border: '1px solid #E2E8F0',
+            borderLeft: '5px solid #2563EB',
+            padding: '0.9rem 1.4rem',
+            marginBottom: '1.5rem',
+            boxShadow: '0 2px 10px rgba(15, 44, 89, 0.04)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '0.85rem'
+          }}>
+            <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap', fontSize: '0.88rem', color: '#334155' }}>
+              <div>📅 <strong>Ngày:</strong> {formatDateDDMMYYYY(headerData.reportDate)}</div>
+              <div>👨‍⚕️ <strong>Bác sĩ ({cleanDoctorNames.length}):</strong> <span style={{ color: '#1E40AF', fontWeight: '700' }}>{finalDoctorNameStr || cleanDoctorName}</span></div>
+              {finalNurseNameStr && <div>👩‍⚕️ <strong>Điều dưỡng:</strong> <span style={{ color: '#065F46', fontWeight: '700' }}>{finalNurseNameStr}</span></div>}
               {(headerData.overtimeStaff || []).length > 0 && (
                 <div>
                   ⏰ <strong>Tăng cường:</strong> {(headerData.overtimeStaff || []).map(s => `${extractCleanStaffName(s.staffName, staffList.allStaff)} (${s.time})`).join(', ')}
                 </div>
               )}
-              {headerData.room && <div>🏥 <strong>Phòng:</strong> {headerData.room}</div>}
-              {headerData.shiftTime && <div>⏱️ <strong>Ca trực:</strong> {headerData.shiftTime}</div>}
             </div>
-            <button className="btn btn-secondary btn-sm" onClick={() => setStep(1)}>
-              ✏️ Sửa thông tin ca trực
+            <button 
+              type="button"
+              onClick={() => setStep(1)}
+              style={{
+                backgroundColor: '#EFF6FF',
+                color: '#1E40AF',
+                border: '1px solid #BFDBFE',
+                borderRadius: '8px',
+                padding: '0.35rem 0.75rem',
+                fontSize: '0.82rem',
+                fontWeight: '700',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem'
+              }}
+            >
+              <FaEdit /> Sửa hành chính
             </button>
           </div>
 
-          {/* Dynamic department form */}
-          <div className="card" style={{ marginBottom: '1.5rem', backgroundColor: '#FFFFFF' }}>
+          {/* Dynamic Department Form Card */}
+          <div style={{
+            backgroundColor: '#FFFFFF',
+            borderRadius: '16px',
+            border: '1px solid #E2E8F0',
+            padding: '1.5rem 1.75rem',
+            marginBottom: '1.5rem',
+            boxShadow: '0 4px 20px rgba(15, 44, 89, 0.04)'
+          }}>
             {FormComponent ? (
               <FormComponent 
                 reportDate={headerData.reportDate}
@@ -986,7 +1354,7 @@ const ReportPage = () => {
                 setTransferCases={setTransferCases}
               />
             ) : (
-              <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+              <div style={{ textAlign: 'center', padding: '3rem', color: '#94A3B8', fontStyle: 'italic' }}>
                 Không tìm thấy biểu mẫu cho khoa: {user?.departmentCode}
               </div>
             )}
@@ -1006,53 +1374,124 @@ const ReportPage = () => {
             />
           </div>
 
-          {/* Submit error */}
+          {/* Submit Error Notice */}
           {submitError && (
-            <div style={{ marginBottom: '1.25rem' }}>
-              <Notice tone="danger" onClose={() => setSubmitError('')}>
-                {submitError}
-              </Notice>
+            <div style={{
+              backgroundColor: '#FEF2F2',
+              border: '1px solid #FECACA',
+              borderRadius: '10px',
+              padding: '0.85rem 1.15rem',
+              color: '#991B1B',
+              fontSize: '0.88rem',
+              marginBottom: '1.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <FaExclamationCircle />
+                <span>{submitError}</span>
+              </div>
+              <button type="button" onClick={() => setSubmitError('')} style={{ background: 'none', border: 'none', color: '#991B1B', cursor: 'pointer', fontWeight: 'bold' }}>✕</button>
             </div>
           )}
 
-          {/* Sticky/Bottom Submit button */}
-          <div className="submit-area" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '1rem 0 2rem', gap: '0.5rem' }}>
+          {/* Bottom Action Bar */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '1rem',
+            padding: '1.5rem 0 2.5rem',
+            flexWrap: 'wrap'
+          }}>
+            {/* Back Button */}
+            <button
+              type="button"
+              onClick={() => setStep(1)}
+              style={{
+                backgroundColor: '#FFFFFF',
+                color: '#475569',
+                border: '1.5px solid #CBD5E1',
+                padding: '0.85rem 1.5rem',
+                fontSize: '0.95rem',
+                fontWeight: '700',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
+              }}
+            >
+              <FaChevronLeft /> Quay lại Bước 1
+            </button>
+
+            {/* Preview PDF */}
+            <button
+              type="button"
+              onClick={() => setShowPdfModal(true)}
+              style={{
+                backgroundColor: '#0284C7',
+                color: '#FFFFFF',
+                border: 'none',
+                padding: '0.85rem 1.65rem',
+                fontSize: '0.95rem',
+                fontWeight: '700',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                boxShadow: '0 4px 14px rgba(2, 132, 199, 0.25)'
+              }}
+            >
+              <FaFilePdf /> Xem trước & Xuất PDF
+            </button>
+
+            {/* Main Submit Button */}
             {isLocked ? (
-              <div style={{ textAlign: 'center' }}>
-                <button 
-                  type="button"
-                  disabled
-                  className="btn"
-                  style={{
-                    backgroundColor: '#94A3B8',
-                    color: '#FFFFFF',
-                    padding: '0.85rem 2.5rem',
-                    fontSize: '1rem',
-                    fontWeight: '700',
-                    borderRadius: '8px',
-                    cursor: 'not-allowed',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    boxShadow: 'none'
-                  }}
-                >
-                  🔒 Báo Cáo Đã Khóa Sổ (Chỉ Đọc)
-                </button>
-                <p style={{ margin: '0.5rem 0 0', color: '#64748B', fontSize: '0.82rem', fontStyle: 'italic' }}>
-                  Liên hệ Admin (Phòng Kế Hoạch Nghiệp Vụ) nếu cần mở khóa báo cáo ngày này.
-                </p>
-              </div>
-            ) : (
-              <Button 
-                variant="primary"
-                size="lg"
-                icon={FaPaperPlane}
-                onClick={() => setShowConfirm(true)}
-                style={{ padding: '0.85rem 3rem', fontSize: '1.05rem', boxShadow: '0 8px 20px rgba(15, 44, 89, 0.25)' }}
+              <button 
+                type="button"
+                disabled
+                style={{
+                  backgroundColor: '#94A3B8',
+                  color: '#FFFFFF',
+                  padding: '0.85rem 2.25rem',
+                  fontSize: '1rem',
+                  fontWeight: '800',
+                  borderRadius: '10px',
+                  cursor: 'not-allowed',
+                  border: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}
               >
-                Gửi Báo Cáo Giao Ban
-              </Button>
+                🔒 Báo Cáo Đã Khóa Sổ (Chỉ Đọc)
+              </button>
+            ) : (
+              <button 
+                type="button"
+                onClick={() => setShowConfirm(true)}
+                style={{
+                  background: 'linear-gradient(135deg, #16A34A, #15803D)',
+                  color: '#FFFFFF',
+                  padding: '0.85rem 2.5rem',
+                  fontSize: '1.05rem',
+                  fontWeight: '800',
+                  borderRadius: '10px',
+                  cursor: 'pointer',
+                  border: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.55rem',
+                  boxShadow: '0 6px 20px rgba(22, 163, 74, 0.35)',
+                  transition: 'all 0.2s'
+                }}
+              >
+                <FaCheckCircle style={{ fontSize: '1.15rem' }} /> NỘP BÁO CÁO GIAO BAN
+              </button>
             )}
           </div>
 
@@ -1077,7 +1516,7 @@ const ReportPage = () => {
               <p style={{ margin: '0 0 0.85rem' }}>
                 Báo cáo của khoa sẽ được lưu vào hệ thống dữ liệu toàn viện và đưa vào <strong>Trình Chiếu Giao Ban Sáng</strong> phục vụ Ban Giám Đốc.
               </p>
-              <div style={{ backgroundColor: '#F8FAFC', padding: '0.85rem 1rem', borderRadius: '8px', border: '1px solid #E2E8F0', fontSize: '0.85rem' }}>
+              <div style={{ backgroundColor: '#F8FAFC', padding: '0.85rem 1rem', borderRadius: '10px', border: '1px solid #E2E8F0', fontSize: '0.85rem' }}>
                 <div>👨‍⚕️ <strong>Bác sĩ trực:</strong> {finalDoctorNameStr || cleanDoctorName}</div>
                 {cleanNurseNames.length > 0 && <div style={{ marginTop: '3px' }}>👩‍⚕️ <strong>Điều dưỡng:</strong> {cleanNurseNames.join(', ')}</div>}
                 <div style={{ marginTop: '3px' }}>📋 <strong>Số ca lâm sàng:</strong> {transferCases.length} chuyển viện • {surgeryCases.length} ca mổ • {deathCases.length} tử vong • {criticalCases.length} bệnh nặng</div>
