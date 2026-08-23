@@ -24,6 +24,7 @@ import DeathSlide from '../components/presentation/slides/DeathSlide';
 import CriticalSlide from '../components/presentation/slides/CriticalSlide';
 import FullScreenImageSlide from '../components/presentation/slides/FullScreenImageSlide';
 import SummarySlide from '../components/presentation/slides/SummarySlide';
+import CinematicNetflixIntro from '../components/presentation/CinematicNetflixIntro';
 
 const PresentationPage = () => {
   const { date } = useParams();
@@ -36,6 +37,7 @@ const PresentationPage = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showIntro, setShowIntro] = useState(true);
   const [fontScale, setFontScale] = useState(1); // 1 = 100% default scale
   const [exportingPptx, setExportingPptx] = useState(false);
 
@@ -457,6 +459,15 @@ const PresentationPage = () => {
         dark={true}
         text={`Đang nạp slide giao ban ngày ${formatDate(date)}...`}
         subtext="TTYT Khu Vực Bình Long • Phiên Họp Giao Ban Chuyên Môn"
+      />
+    );
+  }
+
+  if (showIntro) {
+    return (
+      <CinematicNetflixIntro
+        date={date}
+        onComplete={() => setShowIntro(false)}
       />
     );
   }
