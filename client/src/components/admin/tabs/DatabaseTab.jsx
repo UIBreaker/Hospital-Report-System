@@ -346,52 +346,7 @@ const DatabaseTab = ({ date }) => {
         </div>
       )}
 
-      {/* 4. MySQL Tables Detail Table */}
-      {dbStats?.tables && dbStats.tables.length > 0 && (
-        <div style={{
-          backgroundColor: '#FFFFFF',
-          borderRadius: '14px',
-          border: '1px solid #E2E8F0',
-          boxShadow: '0 2px 8px rgba(15, 44, 89, 0.04)',
-          overflow: 'hidden'
-        }}>
-          <div style={{ padding: '0.85rem 1.25rem', borderBottom: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', gap: '0.45rem', fontWeight: '800', fontSize: '0.88rem', color: '#0F2C59', textTransform: 'uppercase' }}>
-            <FaTable style={{ color: '#2563EB' }} /> Chi Tiết Kích Thước Các Bảng Dữ Liệu (MySQL)
-          </div>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ backgroundColor: '#F8FAFC', borderBottom: '2px solid #E2E8F0', color: '#0F2C59' }}>
-                  <th style={{ padding: '0.65rem 1rem', fontWeight: '800' }}>TÊN BẢNG</th>
-                  <th style={{ padding: '0.65rem 1rem', fontWeight: '800', textAlign: 'center' }}>SỐ DÒNG</th>
-                  <th style={{ padding: '0.65rem 1rem', fontWeight: '800', textAlign: 'right' }}>DỮ LIỆU (KB)</th>
-                  <th style={{ padding: '0.65rem 1rem', fontWeight: '800', textAlign: 'right' }}>CHỈ MỤC INDEX</th>
-                  <th style={{ padding: '0.65rem 1rem', fontWeight: '800', textAlign: 'right' }}>TỔNG DUNG LƯỢNG</th>
-                </tr>
-              </thead>
-              <tbody>
-                {dbStats.tables.map((t, idx) => (
-                  <tr
-                    key={t.tableName}
-                    style={{
-                      borderBottom: '1px solid #F1F5F9',
-                      backgroundColor: idx % 2 === 0 ? '#FFFFFF' : '#FAFAFA'
-                    }}
-                  >
-                    <td style={{ padding: '0.65rem 1rem', fontFamily: 'monospace', fontWeight: '700', color: '#0F2C59' }}>{t.tableName}</td>
-                    <td style={{ padding: '0.65rem 1rem', textAlign: 'center', fontWeight: '600' }}>{t.rowsCount?.toLocaleString() || 0}</td>
-                    <td style={{ padding: '0.65rem 1rem', textAlign: 'right', color: '#0284C7' }}>{t.dataSizeKb || '0'} KB</td>
-                    <td style={{ padding: '0.65rem 1rem', textAlign: 'right', color: '#64748B' }}>{t.indexSizeKb || '0'} KB</td>
-                    <td style={{ padding: '0.65rem 1rem', textAlign: 'right', fontWeight: '800', color: '#0F2C59' }}>{t.sizeKb ? `${t.sizeKb} KB` : `${t.sizeMb} MB`}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* 5. Daily Payload Size Breakdown Card */}
+      {/* 4. Daily Payload Size Breakdown Card (Được đặt lên trên Bảng dữ liệu theo yêu cầu) */}
       <div style={{
         backgroundColor: '#FFFFFF',
         borderRadius: '14px',
@@ -415,7 +370,7 @@ const DatabaseTab = ({ date }) => {
               <FaChartPie style={{ color: '#2563EB' }} /> Dung Lượng Dữ Liệu Báo Cáo Theo Ngày
             </h4>
             <p style={{ fontSize: '0.78rem', color: '#64748B', margin: '0.2rem 0 0 0' }}>
-              Chi tiết kích thước văn bản và ảnh đính kèm của từng khoa phòng.
+              Chi tiết kích thước văn bản và ảnh đính kèm của từng khoa phòng theo ngày giao ban.
             </p>
           </div>
 
@@ -626,6 +581,52 @@ const DatabaseTab = ({ date }) => {
           </>
         )}
       </div>
+
+      {/* 5. MySQL Tables Detail Table (Hiển thị phía dưới Dung lượng báo cáo theo ngày) */}
+      {dbStats?.tables && dbStats.tables.length > 0 && (
+        <div style={{
+          backgroundColor: '#FFFFFF',
+          borderRadius: '14px',
+          border: '1px solid #E2E8F0',
+          boxShadow: '0 2px 8px rgba(15, 44, 89, 0.04)',
+          overflow: 'hidden'
+        }}>
+          <div style={{ padding: '0.85rem 1.25rem', borderBottom: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', gap: '0.45rem', fontWeight: '800', fontSize: '0.88rem', color: '#0F2C59', textTransform: 'uppercase' }}>
+            <FaTable style={{ color: '#2563EB' }} /> Chi Tiết Kích Thước Các Bảng Dữ Liệu (MySQL)
+          </div>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#F8FAFC', borderBottom: '2px solid #E2E8F0', color: '#0F2C59' }}>
+                  <th style={{ padding: '0.65rem 1rem', fontWeight: '800' }}>TÊN BẢNG</th>
+                  <th style={{ padding: '0.65rem 1rem', fontWeight: '800', textAlign: 'center' }}>SỐ DÒNG</th>
+                  <th style={{ padding: '0.65rem 1rem', fontWeight: '800', textAlign: 'right' }}>DỮ LIỆU (KB)</th>
+                  <th style={{ padding: '0.65rem 1rem', fontWeight: '800', textAlign: 'right' }}>CHỈ MỤC INDEX</th>
+                  <th style={{ padding: '0.65rem 1rem', fontWeight: '800', textAlign: 'right' }}>TỔNG DUNG LƯỢNG</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dbStats.tables.map((t, idx) => (
+                  <tr
+                    key={t.tableName}
+                    style={{
+                      borderBottom: '1px solid #F1F5F9',
+                      backgroundColor: idx % 2 === 0 ? '#FFFFFF' : '#FAFAFA'
+                    }}
+                  >
+                    <td style={{ padding: '0.65rem 1rem', fontFamily: 'monospace', fontWeight: '700', color: '#0F2C59' }}>{t.tableName}</td>
+                    <td style={{ padding: '0.65rem 1rem', textAlign: 'center', fontWeight: '600' }}>{t.rowsCount?.toLocaleString() || 0}</td>
+                    <td style={{ padding: '0.65rem 1rem', textAlign: 'right', color: '#0284C7' }}>{t.dataSizeKb || '0'} KB</td>
+                    <td style={{ padding: '0.65rem 1rem', textAlign: 'right', color: '#64748B' }}>{t.indexSizeKb || '0'} KB</td>
+                    <td style={{ padding: '0.65rem 1rem', textAlign: 'right', fontWeight: '800', color: '#0F2C59' }}>{t.sizeKb ? `${t.sizeKb} KB` : `${t.sizeMb} MB`}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
