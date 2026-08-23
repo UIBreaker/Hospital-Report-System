@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useMemo } from 'react';
+import React, { useState, useEffect, useContext, useMemo, useRef } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 import { 
   FaCalendarAlt, 
@@ -21,11 +21,16 @@ import {
   FaLock,
   FaHospital,
   FaEdit,
-  FaExclamationCircle
+  FaExclamationCircle,
+  FaDoorOpen,
+  FaClipboardList,
+  FaShieldAlt,
+  FaArrowRight,
+  FaInfoCircle
 } from 'react-icons/fa';
 import reportService from '../services/reportService';
 import staffService from '../services/staffService';
-import { Button, Modal, Notice, Badge, Card, FormField, Stepper } from '../components/ui';
+import { Button, Modal, Notice, Badge, Card, FormField } from '../components/ui';
 
 import HoiSucCapCuuForm from '../components/forms/departments/HoiSucCapCuuForm';
 import ChuanDoanHinhAnhForm from '../components/forms/departments/ChuanDoanHinhAnhForm';
@@ -55,6 +60,18 @@ const formatDateDDMMYYYY = (dateStr) => {
     return `${d.padStart(2, '0')}-${m.padStart(2, '0')}-${y}`;
   }
   return dateStr;
+};
+
+const getVietnameseFullDate = (dateStr) => {
+  if (!dateStr) return '';
+  const dateObj = new Date(dateStr + 'T00:00:00');
+  if (isNaN(dateObj.getTime())) return dateStr;
+  const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+  const dayName = days[dateObj.getDay()];
+  const d = dateObj.getDate();
+  const m = dateObj.getMonth() + 1;
+  const y = dateObj.getFullYear();
+  return `${dayName}, ngày ${d < 10 ? '0' + d : d} tháng ${m < 10 ? '0' + m : m} năm ${y}`;
 };
 
 const DEPARTMENT_FORMS = {
@@ -95,11 +112,104 @@ const extractCleanStaffName = (inputVal, allStaff = []) => {
   return simple || trimmed;
 };
 
+// Confetti Particle Effect Component
+const ConfettiCanvas = () => {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let animationFrameId;
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const colors = ['#2563EB', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4', '#EC4899'];
+    const particles = [];
+    const particleCount = 120;
+
+    for (let i = 0; i < particleCount; i++) {
+      particles.push({
+        x: canvas.width / 2 + (Math.random() - 0.5) * 200,
+        y: canvas.height / 3 + (Math.random() - 0.5) * 100,
+        w: Math.random() * 10 + 6,
+        h: Math.random() * 6 + 4,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        vx: (Math.random() - 0.5) * 14,
+        vy: Math.random() * -12 - 4,
+        gravity: 0.28,
+        rotation: Math.random() * 360,
+        rotationSpeed: (Math.random() - 0.5) * 10,
+        opacity: 1
+      });
+    }
+
+    let startTime = Date.now();
+    const render = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const elapsed = Date.now() - startTime;
+
+      particles.forEach((p) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += p.gravity;
+        p.rotation += p.rotationSpeed;
+        if (elapsed > 2000) {
+          p.opacity = Math.max(0, p.opacity - 0.015);
+        }
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.rotation * Math.PI) / 180);
+        ctx.globalAlpha = p.opacity;
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        ctx.restore();
+      });
+
+      if (elapsed < 4500) {
+        animationFrameId = requestAnimationFrame(render);
+      }
+    };
+
+    render();
+
+    const handleResize = () => {
+      if (!canvas) return;
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        pointerEvents: 'none',
+        zIndex: 9999
+      }}
+    />
+  );
+};
+
 const ReportPage = () => {
   const { user, logout } = useContext(AuthContext);
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submissionTimestamp, setSubmissionTimestamp] = useState('');
   const [submitError, setSubmitError] = useState('');
   const [showConfirm, setShowConfirm] = useState(false);
 
@@ -157,11 +267,10 @@ const ReportPage = () => {
         setLoadingStaff(false);
       }
     };
-
     fetchStaff();
   }, [user?.departmentCode]);
 
-  // Tự động tải lại toàn bộ dữ liệu báo cáo đã nộp của khoa theo ngày được chọn
+  // Kiểm tra và tự động nạp báo cáo cũ của ngày được chọn
   useEffect(() => {
     let isMounted = true;
     const fetchExistingReport = async () => {
@@ -171,147 +280,69 @@ const ReportPage = () => {
         const res = await reportService.getReport(user.departmentCode, headerData.reportDate);
         if (!isMounted) return;
 
-        if (res?.data) {
+        if (res && res.data) {
           const report = res.data;
-          let overtime = report.overtime_staff;
-          if (typeof overtime === 'string') {
-            try { overtime = JSON.parse(overtime); } catch (e) { overtime = []; }
-          }
-
-          // Parse danh sách bác sĩ nếu lưu dạng chuỗi phân cách bởi dấu phẩy
-          let doctors = [''];
-          if (report.doctor_name) {
-            const splitDocs = report.doctor_name.split(',').map(s => s.trim()).filter(Boolean);
-            if (splitDocs.length > 0) {
-              doctors = splitDocs;
+          let parsedData = {};
+          if (report.report_data) {
+            try {
+              parsedData = typeof report.report_data === 'string' ? JSON.parse(report.report_data) : report.report_data;
+            } catch (e) {
+              parsedData = {};
             }
           }
 
-          // Parse danh sách điều dưỡng nếu lưu dạng chuỗi phân cách bởi dấu phẩy
-          let nurses = [''];
-          if (report.nurse_name) {
-            const splitNurses = report.nurse_name.split(',').map(s => s.trim()).filter(Boolean);
-            if (splitNurses.length > 0) {
-              nurses = splitNurses;
+          let parsedOvertime = [];
+          if (report.overtime_staff) {
+            try {
+              parsedOvertime = typeof report.overtime_staff === 'string' ? JSON.parse(report.overtime_staff) : report.overtime_staff;
+            } catch (e) {
+              parsedOvertime = [];
             }
           }
+
+          const rawDocStr = report.doctor_name || '';
+          const loadedDocs = rawDocStr.includes(',') 
+            ? rawDocStr.split(',').map(s => s.trim()).filter(Boolean)
+            : (rawDocStr ? [rawDocStr] : ['']);
+
+          const rawNurseStr = report.nurse_name || '';
+          const loadedNurses = rawNurseStr.includes(',')
+            ? rawNurseStr.split(',').map(s => s.trim()).filter(Boolean)
+            : (rawNurseStr ? [rawNurseStr] : ['']);
 
           setHeaderData(prev => ({
             ...prev,
-            selectedDoctors: doctors,
-            selectedDoctor: doctors[0] || '',
-            selectedNurses: nurses,
-            overtimeStaff: Array.isArray(overtime) ? overtime : [],
+            selectedDoctors: loadedDocs.length > 0 ? loadedDocs : [''],
+            selectedDoctor: loadedDocs[0] || '',
+            selectedNurses: loadedNurses.length > 0 ? loadedNurses : [''],
+            overtimeStaff: Array.isArray(parsedOvertime) ? parsedOvertime : [],
             room: report.room || '',
             shiftTime: report.shift_time || ''
           }));
 
-          const parsedData = typeof report.report_data === 'string' 
-            ? JSON.parse(report.report_data) 
-            : (report.report_data || {});
-          
-          const normalizedTransfers = (report.transferCases || []).map((tc, idx) => ({
-            ...tc,
-            _id: tc._id || tc.id || `tc_${Date.now()}_${idx}`,
-            patientName: tc.patientName || tc.patient_name || '',
-            patient_name: tc.patientName || tc.patient_name || '',
-            age: tc.age || '',
-            address: tc.address || '',
-            admissionTime: tc.admissionTime || tc.admission_time || '',
-            admission_time: tc.admissionTime || tc.admission_time || '',
-            reason: tc.reason || '',
-            clinicalSymptoms: tc.clinicalSymptoms || tc.clinical_symptoms || '',
-            clinical_symptoms: tc.clinicalSymptoms || tc.clinical_symptoms || '',
-            clinicalTests: tc.clinicalTests || tc.clinical_tests || '',
-            clinical_tests: tc.clinicalTests || tc.clinical_tests || '',
-            diagnosis: tc.diagnosis || '',
-            initialTreatment: tc.initialTreatment || tc.initial_treatment || '',
-            initial_treatment: tc.initialTreatment || tc.initial_treatment || '',
-            progressNotes: tc.progressNotes || tc.progress_notes || '',
-            progress_notes: tc.progressNotes || tc.progress_notes || '',
-            images: tc.images || []
-          }));
+          const safeCaseArray = (val) => {
+            if (Array.isArray(val)) return val;
+            if (typeof val === 'string') {
+              try {
+                const p = JSON.parse(val);
+                return Array.isArray(p) ? p : [];
+              } catch {
+                return [];
+              }
+            }
+            return [];
+          };
 
-          const normalizedSurgeries = (report.surgeryCases || []).map((sc, idx) => ({
-            ...sc,
-            _id: sc._id || sc.id || `sc_${Date.now()}_${idx}`,
-            patientName: sc.patientName || sc.patient_name || '',
-            patient_name: sc.patientName || sc.patient_name || '',
-            birthYear: sc.birthYear || sc.birth_year || sc.age || '',
-            birth_year: sc.birthYear || sc.birth_year || sc.age || '',
-            address: sc.address || '',
-            admissionTime: sc.admissionTime || sc.admission_time || '',
-            admission_time: sc.admissionTime || sc.admission_time || '',
-            reason: sc.reason || '',
-            clinicalSymptoms: sc.clinicalSymptoms || sc.clinical_symptoms || '',
-            clinical_symptoms: sc.clinicalSymptoms || sc.clinical_symptoms || '',
-            clinicalTests: sc.clinicalTests || sc.clinical_tests || '',
-            clinical_tests: sc.clinicalTests || sc.clinical_tests || '',
-            preoperativeDiagnosis: sc.preoperativeDiagnosis || sc.preoperative_diagnosis || '',
-            preoperative_diagnosis: sc.preoperativeDiagnosis || sc.preoperative_diagnosis || '',
-            consultationOrder: sc.consultationOrder || sc.consultation_order || '',
-            consultation_order: sc.consultationOrder || sc.consultation_order || '',
-            postoperativeDiagnosis: sc.postoperativeDiagnosis || sc.postoperative_diagnosis || '',
-            postoperative_diagnosis: sc.postoperativeDiagnosis || sc.postoperative_diagnosis || '',
-            currentStatus: sc.currentStatus || sc.current_status || '',
-            current_status: sc.currentStatus || sc.current_status || '',
-            images: sc.images || []
-          }));
-
-          const normalizedDeaths = (report.deathCases || []).map((dc, idx) => ({
-            ...dc,
-            _id: dc._id || dc.id || `dc_${Date.now()}_${idx}`,
-            patientName: dc.patientName || dc.patient_name || '',
-            patient_name: dc.patientName || dc.patient_name || '',
-            age: dc.age || '',
-            address: dc.address || '',
-            admissionTime: dc.admissionTime || dc.admission_time || '',
-            admission_time: dc.admissionTime || dc.admission_time || '',
-            reason: dc.reason || '',
-            admissionStatus: dc.admissionStatus || dc.admission_status || '',
-            admission_status: dc.admissionStatus || dc.admission_status || '',
-            medicalHistory: dc.medicalHistory || dc.medical_history || '',
-            medical_history: dc.medicalHistory || dc.medical_history || '',
-            clinicalSymptoms: dc.clinicalSymptoms || dc.clinical_symptoms || '',
-            clinical_symptoms: dc.clinicalSymptoms || dc.clinical_symptoms || '',
-            clinicalTests: dc.clinicalTests || dc.clinical_tests || '',
-            clinical_tests: dc.clinicalTests || dc.clinical_tests || '',
-            diagnosis: dc.diagnosis || '',
-            emergencyTreatment: dc.emergencyTreatment || dc.emergency_treatment || '',
-            emergency_treatment: dc.emergencyTreatment || dc.emergency_treatment || '',
-            finalOutcome: dc.finalOutcome || dc.final_outcome || '',
-            final_outcome: dc.finalOutcome || dc.final_outcome || '',
-            images: dc.images || []
-          }));
-
-          const normalizedCriticals = (report.criticalCases || []).map((cc, idx) => ({
-            ...cc,
-            _id: cc._id || cc.id || `cc_${Date.now()}_${idx}`,
-            patientName: cc.patientName || cc.patient_name || '',
-            patient_name: cc.patientName || cc.patient_name || '',
-            age: cc.age || '',
-            address: cc.address || '',
-            admissionTime: cc.admissionTime || cc.admission_time || '',
-            admission_time: cc.admissionTime || cc.admission_time || '',
-            medicalHistory: cc.medicalHistory || cc.medical_history || '',
-            medical_history: cc.medicalHistory || cc.medical_history || '',
-            clinicalSymptoms: cc.clinicalSymptoms || cc.clinical_symptoms || '',
-            clinical_symptoms: cc.clinicalSymptoms || cc.clinical_symptoms || '',
-            clinicalTests: cc.clinicalTests || cc.clinical_tests || '',
-            clinical_tests: cc.clinicalTests || cc.clinical_tests || '',
-            diagnosis: cc.diagnosis || '',
-            conditionSummary: cc.conditionSummary || cc.condition_summary || '',
-            condition_summary: cc.conditionSummary || cc.condition_summary || '',
-            treatment: cc.treatment || '',
-            notes: cc.notes !== undefined ? cc.notes : 'Bàn giao tua sau theo dõi tiếp',
-            images: cc.images || []
-          }));
+          const rawTransfers = safeCaseArray(report.transferCases || report.transfer_cases || parsedData.transferCases || parsedData.transfer_cases);
+          const rawSurgeries = safeCaseArray(report.surgeryCases || report.surgery_cases || parsedData.surgeryCases || parsedData.surgery_cases);
+          const rawDeaths = safeCaseArray(report.deathCases || report.death_cases || parsedData.deathCases || parsedData.death_cases);
+          const rawCriticals = safeCaseArray(report.criticalCases || report.critical_cases || parsedData.criticalCases || parsedData.critical_cases);
 
           setFormData(parsedData);
-          setTransferCases(normalizedTransfers);
-          setSurgeryCases(normalizedSurgeries);
-          setDeathCases(normalizedDeaths);
-          setCriticalCases(normalizedCriticals);
+          setTransferCases(rawTransfers);
+          setSurgeryCases(rawSurgeries);
+          setDeathCases(rawDeaths);
+          setCriticalCases(rawCriticals);
           setExistingReportLoaded(true);
           setIsLocked(Boolean(Number(report.is_locked) === 1));
           setLockInfo({ lockedAt: report.locked_at, lockedBy: report.locked_by });
@@ -345,37 +376,6 @@ const ReportPage = () => {
     return () => { isMounted = false; };
   }, [user?.departmentCode, headerData.reportDate]);
 
-  // Tạo danh sách datalist có số thứ tự tự động cho Bác sĩ
-  const doctorOptions = useMemo(() => {
-    const docs = staffList.doctors || [];
-    const others = (staffList.nurses || []).filter(n => !docs.some(d => d.id === n.id));
-    const list = [...docs, ...others];
-    return list.map((s, idx) => ({
-      value: `${idx + 1}. ${s.full_name} - ${s.position || 'Bác sĩ'}${s.certificate ? ` (${s.certificate})` : ''}`,
-      rawName: s.full_name
-    }));
-  }, [staffList]);
-
-  // Tạo danh sách datalist có số thứ tự tự động cho Điều dưỡng
-  const nurseOptions = useMemo(() => {
-    const nurs = staffList.nurses || [];
-    const others = (staffList.doctors || []).filter(d => !nurs.some(n => n.id === d.id));
-    const list = [...nurs, ...others];
-    return list.map((s, idx) => ({
-      value: `${idx + 1}. ${s.full_name} - ${s.position || 'Điều dưỡng'}${s.certificate ? ` (${s.certificate})` : ''}`,
-      rawName: s.full_name
-    }));
-  }, [staffList]);
-
-  // Tạo danh sách datalist toàn bộ nhân sự khoa cho Trực thêm giờ
-  const allStaffOptions = useMemo(() => {
-    const list = staffList.allStaff || [];
-    return list.map((s, idx) => ({
-      value: `${idx + 1}. ${s.full_name} - ${s.position || 'Nhân viên'}${s.certificate ? ` (${s.certificate})` : ''}`,
-      rawName: s.full_name
-    }));
-  }, [staffList]);
-
   // Tính toán tên bác sĩ và điều dưỡng thực tế (chuẩn hóa tên sạch)
   const cleanDoctorNames = (headerData.selectedDoctors || [headerData.selectedDoctor || ''])
     .map(d => extractCleanStaffName(d, staffList.allStaff))
@@ -391,6 +391,7 @@ const ReportPage = () => {
   const handleNext = () => {
     if (cleanDoctorNames.length > 0) {
       setStep(2);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -501,8 +502,12 @@ const ReportPage = () => {
         deathCases: deathCases,
         criticalCases: criticalCases
       });
+      const now = new Date();
+      const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')} - ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`;
+      setSubmissionTimestamp(timeStr);
       setSubmitted(true);
       setShowConfirm(false);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
       setSubmitError(err.response?.data?.error || 'Gửi báo cáo thất bại. Vui lòng thử lại.');
     } finally {
@@ -512,26 +517,160 @@ const ReportPage = () => {
 
   const FormComponent = DEPARTMENT_FORMS[user?.departmentCode];
 
+  // ==========================================
+  // SUCCESS SCREEN (NỘP BÁO CÁO THÀNH CÔNG)
+  // ==========================================
   if (submitted) {
     return (
-      <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
-        <div className="card animate-fade-in" style={{ maxWidth: '620px', margin: '3.5rem auto', textAlign: 'center', padding: '3rem 2.5rem', borderRadius: '16px', boxShadow: '0 12px 36px rgba(0, 0, 0, 0.08)', backgroundColor: '#FFFFFF', border: '1px solid #E2E8F0' }}>
-          <FaCheckCircle style={{ fontSize: '4.2rem', color: 'var(--brand-green)', marginBottom: '1.25rem' }} />
-          <h2 style={{ marginBottom: '0.85rem', color: 'var(--brand-green)', fontSize: '1.75rem', fontWeight: '800' }}>Gửi Báo Cáo Thành Công!</h2>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '2.25rem', fontSize: '1.05rem', lineHeight: '1.6' }}>
-            Báo cáo giao ban ngày <strong>{formatDateDDMMYYYY(headerData.reportDate)}</strong> của khoa <strong>{user?.departmentName}</strong> đã được ghi nhận vào hệ thống.
+      <div style={{ padding: '2.5rem 1rem 4rem', maxWidth: '900px', margin: '0 auto', minHeight: '90vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+        <ConfettiCanvas />
+
+        <div className="animate-fade-in" style={{
+          width: '100%',
+          textAlign: 'center',
+          padding: '3rem 2.5rem',
+          borderRadius: '24px',
+          boxShadow: '0 20px 60px rgba(15, 44, 89, 0.12)',
+          backgroundColor: '#FFFFFF',
+          border: '1px solid #E2E8F0',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          {/* Top Decorative Gradient Bar */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '8px',
+            background: 'linear-gradient(90deg, #10B981, #06B6D4, #3B82F6, #10B981)'
+          }} />
+
+          {/* Animated SVG Checkmark Icon */}
+          <div style={{
+            width: '100px',
+            height: '100px',
+            borderRadius: '50%',
+            backgroundColor: '#DCFCE7',
+            color: '#16A34A',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '3.2rem',
+            margin: '0 auto 1.5rem',
+            boxShadow: '0 8px 30px rgba(22, 163, 74, 0.25)',
+            border: '3px solid #86EFAC',
+            animation: 'pulse 2s infinite'
+          }}>
+            <FaCheck />
+          </div>
+
+          <span style={{
+            backgroundColor: '#DCFCE7',
+            color: '#15803D',
+            padding: '0.35rem 1.1rem',
+            borderRadius: '30px',
+            fontWeight: '800',
+            fontSize: '0.85rem',
+            letterSpacing: '0.5px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.4rem',
+            marginBottom: '0.75rem'
+          }}>
+            <FaCheckCircle /> ĐÃ LƯU TRỮ VÀO HỆ THỐNG GIAO BAN TOÀN VIỆN
+          </span>
+
+          <h1 style={{
+            margin: '0 0 0.5rem 0',
+            color: '#0F2C59',
+            fontSize: '2rem',
+            fontWeight: '900',
+            letterSpacing: '-0.5px'
+          }}>
+            Nộp Báo Cáo Ca Trực Thành Công!
+          </h1>
+          <p style={{ color: '#64748B', marginBottom: '2rem', fontSize: '1.05rem', lineHeight: '1.6' }}>
+            Số liệu chuyên môn ca trực của khoa <strong style={{ color: '#1E40AF' }}>{user?.departmentName}</strong> đã được đồng bộ vào hệ thống cơ sở dữ liệu và sẵn sàng trình chiếu phục vụ Ban Giám Đốc.
           </p>
-          <div style={{ display: 'flex', gap: '0.85rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+
+          {/* Digital Receipt Card (Biên nhận điện tử) */}
+          <div style={{
+            backgroundColor: '#F8FAFC',
+            borderRadius: '16px',
+            border: '1.5px solid #E2E8F0',
+            padding: '1.5rem',
+            marginBottom: '2.5rem',
+            textAlign: 'left'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              borderBottom: '1px solid #E2E8F0',
+              paddingBottom: '0.85rem',
+              marginBottom: '1rem'
+            }}>
+              <div style={{ fontWeight: '800', color: '#0F2C59', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <FaShieldAlt style={{ color: '#2563EB' }} /> BIÊN NHẬN BÁO CÁO ĐIỆN TỬ
+              </div>
+              <div style={{ fontSize: '0.8rem', color: '#64748B' }}>
+                ⏰ {submissionTimestamp || 'Vừa xong'}
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem', fontSize: '0.9rem' }}>
+              <div>
+                <span style={{ color: '#64748B', display: 'block', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: '700' }}>Khoa / Phòng:</span>
+                <strong style={{ color: '#0F2C59', fontSize: '0.95rem' }}>{user?.departmentName}</strong>
+              </div>
+              <div>
+                <span style={{ color: '#64748B', display: 'block', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: '700' }}>Ngày Trực Giao Ban:</span>
+                <strong style={{ color: '#2563EB', fontSize: '0.95rem' }}>{formatDateDDMMYYYY(headerData.reportDate)}</strong>
+              </div>
+              <div>
+                <span style={{ color: '#64748B', display: 'block', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: '700' }}>Bác Sĩ Trực Ca:</span>
+                <strong style={{ color: '#1E40AF' }}>{finalDoctorNameStr || cleanDoctorName || '—'}</strong>
+              </div>
+              <div>
+                <span style={{ color: '#64748B', display: 'block', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: '700' }}>Điều Dưỡng Trực:</span>
+                <strong style={{ color: '#065F46' }}>{finalNurseNameStr || '—'}</strong>
+              </div>
+            </div>
+
+            <div style={{ marginTop: '1rem', paddingTop: '0.85rem', borderTop: '1px dashed #CBD5E1', display: 'flex', gap: '1.25rem', flexWrap: 'wrap', fontSize: '0.86rem' }}>
+              <span style={{ color: '#92400E', fontWeight: '700' }}>🚑 Chuyển viện: <strong>{transferCases.length}</strong> ca</span>
+              <span style={{ color: '#0369A1', fontWeight: '700' }}>🔬 Phẫu thuật: <strong>{surgeryCases.length}</strong> ca</span>
+              <span style={{ color: '#991B1B', fontWeight: '700' }}>🏥 Tử vong: <strong>{deathCases.length}</strong> ca</span>
+              <span style={{ color: '#5B21B6', fontWeight: '700' }}>🩺 Nặng theo dõi: <strong>{criticalCases.length}</strong> ca</span>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
             <button 
               type="button"
-              className="btn"
               onClick={() => setShowPdfModal(true)}
-              style={{ backgroundColor: '#0284C7', color: '#FFFFFF', border: 'none', padding: '0.75rem 1.4rem', fontSize: '0.95rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.5rem', borderRadius: '8px', cursor: 'pointer' }}
+              style={{
+                backgroundColor: '#0284C7',
+                color: '#FFFFFF',
+                border: 'none',
+                padding: '0.85rem 1.65rem',
+                fontSize: '1rem',
+                fontWeight: '800',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.6rem',
+                borderRadius: '12px',
+                cursor: 'pointer',
+                boxShadow: '0 4px 16px rgba(2, 132, 199, 0.35)',
+                transition: 'all 0.2s'
+              }}
             >
-              <FaFilePdf style={{ fontSize: '1.15rem' }} /> 📄 Xuất File PDF
+              <FaFilePdf style={{ fontSize: '1.2rem' }} /> XUẤT FILE PDF BÁO CÁO
             </button>
             <button 
-              className="btn btn-primary" 
+              type="button"
               onClick={() => { 
                 setSubmitted(false); 
                 setStep(1); 
@@ -550,10 +689,42 @@ const ReportPage = () => {
                   shiftTime: ''
                 }); 
               }}
+              style={{
+                backgroundColor: '#2563EB',
+                color: '#FFFFFF',
+                border: 'none',
+                padding: '0.85rem 1.65rem',
+                fontSize: '1rem',
+                fontWeight: '800',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.6rem',
+                borderRadius: '12px',
+                cursor: 'pointer',
+                boxShadow: '0 4px 16px rgba(37, 99, 235, 0.3)',
+                transition: 'all 0.2s'
+              }}
             >
-              Tạo báo cáo mới
+              <FaPlus /> TẠO BÁO CÁO MỚI
             </button>
-            <button className="btn btn-secondary" onClick={logout}>
+            <button 
+              type="button"
+              onClick={logout} 
+              style={{
+                backgroundColor: '#FFFFFF',
+                color: '#DC2626',
+                border: '1.5px solid #FECACA',
+                padding: '0.85rem 1.5rem',
+                fontSize: '1rem',
+                fontWeight: '800',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                borderRadius: '12px',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
               <FaSignOutAlt /> Đăng xuất
             </button>
           </div>
@@ -582,10 +753,13 @@ const ReportPage = () => {
     );
   }
 
+  // ==========================================
+  // MAIN FORM INTERFACE
+  // ==========================================
   return (
     <div className="report-page-wrapper app-page" style={{ maxWidth: '1200px', margin: '0 auto', padding: '1.25rem 1rem 4rem' }}>
       
-      {/* 1. Brand Header Navbar (Synchronized with Admin Header) */}
+      {/* 1. Header Navbar */}
       <header style={{
         backgroundColor: '#FFFFFF',
         borderRadius: '16px',
@@ -605,8 +779,8 @@ const ReportPage = () => {
             src="/logo.png" 
             alt="Logo TTYT Bình Long" 
             style={{ 
-              width: '46px', 
-              height: '46px', 
+              width: '48px', 
+              height: '48px', 
               borderRadius: '50%',
               boxShadow: '0 2px 8px rgba(15, 44, 89, 0.15)',
               flexShrink: 0
@@ -614,7 +788,7 @@ const ReportPage = () => {
           />
           <div>
             <h1 style={{
-              fontSize: '1.05rem',
+              fontSize: '1.1rem',
               fontWeight: '900',
               color: '#0F2C59',
               margin: 0,
@@ -625,32 +799,33 @@ const ReportPage = () => {
               TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG
             </h1>
             <p style={{
-              fontSize: '0.8rem',
+              fontSize: '0.82rem',
               color: '#64748B',
               margin: '2px 0 0 0',
-              fontWeight: '500'
+              fontWeight: '600'
             }}>
               Hệ Thống Báo Cáo Giao Ban Ca Trực Khoa Phòng
             </p>
           </div>
         </div>
 
-        {/* Right Side: Department Badge & Action Buttons */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+        {/* Right Side: Department Badge & Logout Button */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           {/* Department Name Badge */}
           <div style={{
             backgroundColor: '#EFF6FF',
-            border: '1px solid #BFDBFE',
+            border: '1.5px solid #BFDBFE',
             color: '#1E40AF',
-            padding: '0.45rem 0.9rem',
-            borderRadius: '10px',
+            padding: '0.5rem 1rem',
+            borderRadius: '12px',
             fontWeight: '800',
-            fontSize: '0.88rem',
+            fontSize: '0.92rem',
             display: 'flex',
             alignItems: 'center',
-            gap: '0.45rem'
+            gap: '0.5rem',
+            boxShadow: '0 2px 6px rgba(37, 99, 235, 0.08)'
           }}>
-            <FaHospital /> {user?.departmentName || 'Khoa Phòng'}
+            <FaHospital style={{ color: '#2563EB', fontSize: '1.05rem' }} /> {user?.departmentName || 'Khoa Phòng'}
           </div>
 
           {/* Logout Button */}
@@ -660,15 +835,15 @@ const ReportPage = () => {
             style={{
               backgroundColor: '#FFFFFF',
               color: '#DC2626',
-              border: '1px solid #FECACA',
-              borderRadius: '8px',
-              padding: '0.45rem 0.85rem',
+              border: '1.5px solid #FECACA',
+              borderRadius: '10px',
+              padding: '0.5rem 0.95rem',
               fontWeight: '700',
-              fontSize: '0.82rem',
+              fontSize: '0.85rem',
               cursor: 'pointer',
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '0.35rem',
+              gap: '0.4rem',
               transition: 'all 0.2s'
             }}
           >
@@ -683,8 +858,8 @@ const ReportPage = () => {
           backgroundColor: '#FEF3C7',
           border: '1.5px solid #F59E0B',
           borderLeft: '6px solid #D97706',
-          borderRadius: '12px',
-          padding: '0.9rem 1.25rem',
+          borderRadius: '14px',
+          padding: '1rem 1.35rem',
           marginBottom: '1.5rem',
           display: 'flex',
           alignItems: 'center',
@@ -694,12 +869,12 @@ const ReportPage = () => {
           flexWrap: 'wrap'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-            <span style={{ fontSize: '1.8rem', lineHeight: 1 }}>🔒</span>
+            <span style={{ fontSize: '2rem', lineHeight: 1 }}>🔒</span>
             <div>
-              <h4 style={{ margin: 0, color: '#92400E', fontSize: '0.96rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
+              <h4 style={{ margin: 0, color: '#92400E', fontSize: '1rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
                 Báo Cáo Đã Khóa Sổ Giao Ban (Chế độ xem chỉ đọc)
               </h4>
-              <p style={{ margin: '0.2rem 0 0 0', color: '#B45309', fontSize: '0.84rem', lineHeight: 1.4 }}>
+              <p style={{ margin: '0.2rem 0 0 0', color: '#B45309', fontSize: '0.86rem', lineHeight: 1.4 }}>
                 Báo cáo ngày <strong>{formatDateDDMMYYYY(headerData.reportDate)}</strong> đã khóa sổ (sau 08:30 sáng hoặc do Ban Giám Đốc/Admin khóa). Mọi số liệu được bảo lưu pháp lý. Nếu cần chỉnh sửa, vui lòng liên hệ <strong>Phòng Kế Hoạch Nghiệp Vụ (Admin)</strong> để mở khóa.
               </p>
             </div>
@@ -711,12 +886,12 @@ const ReportPage = () => {
               backgroundColor: '#0284C7',
               color: '#FFFFFF',
               border: 'none',
-              padding: '0.5rem 1.1rem',
-              fontSize: '0.85rem',
+              padding: '0.55rem 1.2rem',
+              fontSize: '0.88rem',
               fontWeight: '700',
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '0.4rem',
+              gap: '0.45rem',
               borderRadius: '8px',
               cursor: 'pointer',
               whiteSpace: 'nowrap',
@@ -729,58 +904,66 @@ const ReportPage = () => {
         </div>
       )}
 
-      {/* 3. Modern Stepper Workflow Tabs */}
+      {/* 3. Modern Connected Stepper Progress Bar */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: '1.5rem',
+        marginBottom: '1.75rem',
         flexWrap: 'wrap',
         gap: '0.85rem'
       }}>
-        {/* Step Tabs */}
+        {/* Step Navigation Bar */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
           backgroundColor: '#FFFFFF',
-          padding: '0.35rem',
-          borderRadius: '14px',
-          border: '1px solid #E2E8F0',
+          padding: '0.4rem',
+          borderRadius: '16px',
+          border: '1.5px solid #E2E8F0',
           boxShadow: '0 2px 8px rgba(15, 44, 89, 0.04)',
-          gap: '0.35rem'
+          gap: '0.4rem'
         }}>
-          {/* Step 1 Button */}
+          {/* Step 1 Pill */}
           <button
             type="button"
             onClick={() => setStep(1)}
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.55rem',
-              padding: '0.55rem 1.15rem',
-              borderRadius: '10px',
+              gap: '0.6rem',
+              padding: '0.65rem 1.35rem',
+              borderRadius: '12px',
               border: 'none',
               cursor: 'pointer',
               fontWeight: '800',
-              fontSize: '0.86rem',
+              fontSize: '0.9rem',
               transition: 'all 0.2s',
               background: step === 1 
                 ? 'linear-gradient(135deg, #2563EB, #1D4ED8)' 
                 : '#FFFFFF',
-              color: step === 1 ? '#FFFFFF' : '#64748B',
-              boxShadow: step === 1 ? '0 3px 10px rgba(37, 99, 235, 0.25)' : 'none'
+              color: step === 1 ? '#FFFFFF' : '#475569',
+              boxShadow: step === 1 ? '0 4px 14px rgba(37, 99, 235, 0.3)' : 'none'
             }}
           >
-            <FaUserMd style={{ fontSize: '1rem' }} />
-            <span>1. Hành Chính Ca Trực</span>
-            {step > 1 && (
-              <span style={{ backgroundColor: 'rgba(22, 163, 74, 0.2)', color: '#15803D', padding: '0.1rem 0.4rem', borderRadius: '10px', fontSize: '0.72rem' }}>
-                ✓
-              </span>
-            )}
+            <span style={{
+              width: '24px',
+              height: '24px',
+              borderRadius: '50%',
+              backgroundColor: step === 1 ? '#FFFFFF' : '#EFF6FF',
+              color: step === 1 ? '#2563EB' : '#1E40AF',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '0.78rem',
+              fontWeight: '900'
+            }}>
+              {step > 1 ? '✓' : '1'}
+            </span>
+            <span>1. Thông Tin Hành Chính Ca Trực</span>
           </button>
 
-          {/* Step 2 Button */}
+          {/* Step 2 Pill */}
           <button
             type="button"
             onClick={() => { if (cleanDoctorName) setStep(2); }}
@@ -788,101 +971,130 @@ const ReportPage = () => {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.55rem',
-              padding: '0.55rem 1.15rem',
-              borderRadius: '10px',
+              gap: '0.6rem',
+              padding: '0.65rem 1.35rem',
+              borderRadius: '12px',
               border: 'none',
               cursor: cleanDoctorName ? 'pointer' : 'not-allowed',
               fontWeight: '800',
-              fontSize: '0.86rem',
+              fontSize: '0.9rem',
               transition: 'all 0.2s',
               background: step === 2 
                 ? 'linear-gradient(135deg, #2563EB, #1D4ED8)' 
                 : '#FFFFFF',
-              color: step === 2 ? '#FFFFFF' : (cleanDoctorName ? '#64748B' : '#CBD5E1'),
-              boxShadow: step === 2 ? '0 3px 10px rgba(37, 99, 235, 0.25)' : 'none'
+              color: step === 2 ? '#FFFFFF' : (cleanDoctorName ? '#475569' : '#94A3B8'),
+              boxShadow: step === 2 ? '0 4px 14px rgba(37, 99, 235, 0.3)' : 'none'
             }}
           >
-            <FaNotesMedical style={{ fontSize: '1rem' }} />
-            <span>2. Số Liệu & Ca Bệnh</span>
+            <span style={{
+              width: '24px',
+              height: '24px',
+              borderRadius: '50%',
+              backgroundColor: step === 2 ? '#FFFFFF' : (cleanDoctorName ? '#EFF6FF' : '#F1F5F9'),
+              color: step === 2 ? '#2563EB' : (cleanDoctorName ? '#1E40AF' : '#94A3B8'),
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '0.78rem',
+              fontWeight: '900'
+            }}>
+              2
+            </span>
+            <span>2. Số Liệu Chuyên Môn & Ca Bệnh</span>
           </button>
         </div>
 
         {/* Status Indicators */}
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
           {isLocked && (
-            <span style={{ backgroundColor: '#FEF3C7', color: '#92400E', border: '1px solid #FDE68A', padding: '0.3rem 0.75rem', borderRadius: '20px', fontWeight: '800', fontSize: '0.78rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+            <span style={{ backgroundColor: '#FEF3C7', color: '#92400E', border: '1px solid #FDE68A', padding: '0.35rem 0.85rem', borderRadius: '20px', fontWeight: '800', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
               🔒 Đã Khóa Sổ
             </span>
           )}
           <span style={{
             backgroundColor: existingReportLoaded ? '#EFF6FF' : '#FFFBEB',
             color: existingReportLoaded ? '#1E40AF' : '#B45309',
-            border: `1px solid ${existingReportLoaded ? '#BFDBFE' : '#FDE68A'}`,
-            padding: '0.3rem 0.75rem',
+            border: `1.5px solid ${existingReportLoaded ? '#BFDBFE' : '#FDE68A'}`,
+            padding: '0.35rem 0.85rem',
             borderRadius: '20px',
-            fontWeight: '700',
-            fontSize: '0.78rem',
+            fontWeight: '800',
+            fontSize: '0.8rem',
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '0.35rem'
+            gap: '0.4rem'
           }}>
-            <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: existingReportLoaded ? '#2563EB' : '#F59E0B' }} />
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: existingReportLoaded ? '#2563EB' : '#F59E0B' }} />
             {existingReportLoaded ? 'Đã có báo cáo' : 'Bản nháp chưa gửi'}
           </span>
         </div>
       </div>
 
-      {/* 4. STEP 1: HÀNH CHÍNH CA TRỰC */}
+      {/* ======================================================== */}
+      {/* 4. STEP 1: HÀNH CHÍNH CA TRỰC (THIẾT KẾ RÕ RÀNG, HIỆN ĐẠI) */}
+      {/* ======================================================== */}
       {step === 1 ? (
         <div className="animate-fade-in" style={{
-          maxWidth: '720px',
+          maxWidth: '780px',
           margin: '0 auto',
           backgroundColor: '#FFFFFF',
-          borderRadius: '16px',
-          border: '1px solid #E2E8F0',
-          padding: '1.75rem 2rem',
-          boxShadow: '0 4px 20px rgba(15, 44, 89, 0.04)'
+          borderRadius: '20px',
+          border: '1.5px solid #E2E8F0',
+          padding: '2rem 2.25rem',
+          boxShadow: '0 6px 24px rgba(15, 44, 89, 0.05)'
         }}>
           {/* Card Header */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            marginBottom: '1.5rem',
+            marginBottom: '1.75rem',
             borderBottom: '2px solid #EFF6FF',
-            paddingBottom: '0.85rem'
+            paddingBottom: '1rem'
           }}>
-            <h2 style={{
-              fontSize: '1.2rem',
-              fontWeight: '900',
-              color: '#0F2C59',
-              margin: 0,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
+            <div>
+              <h2 style={{
+                fontSize: '1.3rem',
+                fontWeight: '900',
+                color: '#0F2C59',
+                margin: 0,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.6rem'
+              }}>
+                <FaUserMd style={{ color: '#2563EB' }} />
+                Thông Tin Hành Chính Ca Trực
+              </h2>
+              <p style={{ margin: '4px 0 0 0', color: '#64748B', fontSize: '0.85rem' }}>
+                Chọn ngày trực, thành phần Bác sĩ và Điều dưỡng để tiến hành nộp báo cáo
+              </p>
+            </div>
+            <span style={{
+              backgroundColor: '#EFF6FF',
+              color: '#1E40AF',
+              border: '1px solid #BFDBFE',
+              padding: '0.3rem 0.75rem',
+              borderRadius: '20px',
+              fontSize: '0.78rem',
+              fontWeight: '800'
             }}>
-              <FaUserMd style={{ color: '#2563EB' }} />
-              Thông Tin Hành Chính Ca Trực
-            </h2>
-            <span style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: '600' }}>
               Bước 1 / 2
             </span>
           </div>
           
-          {/* Notice: Status of current selected date */}
-          <div style={{ marginBottom: '1.5rem' }}>
+          {/* Status Notice of Selected Date */}
+          <div style={{ marginBottom: '1.75rem' }}>
             {loadingExistingReport ? (
               <div style={{
                 backgroundColor: '#EFF6FF',
-                border: '1px solid #BFDBFE',
-                borderRadius: '10px',
-                padding: '0.85rem 1.15rem',
+                border: '1.5px solid #BFDBFE',
+                borderRadius: '12px',
+                padding: '1rem 1.25rem',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.75rem',
+                gap: '0.85rem',
                 color: '#1E40AF',
-                fontSize: '0.88rem'
+                fontSize: '0.9rem',
+                fontWeight: '600'
               }}>
                 <FaSpinner className="spinner" />
                 <span>Đang kiểm tra dữ liệu ngày <strong>{formatDateDDMMYYYY(headerData.reportDate)}</strong>...</span>
@@ -891,18 +1103,18 @@ const ReportPage = () => {
               <div style={{
                 backgroundColor: '#F0FDF4',
                 border: '1.5px solid #BBF7D0',
-                borderRadius: '12px',
-                padding: '0.95rem 1.25rem',
+                borderRadius: '14px',
+                padding: '1rem 1.25rem',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '0.65rem'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#166534', fontWeight: '700', fontSize: '0.9rem' }}>
-                  <FaCheckCircle style={{ color: '#16A34A', fontSize: '1.1rem' }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#166534', fontWeight: '800', fontSize: '0.95rem' }}>
+                  <FaCheckCircle style={{ color: '#16A34A', fontSize: '1.2rem' }} />
                   <span>Đã nạp dữ liệu báo cáo ngày {formatDateDDMMYYYY(headerData.reportDate)}</span>
                 </div>
-                <p style={{ margin: 0, color: '#15803D', fontSize: '0.84rem', lineHeight: '1.5' }}>
-                  Toàn bộ thông tin ca trực và số liệu chuyên môn đã nộp trước đó đã được tải sẵn. Bạn có thể tiếp tục chỉnh sửa hoặc nộp bổ sung.
+                <p style={{ margin: 0, color: '#15803D', fontSize: '0.86rem', lineHeight: '1.5' }}>
+                  Toàn bộ thông tin ca trực và số liệu chuyên môn đã nộp trước đó đã được tải sẵn. Bạn có thể tiếp tục chỉnh sửa hoặc bấm <strong>"Tiếp tục nhập số liệu chuyên môn"</strong> để xem lại.
                 </p>
                 <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '0.25rem' }}>
                   <button
@@ -912,13 +1124,13 @@ const ReportPage = () => {
                       backgroundColor: '#0284C7',
                       color: '#FFFFFF',
                       border: 'none',
-                      padding: '0.45rem 0.95rem',
-                      fontSize: '0.82rem',
+                      padding: '0.5rem 1rem',
+                      fontSize: '0.84rem',
                       fontWeight: '700',
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: '0.4rem',
-                      borderRadius: '7px',
+                      borderRadius: '8px',
                       cursor: 'pointer',
                       boxShadow: '0 2px 6px rgba(2, 132, 199, 0.25)'
                     }}
@@ -930,49 +1142,77 @@ const ReportPage = () => {
             ) : (
               <div style={{
                 backgroundColor: '#EFF6FF',
-                border: '1px solid #BFDBFE',
-                borderRadius: '10px',
-                padding: '0.85rem 1.15rem',
+                border: '1.5px solid #BFDBFE',
+                borderRadius: '12px',
+                padding: '1rem 1.25rem',
                 color: '#1E40AF',
-                fontSize: '0.86rem',
+                fontSize: '0.88rem',
                 lineHeight: '1.5'
               }}>
-                💡 <strong>Ngày {formatDateDDMMYYYY(headerData.reportDate)} chưa có báo cáo:</strong> Vui lòng chọn Bác sĩ, Điều dưỡng trực và bấm <em>"Tiếp tục nhập số liệu chuyên môn"</em> để hoàn tất nộp giao ban.
+                💡 <strong>Ngày {formatDateDDMMYYYY(headerData.reportDate)} chưa có báo cáo:</strong> Vui lòng chọn Bác sĩ, Điều dưỡng trực bên dưới và bấm <em>"Tiếp tục nhập số liệu chuyên môn ➔"</em> để nộp số liệu giao ban.
               </div>
             )}
           </div>
 
-          {/* Form Fields */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.35rem', marginBottom: '2rem' }}>
+          {/* Form Fields Cards */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '2rem' }}>
             
-            {/* 1. Ngày báo cáo */}
-            <div className="form-group">
-              <label style={{ fontWeight: '700', color: '#1E293B', fontSize: '0.88rem', marginBottom: '0.35rem', display: 'block' }}>
-                Ngày báo cáo <span style={{ color: '#DC2626' }}>*</span> <span style={{ fontWeight: 'normal', color: '#64748B', fontSize: '0.8rem' }}>(Chọn đúng ngày trực giao ban)</span>
+            {/* 1. Ngày báo cáo Card */}
+            <div style={{
+              backgroundColor: '#F8FAFC',
+              borderRadius: '14px',
+              border: '1.5px solid #E2E8F0',
+              borderLeft: '5px solid #2563EB',
+              padding: '1.25rem'
+            }}>
+              <label style={{ fontWeight: '800', color: '#0F2C59', fontSize: '0.92rem', marginBottom: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                <FaCalendarAlt style={{ color: '#2563EB' }} /> Ngày Trực Giao Ban <span style={{ color: '#DC2626' }}>*</span>
               </label>
-              <div style={{ position: 'relative' }}>
-                <FaCalendarAlt style={{ position: 'absolute', top: '50%', left: '1rem', transform: 'translateY(-50%)', color: '#2563EB', zIndex: 1 }} />
-                <input 
-                  type="date" 
-                  value={headerData.reportDate}
-                  onChange={(e) => setHeaderData({...headerData, reportDate: e.target.value})}
-                  style={{
-                    paddingLeft: '2.8rem',
-                    height: '46px',
-                    borderRadius: '10px',
-                    border: '1.5px solid #CBD5E1',
-                    fontWeight: '600',
-                    fontSize: '0.95rem'
-                  }}
-                />
+              <div style={{ display: 'flex', gap: '0.85rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ position: 'relative', minWidth: '220px', flex: 1 }}>
+                  <input 
+                    type="date" 
+                    value={headerData.reportDate}
+                    onChange={(e) => setHeaderData({...headerData, reportDate: e.target.value})}
+                    style={{
+                      height: '46px',
+                      borderRadius: '10px',
+                      border: '1.5px solid #CBD5E1',
+                      fontWeight: '700',
+                      fontSize: '0.95rem',
+                      padding: '0.5rem 0.85rem'
+                    }}
+                  />
+                </div>
+                <div style={{
+                  backgroundColor: '#EFF6FF',
+                  border: '1px solid #BFDBFE',
+                  color: '#1E40AF',
+                  padding: '0.65rem 1rem',
+                  borderRadius: '10px',
+                  fontWeight: '700',
+                  fontSize: '0.88rem',
+                  flex: 2,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem'
+                }}>
+                  📅 <span>{getVietnameseFullDate(headerData.reportDate)}</span>
+                </div>
               </div>
             </div>
 
-            {/* 2. Bác sĩ trực ca */}
-            <div className="form-group">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.45rem' }}>
-                <label style={{ margin: 0, fontWeight: '700', fontSize: '0.88rem', color: '#1E293B', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  <FaUserMd style={{ color: '#2563EB' }} /> Bác sĩ trực ca ({cleanDoctorNames.length || 0}) <span style={{ color: '#DC2626' }}>*</span>
+            {/* 2. Bác sĩ trực ca Card */}
+            <div style={{
+              backgroundColor: '#F8FAFC',
+              borderRadius: '14px',
+              border: '1.5px solid #E2E8F0',
+              borderLeft: '5px solid #2563EB',
+              padding: '1.25rem'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                <label style={{ margin: 0, fontWeight: '800', fontSize: '0.92rem', color: '#0F2C59', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                  <FaUserMd style={{ color: '#2563EB' }} /> Bác Sĩ Trực Ca ({cleanDoctorNames.length || 0}) <span style={{ color: '#DC2626' }}>*</span>
                 </label>
                 <button
                   type="button"
@@ -980,24 +1220,41 @@ const ReportPage = () => {
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '0.35rem',
-                    fontSize: '0.8rem',
-                    padding: '0.3rem 0.75rem',
+                    gap: '0.4rem',
+                    fontSize: '0.82rem',
+                    padding: '0.35rem 0.85rem',
                     border: '1px solid #BFDBFE',
-                    borderRadius: '7px',
+                    borderRadius: '8px',
                     color: '#1E40AF',
                     backgroundColor: '#EFF6FF',
-                    fontWeight: '700',
-                    cursor: 'pointer'
+                    fontWeight: '800',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
                   }}
                 >
                   <FaPlus /> Thêm Bác sĩ
                 </button>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {(headerData.selectedDoctors || ['']).map((docVal, idx) => (
-                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                    <div style={{
+                      width: '42px',
+                      height: '42px',
+                      borderRadius: '8px',
+                      backgroundColor: '#EFF6FF',
+                      border: '1px solid #BFDBFE',
+                      color: '#1E40AF',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.82rem',
+                      fontWeight: '900',
+                      flexShrink: 0
+                    }}>
+                      BS {idx + 1}
+                    </div>
                     <div style={{ flex: 1 }}>
                       <StaffSelectCombobox
                         placeholder={idx === 0 ? "Gõ số (1, 2...) hoặc tên Bác sĩ trực chính..." : `Gõ số hoặc tên Bác sĩ ${idx + 1}...`}
@@ -1015,8 +1272,8 @@ const ReportPage = () => {
                         type="button"
                         onClick={() => handleRemoveDoctor(idx)}
                         style={{
-                          padding: '0.45rem 0.65rem',
-                          height: '44px',
+                          padding: '0.45rem 0.75rem',
+                          height: '42px',
                           borderRadius: '8px',
                           border: '1px solid #FECACA',
                           backgroundColor: '#FFF5F5',
@@ -1032,16 +1289,22 @@ const ReportPage = () => {
                   </div>
                 ))}
               </div>
-              <small style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '4px', display: 'block' }}>
+              <small style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '6px', display: 'block' }}>
                 💡 Gợi ý: Bấm nút <strong>"+ Thêm Bác sĩ"</strong> nếu ca trực có từ 2 Bác sĩ trở lên.
               </small>
             </div>
 
-            {/* 3. Điều dưỡng trực ca */}
-            <div className="form-group">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.45rem' }}>
-                <label style={{ margin: 0, fontWeight: '700', fontSize: '0.88rem', color: '#1E293B', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  <FaUserNurse style={{ color: '#059669' }} /> Điều dưỡng trực ca ({(headerData.selectedNurses || []).length || 0})
+            {/* 3. Điều dưỡng trực ca Card */}
+            <div style={{
+              backgroundColor: '#F8FAFC',
+              borderRadius: '14px',
+              border: '1.5px solid #E2E8F0',
+              borderLeft: '5px solid #059669',
+              padding: '1.25rem'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                <label style={{ margin: 0, fontWeight: '800', fontSize: '0.92rem', color: '#0F2C59', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                  <FaUserNurse style={{ color: '#059669' }} /> Điều Dưỡng Trực Ca ({(headerData.selectedNurses || []).length || 0})
                 </label>
                 <button
                   type="button"
@@ -1049,24 +1312,41 @@ const ReportPage = () => {
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '0.35rem',
-                    fontSize: '0.8rem',
-                    padding: '0.3rem 0.75rem',
+                    gap: '0.4rem',
+                    fontSize: '0.82rem',
+                    padding: '0.35rem 0.85rem',
                     border: '1px solid #BBF7D0',
-                    borderRadius: '7px',
+                    borderRadius: '8px',
                     color: '#166534',
                     backgroundColor: '#F0FDF4',
-                    fontWeight: '700',
-                    cursor: 'pointer'
+                    fontWeight: '800',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
                   }}
                 >
                   <FaPlus /> Thêm điều dưỡng
                 </button>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {(headerData.selectedNurses || ['']).map((nurseVal, idx) => (
-                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                    <div style={{
+                      width: '42px',
+                      height: '42px',
+                      borderRadius: '8px',
+                      backgroundColor: '#F0FDF4',
+                      border: '1px solid #BBF7D0',
+                      color: '#166534',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.82rem',
+                      fontWeight: '900',
+                      flexShrink: 0
+                    }}>
+                      ĐD {idx + 1}
+                    </div>
                     <div style={{ flex: 1 }}>
                       <StaffSelectCombobox
                         placeholder={idx === 0 ? "Gõ số (1, 2...) hoặc tên Điều dưỡng 1..." : `Gõ số hoặc tên Điều dưỡng ${idx + 1}...`}
@@ -1084,8 +1364,8 @@ const ReportPage = () => {
                         type="button"
                         onClick={() => handleRemoveNurse(idx)}
                         style={{
-                          padding: '0.45rem 0.65rem',
-                          height: '44px',
+                          padding: '0.45rem 0.75rem',
+                          height: '42px',
                           borderRadius: '8px',
                           border: '1px solid #FECACA',
                           backgroundColor: '#FFF5F5',
@@ -1101,21 +1381,22 @@ const ReportPage = () => {
                   </div>
                 ))}
               </div>
-              <small style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '4px', display: 'block' }}>
+              <small style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '6px', display: 'block' }}>
                 💡 Gợi ý: Bấm nút <strong>"+ Thêm điều dưỡng"</strong> nếu ca trực có từ 2 điều dưỡng trở lên.
               </small>
             </div>
 
-            {/* 4. Nhân sự trực thêm giờ / Tăng cường */}
+            {/* 4. Nhân sự trực thêm giờ / Tăng cường Card */}
             <div style={{
-              border: '1px solid #E2E8F0',
-              borderRadius: '12px',
-              padding: '1.15rem',
-              backgroundColor: '#F8FAFC'
+              backgroundColor: '#F8FAFC',
+              borderRadius: '14px',
+              border: '1.5px solid #E2E8F0',
+              borderLeft: '5px solid #D97706',
+              padding: '1.25rem'
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                <label style={{ margin: 0, fontWeight: '700', color: '#0F2C59', display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.88rem' }}>
-                  <FaClock style={{ color: '#D97706' }} /> Nhân sự trực thêm giờ / Tăng cường ({(headerData.overtimeStaff || []).length})
+                <label style={{ margin: 0, fontWeight: '800', color: '#0F2C59', display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.92rem' }}>
+                  <FaClock style={{ color: '#D97706' }} /> Nhân Sự Trực Thêm Giờ / Tăng Cường ({(headerData.overtimeStaff || []).length})
                 </label>
                 <button
                   type="button"
@@ -1123,14 +1404,14 @@ const ReportPage = () => {
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '0.35rem',
-                    fontSize: '0.8rem',
-                    padding: '0.3rem 0.75rem',
-                    border: '1px solid #CBD5E1',
-                    borderRadius: '7px',
-                    backgroundColor: '#FFFFFF',
-                    color: '#334155',
-                    fontWeight: '700',
+                    gap: '0.4rem',
+                    fontSize: '0.82rem',
+                    padding: '0.35rem 0.85rem',
+                    border: '1px solid #FDE68A',
+                    borderRadius: '8px',
+                    backgroundColor: '#FFFBEB',
+                    color: '#92400E',
+                    fontWeight: '800',
                     cursor: 'pointer'
                   }}
                 >
@@ -1139,8 +1420,8 @@ const ReportPage = () => {
               </div>
 
               {(headerData.overtimeStaff || []).length === 0 ? (
-                <p style={{ color: '#94A3B8', fontSize: '0.84rem', fontStyle: 'italic', margin: 0 }}>
-                  Chưa có nhân sự trực thêm giờ (Bấm nút trên nếu ca trực có nhân sự tăng cường).
+                <p style={{ color: '#94A3B8', fontSize: '0.86rem', fontStyle: 'italic', margin: 0 }}>
+                  Chưa có nhân sự trực thêm giờ (Bấm nút trên nếu ca trực có nhân sự tăng cường ngoài giờ).
                 </p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -1150,11 +1431,11 @@ const ReportPage = () => {
                       style={{ 
                         display: 'grid', 
                         gridTemplateColumns: '1.4fr 1fr auto', 
-                        gap: '0.5rem', 
+                        gap: '0.6rem', 
                         alignItems: 'center',
                         backgroundColor: '#FFFFFF',
-                        padding: '0.65rem',
-                        borderRadius: '8px',
+                        padding: '0.65rem 0.85rem',
+                        borderRadius: '10px',
                         border: '1px solid #CBD5E1'
                       }}
                     >
@@ -1172,13 +1453,13 @@ const ReportPage = () => {
 
                       <div>
                         <div style={{ position: 'relative' }}>
-                          <FaClock style={{ position: 'absolute', top: '50%', left: '0.6rem', transform: 'translateY(-50%)', color: '#94A3B8', fontSize: '0.8rem' }} />
+                          <FaClock style={{ position: 'absolute', top: '50%', left: '0.65rem', transform: 'translateY(-50%)', color: '#94A3B8', fontSize: '0.85rem' }} />
                           <input
                             type="text"
                             placeholder="VD: 17h - 21h"
                             value={ot.time}
                             onChange={(e) => handleOvertimeChange(idx, 'time', e.target.value)}
-                            style={{ paddingLeft: '1.8rem', fontSize: '0.85rem', height: '40px', borderRadius: '8px' }}
+                            style={{ paddingLeft: '1.9rem', fontSize: '0.88rem', height: '42px', borderRadius: '8px' }}
                           />
                         </div>
                       </div>
@@ -1187,8 +1468,8 @@ const ReportPage = () => {
                         type="button"
                         onClick={() => handleRemoveOvertimeStaff(idx)}
                         style={{
-                          padding: '0.4rem 0.6rem',
-                          height: '40px',
+                          padding: '0.45rem 0.75rem',
+                          height: '42px',
                           borderRadius: '8px',
                           border: '1px solid #FECACA',
                           backgroundColor: '#FFF5F5',
@@ -1208,30 +1489,34 @@ const ReportPage = () => {
             {/* 5. Phòng buồng & Thời gian trực */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
               <div className="form-group">
-                <label style={{ fontWeight: '700', color: '#1E293B', fontSize: '0.88rem', marginBottom: '0.35rem', display: 'block' }}>Phòng / Buồng trực <span style={{ fontWeight: 'normal', color: '#94A3B8' }}>(Tùy chọn)</span></label>
+                <label style={{ fontWeight: '800', color: '#0F2C59', fontSize: '0.9rem', marginBottom: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <FaDoorOpen style={{ color: '#2563EB' }} /> Phòng / Buồng Trực <span style={{ fontWeight: 'normal', color: '#94A3B8', fontSize: '0.8rem' }}>(Tùy chọn)</span>
+                </label>
                 <input 
                   type="text" 
-                  placeholder="VD: Phòng cấp cứu"
+                  placeholder="VD: Phòng cấp cứu, Khu điều trị..."
                   value={headerData.room || ''}
                   onChange={(e) => setHeaderData({...headerData, room: e.target.value})}
-                  style={{ height: '44px', borderRadius: '8px' }}
+                  style={{ height: '46px', borderRadius: '10px' }}
                 />
               </div>
               <div className="form-group">
-                <label style={{ fontWeight: '700', color: '#1E293B', fontSize: '0.88rem', marginBottom: '0.35rem', display: 'block' }}>Thời gian trực <span style={{ fontWeight: 'normal', color: '#94A3B8' }}>(Tùy chọn)</span></label>
+                <label style={{ fontWeight: '800', color: '#0F2C59', fontSize: '0.9rem', marginBottom: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <FaClock style={{ color: '#2563EB' }} /> Thời Gian Ca Trực <span style={{ fontWeight: 'normal', color: '#94A3B8', fontSize: '0.8rem' }}>(Tùy chọn)</span>
+                </label>
                 <input 
                   type="text" 
                   placeholder="VD: 07h00 - 07h00 (24/24)"
                   value={headerData.shiftTime || ''}
                   onChange={(e) => setHeaderData({...headerData, shiftTime: e.target.value})}
-                  style={{ height: '44px', borderRadius: '8px' }}
+                  style={{ height: '46px', borderRadius: '10px' }}
                 />
               </div>
             </div>
           </div>
 
           {/* Bottom Action Button */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid #F1F5F9', paddingTop: '1.25rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '2px solid #F1F5F9', paddingTop: '1.5rem' }}>
             <button 
               type="button"
               onClick={handleNext}
@@ -1242,79 +1527,118 @@ const ReportPage = () => {
                   : 'linear-gradient(135deg, #2563EB, #1D4ED8)',
                 color: '#FFFFFF',
                 border: 'none',
-                padding: '0.85rem 2.25rem',
-                fontSize: '1rem',
-                fontWeight: '800',
-                borderRadius: '10px',
+                padding: '0.95rem 2.5rem',
+                fontSize: '1.05rem',
+                fontWeight: '900',
+                borderRadius: '12px',
                 cursor: cleanDoctorNames.length === 0 ? 'not-allowed' : 'pointer',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '0.5rem',
-                boxShadow: cleanDoctorNames.length === 0 ? 'none' : '0 6px 20px rgba(37, 99, 235, 0.3)',
+                gap: '0.65rem',
+                boxShadow: cleanDoctorNames.length === 0 ? 'none' : '0 8px 24px rgba(37, 99, 235, 0.35)',
                 transition: 'all 0.2s'
               }}
             >
-              Tiếp tục nhập số liệu chuyên môn <FaChevronRight />
+              Tiếp Tục Nhập Số Liệu Chuyên Môn <FaArrowRight />
             </button>
           </div>
         </div>
       ) : (
-        /* 5. STEP 2: SỐ LIỆU CHUYÊN MÔN & CA BỆNH */
+        /* ======================================================== */
+        /* 5. STEP 2: SỐ LIỆU & CA BỆNH (BANNER KHOA RÕ RÀNG, CHUYÊN NGHIỆP) */
+        /* ======================================================== */
         <div className="animate-slide-up">
-          {/* Top Sticky/Summary Bar */}
+          {/* Department Hero Banner */}
           <div style={{
             backgroundColor: '#FFFFFF',
-            borderRadius: '14px',
-            border: '1px solid #E2E8F0',
-            borderLeft: '5px solid #2563EB',
-            padding: '0.9rem 1.4rem',
+            borderRadius: '18px',
+            border: '1.5px solid #BFDBFE',
+            padding: '1.25rem 1.75rem',
             marginBottom: '1.5rem',
-            boxShadow: '0 2px 10px rgba(15, 44, 89, 0.04)',
+            boxShadow: '0 4px 20px rgba(37, 99, 235, 0.08)',
+            background: 'linear-gradient(135deg, #FFFFFF 0%, #F0F7FF 100%)',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             flexWrap: 'wrap',
-            gap: '0.85rem'
+            gap: '1rem'
           }}>
-            <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap', fontSize: '0.88rem', color: '#334155' }}>
-              <div>📅 <strong>Ngày:</strong> {formatDateDDMMYYYY(headerData.reportDate)}</div>
-              <div>👨‍⚕️ <strong>Bác sĩ ({cleanDoctorNames.length}):</strong> <span style={{ color: '#1E40AF', fontWeight: '700' }}>{finalDoctorNameStr || cleanDoctorName}</span></div>
-              {finalNurseNameStr && <div>👩‍⚕️ <strong>Điều dưỡng:</strong> <span style={{ color: '#065F46', fontWeight: '700' }}>{finalNurseNameStr}</span></div>}
-              {(headerData.overtimeStaff || []).length > 0 && (
-                <div>
-                  ⏰ <strong>Tăng cường:</strong> {(headerData.overtimeStaff || []).map(s => `${extractCleanStaffName(s.staffName, staffList.allStaff)} (${s.time})`).join(', ')}
-                </div>
-              )}
-            </div>
-            <button 
-              type="button"
-              onClick={() => setStep(1)}
-              style={{
-                backgroundColor: '#EFF6FF',
-                color: '#1E40AF',
-                border: '1px solid #BFDBFE',
-                borderRadius: '8px',
-                padding: '0.35rem 0.75rem',
-                fontSize: '0.82rem',
-                fontWeight: '700',
-                cursor: 'pointer',
-                display: 'inline-flex',
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div style={{
+                width: '52px',
+                height: '52px',
+                borderRadius: '14px',
+                background: 'linear-gradient(135deg, #2563EB, #1D4ED8)',
+                color: '#FFFFFF',
+                display: 'flex',
                 alignItems: 'center',
-                gap: '0.35rem'
-              }}
-            >
-              <FaEdit /> Sửa hành chính
-            </button>
+                justifyContent: 'center',
+                fontSize: '1.6rem',
+                boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)',
+                flexShrink: 0
+              }}>
+                <FaClipboardList />
+              </div>
+              <div>
+                <div style={{ fontSize: '0.8rem', color: '#2563EB', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  BIỂU MẪU BÁO CÁO GIAO BAN CHUYÊN MÔN
+                </div>
+                <h2 style={{ fontSize: '1.35rem', fontWeight: '900', color: '#0F2C59', margin: '2px 0 0 0' }}>
+                  {user?.departmentName}
+                </h2>
+              </div>
+            </div>
+
+            {/* Shift Context Badges & Switch Button */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
+              <div style={{
+                backgroundColor: '#FFFFFF',
+                border: '1px solid #CBD5E1',
+                padding: '0.45rem 0.85rem',
+                borderRadius: '10px',
+                fontSize: '0.85rem',
+                color: '#334155',
+                display: 'flex',
+                gap: '0.85rem',
+                flexWrap: 'wrap',
+                fontWeight: '600'
+              }}>
+                <span>📅 <strong>Ngày:</strong> {formatDateDDMMYYYY(headerData.reportDate)}</span>
+                <span>👨‍⚕️ <strong>BS:</strong> <span style={{ color: '#1E40AF' }}>{finalDoctorNameStr || cleanDoctorName}</span></span>
+                {finalNurseNameStr && <span>👩‍⚕️ <strong>ĐD:</strong> <span style={{ color: '#065F46' }}>{finalNurseNameStr}</span></span>}
+              </div>
+
+              <button 
+                type="button"
+                onClick={() => setStep(1)}
+                style={{
+                  backgroundColor: '#EFF6FF',
+                  color: '#1E40AF',
+                  border: '1.5px solid #BFDBFE',
+                  borderRadius: '10px',
+                  padding: '0.5rem 0.95rem',
+                  fontSize: '0.85rem',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  transition: 'all 0.2s'
+                }}
+              >
+                <FaEdit /> Sửa hành chính
+              </button>
+            </div>
           </div>
 
           {/* Dynamic Department Form Card */}
           <div style={{
             backgroundColor: '#FFFFFF',
-            borderRadius: '16px',
-            border: '1px solid #E2E8F0',
-            padding: '1.5rem 1.75rem',
+            borderRadius: '20px',
+            border: '1.5px solid #E2E8F0',
+            padding: '1.75rem 2rem',
             marginBottom: '1.5rem',
-            boxShadow: '0 4px 20px rgba(15, 44, 89, 0.04)'
+            boxShadow: '0 6px 24px rgba(15, 44, 89, 0.04)'
           }}>
             {FormComponent ? (
               <FormComponent 
@@ -1352,31 +1676,31 @@ const ReportPage = () => {
           {submitError && (
             <div style={{
               backgroundColor: '#FEF2F2',
-              border: '1px solid #FECACA',
-              borderRadius: '10px',
-              padding: '0.85rem 1.15rem',
+              border: '1.5px solid #FECACA',
+              borderRadius: '12px',
+              padding: '1rem 1.35rem',
               color: '#991B1B',
-              fontSize: '0.88rem',
+              fontSize: '0.92rem',
               marginBottom: '1.5rem',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <FaExclamationCircle />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <FaExclamationCircle style={{ fontSize: '1.2rem' }} />
                 <span>{submitError}</span>
               </div>
-              <button type="button" onClick={() => setSubmitError('')} style={{ background: 'none', border: 'none', color: '#991B1B', cursor: 'pointer', fontWeight: 'bold' }}>✕</button>
+              <button type="button" onClick={() => setSubmitError('')} style={{ background: 'none', border: 'none', color: '#991B1B', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.1rem' }}>✕</button>
             </div>
           )}
 
-          {/* Bottom Action Bar */}
+          {/* Bottom Floating/Fixed Action Bar */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             gap: '1rem',
-            padding: '1.5rem 0 2.5rem',
+            padding: '1.5rem 0 3rem',
             flexWrap: 'wrap'
           }}>
             {/* Back Button */}
@@ -1387,14 +1711,14 @@ const ReportPage = () => {
                 backgroundColor: '#FFFFFF',
                 color: '#475569',
                 border: '1.5px solid #CBD5E1',
-                padding: '0.85rem 1.5rem',
-                fontSize: '0.95rem',
-                fontWeight: '700',
-                borderRadius: '10px',
+                padding: '0.95rem 1.65rem',
+                fontSize: '1rem',
+                fontWeight: '800',
+                borderRadius: '12px',
                 cursor: 'pointer',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '0.45rem',
+                gap: '0.5rem',
                 boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
               }}
             >
@@ -1409,18 +1733,18 @@ const ReportPage = () => {
                 backgroundColor: '#0284C7',
                 color: '#FFFFFF',
                 border: 'none',
-                padding: '0.85rem 1.65rem',
-                fontSize: '0.95rem',
-                fontWeight: '700',
-                borderRadius: '10px',
+                padding: '0.95rem 1.85rem',
+                fontSize: '1rem',
+                fontWeight: '800',
+                borderRadius: '12px',
                 cursor: 'pointer',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '0.5rem',
-                boxShadow: '0 4px 14px rgba(2, 132, 199, 0.25)'
+                gap: '0.55rem',
+                boxShadow: '0 4px 14px rgba(2, 132, 199, 0.3)'
               }}
             >
-              <FaFilePdf /> Xem trước & Xuất PDF
+              <FaFilePdf style={{ fontSize: '1.15rem' }} /> Xem Trước & Xuất PDF
             </button>
 
             {/* Main Submit Button */}
@@ -1431,15 +1755,15 @@ const ReportPage = () => {
                 style={{
                   backgroundColor: '#94A3B8',
                   color: '#FFFFFF',
-                  padding: '0.85rem 2.25rem',
-                  fontSize: '1rem',
-                  fontWeight: '800',
-                  borderRadius: '10px',
+                  padding: '0.95rem 2.5rem',
+                  fontSize: '1.05rem',
+                  fontWeight: '900',
+                  borderRadius: '12px',
                   cursor: 'not-allowed',
                   border: 'none',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '0.5rem'
+                  gap: '0.55rem'
                 }}
               >
                 🔒 Báo Cáo Đã Khóa Sổ (Chỉ Đọc)
@@ -1451,20 +1775,20 @@ const ReportPage = () => {
                 style={{
                   background: 'linear-gradient(135deg, #16A34A, #15803D)',
                   color: '#FFFFFF',
-                  padding: '0.85rem 2.5rem',
-                  fontSize: '1.05rem',
-                  fontWeight: '800',
-                  borderRadius: '10px',
+                  padding: '0.95rem 2.85rem',
+                  fontSize: '1.1rem',
+                  fontWeight: '900',
+                  borderRadius: '12px',
                   cursor: 'pointer',
                   border: 'none',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '0.55rem',
-                  boxShadow: '0 6px 20px rgba(22, 163, 74, 0.35)',
+                  gap: '0.65rem',
+                  boxShadow: '0 8px 24px rgba(22, 163, 74, 0.4)',
                   transition: 'all 0.2s'
                 }}
               >
-                <FaCheckCircle style={{ fontSize: '1.15rem' }} /> NỘP BÁO CÁO GIAO BAN
+                <FaCheckCircle style={{ fontSize: '1.25rem' }} /> NỘP BÁO CÁO GIAO BAN NGAY
               </button>
             )}
           </div>
@@ -1486,14 +1810,14 @@ const ReportPage = () => {
               </>
             )}
           >
-            <div style={{ fontSize: '0.92rem', color: '#334155', lineHeight: '1.6' }}>
+            <div style={{ fontSize: '0.94rem', color: '#334155', lineHeight: '1.6' }}>
               <p style={{ margin: '0 0 0.85rem' }}>
                 Báo cáo của khoa sẽ được lưu vào hệ thống dữ liệu toàn viện và đưa vào <strong>Trình Chiếu Giao Ban Sáng</strong> phục vụ Ban Giám Đốc.
               </p>
-              <div style={{ backgroundColor: '#F8FAFC', padding: '0.85rem 1rem', borderRadius: '10px', border: '1px solid #E2E8F0', fontSize: '0.85rem' }}>
+              <div style={{ backgroundColor: '#F8FAFC', padding: '1rem 1.15rem', borderRadius: '12px', border: '1.5px solid #E2E8F0', fontSize: '0.88rem' }}>
                 <div>👨‍⚕️ <strong>Bác sĩ trực:</strong> {finalDoctorNameStr || cleanDoctorName}</div>
-                {cleanNurseNames.length > 0 && <div style={{ marginTop: '3px' }}>👩‍⚕️ <strong>Điều dưỡng:</strong> {cleanNurseNames.join(', ')}</div>}
-                <div style={{ marginTop: '3px' }}>📋 <strong>Số ca lâm sàng:</strong> {transferCases.length} chuyển viện • {surgeryCases.length} ca mổ • {deathCases.length} tử vong • {criticalCases.length} bệnh nặng</div>
+                {cleanNurseNames.length > 0 && <div style={{ marginTop: '4px' }}>👩‍⚕️ <strong>Điều dưỡng:</strong> {cleanNurseNames.join(', ')}</div>}
+                <div style={{ marginTop: '4px' }}>📋 <strong>Số ca lâm sàng:</strong> {transferCases.length} chuyển viện • {surgeryCases.length} ca mổ • {deathCases.length} tử vong • {criticalCases.length} bệnh nặng</div>
               </div>
             </div>
           </Modal>
