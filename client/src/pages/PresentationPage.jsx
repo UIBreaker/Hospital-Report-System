@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   FaChevronLeft, FaChevronRight, FaExpand, FaCompress,
   FaFilePowerpoint, FaSpinner, FaSearchPlus, FaSearchMinus,
-  FaArrowLeft, FaFileAlt, FaUserMd
+  FaArrowLeft, FaFileAlt, FaUserMd, FaListUl, FaTimes, FaBars
 } from 'react-icons/fa';
 import reportService from '../services/reportService';
 import { exportPresentationToPowerPoint } from '../services/powerpointExportService';
@@ -35,6 +35,7 @@ const PresentationPage = () => {
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false); // Default full screen (Image 2) without sidebar
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showIntro, setShowIntro] = useState(true);
@@ -81,10 +82,12 @@ const PresentationPage = () => {
     };
   }, []);
 
-  // Smooth scroll active slide into view in sidebar
+  // Smooth scroll active slide into view in sidebar drawer
   useEffect(() => {
-    activeThumbRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }, [currentSlide]);
+    if (showSidebar) {
+      activeThumbRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [currentSlide, showSidebar]);
 
   // Reset scroll container to top whenever slide changes
   useEffect(() => {
@@ -120,18 +123,15 @@ const PresentationPage = () => {
     let totalKham = 0, totalBenhCu = 0, totalBenhMoi = 0, totalXuatVien = 0;
     let totalChuyenVien = 0, totalPhauThuat = 0, totalHienCon = 0, totalTuVong = 0;
 
-    sortedReports.forEach((r) => {
+    sortedReports.forEach(r => {
+      const deptName = DEPARTMENT_NAMES[r.department_code] || r.department_code;
+      const theme = DEPARTMENT_THEMES[r.department_code] || { primary: '#0F2C59', secondary: '#1E40AF', light: '#EFF6FF' };
       const rawData = typeof r.report_data === 'string' ? JSON.parse(r.report_data || '{}') : (r.report_data || {});
-      const deptName = r.department_name || DEPARTMENT_NAMES[r.department_code] || r.department_code;
-      const theme = DEPARTMENT_THEMES[r.department_code] || {
-        main: '#0284C7', light: '#EFF6FF', dark: '#0C4A6E', border: '#BAE6FD', text: '#0369A1'
-      };
 
-      // Comprehensive extraction supporting camelCase, snake_case, and JSON sub-fields
-      const rawTransfers = safeCaseArray(r.transferCases || r.transfer_cases || rawData.transferCases || rawData.transfer_cases);
-      const rawSurgeries = safeCaseArray(r.surgeryCases || r.surgery_cases || rawData.surgeryCases || rawData.surgery_cases);
-      const rawDeaths = safeCaseArray(r.deathCases || r.death_cases || rawData.deathCases || rawData.death_cases);
-      const rawCriticals = safeCaseArray(r.criticalCases || r.critical_cases || rawData.criticalCases || rawData.critical_cases);
+      const rawTransfers = safeCaseArray(r.transfer_cases || rawData.transfer_cases || rawData.transferCases);
+      const rawSurgeries = safeCaseArray(r.surgery_cases || rawData.surgery_cases || rawData.surgeryCases);
+      const rawDeaths = safeCaseArray(r.death_cases || rawData.death_cases || rawData.deathCases);
+      const rawCriticals = safeCaseArray(r.critical_cases || rawData.critical_cases || rawData.criticalCases);
 
       const transferCases = rawTransfers.map(c => ({
         ...c,
@@ -139,12 +139,12 @@ const PresentationPage = () => {
         patient_name: c.patientName || c.patient_name || '',
         admissionTime: c.admissionTime || c.admission_time || '',
         admission_time: c.admissionTime || c.admission_time || '',
+        initialTreatment: c.initialTreatment || c.initial_treatment || '',
+        initial_treatment: c.initialTreatment || c.initial_treatment || '',
         clinicalSymptoms: c.clinicalSymptoms || c.clinical_symptoms || '',
         clinical_symptoms: c.clinicalSymptoms || c.clinical_symptoms || '',
         clinicalTests: c.clinicalTests || c.clinical_tests || '',
         clinical_tests: c.clinicalTests || c.clinical_tests || '',
-        initialTreatment: c.initialTreatment || c.initial_treatment || '',
-        initial_treatment: c.initialTreatment || c.initial_treatment || '',
         progressNotes: c.progressNotes || c.progress_notes || '',
         progress_notes: c.progressNotes || c.progress_notes || '',
         images: normalizeImages(c.images || c.image_url || c.imageUrl)
@@ -245,7 +245,7 @@ const PresentationPage = () => {
         criticalCases
       });
 
-      // 2. Transfer Case Slides (Part 1: Reception, Part 2: Progress, Dedicated Image Slides)
+      // 2. Transfer Case Slides
       transferCases.forEach((tc, tcIdx) => {
         s.push({
           type: 'transfer',
@@ -269,20 +269,18 @@ const PresentationPage = () => {
           });
         }
 
-        const tcImages = normalizeImages(tc.images);
-        tcImages.forEach((img, imgIdx) => {
+        const normImgs = normalizeImages(tc.images);
+        normImgs.forEach((imgObj, imgIdx) => {
           s.push({
             type: 'case_image',
-            title: `HÌNH ẢNH CA CHUYỂN VIỆN ${tcIdx + 1} (${imgIdx + 1}/${tcImages.length}) – ${deptName}`,
+            title: `HÌNH ẢNH CA CHUYỂN VIỆN ${tcIdx + 1} (${imgIdx + 1}/${normImgs.length}) – ${deptName}`,
             deptCode: r.department_code,
             deptName,
-            category: 'transfer',
+            caseType: 'transfer',
             caseItem: tc,
-            caseIndex: tcIdx + 1,
-            totalCases: transferCases.length,
-            image: img,
-            imgIndex: imgIdx,
-            totalImages: tcImages.length
+            image: imgObj,
+            imgIndex: imgIdx + 1,
+            totalImages: normImgs.length
           });
         });
       });
@@ -299,20 +297,18 @@ const PresentationPage = () => {
           totalCases: surgeryCases.length
         });
 
-        const scImages = normalizeImages(sc.images);
-        scImages.forEach((img, imgIdx) => {
+        const normImgs = normalizeImages(sc.images);
+        normImgs.forEach((imgObj, imgIdx) => {
           s.push({
             type: 'case_image',
-            title: `HÌNH ẢNH CA MỔ ${scIdx + 1} (${imgIdx + 1}/${scImages.length}) – ${deptName}`,
+            title: `HÌNH ẢNH CA PHẪU THUẬT ${scIdx + 1} (${imgIdx + 1}/${normImgs.length}) – ${deptName}`,
             deptCode: r.department_code,
             deptName,
-            category: 'surgery',
+            caseType: 'surgery',
             caseItem: sc,
-            caseIndex: scIdx + 1,
-            totalCases: surgeryCases.length,
-            image: img,
-            imgIndex: imgIdx,
-            totalImages: scImages.length
+            image: imgObj,
+            imgIndex: imgIdx + 1,
+            totalImages: normImgs.length
           });
         });
       });
@@ -329,20 +325,18 @@ const PresentationPage = () => {
           totalCases: deathCases.length
         });
 
-        const dcImages = normalizeImages(dc.images);
-        dcImages.forEach((img, imgIdx) => {
+        const normImgs = normalizeImages(dc.images);
+        normImgs.forEach((imgObj, imgIdx) => {
           s.push({
             type: 'case_image',
-            title: `HÌNH ẢNH CA TỬ VONG ${dcIdx + 1} (${imgIdx + 1}/${dcImages.length}) – ${deptName}`,
+            title: `HÌNH ẢNH CA TỬ VONG ${dcIdx + 1} (${imgIdx + 1}/${normImgs.length}) – ${deptName}`,
             deptCode: r.department_code,
             deptName,
-            category: 'death',
+            caseType: 'death',
             caseItem: dc,
-            caseIndex: dcIdx + 1,
-            totalCases: deathCases.length,
-            image: img,
-            imgIndex: imgIdx,
-            totalImages: dcImages.length
+            image: imgObj,
+            imgIndex: imgIdx + 1,
+            totalImages: normImgs.length
           });
         });
       });
@@ -351,7 +345,7 @@ const PresentationPage = () => {
       criticalCases.forEach((cc, ccIdx) => {
         s.push({
           type: 'critical',
-          title: `BỆNH NẶNG THEO DÕI ${ccIdx + 1} – ${deptName}`,
+          title: `CA BỆNH NẶNG ${ccIdx + 1} – ${deptName}`,
           deptCode: r.department_code,
           deptName,
           criticalCase: cc,
@@ -359,20 +353,18 @@ const PresentationPage = () => {
           totalCases: criticalCases.length
         });
 
-        const ccImages = normalizeImages(cc.images);
-        ccImages.forEach((img, imgIdx) => {
+        const normImgs = normalizeImages(cc.images);
+        normImgs.forEach((imgObj, imgIdx) => {
           s.push({
             type: 'case_image',
-            title: `HÌNH ẢNH BỆNH NẶNG ${ccIdx + 1} (${imgIdx + 1}/${ccImages.length}) – ${deptName}`,
+            title: `HÌNH ẢNH CA BỆNH NẶNG ${ccIdx + 1} (${imgIdx + 1}/${normImgs.length}) – ${deptName}`,
             deptCode: r.department_code,
             deptName,
-            category: 'critical',
+            caseType: 'critical',
             caseItem: cc,
-            caseIndex: ccIdx + 1,
-            totalCases: criticalCases.length,
-            image: img,
-            imgIndex: imgIdx,
-            totalImages: ccImages.length
+            image: imgObj,
+            imgIndex: imgIdx + 1,
+            totalImages: normImgs.length
           });
         });
       });
@@ -400,12 +392,12 @@ const PresentationPage = () => {
     }
 
     return s;
-  }, [reports]);
+  }, [reports, date]);
 
   // Keyboard navigation & Shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (lightboxOpen) return; // Prevent slide navigation when lightbox is open
+      if (lightboxOpen) return;
       if (['ArrowRight', 'ArrowDown', 'PageDown', ' '].includes(e.key)) {
         e.preventDefault();
         setCurrentSlide((prev) => Math.min(prev + 1, slides.length - 1));
@@ -420,6 +412,8 @@ const PresentationPage = () => {
         setCurrentSlide(slides.length - 1);
       } else if (e.key === 'f' || e.key === 'F') {
         toggleFullscreen();
+      } else if (e.key === 'm' || e.key === 'M' || e.key === 's' || e.key === 'S') {
+        setShowSidebar(prev => !prev);
       }
     };
 
@@ -429,9 +423,18 @@ const PresentationPage = () => {
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
-      containerRef.current?.requestFullscreen?.();
+      const el = document.documentElement || document.body;
+      if (el.requestFullscreen) {
+        el.requestFullscreen().catch(() => {});
+      } else if (el.webkitRequestFullscreen) {
+        el.webkitRequestFullscreen().catch(() => {});
+      }
     } else {
-      document.exitFullscreen?.();
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen().catch(() => {});
+      }
     }
   };
 
@@ -497,7 +500,8 @@ const PresentationPage = () => {
         color: '#0F172A',
         display: 'flex',
         overflow: 'hidden',
-        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+        position: 'relative'
       }}
     >
       <style>{`
@@ -515,197 +519,250 @@ const PresentationPage = () => {
           animation: presentationSlideSmoothEnter 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
           will-change: opacity, transform;
         }
+
+        @keyframes drawerSlideIn {
+          from {
+            transform: translateX(-100%);
+          }
+          to {
+            transform: translateX(0);
+          }
+        }
       `}</style>
 
-      {/* ===================== 1. LEFT SIDEBAR (Dark Navy Gradient) ===================== */}
-      {!isFullscreen && (
-        <aside style={{
-          width: '240px',
-          minWidth: '240px',
-          background: 'linear-gradient(180deg, #0A192F 0%, #0F2C59 55%, #0A2540 100%)',
-          color: '#FFFFFF',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          padding: '1.25rem 0.85rem',
-          height: '100vh',
-          boxSizing: 'border-box',
-          boxShadow: '4px 0 20px rgba(0, 0, 0, 0.12)',
-          zIndex: 100,
-          flexShrink: 0
-        }}>
-          {/* Top Section */}
-          <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100% - 70px)' }}>
-            {/* Header: Logo + Agency Info */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '1rem' }}>
+      {/* ===================== 1. SLIDE LIST DRAWER (Slide-out Overlay) ===================== */}
+      {showSidebar && (
+        <div
+          onClick={() => setShowSidebar(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            backgroundColor: 'rgba(5, 11, 20, 0.65)',
+            backdropFilter: 'blur(6px)',
+            zIndex: 99999,
+            display: 'flex'
+          }}
+        >
+          <aside
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '280px',
+              minWidth: '280px',
+              background: 'linear-gradient(180deg, #0A192F 0%, #0F2C59 55%, #0A2540 100%)',
+              color: '#FFFFFF',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              padding: '1.25rem 0.85rem',
+              height: '100vh',
+              boxSizing: 'border-box',
+              boxShadow: '8px 0 35px rgba(0, 0, 0, 0.5)',
+              animation: 'drawerSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards'
+            }}
+          >
+            {/* Top Section */}
+            <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100% - 70px)' }}>
+              {/* Header: Logo + Agency Info + Close Button */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                  <div style={{
+                    width: '38px',
+                    height: '38px',
+                    borderRadius: '50%',
+                    backgroundColor: '#FFFFFF',
+                    padding: '4px',
+                    boxShadow: '0 2px 8px rgba(255, 255, 255, 0.25)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    overflow: 'hidden',
+                    flexShrink: 0
+                  }}>
+                    <img src="/logo.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '50%' }} />
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: '0.7rem', fontWeight: '800', color: '#93C5FD', textTransform: 'uppercase', lineHeight: '1.2' }}>
+                      SỞ Y TẾ BÌNH PHƯỚC
+                    </div>
+                    <div style={{ fontSize: '0.76rem', fontWeight: '900', color: '#FFFFFF', lineHeight: '1.2', marginTop: '1px' }}>
+                      TTYT BÌNH LONG
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowSidebar(false)}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    color: '#FFFFFF',
+                    borderRadius: '50%',
+                    width: '28px',
+                    height: '28px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    fontSize: '0.8rem'
+                  }}
+                  title="Đóng danh sách slide"
+                >
+                  <FaTimes />
+                </button>
+              </div>
+
+              {/* Back Button & Slides Counter Badge */}
               <div style={{
-                width: '38px',
-                height: '38px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingBottom: '0.85rem',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.12)',
+                marginBottom: '0.85rem'
+              }}>
+                <button
+                  type="button"
+                  onClick={() => navigate('/admin')}
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    color: '#CBD5E1',
+                    borderRadius: '8px',
+                    padding: '0.38rem 0.65rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                    fontSize: '0.78rem',
+                    fontWeight: '700',
+                    transition: 'all 0.15s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
+                    e.currentTarget.style.color = '#FFFFFF';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
+                    e.currentTarget.style.color = '#CBD5E1';
+                  }}
+                >
+                  <FaArrowLeft size={10} /> Quản trị
+                </button>
+
+                <div style={{ fontSize: '0.78rem', fontWeight: '900', color: '#38BDF8', letterSpacing: '0.5px' }}>
+                  {slides.length} SLIDES
+                </div>
+              </div>
+
+              {/* Sidebar Slides List */}
+              <div style={{
+                flex: 1,
+                overflowY: 'auto',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.35rem',
+                paddingRight: '2px'
+              }}>
+                {slides.map((s, idx) => {
+                  const isActive = idx === currentSlide;
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      ref={isActive ? activeThumbRef : null}
+                      onClick={() => {
+                        setCurrentSlide(idx);
+                        setShowSidebar(false);
+                      }}
+                      style={{
+                        padding: '0.6rem 0.75rem',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        backgroundColor: isActive ? '#2563EB' : 'transparent',
+                        border: 'none',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.55rem',
+                        transition: 'all 0.15s ease',
+                        textAlign: 'left',
+                        boxShadow: isActive ? '0 4px 12px rgba(37, 99, 235, 0.4)' : 'none',
+                        color: isActive ? '#FFFFFF' : '#94A3B8'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isActive) {
+                          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
+                          e.currentTarget.style.color = '#FFFFFF';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isActive) {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                          e.currentTarget.style.color = '#94A3B8';
+                        }
+                      }}
+                    >
+                      <FaFileAlt style={{ fontSize: '0.85rem', flexShrink: 0, opacity: isActive ? 1 : 0.7 }} />
+                      <span style={{ fontSize: '0.78rem', fontWeight: '900', flexShrink: 0 }}>
+                        {idx + 1}
+                      </span>
+                      <span style={{
+                        fontSize: '0.8rem',
+                        fontWeight: isActive ? '800' : '600',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        flex: 1
+                      }}>
+                        {s.title}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Bottom: User Profile Widget */}
+            <div style={{
+              padding: '0.65rem 0.75rem',
+              backgroundColor: 'rgba(255, 255, 255, 0.06)',
+              borderRadius: '12px',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.65rem'
+            }}>
+              <div style={{
+                width: '32px',
+                height: '32px',
                 borderRadius: '50%',
                 backgroundColor: '#FFFFFF',
-                padding: '4px',
-                boxShadow: '0 2px 8px rgba(255, 255, 255, 0.25)',
+                color: '#0F2C59',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                fontSize: '0.85rem',
                 flexShrink: 0
               }}>
-                <img src="/logo.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                <FaUserMd />
               </div>
-              <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: '0.7rem', fontWeight: '800', color: '#93C5FD', textTransform: 'uppercase', lineHeight: '1.2' }}>
-                  SỞ Y TẾ BÌNH PHƯỚC
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: '0.68rem', color: '#93C5FD' }}>Xin chào,</div>
+                <div style={{ fontSize: '0.8rem', fontWeight: '800', color: '#FFFFFF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  Admin
                 </div>
-                <div style={{ fontSize: '0.76rem', fontWeight: '900', color: '#FFFFFF', lineHeight: '1.2', marginTop: '1px' }}>
-                  TTYT KHU VỰC BÌNH LONG
-                </div>
+                <div style={{ fontSize: '0.65rem', color: '#94A3B8' }}>Quản trị hệ thống</div>
               </div>
             </div>
-
-            {/* Back Button & Slides Counter Badge */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              paddingBottom: '0.85rem',
-              borderBottom: '1px solid rgba(255, 255, 255, 0.12)',
-              marginBottom: '0.85rem'
-            }}>
-              <button
-                type="button"
-                onClick={() => navigate('/admin')}
-                style={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                  border: '1px solid rgba(255, 255, 255, 0.15)',
-                  color: '#CBD5E1',
-                  borderRadius: '8px',
-                  padding: '0.38rem 0.65rem',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.35rem',
-                  fontSize: '0.78rem',
-                  fontWeight: '700',
-                  transition: 'all 0.15s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
-                  e.currentTarget.style.color = '#FFFFFF';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
-                  e.currentTarget.style.color = '#CBD5E1';
-                }}
-              >
-                <FaArrowLeft size={10} /> Quản trị
-              </button>
-
-              <div style={{ fontSize: '0.78rem', fontWeight: '900', color: '#38BDF8', letterSpacing: '0.5px' }}>
-                {slides.length} SLIDES
-              </div>
-            </div>
-
-            {/* Sidebar Slides List */}
-            <div style={{
-              flex: 1,
-              overflowY: 'auto',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.35rem',
-              paddingRight: '2px'
-            }}>
-              {slides.map((s, idx) => {
-                const isActive = idx === currentSlide;
-                return (
-                  <button
-                    key={idx}
-                    type="button"
-                    ref={isActive ? activeThumbRef : null}
-                    onClick={() => setCurrentSlide(idx)}
-                    style={{
-                      padding: '0.6rem 0.75rem',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      backgroundColor: isActive ? '#2563EB' : 'transparent',
-                      border: 'none',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.55rem',
-                      transition: 'all 0.15s ease',
-                      textAlign: 'left',
-                      boxShadow: isActive ? '0 4px 12px rgba(37, 99, 235, 0.4)' : 'none',
-                      color: isActive ? '#FFFFFF' : '#94A3B8'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!isActive) {
-                        e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
-                        e.currentTarget.style.color = '#FFFFFF';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!isActive) {
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                        e.currentTarget.style.color = '#94A3B8';
-                      }
-                    }}
-                  >
-                    <FaFileAlt style={{ fontSize: '0.85rem', flexShrink: 0, opacity: isActive ? 1 : 0.7 }} />
-                    <span style={{ fontSize: '0.78rem', fontWeight: '900', flexShrink: 0 }}>
-                      {idx + 1}
-                    </span>
-                    <span style={{
-                      fontSize: '0.8rem',
-                      fontWeight: isActive ? '800' : '600',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      flex: 1
-                    }}>
-                      {s.title}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Bottom: User Profile Widget */}
-          <div style={{
-            padding: '0.65rem 0.75rem',
-            backgroundColor: 'rgba(255, 255, 255, 0.06)',
-            borderRadius: '12px',
-            border: '1px solid rgba(255, 255, 255, 0.12)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.65rem'
-          }}>
-            <div style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              backgroundColor: '#FFFFFF',
-              color: '#0F2C59',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '0.85rem',
-              flexShrink: 0
-            }}>
-              <FaUserMd />
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: '0.68rem', color: '#93C5FD' }}>Xin chào,</div>
-              <div style={{ fontSize: '0.8rem', fontWeight: '800', color: '#FFFFFF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                Admin
-              </div>
-              <div style={{ fontSize: '0.65rem', color: '#94A3B8' }}>Quản trị hệ thống</div>
-            </div>
-          </div>
-        </aside>
+          </aside>
+        </div>
       )}
 
-      {/* ===================== 2. MAIN PRESENTATION STAGE ===================== */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100vh', overflow: 'hidden' }}>
+      {/* ===================== 2. MAIN FULL-WIDTH PRESENTATION STAGE (Image 2) ===================== */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100vh', overflow: 'hidden', width: '100%' }}>
         
         {/* Slide Viewport Canvas Container */}
         <div style={{
@@ -713,20 +770,53 @@ const PresentationPage = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: isFullscreen ? '0.75rem' : '1.25rem',
+          padding: '0.75rem 1rem',
           overflow: 'hidden',
-          minHeight: 0
+          minHeight: 0,
+          position: 'relative'
         }}>
+          {/* Floating Slide List Drawer Toggle Button */}
+          <button
+            type="button"
+            onClick={() => setShowSidebar(prev => !prev)}
+            style={{
+              position: 'absolute',
+              top: '1.25rem',
+              left: '1.5rem',
+              zIndex: 10,
+              backgroundColor: 'rgba(15, 44, 89, 0.85)',
+              color: '#FFFFFF',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              borderRadius: '20px',
+              padding: '0.4rem 0.85rem',
+              fontSize: '0.78rem',
+              fontWeight: '800',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              backdropFilter: 'blur(8px)',
+              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.15)',
+              transition: 'all 0.15s ease'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2563EB'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(15, 44, 89, 0.85)'}
+            title="Mở danh sách slide (Phím M hoặc S)"
+          >
+            <FaListUl style={{ fontSize: '0.78rem' }} />
+            <span>Danh sách ({slides.length})</span>
+          </button>
+
           <div style={{
             width: '100%',
             height: '100%',
-            maxWidth: isFullscreen ? '100%' : '1720px',
+            maxWidth: '100%',
             backgroundColor: '#FFFFFF',
             color: '#0F172A',
             borderRadius: '20px',
             border: '1px solid #E2E8F0',
             boxShadow: '0 8px 30px rgba(15, 44, 89, 0.08)',
-            padding: isFullscreen ? '1.25rem 1.75rem' : '1.5rem 2rem',
+            padding: '1.25rem 1.75rem',
             boxSizing: 'border-box',
             display: 'flex',
             flexDirection: 'column',
@@ -750,37 +840,37 @@ const PresentationPage = () => {
             >
               {/* 1. Title Slide */}
               {slide.type === 'title' && (
-                <TitleSlide selectedDate={date} reportsCount={reports.length} isFullscreen={isFullscreen} />
+                <TitleSlide selectedDate={date} reportsCount={reports.length} isFullscreen={true} />
               )}
 
               {/* 2. Department Overview Slide */}
               {slide.type === 'department' && (
-                <DepartmentSlide slide={slide} isFullscreen={isFullscreen} />
+                <DepartmentSlide slide={slide} isFullscreen={true} />
               )}
 
               {/* 3. Transfer Case Slide (Part 1 & Part 2) */}
               {(slide.type === 'transfer' || slide.type === 'transfer_progress') && (
-                <TransferSlide slide={slide} isFullscreen={isFullscreen} />
+                <TransferSlide slide={slide} isFullscreen={true} />
               )}
 
               {/* 4. Surgery Case Slide */}
               {slide.type === 'surgery' && (
-                <SurgerySlide slide={slide} isFullscreen={isFullscreen} />
+                <SurgerySlide slide={slide} isFullscreen={true} />
               )}
 
               {/* 5. Mortality / Death Case Slide */}
               {slide.type === 'death' && (
-                <DeathSlide slide={slide} isFullscreen={isFullscreen} />
+                <DeathSlide slide={slide} isFullscreen={true} />
               )}
 
               {/* 6. Critical Care Monitored Case Slide */}
               {slide.type === 'critical' && (
-                <CriticalSlide slide={slide} isFullscreen={isFullscreen} />
+                <CriticalSlide slide={slide} isFullscreen={true} />
               )}
 
               {/* 6.5 Hospital-Wide Summary Slide */}
               {slide.type === 'summary' && (
-                <SummarySlide slide={slide} isFullscreen={isFullscreen} />
+                <SummarySlide slide={slide} isFullscreen={true} />
               )}
 
               {/* 7. Dedicated Full-Screen Clinical Image Slide */}
@@ -792,7 +882,7 @@ const PresentationPage = () => {
                     patientName: slide.caseItem?.patient_name || slide.caseItem?.patientName,
                     imageIndex: slide.imgIndex
                   }}
-                  isFullscreen={isFullscreen}
+                  isFullscreen={true}
                   onOpenLightbox={imgUrl => handleOpenLightbox([imgUrl], 0, slide.title)}
                 />
               )}
@@ -824,8 +914,8 @@ const PresentationPage = () => {
             onClick={handlePrev}
             disabled={currentSlide === 0}
             style={{
-              padding: '0.45rem 1.15rem',
-              backgroundColor: currentSlide === 0 ? '#F8FAFC' : '#FFFFFF',
+              padding: '0.45rem 1.25rem',
+              backgroundColor: currentSlide === 0 ? '#F1F5F9' : '#FFFFFF',
               color: currentSlide === 0 ? '#94A3B8' : '#334155',
               border: '1.5px solid #CBD5E1',
               borderRadius: '10px',
@@ -841,22 +931,33 @@ const PresentationPage = () => {
             <FaChevronLeft size={10} /> Slide trước
           </button>
 
-          {/* Center: Slide indicator + Font Zoom + PPTX Export + Fullscreen */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-            {/* Slide Count */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#64748B', fontSize: '0.86rem', fontWeight: '600' }}>
+          {/* Center: Slide counter, Font size, Export PPTX, Drawer toggle & Fullscreen */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+            {/* Slide Index Badge */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              backgroundColor: '#F8FAFC',
+              padding: '0.35rem 0.85rem',
+              borderRadius: '8px',
+              border: '1.5px solid #CBD5E1',
+              fontSize: '0.86rem',
+              fontWeight: '800',
+              color: '#0F2C59'
+            }}>
               <span>Slide</span>
               <span style={{
                 backgroundColor: '#2563EB',
                 color: '#FFFFFF',
-                padding: '0.15rem 0.55rem',
+                padding: '2px 8px',
                 borderRadius: '6px',
                 fontWeight: '900',
-                fontSize: '0.95rem'
+                fontSize: '0.82rem'
               }}>
                 {currentSlide + 1}
               </span>
-              <span>/ {slides.length}</span>
+              <span style={{ color: '#64748B' }}>/ {slides.length}</span>
             </div>
 
             {/* Font Zoom Controls (A- / 100% / A+) */}
@@ -1001,17 +1102,17 @@ const PresentationPage = () => {
             Slide tiếp <FaChevronRight size={10} />
           </button>
         </div>
+      </div>
 
-        {/* Full-screen HD Image Lightbox Modal */}
+      {/* Global Image Lightbox Modal */}
+      {lightboxOpen && (
         <ImageLightboxModal
-          isOpen={lightboxOpen}
-          onClose={() => setLightboxOpen(false)}
           images={lightboxImages}
           initialIndex={lightboxIndex}
           title={lightboxTitle}
-          subtitle="Trình chiếu hình ảnh y khoa độ phân giải cao"
+          onClose={() => setLightboxOpen(false)}
         />
-      </div>
+      )}
     </div>
   );
 };
