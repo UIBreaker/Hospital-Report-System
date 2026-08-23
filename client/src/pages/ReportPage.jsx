@@ -653,32 +653,6 @@ const ReportPage = () => {
             <FaHospital /> {user?.departmentName || 'Khoa Phòng'}
           </div>
 
-          {/* Quick PDF Button if loaded */}
-          {existingReportLoaded && (
-            <button
-              type="button"
-              onClick={() => setShowPdfModal(true)}
-              style={{
-                backgroundColor: '#0284C7',
-                color: '#FFFFFF',
-                border: 'none',
-                borderRadius: '8px',
-                padding: '0.45rem 0.85rem',
-                fontWeight: '700',
-                fontSize: '0.82rem',
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                boxShadow: '0 2px 6px rgba(2, 132, 199, 0.25)',
-                transition: 'all 0.2s'
-              }}
-              title="Xuất file PDF báo cáo của ngày này"
-            >
-              <FaFilePdf /> Xuất PDF
-            </button>
-          )}
-
           {/* Logout Button */}
           <button 
             type="button"
