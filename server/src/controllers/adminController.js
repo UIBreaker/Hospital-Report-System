@@ -115,9 +115,13 @@ const getPresentationData = async (req, res, next) => {
         ...report,
         overtime_staff: overtimeStaff,
         transferCases: transfersByReportId.get(report.id) || [],
+        transfer_cases: transfersByReportId.get(report.id) || [],
         surgeryCases: surgeriesByReportId.get(report.id) || [],
+        surgery_cases: surgeriesByReportId.get(report.id) || [],
         deathCases: deathsByReportId.get(report.id) || [],
-        criticalCases: criticalsByReportId.get(report.id) || []
+        death_cases: deathsByReportId.get(report.id) || [],
+        criticalCases: criticalsByReportId.get(report.id) || [],
+        critical_cases: criticalsByReportId.get(report.id) || []
       };
     });
 

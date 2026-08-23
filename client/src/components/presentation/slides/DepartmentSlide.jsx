@@ -1,7 +1,7 @@
 import React from 'react';
-import { getMetricStyle } from '../../../utils/medicalFormatters';
+import { getMetricStyle, formatPatientAge } from '../../../utils/medicalFormatters';
 import { parseDepartmentSections } from '../../../utils/departmentSectionParser';
-import { FaUserMd, FaUserNurse, FaClock, FaDoorOpen, FaHospital } from 'react-icons/fa';
+import { FaUserMd, FaUserNurse, FaClock, FaDoorOpen, FaHospital, FaAmbulance, FaProcedures, FaSkullCrossbones, FaHeartbeat } from 'react-icons/fa';
 
 const DepartmentSlide = ({ slide, isFullscreen }) => {
   const deptName = slide.deptName || slide.title || 'Khoa Phòng';
@@ -12,6 +12,25 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
   const room = slide.room || report.room || '';
   const formData = slide.formData || (typeof report.report_data === 'string' ? JSON.parse(report.report_data || '{}') : report.report_data) || {};
   const theme = slide.theme || { main: '#2563EB', bg: '#EFF6FF', border: '#BFDBFE', icon: '🏥' };
+
+  const safeArray = (v) => {
+    if (Array.isArray(v)) return v;
+    if (typeof v === 'string') {
+      try {
+        const parsed = JSON.parse(v);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        return [];
+      }
+    }
+    return [];
+  };
+
+  const transferCases = safeArray(slide.transferCases || report.transferCases || report.transfer_cases);
+  const surgeryCases = safeArray(slide.surgeryCases || report.surgeryCases || report.surgery_cases);
+  const deathCases = safeArray(slide.deathCases || report.deathCases || report.death_cases);
+  const criticalCases = safeArray(slide.criticalCases || report.criticalCases || report.critical_cases);
+  const totalCasesCount = transferCases.length + surgeryCases.length + deathCases.length + criticalCases.length;
 
   // Parse sections if not already provided or if empty
   const sections = (slide.sections && slide.sections.length > 0)
@@ -47,40 +66,40 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
   const getCardDimensions = () => {
     if (totalMetricsCount <= 6) {
       return {
-        padding: isFullscreen ? '1.1rem 1.4rem' : '0.85rem 1.1rem',
-        minHeight: isFullscreen ? '78px' : '62px',
-        labelSize: isFullscreen ? '1.25rem' : '1rem',
-        valueSize: isFullscreen ? '2.4rem' : '1.8rem',
-        badgeSize: '0.8rem',
-        gap: isFullscreen ? '1rem' : '0.75rem',
-        sectionHeaderMb: isFullscreen ? '0.65rem' : '0.45rem',
-        sectionHeaderPad: isFullscreen ? '0.5rem 1rem' : '0.35rem 0.8rem',
-        sectionHeaderFont: isFullscreen ? '1.25rem' : '1.02rem'
+        padding: isFullscreen ? '0.95rem 1.25rem' : '0.75rem 1rem',
+        minHeight: isFullscreen ? '70px' : '56px',
+        labelSize: isFullscreen ? '1.15rem' : '0.95rem',
+        valueSize: isFullscreen ? '2.2rem' : '1.7rem',
+        badgeSize: '0.78rem',
+        gap: isFullscreen ? '0.85rem' : '0.65rem',
+        sectionHeaderMb: isFullscreen ? '0.5rem' : '0.35rem',
+        sectionHeaderPad: isFullscreen ? '0.45rem 0.9rem' : '0.3rem 0.75rem',
+        sectionHeaderFont: isFullscreen ? '1.18rem' : '0.98rem'
       };
     }
     if (totalMetricsCount <= 12) {
       return {
-        padding: isFullscreen ? '0.85rem 1.15rem' : '0.65rem 0.9rem',
-        minHeight: isFullscreen ? '65px' : '52px',
-        labelSize: isFullscreen ? '1.12rem' : '0.92rem',
-        valueSize: isFullscreen ? '2.1rem' : '1.6rem',
+        padding: isFullscreen ? '0.8rem 1.05rem' : '0.6rem 0.85rem',
+        minHeight: isFullscreen ? '60px' : '48px',
+        labelSize: isFullscreen ? '1.05rem' : '0.88rem',
+        valueSize: isFullscreen ? '1.95rem' : '1.5rem',
         badgeSize: '0.75rem',
-        gap: isFullscreen ? '0.8rem' : '0.55rem',
-        sectionHeaderMb: isFullscreen ? '0.5rem' : '0.35rem',
-        sectionHeaderPad: isFullscreen ? '0.4rem 0.9rem' : '0.28rem 0.7rem',
-        sectionHeaderFont: isFullscreen ? '1.18rem' : '0.95rem'
+        gap: isFullscreen ? '0.75rem' : '0.5rem',
+        sectionHeaderMb: isFullscreen ? '0.45rem' : '0.3rem',
+        sectionHeaderPad: isFullscreen ? '0.35rem 0.85rem' : '0.25rem 0.65rem',
+        sectionHeaderFont: isFullscreen ? '1.12rem' : '0.92rem'
       };
     }
     return {
-      padding: isFullscreen ? '0.65rem 0.95rem' : '0.45rem 0.7rem',
-      minHeight: isFullscreen ? '52px' : '42px',
-      labelSize: isFullscreen ? '1rem' : '0.82rem',
-      valueSize: isFullscreen ? '1.85rem' : '1.4rem',
+      padding: isFullscreen ? '0.6rem 0.85rem' : '0.45rem 0.65rem',
+      minHeight: isFullscreen ? '48px' : '38px',
+      labelSize: isFullscreen ? '0.95rem' : '0.8rem',
+      valueSize: isFullscreen ? '1.75rem' : '1.35rem',
       badgeSize: '0.7rem',
-      gap: isFullscreen ? '0.6rem' : '0.4rem',
-      sectionHeaderMb: isFullscreen ? '0.4rem' : '0.25rem',
-      sectionHeaderPad: isFullscreen ? '0.3rem 0.75rem' : '0.2rem 0.6rem',
-      sectionHeaderFont: isFullscreen ? '1.08rem' : '0.86rem'
+      gap: isFullscreen ? '0.55rem' : '0.38rem',
+      sectionHeaderMb: isFullscreen ? '0.35rem' : '0.22rem',
+      sectionHeaderPad: isFullscreen ? '0.28rem 0.7rem' : '0.18rem 0.55rem',
+      sectionHeaderFont: isFullscreen ? '1.05rem' : '0.85rem'
     };
   };
 
@@ -134,68 +153,68 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
             <div style={{ fontSize: isFullscreen ? '0.88rem' : '0.75rem', fontWeight: '800', color: theme.main || '#2563EB', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
               BÁO CÁO CA TRỰC KHOA PHÒNG
             </div>
-            <h2 style={{ fontSize: isFullscreen ? '2.2rem' : '1.7rem', fontWeight: '900', color: '#0F2C59', margin: 0, lineHeight: 1.15 }}>
+            <h2 style={{ fontSize: isFullscreen ? '2.1rem' : '1.65rem', fontWeight: '900', color: '#0F2C59', margin: 0, lineHeight: 1.15 }}>
               {deptName}
             </h2>
           </div>
         </div>
 
-        <img src="/logo.png" alt="Logo" style={{ width: isFullscreen ? '46px' : '36px', height: isFullscreen ? '46px' : '36px', flexShrink: 0 }} />
+        <img src="/logo.png" alt="Logo" style={{ width: isFullscreen ? '46px' : '36px', height: isFullscreen ? '46px' : '36px', borderRadius: '50%', objectFit: 'contain', flexShrink: 0 }} />
       </div>
 
       {/* 2. Staff Banner */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap',
         backgroundColor: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '10px',
-        padding: isFullscreen ? '0.5rem 1.1rem' : '0.4rem 0.85rem', flexShrink: 0,
+        padding: isFullscreen ? '0.45rem 1rem' : '0.35rem 0.8rem', flexShrink: 0,
         boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
       }}>
         {doctorName ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', backgroundColor: '#EFF6FF', padding: '0.25rem 0.75rem', borderRadius: '6px', border: '1px solid #BFDBFE' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', backgroundColor: '#EFF6FF', padding: '0.22rem 0.7rem', borderRadius: '6px', border: '1px solid #BFDBFE' }}>
             <FaUserMd style={{ color: '#2563EB' }} />
-            <span style={{ fontSize: isFullscreen ? '1rem' : '0.86rem', color: '#1E40AF', fontWeight: '700' }}>
+            <span style={{ fontSize: isFullscreen ? '0.98rem' : '0.85rem', color: '#1E40AF', fontWeight: '700' }}>
               BS trực: <strong style={{ color: '#0F2C59' }}>{doctorName}</strong>
             </span>
           </div>
         ) : (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', backgroundColor: '#F1F5F9', padding: '0.25rem 0.75rem', borderRadius: '6px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', backgroundColor: '#F1F5F9', padding: '0.22rem 0.7rem', borderRadius: '6px' }}>
             <FaUserMd style={{ color: '#64748B' }} />
-            <span style={{ fontSize: isFullscreen ? '1rem' : '0.86rem', color: '#64748B', fontWeight: '600' }}>
+            <span style={{ fontSize: isFullscreen ? '0.98rem' : '0.85rem', color: '#64748B', fontWeight: '600' }}>
               BS trực: <em>Chưa cập nhật</em>
             </span>
           </div>
         )}
 
         {nurseName && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', backgroundColor: '#F0FDF4', padding: '0.25rem 0.75rem', borderRadius: '6px', border: '1px solid #BBF7D0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', backgroundColor: '#F0FDF4', padding: '0.22rem 0.7rem', borderRadius: '6px', border: '1px solid #BBF7D0' }}>
             <FaUserNurse style={{ color: '#16A34A' }} />
-            <span style={{ fontSize: isFullscreen ? '1rem' : '0.86rem', color: '#166534', fontWeight: '700' }}>
+            <span style={{ fontSize: isFullscreen ? '0.98rem' : '0.85rem', color: '#166534', fontWeight: '700' }}>
               Điều dưỡng: <strong style={{ color: '#14532D' }}>{nurseName}</strong>
             </span>
           </div>
         )}
 
         {safeOvertime.length > 0 && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', backgroundColor: '#FFFBEB', padding: '0.25rem 0.75rem', borderRadius: '6px', border: '1px solid #FDE68A' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', backgroundColor: '#FFFBEB', padding: '0.22rem 0.7rem', borderRadius: '6px', border: '1px solid #FDE68A' }}>
             <FaClock style={{ color: '#D97706' }} />
-            <span style={{ fontSize: isFullscreen ? '1rem' : '0.86rem', color: '#92400E', fontWeight: '700' }}>
+            <span style={{ fontSize: isFullscreen ? '0.98rem' : '0.85rem', color: '#92400E', fontWeight: '700' }}>
               Tăng cường: <strong style={{ color: '#78350F' }}>{safeOvertime.map(o => `${o.staffName || ''} (${o.time || ''})`).filter(s => s.trim() !== '()').join('; ')}</strong>
             </span>
           </div>
         )}
 
         {room && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', backgroundColor: '#FAF5FF', padding: '0.25rem 0.75rem', borderRadius: '6px', border: '1px solid #DDD6FE', marginLeft: 'auto' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', backgroundColor: '#FAF5FF', padding: '0.22rem 0.7rem', borderRadius: '6px', border: '1px solid #DDD6FE', marginLeft: 'auto' }}>
             <FaDoorOpen style={{ color: '#9333EA' }} />
-            <span style={{ fontSize: isFullscreen ? '1rem' : '0.86rem', color: '#6B21A8', fontWeight: '800' }}>Phòng: {room}</span>
+            <span style={{ fontSize: isFullscreen ? '0.98rem' : '0.85rem', color: '#6B21A8', fontWeight: '800' }}>Phòng: {room}</span>
           </div>
         )}
       </div>
 
-      {/* 3. Main Metrics Container */}
+      {/* 3. Main Metrics & Case Container */}
       <div style={{
         display: 'flex', flexDirection: 'column', gap: dims.gap,
-        flex: 1, minHeight: 0, justifyContent: totalMetricsCount <= 4 ? 'center' : 'flex-start',
+        flex: 1, minHeight: 0, justifyContent: totalMetricsCount <= 4 && totalCasesCount === 0 ? 'center' : 'flex-start',
         overflowY: 'auto'
       }}>
         {finalSections.length > 0 ? (
@@ -326,6 +345,145 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
             <p style={{ fontSize: '0.9rem', color: '#64748B', margin: 0 }}>
               Bác sĩ trực: <strong>{doctorName || 'Chưa phân công'}</strong> &nbsp;|&nbsp; Điều dưỡng: <strong>{nurseName || 'Chưa phân công'}</strong>
             </p>
+          </div>
+        )}
+
+        {/* 4. Clinical Cases Section on Department Overview Slide */}
+        {totalCasesCount > 0 && (
+          <div style={{ marginTop: '0.4rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <div style={{
+              fontSize: dims.sectionHeaderFont, fontWeight: '900', color: '#0F2C59',
+              backgroundColor: '#F1F5F9', padding: dims.sectionHeaderPad, borderRadius: '8px',
+              borderLeft: '5px solid #0F2C59', textTransform: 'uppercase', letterSpacing: '0.5px',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+            }}>
+              <span>🏥 CÁC CA BỆNH LÂM SÀNG TẠI KHOA ({totalCasesCount} ca)</span>
+              <span style={{ fontSize: '0.82rem', fontWeight: '700', color: '#64748B', textTransform: 'none' }}>
+                (Chi tiết từng ca trình chiếu ở các slide tiếp theo ➔)
+              </span>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '0.55rem' }}>
+              {/* Transfer Cases */}
+              {transferCases.map((tc, idx) => (
+                <div key={`tc_${idx}`} style={{
+                  backgroundColor: '#FFFBEB', border: '1.5px solid #FDE68A', borderLeft: '5px solid #D97706',
+                  borderRadius: '10px', padding: '0.6rem 0.85rem', boxShadow: '0 2px 6px rgba(217,119,6,0.06)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '3px' }}>
+                    <span style={{ fontSize: '0.78rem', fontWeight: '800', color: '#92400E', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <FaAmbulance style={{ color: '#D97706' }} /> CHUYỂN VIỆN #{idx + 1}
+                    </span>
+                    {tc.admission_time || tc.admissionTime ? (
+                      <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#B45309' }}>
+                        ⏰ {tc.admission_time || tc.admissionTime}
+                      </span>
+                    ) : null}
+                  </div>
+                  <div style={{ fontWeight: '900', color: '#92400E', fontSize: '1.05rem', lineHeight: 1.2 }}>
+                    {tc.patient_name || tc.patientName || 'Bệnh nhân'} {formatPatientAge(tc.age) ? `(${formatPatientAge(tc.age)})` : ''}
+                  </div>
+                  <div style={{ fontSize: '0.85rem', color: '#78350F', marginTop: '2px', fontWeight: '600' }}>
+                    <strong>CĐ:</strong> {tc.diagnosis || tc.reason || '—'}
+                  </div>
+                  {(tc.initial_treatment || tc.initialTreatment) && (
+                    <div style={{ fontSize: '0.8rem', color: '#451A03', marginTop: '2px' }}>
+                      <strong>Xử trí:</strong> {tc.initial_treatment || tc.initialTreatment}
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {/* Surgery Cases */}
+              {surgeryCases.map((sc, idx) => (
+                <div key={`sc_${idx}`} style={{
+                  backgroundColor: '#F0F9FF', border: '1.5px solid #BAE6FD', borderLeft: '5px solid #0284C7',
+                  borderRadius: '10px', padding: '0.6rem 0.85rem', boxShadow: '0 2px 6px rgba(2,132,199,0.06)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '3px' }}>
+                    <span style={{ fontSize: '0.78rem', fontWeight: '800', color: '#0369A1', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <FaProcedures style={{ color: '#0284C7' }} /> PHẪU THUẬT #{idx + 1}
+                    </span>
+                    {sc.admission_time || sc.admissionTime ? (
+                      <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#0284C7' }}>
+                        ⏰ {sc.admission_time || sc.admissionTime}
+                      </span>
+                    ) : null}
+                  </div>
+                  <div style={{ fontWeight: '900', color: '#0369A1', fontSize: '1.05rem', lineHeight: 1.2 }}>
+                    {sc.patient_name || sc.patientName || 'Bệnh nhân'} {formatPatientAge(sc.birth_year || sc.birthYear || sc.age) ? `(${formatPatientAge(sc.birth_year || sc.birthYear || sc.age)})` : ''}
+                  </div>
+                  <div style={{ fontSize: '0.85rem', color: '#0C4A6E', marginTop: '2px', fontWeight: '600' }}>
+                    <strong>CĐ trước mổ:</strong> {sc.preoperative_diagnosis || sc.preoperativeDiagnosis || '—'}
+                  </div>
+                  {(sc.consultation_order || sc.consultationOrder || sc.postoperative_diagnosis || sc.postoperativeDiagnosis) && (
+                    <div style={{ fontSize: '0.8rem', color: '#075985', marginTop: '2px' }}>
+                      <strong>Phương pháp:</strong> {sc.consultation_order || sc.consultationOrder || sc.postoperative_diagnosis || sc.postoperativeDiagnosis}
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {/* Critical Cases */}
+              {criticalCases.map((cc, idx) => (
+                <div key={`cc_${idx}`} style={{
+                  backgroundColor: '#FAF5FF', border: '1.5px solid #DDD6FE', borderLeft: '5px solid #7C3AED',
+                  borderRadius: '10px', padding: '0.6rem 0.85rem', boxShadow: '0 2px 6px rgba(124,58,237,0.06)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '3px' }}>
+                    <span style={{ fontSize: '0.78rem', fontWeight: '800', color: '#5B21B6', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <FaHeartbeat style={{ color: '#7C3AED' }} /> BỆNH NẶNG #{idx + 1}
+                    </span>
+                    {cc.admission_time || cc.admissionTime ? (
+                      <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#7C3AED' }}>
+                        ⏰ {cc.admission_time || cc.admissionTime}
+                      </span>
+                    ) : null}
+                  </div>
+                  <div style={{ fontWeight: '900', color: '#5B21B6', fontSize: '1.05rem', lineHeight: 1.2 }}>
+                    {cc.patient_name || cc.patientName || 'Bệnh nhân'} {formatPatientAge(cc.age) ? `(${formatPatientAge(cc.age)})` : ''}
+                  </div>
+                  <div style={{ fontSize: '0.85rem', color: '#4C1D95', marginTop: '2px', fontWeight: '600' }}>
+                    <strong>CĐ:</strong> {cc.diagnosis || cc.condition_summary || cc.conditionSummary || '—'}
+                  </div>
+                  {cc.treatment && (
+                    <div style={{ fontSize: '0.8rem', color: '#3B0764', marginTop: '2px' }}>
+                      <strong>Xử trí:</strong> {cc.treatment}
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {/* Death Cases */}
+              {deathCases.map((dc, idx) => (
+                <div key={`dc_${idx}`} style={{
+                  backgroundColor: '#FEF2F2', border: '1.5px solid #FECACA', borderLeft: '5px solid #DC2626',
+                  borderRadius: '10px', padding: '0.6rem 0.85rem', boxShadow: '0 2px 6px rgba(220,38,38,0.06)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '3px' }}>
+                    <span style={{ fontSize: '0.78rem', fontWeight: '800', color: '#991B1B', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <FaSkullCrossbones style={{ color: '#DC2626' }} /> TỬ VONG #{idx + 1}
+                    </span>
+                    {dc.admission_time || dc.admissionTime ? (
+                      <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#DC2626' }}>
+                        ⏰ {dc.admission_time || dc.admissionTime}
+                      </span>
+                    ) : null}
+                  </div>
+                  <div style={{ fontWeight: '900', color: '#991B1B', fontSize: '1.05rem', lineHeight: 1.2 }}>
+                    {dc.patient_name || dc.patientName || 'Bệnh nhân'} {formatPatientAge(dc.age) ? `(${formatPatientAge(dc.age)})` : ''}
+                  </div>
+                  <div style={{ fontSize: '0.85rem', color: '#7F1D1D', marginTop: '2px', fontWeight: '700' }}>
+                    <strong>CĐ:</strong> {dc.diagnosis || '—'}
+                  </div>
+                  {(dc.emergency_treatment || dc.emergencyTreatment) && (
+                    <div style={{ fontSize: '0.8rem', color: '#450A0A', marginTop: '2px' }}>
+                      <strong>Cấp cứu:</strong> {dc.emergency_treatment || dc.emergencyTreatment}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
