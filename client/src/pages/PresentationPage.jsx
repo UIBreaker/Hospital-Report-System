@@ -500,6 +500,23 @@ const PresentationPage = () => {
         fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
       }}
     >
+      <style>{`
+        @keyframes presentationSlideSmoothEnter {
+          0% {
+            opacity: 0;
+            transform: translateY(6px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .presentation-slide-smooth-enter {
+          animation: presentationSlideSmoothEnter 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          will-change: opacity, transform;
+        }
+      `}</style>
+
       {/* ===================== 1. LEFT SIDEBAR (Dark Navy Gradient) ===================== */}
       {!isFullscreen && (
         <aside style={{
@@ -718,6 +735,8 @@ const PresentationPage = () => {
           }}>
             {/* Dynamic Scaled Slide Content Container */}
             <div
+              key={currentSlide}
+              className="presentation-slide-smooth-enter"
               ref={scrollContainerRef}
               style={{
                 flex: 1,

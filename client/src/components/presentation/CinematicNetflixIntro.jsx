@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaPlay, FaForward, FaExpand, FaTv } from 'react-icons/fa';
+import { FaForward, FaExpand, FaTv } from 'react-icons/fa';
 
 // Helper: Format Vietnamese Date
 const formatVietnameseDate = (dateStr) => {
@@ -15,8 +15,8 @@ const formatVietnameseDate = (dateStr) => {
   return dateStr;
 };
 
-// Play a high-end cinematic deep harmonic swell using Web Audio API
-const playCinematicSting = () => {
+// Play a gentle, soothing, prestigious ambient chime using Web Audio API
+const playGentleCinematicChime = () => {
   try {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     if (!AudioContext) return;
@@ -28,67 +28,64 @@ const playCinematicSting = () => {
 
     const now = ctx.currentTime;
 
-    // 1. Deep Sub Bass Impact (45Hz -> 32Hz)
+    // 1. Soft Warm Ambient Sub Swell (65.4Hz - C2)
     const subOsc = ctx.createOscillator();
     const subGain = ctx.createGain();
     subOsc.type = 'sine';
-    subOsc.frequency.setValueAtTime(48, now);
-    subOsc.frequency.exponentialRampToValueAtTime(32, now + 2.0);
-    subGain.gain.setValueAtTime(0.001, now);
-    subGain.gain.linearRampToValueAtTime(0.42, now + 0.18);
-    subGain.gain.exponentialRampToValueAtTime(0.001, now + 2.4);
+    subOsc.frequency.setValueAtTime(65.41, now);
+    subOsc.frequency.exponentialRampToValueAtTime(55.0, now + 2.2);
+
+    subGain.gain.setValueAtTime(0.0001, now);
+    subGain.gain.linearRampToValueAtTime(0.18, now + 0.4);
+    subGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.4);
+
     subOsc.connect(subGain);
     subGain.connect(ctx.destination);
     subOsc.start(now);
     subOsc.stop(now + 2.5);
 
-    // 2. Cinematic Warm Brass/Pad Chord (A2 = 110Hz, C#3 = 138.59Hz, E3 = 164.81Hz, A3 = 220Hz)
-    [110.0, 138.59, 164.81, 220.0, 329.63].forEach((freq, idx) => {
+    // 2. Pure Warm Sine Pad Harmonics (C3 = 130.81Hz, E3 = 164.81Hz, G3 = 196.0Hz, C4 = 261.63Hz)
+    [130.81, 164.81, 196.0, 261.63, 329.63].forEach((freq, idx) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      const filter = ctx.createBiquadFilter();
 
-      osc.type = idx % 2 === 0 ? 'sawtooth' : 'triangle';
+      osc.type = 'sine';
       osc.frequency.setValueAtTime(freq, now);
-      osc.frequency.linearRampToValueAtTime(freq * 1.015, now + 2.0);
 
-      filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(400, now);
-      filter.frequency.exponentialRampToValueAtTime(2400, now + 1.2);
-      filter.frequency.exponentialRampToValueAtTime(300, now + 2.4);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.linearRampToValueAtTime(0.06 / (idx + 1), now + 0.5);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 2.4);
 
-      gain.gain.setValueAtTime(0.001, now);
-      gain.gain.linearRampToValueAtTime(0.12 / (idx + 1), now + 0.35);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 2.4);
-
-      osc.connect(filter);
-      filter.connect(gain);
+      osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start(now);
       osc.stop(now + 2.5);
     });
 
-    // 3. Shimmer High Glass Harmonics (659.25Hz - E5 & 987.77Hz - B5)
-    [659.25, 987.77, 1318.51].forEach((freq) => {
-      const shimmerOsc = ctx.createOscillator();
-      const shimmerGain = ctx.createGain();
-      shimmerOsc.type = 'sine';
-      shimmerOsc.frequency.setValueAtTime(freq, now + 0.2);
-      shimmerGain.gain.setValueAtTime(0.001, now);
-      shimmerGain.gain.linearRampToValueAtTime(0.05, now + 0.6);
-      shimmerGain.gain.exponentialRampToValueAtTime(0.001, now + 2.3);
-      shimmerOsc.connect(shimmerGain);
-      shimmerGain.connect(ctx.destination);
-      shimmerOsc.start(now + 0.2);
-      shimmerOsc.stop(now + 2.4);
+    // 3. Gentle Crystal High Chime (523.25Hz - C5, 659.25Hz - E5, 1046.5Hz - C6)
+    [523.25, 659.25, 1046.5].forEach((freq, idx) => {
+      const chimeOsc = ctx.createOscillator();
+      const chimeGain = ctx.createGain();
+
+      chimeOsc.type = 'sine';
+      chimeOsc.frequency.setValueAtTime(freq, now + 0.15 * idx);
+
+      chimeGain.gain.setValueAtTime(0.0001, now + 0.15 * idx);
+      chimeGain.gain.linearRampToValueAtTime(0.045, now + 0.15 * idx + 0.15);
+      chimeGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.3);
+
+      chimeOsc.connect(chimeGain);
+      chimeGain.connect(ctx.destination);
+      chimeOsc.start(now + 0.15 * idx);
+      chimeOsc.stop(now + 2.4);
     });
   } catch (err) {
-    // Gracefully handle browser audio restrictions
+    // Gracefully handle browser restrictions
   }
 };
 
 const CinematicNetflixIntro = ({ date = '', onComplete }) => {
-  const [phase, setPhase] = useState('start'); // 'start' -> 'burst' -> 'flare' -> 'zoom' -> 'done'
+  const [phase, setPhase] = useState('start'); // 'start' -> 'bloom' -> 'zoom' -> 'done'
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
 
@@ -107,13 +104,13 @@ const CinematicNetflixIntro = ({ date = '', onComplete }) => {
   };
 
   useEffect(() => {
-    // Attempt fullscreen on mount
+    // Auto-request fullscreen
     requestFullScreenMode();
 
-    // Play cinematic sound
-    playCinematicSting();
+    // Play gentle soothing chime
+    playGentleCinematicChime();
 
-    // 3D Canvas Starfield & Medical Particles
+    // Soft Ambient Dust Particles Canvas (Ethereal & Smooth)
     const canvas = canvasRef.current;
     let animId;
     if (canvas) {
@@ -121,41 +118,35 @@ const CinematicNetflixIntro = ({ date = '', onComplete }) => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
 
-      const stars = Array.from({ length: 90 }, () => ({
-        x: (Math.random() - 0.5) * canvas.width * 1.5,
-        y: (Math.random() - 0.5) * canvas.height * 1.5,
-        z: Math.random() * 1000 + 200,
-        size: Math.random() * 2.5 + 1,
-        color: ['#38BDF8', '#60A5FA', '#FDE047', '#F87171', '#FFFFFF'][Math.floor(Math.random() * 5)]
+      const particles = Array.from({ length: 65 }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        radius: Math.random() * 2.2 + 0.8,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: -Math.random() * 0.5 - 0.15,
+        alpha: Math.random() * 0.6 + 0.2,
+        color: ['#38BDF8', '#60A5FA', '#FDE047', '#A7F3D0', '#FFFFFF'][Math.floor(Math.random() * 5)]
       }));
 
       const render = () => {
-        ctx.fillStyle = 'rgba(3, 7, 18, 0.25)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        const cx = canvas.width / 2;
-        const cy = canvas.height / 2;
+        particles.forEach((p) => {
+          p.x += p.vx;
+          p.y += p.vy;
+          if (p.y < -10) p.y = canvas.height + 10;
+          if (p.x < -10) p.x = canvas.width + 10;
+          if (p.x > canvas.width + 10) p.x = -10;
 
-        stars.forEach((star) => {
-          star.z -= 4.5;
-          if (star.z <= 0) star.z = 1000;
-
-          const k = 400 / star.z;
-          const px = star.x * k + cx;
-          const py = star.y * k + cy;
-
-          if (px >= 0 && px <= canvas.width && py >= 0 && py <= canvas.height) {
-            const alpha = Math.min(1, (1000 - star.z) / 400);
-            ctx.beginPath();
-            ctx.arc(px, py, star.size * k * 0.8, 0, Math.PI * 2);
-            ctx.fillStyle = star.color;
-            ctx.globalAlpha = alpha;
-            ctx.shadowBlur = 12;
-            ctx.shadowColor = star.color;
-            ctx.fill();
-            ctx.shadowBlur = 0;
-            ctx.globalAlpha = 1;
-          }
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          ctx.fillStyle = p.color;
+          ctx.globalAlpha = p.alpha;
+          ctx.shadowBlur = 8;
+          ctx.shadowColor = p.color;
+          ctx.fill();
+          ctx.shadowBlur = 0;
+          ctx.globalAlpha = 1;
         });
 
         animId = requestAnimationFrame(render);
@@ -163,21 +154,17 @@ const CinematicNetflixIntro = ({ date = '', onComplete }) => {
       render();
     }
 
-    // Animation Timeline
+    // Smooth Timeline
     const t1 = setTimeout(() => {
-      setPhase('burst');
+      setPhase('bloom');
       requestFullScreenMode();
-    }, 80);
+    }, 60);
 
     const t2 = setTimeout(() => {
-      setPhase('flare');
-    }, 1100);
+      setPhase('zoom');
+    }, 2100);
 
     const t3 = setTimeout(() => {
-      setPhase('zoom');
-    }, 2000);
-
-    const t4 = setTimeout(() => {
       setPhase('done');
       if (onComplete) onComplete();
     }, 2650);
@@ -195,7 +182,6 @@ const CinematicNetflixIntro = ({ date = '', onComplete }) => {
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);
-      clearTimeout(t4);
       cancelAnimationFrame(animId);
       window.removeEventListener('keydown', handleKeyDown);
     };
@@ -217,7 +203,7 @@ const CinematicNetflixIntro = ({ date = '', onComplete }) => {
         left: 0,
         width: '100vw',
         height: '100vh',
-        backgroundColor: '#02060D',
+        backgroundColor: '#040B17',
         zIndex: 999999,
         display: 'flex',
         flexDirection: 'column',
@@ -226,57 +212,37 @@ const CinematicNetflixIntro = ({ date = '', onComplete }) => {
         overflow: 'hidden',
         cursor: 'pointer',
         userSelect: 'none',
-        perspective: '1400px',
-        transition: 'opacity 0.4s ease-out',
+        perspective: '1200px',
+        transition: 'opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
         opacity: phase === 'done' ? 0 : 1
       }}
     >
       <style>{`
-        @keyframes godRaySpin {
+        @keyframes softHaloSpin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
         }
 
-        @keyframes opticalShockwave {
+        @keyframes softShockwave {
           0% {
-            transform: scale(0.05);
-            opacity: 1;
-            border-width: 8px;
-          }
-          50% {
-            opacity: 0.7;
+            transform: scale(0.3);
+            opacity: 0.8;
+            border-width: 3px;
           }
           100% {
-            transform: scale(3.8);
+            transform: scale(2.8);
             opacity: 0;
             border-width: 1px;
           }
         }
 
-        @keyframes chromaticRibbon1 {
-          0% { transform: translateY(-100%) rotate(-35deg) scaleX(0.1); opacity: 0; }
-          50% { transform: translateY(0) rotate(-15deg) scaleX(2.5); opacity: 0.85; }
-          100% { transform: translateY(100%) rotate(5deg) scaleX(3.5); opacity: 0; }
-        }
-
-        @keyframes chromaticRibbon2 {
-          0% { transform: translateY(100%) rotate(35deg) scaleX(0.1); opacity: 0; }
-          50% { transform: translateY(0) rotate(15deg) scaleX(2.5); opacity: 0.85; }
-          100% { transform: translateY(-100%) rotate(-5deg) scaleX(3.5); opacity: 0; }
-        }
-
-        @keyframes hudPulse {
-          0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.7; }
-          50% { transform: scale(1.08) rotate(180deg); opacity: 1; }
-        }
-
-        @keyframes textShimmer {
-          0% { background-position: -300% 0; }
-          100% { background-position: 300% 0; }
+        @keyframes subtleGlowPulse {
+          0%, 100% { opacity: 0.6; transform: scale(1); }
+          50% { opacity: 0.9; transform: scale(1.05); }
         }
       `}</style>
 
-      {/* 1. Canvas 3D Starfield Backdrop */}
+      {/* 1. Canvas Gentle Dust Particles */}
       <canvas
         ref={canvasRef}
         style={{
@@ -290,97 +256,59 @@ const CinematicNetflixIntro = ({ date = '', onComplete }) => {
         }}
       />
 
-      {/* 2. Deep Blue & Crimson Radial Gradient Vignette */}
+      {/* 2. Deep Royal Navy & Space Vignette Backdrop */}
       <div style={{
         position: 'absolute',
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        background: 'radial-gradient(circle at center, rgba(15, 44, 89, 0.75) 0%, rgba(6, 18, 38, 0.9) 50%, #02060D 100%)',
+        background: 'radial-gradient(circle at center, #0F2C59 0%, #081B38 45%, #030813 100%)',
         zIndex: 2
       }} />
 
-      {/* 3. Volumetric God-Rays / Light Beams from Center */}
+      {/* 3. Soft Ambient Radial Light Blooms behind Center */}
       <div style={{
         position: 'absolute',
-        width: '900px',
-        height: '900px',
+        width: '700px',
+        height: '700px',
         borderRadius: '50%',
-        background: 'conic-gradient(from 0deg, transparent 0deg, rgba(56, 189, 248, 0.15) 20deg, transparent 40deg, rgba(239, 68, 68, 0.12) 70deg, transparent 90deg, rgba(245, 158, 11, 0.15) 120deg, transparent 150deg, rgba(56, 189, 248, 0.18) 180deg, transparent 210deg, rgba(16, 185, 129, 0.14) 240deg, transparent 270deg, rgba(245, 158, 11, 0.15) 300deg, transparent 330deg)',
-        animation: 'godRaySpin 24s linear infinite',
+        background: 'radial-gradient(circle, rgba(56, 189, 248, 0.22) 0%, rgba(37, 99, 235, 0.12) 50%, transparent 75%)',
+        filter: 'blur(50px)',
         zIndex: 3,
-        pointerEvents: 'none',
-        opacity: phase !== 'start' ? 1 : 0,
-        transition: 'opacity 0.8s ease-out'
+        animation: 'subtleGlowPulse 4s ease-in-out infinite',
+        pointerEvents: 'none'
       }} />
 
-      {/* 4. Optical Shockwaves (Tri-Color Expanding Rings) */}
+      {/* 4. Elegant Expanding Concentric Wave Rings */}
       {phase !== 'start' && (
         <>
           <div style={{
             position: 'absolute',
-            width: '380px',
-            height: '380px',
+            width: '320px',
+            height: '320px',
             borderRadius: '50%',
-            border: '3px solid rgba(56, 189, 248, 0.85)',
-            boxShadow: '0 0 60px rgba(56, 189, 248, 0.6), inset 0 0 40px rgba(56, 189, 248, 0.4)',
-            animation: 'opticalShockwave 2s cubic-bezier(0.1, 0.85, 0.25, 1) forwards',
+            border: '2px solid rgba(56, 189, 248, 0.65)',
+            boxShadow: '0 0 40px rgba(56, 189, 248, 0.35)',
+            animation: 'softShockwave 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards',
             zIndex: 4,
             pointerEvents: 'none'
           }} />
           <div style={{
             position: 'absolute',
-            width: '380px',
-            height: '380px',
+            width: '320px',
+            height: '320px',
             borderRadius: '50%',
-            border: '3px solid rgba(239, 68, 68, 0.75)',
-            boxShadow: '0 0 70px rgba(239, 68, 68, 0.5)',
-            animation: 'opticalShockwave 2s 0.2s cubic-bezier(0.1, 0.85, 0.25, 1) forwards',
-            zIndex: 4,
-            pointerEvents: 'none'
-          }} />
-          <div style={{
-            position: 'absolute',
-            width: '380px',
-            height: '380px',
-            borderRadius: '50%',
-            border: '4px solid rgba(245, 158, 11, 0.85)',
-            boxShadow: '0 0 80px rgba(245, 158, 11, 0.6)',
-            animation: 'opticalShockwave 2s 0.45s cubic-bezier(0.1, 0.85, 0.25, 1) forwards',
+            border: '2px solid rgba(245, 158, 11, 0.55)',
+            boxShadow: '0 0 45px rgba(245, 158, 11, 0.3)',
+            animation: 'softShockwave 2.2s 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards',
             zIndex: 4,
             pointerEvents: 'none'
           }} />
         </>
       )}
 
-      {/* 5. Netflix-Style Chromatic Light Ribbons */}
-      {phase === 'flare' && (
-        <>
-          <div style={{
-            position: 'absolute',
-            width: '150vw',
-            height: '60px',
-            background: 'linear-gradient(90deg, transparent 0%, rgba(56, 189, 248, 0.7) 35%, #FFFFFF 50%, rgba(239, 68, 68, 0.7) 65%, transparent 100%)',
-            boxShadow: '0 0 50px 15px rgba(56, 189, 248, 0.8)',
-            animation: 'chromaticRibbon1 0.9s ease-out forwards',
-            zIndex: 5,
-            pointerEvents: 'none'
-          }} />
-          <div style={{
-            position: 'absolute',
-            width: '150vw',
-            height: '40px',
-            background: 'linear-gradient(90deg, transparent 0%, rgba(245, 158, 11, 0.7) 35%, #FFFFFF 50%, rgba(16, 185, 129, 0.7) 65%, transparent 100%)',
-            boxShadow: '0 0 50px 15px rgba(245, 158, 11, 0.8)',
-            animation: 'chromaticRibbon2 0.9s 0.1s ease-out forwards',
-            zIndex: 5,
-            pointerEvents: 'none'
-          }} />
-        </>
-      )}
-
-      {/* 6. Center Hero Presentation (Logo + Glowing Titles) */}
+      {/* 5. Center Hero Logo & Hospital Information (Seamless 3D Scale) */}
       <div style={{
         position: 'relative',
         display: 'flex',
@@ -389,36 +317,35 @@ const CinematicNetflixIntro = ({ date = '', onComplete }) => {
         justifyContent: 'center',
         zIndex: 10,
         transform: phase === 'zoom' 
-          ? 'scale(4.2) translateZ(450px)' 
-          : (phase === 'burst' || phase === 'flare' ? 'scale(1.06)' : 'scale(0.35)'),
-        opacity: phase === 'zoom' ? 0 : (phase === 'burst' || phase === 'flare' ? 1 : 0),
-        filter: phase === 'zoom' ? 'blur(16px) brightness(3.0)' : 'blur(0px)',
+          ? 'scale(3.6) translateZ(350px)' 
+          : (phase === 'bloom' ? 'scale(1.02)' : 'scale(0.5)'),
+        opacity: phase === 'zoom' ? 0 : (phase === 'bloom' ? 1 : 0),
+        filter: phase === 'zoom' ? 'blur(14px) brightness(2.2)' : 'blur(0px)',
         transition: phase === 'zoom' 
-          ? 'transform 0.6s cubic-bezier(0.7, 0, 0.2, 1), opacity 0.55s ease-out, filter 0.55s ease-out' 
-          : 'transform 0.75s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s ease-out',
+          ? 'transform 0.55s cubic-bezier(0.7, 0, 0.2, 1), opacity 0.5s ease-out, filter 0.5s ease-out' 
+          : 'transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease-out',
         willChange: 'transform, opacity, filter'
       }}>
         
-        {/* Glowing Aura Behind Logo */}
+        {/* Soft Radial Backlight behind Logo */}
         <div style={{
           position: 'absolute',
-          width: '320px',
-          height: '320px',
+          width: '280px',
+          height: '280px',
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(56, 189, 248, 0.6) 0%, rgba(37, 99, 235, 0.35) 45%, transparent 75%)',
-          filter: 'blur(35px)',
+          background: 'radial-gradient(circle, rgba(56, 189, 248, 0.45) 0%, rgba(37, 99, 235, 0.25) 50%, transparent 75%)',
+          filter: 'blur(30px)',
           zIndex: -1
         }} />
 
-        {/* Futuristic Sci-Fi Medical HUD / Hologram Reticle */}
+        {/* Elegant Thin Spinning Luminous Rings */}
         <div style={{
           position: 'absolute',
           width: '210px',
           height: '210px',
           borderRadius: '50%',
-          border: '2px dashed rgba(56, 189, 248, 0.65)',
-          boxShadow: '0 0 25px rgba(56, 189, 248, 0.4)',
-          animation: 'hudPulse 12s linear infinite',
+          border: '1.5px dashed rgba(56, 189, 248, 0.5)',
+          animation: 'softHaloSpin 18s linear infinite',
           zIndex: 0
         }} />
         <div style={{
@@ -426,24 +353,28 @@ const CinematicNetflixIntro = ({ date = '', onComplete }) => {
           width: '235px',
           height: '235px',
           borderRadius: '50%',
-          border: '1.5px dotted rgba(245, 158, 11, 0.55)',
-          animation: 'godRaySpin 16s linear infinite reverse',
+          border: '1px dotted rgba(245, 158, 11, 0.4)',
+          animation: 'softHaloSpin 24s linear infinite reverse',
           zIndex: 0
         }} />
 
-        {/* The Hospital Logo with 3D Glossy Elevation */}
+        {/* ========================================================================= */}
+        {/* THE FLAWLESS CIRCULAR LOGO EMBLEM (100% Rounded, Zero Square Box Artifact) */}
+        {/* ========================================================================= */}
         <div style={{
           width: '155px',
           height: '155px',
           borderRadius: '50%',
           backgroundColor: '#FFFFFF',
-          padding: '18px',
-          boxShadow: '0 0 60px rgba(56, 189, 248, 0.8), 0 0 110px rgba(37, 99, 235, 0.5), 0 0 0 8px rgba(255, 255, 255, 0.95)',
+          padding: '8px',
+          boxShadow: '0 0 45px rgba(56, 189, 248, 0.65), 0 0 90px rgba(37, 99, 235, 0.35), 0 0 0 6px rgba(255, 255, 255, 0.95)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          overflow: 'hidden', // Ensures perfectly round clipping
           position: 'relative',
-          zIndex: 2
+          zIndex: 2,
+          boxSizing: 'border-box'
         }}>
           <img
             src="/logo.png"
@@ -452,60 +383,62 @@ const CinematicNetflixIntro = ({ date = '', onComplete }) => {
               width: '100%',
               height: '100%',
               objectFit: 'contain',
-              filter: 'drop-shadow(0 6px 14px rgba(0, 0, 0, 0.25))'
+              borderRadius: '50%', // Ensures the image content is round
+              display: 'block'
             }}
           />
         </div>
 
         {/* Upper Agency Subtitle */}
         <div style={{
-          marginTop: '2rem',
-          fontSize: '0.95rem',
+          marginTop: '1.85rem',
+          fontSize: '0.9rem',
           fontWeight: '900',
           color: '#93C5FD',
           textTransform: 'uppercase',
           letterSpacing: '4px',
           opacity: phase !== 'start' ? 1 : 0,
           transition: 'opacity 0.6s ease-out 0.2s',
-          textShadow: '0 0 20px rgba(56, 189, 248, 0.9)'
+          textShadow: '0 0 15px rgba(56, 189, 248, 0.8)'
         }}>
           SỞ Y TẾ BÌNH PHƯỚC
         </div>
 
-        {/* Main Hospital Name with Letter Tracking & Gradient Glow */}
+        {/* Main Hospital Name with Gentle Letter Expansion */}
         <h1 style={{
-          margin: '0.4rem 0 0 0',
-          fontSize: '2.1rem',
+          margin: '0.35rem 0 0 0',
+          fontSize: '2rem',
           fontWeight: '900',
           color: '#FFFFFF',
           textTransform: 'uppercase',
-          letterSpacing: phase !== 'start' ? '7px' : '1px',
-          transition: 'letter-spacing 1.3s cubic-bezier(0.1, 0.85, 0.25, 1)',
+          letterSpacing: phase !== 'start' ? '5.5px' : '1px',
+          transition: 'letter-spacing 1.2s cubic-bezier(0.16, 1, 0.3, 1)',
           textAlign: 'center',
-          textShadow: '0 0 30px rgba(255, 255, 255, 0.7), 0 0 60px rgba(56, 189, 248, 0.5), 0 4px 12px rgba(0,0,0,0.8)',
-          lineHeight: 1.2
+          textShadow: '0 0 25px rgba(255, 255, 255, 0.6), 0 0 50px rgba(56, 189, 248, 0.4), 0 4px 12px rgba(0,0,0,0.7)',
+          lineHeight: 1.25
         }}>
           TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG
         </h1>
 
-        {/* Presentation Topic Pill with Glow & Full-Screen Indicator */}
+        {/* Presentation Topic Pill with Luminous Glow */}
         <div style={{
-          marginTop: '1.25rem',
-          background: 'linear-gradient(90deg, rgba(37, 99, 235, 0.35), rgba(56, 189, 248, 0.5), rgba(37, 99, 235, 0.35))',
-          border: '2px solid rgba(56, 189, 248, 0.75)',
+          marginTop: '1.15rem',
+          background: 'linear-gradient(90deg, rgba(37, 99, 235, 0.3), rgba(56, 189, 248, 0.45), rgba(37, 99, 235, 0.3))',
+          border: '1.5px solid rgba(56, 189, 248, 0.7)',
           borderRadius: '35px',
-          padding: '0.65rem 2rem',
+          padding: '0.6rem 1.85rem',
           color: '#FFFFFF',
           fontWeight: '900',
-          fontSize: '1.05rem',
-          letterSpacing: '2.5px',
+          fontSize: '1rem',
+          letterSpacing: '2px',
           textTransform: 'uppercase',
-          boxShadow: '0 0 35px rgba(56, 189, 248, 0.5), inset 0 0 20px rgba(56, 189, 248, 0.2)',
+          boxShadow: '0 0 30px rgba(56, 189, 248, 0.4)',
           display: 'flex',
           alignItems: 'center',
-          gap: '0.85rem'
+          gap: '0.75rem',
+          backdropFilter: 'blur(8px)'
         }}>
-          <FaTv style={{ color: '#FDE047', fontSize: '1.15rem' }} />
+          <FaTv style={{ color: '#FDE047', fontSize: '1.1rem' }} />
           <span>PHIÊN HỌP GIAO BAN CHUYÊN MÔN TOÀN VIỆN</span>
           {date && (
             <span style={{ color: '#FDE047', fontWeight: '900' }}>
@@ -515,10 +448,10 @@ const CinematicNetflixIntro = ({ date = '', onComplete }) => {
         </div>
       </div>
 
-      {/* 7. Bottom Action & Fullscreen Notice Bar */}
+      {/* 6. Bottom Status & Start Button Bar */}
       <div style={{
         position: 'absolute',
-        bottom: '2.5rem',
+        bottom: '2.25rem',
         left: 0,
         right: 0,
         display: 'flex',
@@ -527,23 +460,24 @@ const CinematicNetflixIntro = ({ date = '', onComplete }) => {
         padding: '0 3rem',
         zIndex: 20
       }}>
-        {/* Fullscreen status notice */}
+        {/* Fullscreen Notice Pill */}
         <div style={{
-          color: 'rgba(255, 255, 255, 0.65)',
+          color: 'rgba(255, 255, 255, 0.75)',
           fontSize: '0.82rem',
           fontWeight: '600',
           display: 'flex',
           alignItems: 'center',
           gap: '0.45rem',
-          backgroundColor: 'rgba(0, 0, 0, 0.35)',
-          padding: '0.4rem 0.85rem',
+          backgroundColor: 'rgba(0, 0, 0, 0.4)',
+          padding: '0.45rem 1rem',
           borderRadius: '20px',
-          border: '1px solid rgba(255, 255, 255, 0.15)'
+          border: '1px solid rgba(255, 255, 255, 0.15)',
+          backdropFilter: 'blur(6px)'
         }}>
           <FaExpand style={{ color: '#38BDF8' }} /> Chế độ toàn màn hình tự động (Nhấn F hoặc Esc để thoát)
         </div>
 
-        {/* Skip button */}
+        {/* Start / Skip Button */}
         <button
           type="button"
           onClick={handleSkip}
@@ -560,12 +494,12 @@ const CinematicNetflixIntro = ({ date = '', onComplete }) => {
             alignItems: 'center',
             gap: '0.5rem',
             backdropFilter: 'blur(10px)',
-            transition: 'all 0.2s',
+            transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
             boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.28)';
-            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.8)';
+            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.25)';
+            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.7)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.12)';
