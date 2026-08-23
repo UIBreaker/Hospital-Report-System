@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { 
   FaCheck, 
   FaTimes, 
@@ -20,11 +20,6 @@ import {
   FaHospital,
   FaCheckCircle,
   FaClock,
-  FaBullhorn,
-  FaChevronLeft,
-  FaChevronRight,
-  FaPause,
-  FaPlay,
   FaNotesMedical
 } from 'react-icons/fa';
 import { Notice } from '../../ui';
@@ -62,37 +57,6 @@ const DEPT_ICONS = {
   gmhs: FaSyringe
 };
 
-const ANNOUNCEMENTS = [
-  {
-    id: 1,
-    title: 'THÔNG TIN CẬP NHẬT',
-    text: 'Từ ngày 01/08/2026, hệ thống Báo cáo giao ban sẽ cập nhật mẫu báo cáo mới theo Thông tư 24/2026/TT-BYT.',
-    linkText: 'Xem chi tiết ➔',
-    linkUrl: '#'
-  },
-  {
-    id: 2,
-    title: 'LƯU Ý GIAO BAN',
-    text: 'Các khoa vui lòng hoàn tất nộp báo cáo ca trực trước 08:30 sáng hàng ngày để phục vụ phiên giao ban của Ban Giám Đốc.',
-    linkText: 'Xem quy chế ➔',
-    linkUrl: '#'
-  },
-  {
-    id: 3,
-    title: 'TÍNH NĂNG MỚI',
-    text: 'Đã tích hợp đầy đủ hồ sơ theo dõi Bệnh nặng, Ca tử vong và Ca phẫu thuật cấp cứu chuyên sâu.',
-    linkText: 'Khám phá ➔',
-    linkUrl: '#'
-  },
-  {
-    id: 4,
-    title: 'HỖ TRỢ KỸ THUẬT',
-    text: 'Hotline / Zalo hỗ trợ kỹ thuật và phân quyền tài khoản khoa phòng: 0916.337.266 (Phòng KHNV).',
-    linkText: 'Liên hệ Zalo ➔',
-    linkUrl: 'https://zalo.me/0916337266'
-  }
-];
-
 const ReportsTab = ({
   statusList = [],
   loading = false,
@@ -100,18 +64,6 @@ const ReportsTab = ({
   onClearError,
   onOpenDetailModal
 }) => {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(true);
-
-  // Auto rotate announcement slides
-  useEffect(() => {
-    if (!isPlaying) return;
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % ANNOUNCEMENTS.length);
-    }, 6000);
-    return () => clearInterval(interval);
-  }, [isPlaying]);
-
   const totalCount = statusList.length || 12;
   const submittedCount = statusList.filter((s) => s.status === 'submitted').length;
   const unsubmittedCount = totalCount - submittedCount;
@@ -123,149 +75,9 @@ const ReportsTab = ({
     return (idxA !== -1 ? idxA : 999) - (idxB !== -1 ? idxB : 999);
   });
 
-  const announcement = ANNOUNCEMENTS[currentSlide];
-
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-      
-      {/* 1. Announcement Banner Carousel */}
-      <div style={{
-        background: 'linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%)',
-        border: '1px solid #BFDBFE',
-        borderRadius: '16px',
-        padding: '0.85rem 1.35rem',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        boxShadow: '0 2px 10px rgba(37, 99, 235, 0.06)',
-        flexWrap: 'wrap',
-        gap: '0.85rem'
-      }}>
-        {/* Left Side: Megaphone Icon + Text */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1, minWidth: '300px' }}>
-          <div style={{
-            width: '42px',
-            height: '42px',
-            borderRadius: '50%',
-            backgroundColor: '#2563EB',
-            color: '#FFFFFF',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '1.1rem',
-            flexShrink: 0,
-            boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)'
-          }}>
-            <FaBullhorn />
-          </div>
-
-          <div>
-            <div style={{
-              fontSize: '0.78rem',
-              fontWeight: '800',
-              color: '#1D4ED8',
-              textTransform: 'uppercase',
-              letterSpacing: '0.6px',
-              marginBottom: '0.15rem'
-            }}>
-              {announcement.title}
-            </div>
-            <div style={{ fontSize: '0.86rem', color: '#1E293B', lineHeight: '1.4' }}>
-              {announcement.text}{' '}
-              {announcement.linkUrl.startsWith('http') ? (
-                <a
-                  href={announcement.linkUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ color: '#2563EB', fontWeight: '700', textDecoration: 'none', marginLeft: '0.35rem' }}
-                >
-                  {announcement.linkText}
-                </a>
-              ) : (
-                <span style={{ color: '#2563EB', fontWeight: '700', cursor: 'pointer', marginLeft: '0.35rem' }}>
-                  {announcement.linkText}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Right Side: Carousel Navigation Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
-          <button
-            type="button"
-            onClick={() => setCurrentSlide((prev) => (prev - 1 + ANNOUNCEMENTS.length) % ANNOUNCEMENTS.length)}
-            style={{
-              width: '28px',
-              height: '28px',
-              borderRadius: '50%',
-              backgroundColor: '#FFFFFF',
-              border: '1px solid #CBD5E1',
-              color: '#334155',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '0.75rem',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-            }}
-            title="Tin trước"
-          >
-            <FaChevronLeft />
-          </button>
-
-          <span style={{ fontSize: '0.78rem', fontWeight: '800', color: '#3B82F6', minWidth: '32px', textAlign: 'center' }}>
-            {currentSlide + 1}/{ANNOUNCEMENTS.length}
-          </span>
-
-          <button
-            type="button"
-            onClick={() => setCurrentSlide((prev) => (prev + 1) % ANNOUNCEMENTS.length)}
-            style={{
-              width: '28px',
-              height: '28px',
-              borderRadius: '50%',
-              backgroundColor: '#FFFFFF',
-              border: '1px solid #CBD5E1',
-              color: '#334155',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '0.75rem',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-            }}
-            title="Tin tiếp theo"
-          >
-            <FaChevronRight />
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setIsPlaying(!isPlaying)}
-            style={{
-              width: '28px',
-              height: '28px',
-              borderRadius: '50%',
-              backgroundColor: '#FFFFFF',
-              border: '1px solid #CBD5E1',
-              color: isPlaying ? '#64748B' : '#2563EB',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '0.75rem',
-              marginLeft: '0.2rem',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-            }}
-            title={isPlaying ? 'Tạm dừng tự chạy' : 'Tiếp tục tự chạy'}
-          >
-            {isPlaying ? <FaPause size={10} /> : <FaPlay size={10} />}
-          </button>
-        </div>
-      </div>
-
-      {/* 2. Top Summary Stat Cards Grid (3 Cards) */}
+      {/* 1. Top Summary Stat Cards Grid (3 Cards) */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
