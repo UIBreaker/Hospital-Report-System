@@ -589,6 +589,11 @@ const AdminDashboard = () => {
 
   // Presentation Navigation
   const handlePresentation = () => {
+    try {
+      if (!document.fullscreenElement) {
+        document.documentElement?.requestFullscreen?.().catch(() => {});
+      }
+    } catch (e) {}
     navigate(`/presentation/${date}`);
   };
 

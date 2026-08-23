@@ -467,7 +467,19 @@ const PresentationPage = () => {
     return (
       <CinematicNetflixIntro
         date={date}
-        onComplete={() => setShowIntro(false)}
+        onComplete={() => {
+          try {
+            if (!document.fullscreenElement) {
+              const el = document.documentElement || document.body;
+              if (el.requestFullscreen) {
+                el.requestFullscreen().catch(() => {});
+              } else if (el.webkitRequestFullscreen) {
+                el.webkitRequestFullscreen().catch(() => {});
+              }
+            }
+          } catch (e) {}
+          setShowIntro(false);
+        }}
       />
     );
   }
