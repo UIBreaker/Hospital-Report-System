@@ -13,6 +13,8 @@ import {
   FaLock,
   FaUnlockAlt,
   FaTable,
+  FaClipboardList,
+  FaWpforms,
   FaUsers,
   FaDatabase,
   FaUserShield,
@@ -31,6 +33,7 @@ const ReportsTab = lazy(() => import('../components/admin/tabs/ReportsTab'));
 const StaffTab = lazy(() => import('../components/admin/tabs/StaffTab'));
 const DatabaseTab = lazy(() => import('../components/admin/tabs/DatabaseTab'));
 const AccountsTab = lazy(() => import('../components/admin/tabs/AccountsTab'));
+const CustomFormsTab = lazy(() => import('../components/admin/tabs/CustomFormsTab'));
 
 const TabLoadingFallback = () => (
   <MedicalLoader
@@ -748,7 +751,44 @@ const AdminDashboard = () => {
               )}
             </button>
 
-            {/* Item 2: Quản Lý Nhân Sự */}
+                        {/* Item 2: Biểu Mẫu Tùy Chỉnh & Tracker */}
+            <button
+              type="button"
+              onClick={() => setActiveTab('custom_forms')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.65rem',
+                padding: '0.75rem 0.85rem',
+                borderRadius: '10px',
+                border: 'none',
+                backgroundColor: activeTab === 'custom_forms' ? '#2563EB' : 'transparent',
+                color: activeTab === 'custom_forms' ? '#FFFFFF' : '#94A3B8',
+                cursor: 'pointer',
+                fontWeight: activeTab === 'custom_forms' ? '800' : '600',
+                fontSize: '0.86rem',
+                transition: 'all 0.15s ease',
+                textAlign: 'left',
+                boxShadow: activeTab === 'custom_forms' ? '0 4px 12px rgba(37, 99, 235, 0.4)' : 'none'
+              }}
+              onMouseEnter={(e) => {
+                if (activeTab !== 'custom_forms') {
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
+                  e.currentTarget.style.color = '#FFFFFF';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeTab !== 'custom_forms') {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = '#94A3B8';
+                }
+              }}
+            >
+              <FaWpforms style={{ fontSize: '0.95rem' }} />
+              <span>Biểu Mẫu Tùy Chỉnh</span>
+            </button>
+
+            {/* Item 3: Quản Lý Nhân Sự */}
             <button
               type="button"
               onClick={() => setActiveTab('staff')}

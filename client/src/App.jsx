@@ -9,6 +9,11 @@ const LoginPage = lazy(() => import('./pages/LoginPage'));
 const ReportPage = lazy(() => import('./pages/ReportPage'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const PresentationPage = lazy(() => import('./pages/PresentationPage'));
+const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'));
+const ChangePasswordPage = lazy(() => import('./pages/auth/ChangePasswordPage'));
+const DynamicFormRenderer = lazy(() => import('./components/admin/custom-forms/DynamicFormRenderer'));
+const TrackerWidgetView = lazy(() => import('./components/admin/custom-forms/TrackerWidgetView'));
+const DynamicFormSubmissions = lazy(() => import('./components/admin/custom-forms/DynamicFormSubmissions'));
 
 const PageLoadingFallback = () => (
   <MedicalLoader
@@ -25,38 +30,79 @@ function App() {
       <AuthProvider>
         <Router>
           <Suspense fallback={<PageLoadingFallback />}>
-          <Routes>
-            <Route path="/" element={<LoginPage />} />
-            <Route 
-              path="/report" 
-              element={
-                <ProtectedRoute>
-                  <ReportPage />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/admin" 
-              element={
-                <ProtectedRoute adminOnly={true}>
-                  <AdminDashboard />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/presentation/:date" 
-              element={
-                <ProtectedRoute adminOnly={true}>
-                  <PresentationPage />
-                </ProtectedRoute>
-              } 
-            />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
-      </Router>
-    </AuthProvider>
-  </ErrorBoundary>
+            <Routes>
+              {/* Public Auth Routes */}
+              <Route path="/" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/change-password" element={<ChangePasswordPage />} />
+
+              {/* Protected Department & Hospital Report */}
+              <Route 
+                path="/report" 
+                element={
+                  <ProtectedRoute>
+                    <ReportPage />
+                  </ProtectedRoute>
+                } 
+              />
+
+              {/* Protected Custom Forms Routes */}
+              <Route 
+                path="/custom-forms/:code" 
+                element={
+                  <ProtectedRoute>
+                    <div style={{ minHeight: '100vh', backgroundColor: '#F8FAFC', padding: '1.5rem 1rem' }}>
+                      <DynamicFormRenderer />
+                    </div>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/custom-forms/:code/tracker" 
+                element={
+                  <ProtectedRoute>
+                    <div style={{ minHeight: '100vh', backgroundColor: '#F8FAFC', padding: '1.5rem 1rem' }}>
+                      <TrackerWidgetView />
+                    </div>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/custom-forms/:code/submissions" 
+                element={
+                  <ProtectedRoute>
+                    <div style={{ minHeight: '100vh', backgroundColor: '#F8FAFC', padding: '1.5rem 1rem' }}>
+                      <DynamicFormSubmissions />
+                    </div>
+                  </ProtectedRoute>
+                } 
+              />
+
+              {/* Admin Routes */}
+              <Route 
+                path="/admin" 
+                element={
+                  <ProtectedRoute adminOnly={true}>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/presentation/:date" 
+                element={
+                  <ProtectedRoute adminOnly={true}>
+                    <PresentationPage />
+                  </ProtectedRoute>
+                } 
+              />
+
+              {/* Fallback */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
+        </Router>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

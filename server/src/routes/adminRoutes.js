@@ -1,43 +1,52 @@
 const express = require('express');
 const router = express.Router();
 const { 
-  getPresentationData, 
   getDepartmentStatus, 
-  getDatabaseStats, 
+  getPresentationData,
+  getDatabaseStats,
   getReportsPayloadSize,
   getAuditLogs,
   exportReports,
   getAllAccounts,
   updateAccountPassword,
-  resetAccountPassword,
-  updateAccountDetails,
   createAccount,
+  deleteAccount,
   toggleReportLock,
   toggleLockAllReports
 } = require('../controllers/adminController');
-const { auth, adminOnly } = require('../middleware/auth');
-const { getReportsByDate } = require('../controllers/reportController');
+const {
+  getAllSystemUsers,
+  approveUser,
+  rejectUser,
+  toggleUserStatus,
+  adminResetPassword,
+  deleteSystemUser
+} = require('../controllers/userManageController');
+const { auth, requireAdmin } = require('../middleware/auth');
 
-router.get('/presentation/:date', auth, adminOnly, getPresentationData);
-router.get('/departments/:date', auth, adminOnly, getDepartmentStatus);
-router.get('/reports/:date', auth, adminOnly, getReportsByDate);
-router.get('/database-stats', auth, adminOnly, getDatabaseStats);
-router.get('/reports-payload-size', auth, adminOnly, getReportsPayloadSize);
-router.get('/reports-payload-size/:date', auth, adminOnly, getReportsPayloadSize);
-router.get('/audit-logs', auth, adminOnly, getAuditLogs);
-router.get('/export-reports', auth, adminOnly, exportReports);
-router.get('/export-reports/:date', auth, adminOnly, exportReports);
+router.get('/departments/:date', auth, requireAdmin, getDepartmentStatus);
+router.get('/presentation/:date', auth, requireAdmin, getPresentationData);
+router.get('/database-stats', auth, requireAdmin, getDatabaseStats);
+router.get('/reports-payload-size', auth, requireAdmin, getReportsPayloadSize);
+router.get('/audit-logs', auth, requireAdmin, getAuditLogs);
+router.get('/export-reports', auth, requireAdmin, exportReports);
 
-// Briefing Report Lock / Unlock Management
-router.put('/reports/:departmentCode/:date/toggle-lock', auth, adminOnly, toggleReportLock);
-router.put('/reports/toggle-lock-all/:date', auth, adminOnly, toggleLockAllReports);
+// Core 13 Accounts
+router.get('/accounts', auth, requireAdmin, getAllAccounts);
+router.put('/accounts/:id/password', auth, requireAdmin, updateAccountPassword);
+router.post('/accounts', auth, requireAdmin, createAccount);
+router.delete('/accounts/:id', auth, requireAdmin, deleteAccount);
 
-// User Accounts Management
-router.get('/accounts', auth, adminOnly, getAllAccounts);
-router.put('/accounts/:id/password', auth, adminOnly, updateAccountPassword);
-router.post('/accounts/:id/reset-password', auth, adminOnly, resetAccountPassword);
-router.put('/accounts/:id', auth, adminOnly, updateAccountDetails);
-router.post('/accounts', auth, adminOnly, createAccount);
+// Extended System Users (Pending, Approval, Temporary Reset Password)
+router.get('/system-users', auth, requireAdmin, getAllSystemUsers);
+router.put('/system-users/:id/approve', auth, requireAdmin, approveUser);
+router.put('/system-users/:id/reject', auth, requireAdmin, rejectUser);
+router.put('/system-users/:id/status', auth, requireAdmin, toggleUserStatus);
+router.post('/system-users/:id/reset-password', auth, requireAdmin, adminResetPassword);
+router.delete('/system-users/:id', auth, requireAdmin, deleteSystemUser);
+
+// Locks
+router.put('/reports/:departmentCode/:date/toggle-lock', auth, requireAdmin, toggleReportLock);
+router.put('/reports/toggle-lock-all/:date', auth, requireAdmin, toggleLockAllReports);
 
 module.exports = router;
-

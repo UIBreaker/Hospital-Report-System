@@ -15,7 +15,7 @@ const login = async (req, res, next) => {
     const cleanUsername = String(username).trim();
     const isKhnvAdminAttempt = ['khnv', 'admin'].includes(cleanUsername.toLowerCase());
 
-    // Search by exact username or case-insensitive
+    // 1. Search in Core 13 Users table first
     let [users] = await pool.execute(
       'SELECT * FROM users WHERE LOWER(username) = LOWER(?) OR username = ?',
       [cleanUsername, cleanUsername]
@@ -40,61 +40,144 @@ const login = async (req, res, next) => {
       }
     }
 
-    if (users.length === 0) {
-      return res.status(401).json({ success: false, error: 'Tên đăng nhập hoặc mật khẩu không chính xác' });
-    }
-
-    const user = users[0];
-
-    // Check password matching: bcrypt compare or direct check for Khnv@2026
-    let isMatch = await bcrypt.compare(password, user.password_hash);
-    
-    if (!isMatch && isKhnvAdminAttempt) {
-      // Support Khnv@2026 or old 123
-      if (password === 'Khnv@2026' || password === '123') {
-        isMatch = true;
-        // Asynchronously update db to the new Khnv username and Khnv@2026 hash
-        try {
-          await pool.execute(
-            "UPDATE users SET username = 'Khnv', password_hash = ?, department_name = 'Phòng Kế Hoạch Nghiệp Vụ' WHERE id = ? OR role = 'admin'",
-            [KHNV_NEW_HASH, user.id]
-          );
-        } catch (dbUpdateErr) {
-          console.warn('Could not auto-update admin credentials in DB:', dbUpdateErr.message);
+    // If found in Core Users table
+    if (users.length > 0) {
+      const user = users[0];
+      let isMatch = await bcrypt.compare(password, user.password_hash);
+      
+      if (!isMatch && isKhnvAdminAttempt) {
+        if (password === 'Khnv@2026' || password === '123') {
+          isMatch = true;
+          try {
+            await pool.execute(
+              "UPDATE users SET username = 'Khnv', password_hash = ?, department_name = 'Phòng Kế Hoạch Nghiệp Vụ' WHERE id = ? OR role = 'admin'",
+              [KHNV_NEW_HASH, user.id]
+            );
+          } catch (dbUpdateErr) {}
         }
       }
-    }
-    
-    if (!isMatch) {
-      return res.status(401).json({ success: false, error: 'Tên đăng nhập hoặc mật khẩu không chính xác' });
+      
+      if (!isMatch) {
+        return res.status(401).json({ success: false, error: 'Tên đăng nhập hoặc mật khẩu không chính xác' });
+      }
+
+      const userRole = (user.role || (['admin', 'khnv'].includes(String(user.username || '').toLowerCase()) || String(user.department_code || '').toLowerCase() === 'admin' ? 'admin' : 'department')).toLowerCase();
+
+      const token = jwt.sign(
+        { 
+          userId: user.id, 
+          username: user.username,
+          departmentCode: user.department_code, 
+          role: userRole,
+          source: 'core'
+        },
+        process.env.JWT_SECRET || 'hospital_report_secret_key_2026',
+        { expiresIn: '30d' }
+      );
+
+      return res.json({
+        success: true,
+        data: {
+          token,
+          user: {
+            id: user.id,
+            username: user.username,
+            full_name: user.full_name || user.department_name,
+            departmentCode: user.department_code,
+            departmentName: user.department_name,
+            role: userRole
+          }
+        }
+      });
     }
 
-    const userRole = (user.role || (['admin', 'khnv'].includes(String(user.username || '').toLowerCase()) || String(user.department_code || '').toLowerCase() === 'admin' ? 'admin' : 'department')).toLowerCase();
-
-    const token = jwt.sign(
-      { 
-        userId: user.id, 
-        username: user.username,
-        departmentCode: user.department_code, 
-        role: userRole 
-      },
-      process.env.JWT_SECRET || 'hospital_report_secret_key_2026',
-      { expiresIn: '30d' }
+    // 2. Search in Extended system_users table
+    const [sysUsers] = await pool.execute(
+      'SELECT * FROM system_users WHERE LOWER(username) = ?',
+      [cleanUsername.toLowerCase()]
     );
 
-    res.json({
-      success: true,
-      data: {
-        token,
-        user: {
-          id: user.id,
-          username: user.username,
-          departmentCode: user.department_code,
-          departmentName: user.department_name,
-          role: userRole
-        }
+    if (sysUsers.length > 0) {
+      const sysUser = sysUsers[0];
+
+      // Check account lifecycle status
+      if (sysUser.status === 'pending') {
+        return res.status(403).json({
+          success: false,
+          error: 'Tài khoản của bạn đang chờ Quản trị viên (Admin) phê duyệt. Vui lòng liên hệ Admin.'
+        });
       }
-    });
+
+      if (sysUser.status === 'rejected') {
+        return res.status(403).json({
+          success: false,
+          error: 'Tài khoản của bạn đã bị từ chối phê duyệt. Vui lòng liên hệ Ban Quản Trị.'
+        });
+      }
+
+      if (sysUser.status === 'suspended') {
+        return res.status(403).json({
+          success: false,
+          error: 'Tài khoản của bạn hiện đang bị tạm khóa. Vui lòng liên hệ Ban Quản Trị để được hỗ trợ.'
+        });
+      }
+
+      const isMatch = await bcrypt.compare(password, sysUser.password_hash);
+      if (!isMatch) {
+        return res.status(401).json({ success: false, error: 'Tên đăng nhập hoặc mật khẩu không chính xác' });
+      }
+
+      // Check mandatory password change (when using Admin temporary password)
+      if (Number(sysUser.must_change_password) === 1) {
+        return res.json({
+          success: true,
+          mustChangePassword: true,
+          message: 'Bạn đang đăng nhập bằng mật khẩu tạm thời. Vui lòng đổi mật khẩu mới để kích hoạt tài khoản.',
+          data: {
+            username: sysUser.username,
+            full_name: sysUser.full_name,
+            departmentCode: sysUser.department_code,
+            departmentName: sysUser.department_name,
+            mustChangePassword: true
+          }
+        });
+      }
+
+      // Update last login
+      try {
+        await pool.execute('UPDATE system_users SET last_login_at = NOW() WHERE id = ?', [sysUser.id]);
+      } catch (e) {}
+
+      const userRole = (sysUser.role || 'staff').toLowerCase();
+      const token = jwt.sign(
+        { 
+          userId: sysUser.id, 
+          username: sysUser.username,
+          departmentCode: sysUser.department_code, 
+          role: userRole,
+          source: 'system'
+        },
+        process.env.JWT_SECRET || 'hospital_report_secret_key_2026',
+        { expiresIn: '30d' }
+      );
+
+      return res.json({
+        success: true,
+        data: {
+          token,
+          user: {
+            id: sysUser.id,
+            username: sysUser.username,
+            full_name: sysUser.full_name,
+            departmentCode: sysUser.department_code,
+            departmentName: sysUser.department_name,
+            role: userRole
+          }
+        }
+      });
+    }
+
+    return res.status(401).json({ success: false, error: 'Tên đăng nhập hoặc mật khẩu không chính xác' });
   } catch (error) {
     next(error);
   }
@@ -102,12 +185,32 @@ const login = async (req, res, next) => {
 
 const getMe = async (req, res, next) => {
   try {
+    const { userId, source, username } = req.user;
+
+    if (source === 'system') {
+      const [sysUsers] = await pool.execute(
+        'SELECT id, username, full_name, department_code, department_name, role, status FROM system_users WHERE id = ?',
+        [userId]
+      );
+      if (sysUsers.length > 0) {
+        return res.json({ success: true, data: sysUsers[0] });
+      }
+    }
+
     const [users] = await pool.execute(
-      'SELECT id, username, department_code, department_name, role FROM users WHERE id = ?',
-      [req.user.userId]
+      'SELECT id, username, department_code, department_name, role FROM users WHERE id = ? OR username = ?',
+      [userId, username]
     );
 
     if (users.length === 0) {
+      // Fallback check system_users
+      const [sysFallback] = await pool.execute(
+        'SELECT id, username, full_name, department_code, department_name, role, status FROM system_users WHERE id = ? OR username = ?',
+        [userId, username]
+      );
+      if (sysFallback.length > 0) {
+        return res.json({ success: true, data: sysFallback[0] });
+      }
       return res.status(404).json({ success: false, error: 'Không tìm thấy người dùng' });
     }
 

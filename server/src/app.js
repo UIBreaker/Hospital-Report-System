@@ -4,6 +4,7 @@ const authRoutes = require('./routes/authRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const staffRoutes = require('./routes/staffRoutes');
+const customFormRoutes = require('./routes/customFormRoutes');
 const { auth } = require('./middleware/auth');
 const { getStaffByDepartment } = require('./controllers/staffController');
 const errorHandler = require('./middleware/errorHandler');
@@ -42,6 +43,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/staff', staffRoutes);
+app.use('/api/custom-forms', customFormRoutes);
 app.get('/api/staff-by-department', auth, getStaffByDepartment);
 
 // Error Handler

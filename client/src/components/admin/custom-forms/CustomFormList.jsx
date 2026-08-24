@@ -1,0 +1,417 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  FaWpforms, 
+  FaPlus, 
+  FaEdit, 
+  FaTrash, 
+  FaEye, 
+  FaChartLine, 
+  FaClipboardList, 
+  FaSpinner, 
+  FaSync, 
+  FaLayerGroup,
+  FaCheckCircle,
+  FaFileAlt
+} from 'react-icons/fa';
+import customFormService from '../../../services/customFormService';
+
+const THEME_COLORS = {
+  '#2563EB': 'Xanh Dương Y Tế',
+  '#059669': 'Xanh Lục Bảo',
+  '#7C3AED': 'Tím Thần Kinh',
+  '#D97706': 'Cam Hổ Phách',
+  '#DC2626': 'Đỏ Cấp Cứu',
+  '#0891B2': 'Xanh Ngọc Cyan'
+};
+
+const CustomFormList = ({
+  onSelectForm,
+  onCreateForm,
+  onEditForm,
+  onViewTracker,
+  onViewSubmissions
+}) => {
+  const [forms, setForms] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const fetchForms = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await customFormService.getAllForms();
+      if (res && res.success) {
+        setForms(res.data || []);
+      }
+    } catch (err) {
+      setError(err.response?.data?.error || err.message || 'Lỗi khi tải danh sách biểu mẫu.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchForms();
+  }, []);
+
+  const handleDelete = async (id, title, e) => {
+    e.stopPropagation();
+    if (!window.confirm(`Bạn có chắc chắn muốn xóa biểu mẫu "${title}"?\nToàn bộ cấu hình và dữ liệu nộp liên quan sẽ bị xóa.`)) {
+      return;
+    }
+
+    try {
+      const res = await customFormService.deleteForm(id);
+      if (res && res.success) {
+        setForms(prev => prev.filter(f => f.id !== id));
+      }
+    } catch (err) {
+      alert('Không thể xóa biểu mẫu: ' + (err.response?.data?.error || err.message));
+    }
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      {/* Top Toolbar */}
+      <div style={{
+        backgroundColor: '#FFFFFF',
+        borderRadius: '16px',
+        border: '1px solid #E2E8F0',
+        padding: '1rem 1.4rem',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '0.85rem',
+        boxShadow: '0 2px 8px rgba(15, 44, 89, 0.04)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div style={{
+            width: '42px',
+            height: '42px',
+            borderRadius: '12px',
+            backgroundColor: '#EFF6FF',
+            color: '#2563EB',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '1.25rem'
+          }}>
+            <FaWpforms />
+          </div>
+          <div>
+            <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: '800', color: '#0F2C59' }}>
+              Quản Trị Biểu Mẫu Tùy Chỉnh & Tracker
+            </h3>
+            <p style={{ margin: '0.15rem 0 0 0', fontSize: '0.8rem', color: '#64748B' }}>
+              Thiết kế form động linh hoạt, phân quyền nhập liệu và theo dõi số liệu chuyên môn tự động.
+            </p>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+          <button
+            type="button"
+            onClick={fetchForms}
+            disabled={loading}
+            style={{
+              backgroundColor: '#F1F5F9',
+              color: '#334155',
+              border: '1px solid #CBD5E1',
+              borderRadius: '8px',
+              padding: '0.5rem 0.95rem',
+              fontWeight: '700',
+              fontSize: '0.82rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.35rem'
+            }}
+          >
+            <FaSync className={loading ? 'spinner' : ''} /> Làm mới
+          </button>
+
+          <button
+            type="button"
+            onClick={onCreateForm}
+            style={{
+              backgroundColor: '#2563EB',
+              color: '#FFFFFF',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '0.5rem 1.15rem',
+              fontWeight: '800',
+              fontSize: '0.84rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              boxShadow: '0 2px 8px rgba(37, 99, 235, 0.3)'
+            }}
+          >
+            <FaPlus /> Tạo Biểu Mẫu Mới
+          </button>
+        </div>
+      </div>
+
+      {error && (
+        <div style={{ padding: '0.75rem 1rem', backgroundColor: '#FEF2F2', color: '#DC2626', borderRadius: '10px', fontSize: '0.86rem', fontWeight: '600' }}>
+          ⚠️ {error}
+        </div>
+      )}
+
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '3.5rem 1rem', color: '#64748B' }}>
+          <FaSpinner className="spinner" style={{ fontSize: '2rem', color: '#2563EB', marginBottom: '0.65rem' }} />
+          <div>Đang tải danh sách biểu mẫu...</div>
+        </div>
+      ) : forms.length === 0 ? (
+        <div style={{
+          backgroundColor: '#FFFFFF',
+          borderRadius: '16px',
+          border: '2px dashed #CBD5E1',
+          padding: '3.5rem 2rem',
+          textAlign: 'center'
+        }}>
+          <FaClipboardList style={{ fontSize: '3.2rem', color: '#94A3B8', marginBottom: '0.85rem' }} />
+          <h3 style={{ margin: '0 0 0.5rem 0', color: '#0F2C59', fontSize: '1.2rem', fontWeight: '800' }}>
+            Chưa Có Biểu Mẫu Nào Được Tạo
+          </h3>
+          <p style={{ margin: '0 0 1.5rem 0', color: '#64748B', fontSize: '0.88rem' }}>
+            Bạn có thể tạo các biểu mẫu khảo sát, biên bản kiểm tra hoặc form theo dõi nhân sự tăng cường.
+          </p>
+          <button
+            type="button"
+            onClick={onCreateForm}
+            style={{
+              backgroundColor: '#2563EB',
+              color: '#FFFFFF',
+              border: 'none',
+              borderRadius: '10px',
+              padding: '0.65rem 1.5rem',
+              fontWeight: '800',
+              fontSize: '0.9rem',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)'
+            }}
+          >
+            <FaPlus /> Bắt Đầu Thiết Kế Form Đầu Tiên
+          </button>
+        </div>
+      ) : (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+          gap: '1.25rem'
+        }}>
+          {forms.map(form => {
+            const themeColor = form.theme_color || '#2563EB';
+            const isTracker = form.form_type === 'tracker';
+            const fieldsCount = Array.isArray(form.schema_json) ? form.schema_json.length : 0;
+
+            return (
+              <div
+                key={form.id}
+                style={{
+                  backgroundColor: '#FFFFFF',
+                  borderRadius: '18px',
+                  border: '1px solid #E2E8F0',
+                  borderTop: `5px solid ${themeColor}`,
+                  padding: '1.35rem',
+                  boxShadow: '0 4px 14px rgba(15, 44, 89, 0.05)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  gap: '1rem',
+                  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                  position: 'relative'
+                }}
+              >
+                <div>
+                  {/* Badge Row */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.65rem' }}>
+                    <span style={{
+                      backgroundColor: isTracker ? '#FEF3C7' : '#EFF6FF',
+                      color: isTracker ? '#92400E' : '#1E40AF',
+                      padding: '0.2rem 0.6rem',
+                      borderRadius: '8px',
+                      fontSize: '0.72rem',
+                      fontWeight: '800',
+                      textTransform: 'uppercase',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.3rem'
+                    }}>
+                      {isTracker ? <><FaChartLine /> Data Tracker</> : <><FaFileAlt /> Form Nhập Liệu</>}
+                    </span>
+
+                    <span style={{
+                      backgroundColor: form.is_active ? '#DCFCE7' : '#F1F5F9',
+                      color: form.is_active ? '#166534' : '#64748B',
+                      padding: '0.15rem 0.5rem',
+                      borderRadius: '999px',
+                      fontSize: '0.7rem',
+                      fontWeight: '800'
+                    }}>
+                      {form.is_active ? '● Hoạt động' : '○ Tạm dừng'}
+                    </span>
+                  </div>
+
+                  {/* Form Title & Slug */}
+                  <h4 style={{ margin: '0 0 0.35rem 0', fontSize: '1.12rem', fontWeight: '800', color: '#0F2C59', lineHeight: 1.3 }}>
+                    {form.title}
+                  </h4>
+                  <div style={{ fontSize: '0.75rem', fontFamily: 'monospace', color: '#64748B', marginBottom: '0.65rem' }}>
+                    Mã: <strong>{form.code}</strong>
+                  </div>
+
+                  {/* Description */}
+                  {form.description && (
+                    <p style={{ margin: '0 0 0.85rem 0', fontSize: '0.82rem', color: '#475569', lineHeight: 1.45, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      {form.description}
+                    </p>
+                  )}
+
+                  {/* Stats Pill */}
+                  <div style={{
+                    backgroundColor: '#F8FAFC',
+                    borderRadius: '10px',
+                    padding: '0.65rem 0.85rem',
+                    border: '1px solid #E2E8F0',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    fontSize: '0.78rem',
+                    color: '#64748B'
+                  }}>
+                    <span>Số trường: <strong style={{ color: '#0F2C59' }}>{fieldsCount}</strong></span>
+                    <span>Đã nộp: <strong style={{ color: '#2563EB' }}>{form.total_submissions || 0} bản ghi</strong></span>
+                  </div>
+                </div>
+
+                {/* Actions Footer */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  borderTop: '1px solid #F1F5F9',
+                  paddingTop: '0.85rem',
+                  gap: '0.4rem',
+                  flexWrap: 'wrap'
+                }}>
+                  <div style={{ display: 'flex', gap: '0.35rem' }}>
+                    {isTracker ? (
+                      <button
+                        type="button"
+                        onClick={() => onViewTracker(form.code)}
+                        style={{
+                          backgroundColor: '#EFF6FF',
+                          color: '#1E40AF',
+                          border: '1px solid #BFDBFE',
+                          borderRadius: '8px',
+                          padding: '0.42rem 0.75rem',
+                          fontWeight: '700',
+                          fontSize: '0.78rem',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.3rem'
+                        }}
+                        title="Xem trang theo dõi số liệu trực tiếp"
+                      >
+                        <FaChartLine /> Theo Dõi
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => onSelectForm(form.code)}
+                        style={{
+                          backgroundColor: '#EFF6FF',
+                          color: '#1E40AF',
+                          border: '1px solid #BFDBFE',
+                          borderRadius: '8px',
+                          padding: '0.42rem 0.75rem',
+                          fontWeight: '700',
+                          fontSize: '0.78rem',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.3rem'
+                        }}
+                        title="Xem & Nhập dữ liệu biểu mẫu"
+                      >
+                        <FaEye /> Nhập Liệu
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => onViewSubmissions(form.code)}
+                      style={{
+                        backgroundColor: '#F8FAFC',
+                        color: '#475569',
+                        border: '1px solid #CBD5E1',
+                        borderRadius: '8px',
+                        padding: '0.42rem 0.75rem',
+                        fontWeight: '700',
+                        fontSize: '0.78rem',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.3rem'
+                      }}
+                      title="Danh sách các bản ghi đã nộp"
+                    >
+                      <FaClipboardList /> Bản Ghi ({form.total_submissions || 0})
+                    </button>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '0.35rem' }}>
+                    <button
+                      type="button"
+                      onClick={() => onEditForm(form)}
+                      style={{
+                        backgroundColor: '#F8FAFC',
+                        color: '#2563EB',
+                        border: '1px solid #CBD5E1',
+                        borderRadius: '8px',
+                        padding: '0.42rem 0.65rem',
+                        fontWeight: '700',
+                        fontSize: '0.78rem',
+                        cursor: 'pointer'
+                      }}
+                      title="Sửa cấu hình biểu mẫu"
+                    >
+                      <FaEdit />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => handleDelete(form.id, form.title, e)}
+                      style={{
+                        backgroundColor: '#FEF2F2',
+                        color: '#DC2626',
+                        border: '1px solid #FECACA',
+                        borderRadius: '8px',
+                        padding: '0.42rem 0.65rem',
+                        fontWeight: '700',
+                        fontSize: '0.78rem',
+                        cursor: 'pointer'
+                      }}
+                      title="Xóa biểu mẫu"
+                    >
+                      <FaTrash />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default CustomFormList;

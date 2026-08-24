@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 import { 
   FaUser, 
@@ -21,6 +21,8 @@ import {
 } from 'react-icons/fa';
 import { APP_VERSION } from '../config/version';
 import AIAssistant from '../components/common/AIAssistant';
+import ForgotPasswordModal from '../components/auth/ForgotPasswordModal';
+import ChangePasswordModal from '../components/auth/ChangePasswordModal';
 
 const LoginPage = () => {
   const [username, setUsername] = useState('');
@@ -30,6 +32,7 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showForgotModal, setShowForgotModal] = useState(false);
+  const [mustChangePasswordData, setMustChangePasswordData] = useState({ isOpen: false, username: '', fullName: '' });
   
   const { login, user, isAdmin } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -65,6 +68,14 @@ const LoginPage = () => {
       }
 
       const loggedInUser = await login(username, password);
+      if (loggedInUser?.mustChangePassword) {
+        setMustChangePasswordData({
+          isOpen: true,
+          username: loggedInUser.username,
+          fullName: loggedInUser.full_name
+        });
+        return;
+      }
       navigate(loggedInUser.role === 'admin' ? '/admin' : '/report');
     } catch (err) {
       setError(err.response?.data?.error || err.response?.data?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại tên đăng nhập hoặc mật khẩu.');
@@ -689,6 +700,13 @@ const LoginPage = () => {
                   </>
                 )}
               </button>
+              {/* Register Link */}
+              <div style={{ marginTop: '0.85rem', textAlign: 'center', fontSize: '0.82rem', color: '#64748B' }}>
+                Chưa có tài khoản nhân viên?{' '}
+                <Link to="/register" style={{ color: '#0284C7', fontWeight: '800', textDecoration: 'none' }}>
+                  Đăng ký ngay
+                </Link>
+              </div>
 
             </form>
 
@@ -826,7 +844,30 @@ const LoginPage = () => {
       {/* Floating AI Assistant */}
       <AIAssistant onAutoFillLogin={handleAutoFillLogin} />
 
-      {/* Forgot Password Modal */}
+      {/* New Admin-Assisted Forgot Password Modal */}
+      <ForgotPasswordModal
+        isOpen={showForgotModal}
+        onClose={() => setShowForgotModal(false)}
+      />
+
+      {/* Mandatory Password Change Modal */}
+      <ChangePasswordModal
+        isOpen={mustChangePasswordData.isOpen}
+        username={mustChangePasswordData.username}
+        fullName={mustChangePasswordData.fullName}
+        isMandatory={true}
+        onSuccess={(data) => {
+          setMustChangePasswordData({ isOpen: false, username: '', fullName: '' });
+          if (data?.token) {
+            localStorage.setItem('token', data.token);
+          }
+          alert('Đổi mật khẩu thành công! Đang chuyển hướng vào hệ thống...');
+          window.location.reload();
+        }}
+        onClose={() => setMustChangePasswordData({ isOpen: false, username: '', fullName: '' })}
+      />
+
+      {/* Old Modal Comment */}
       {showForgotModal && (
         <div style={{
           position: 'fixed',

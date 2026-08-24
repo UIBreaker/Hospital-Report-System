@@ -31,21 +31,32 @@ export const AuthProvider = ({ children }) => {
     initAuth();
   }, []);
 
-  const login = async (username, password) => {
+    const login = async (username, password) => {
     const response = await authService.login(username, password);
-    // Backend returns { success, data: { token, user: {...} } }
+    
+    if (response?.mustChangePassword) {
+      return {
+        mustChangePassword: true,
+        username: response.data?.username,
+        full_name: response.data?.full_name,
+        departmentCode: response.data?.departmentCode
+      };
+    }
+
     const result = response.data || response;
     const token = result.token;
     const userData = result.user;
 
-    localStorage.setItem('token', token);
-    setUser({
-      id: userData.id,
-      username: userData.username,
-      departmentCode: userData.departmentCode,
-      departmentName: userData.departmentName,
-      role: userData.role,
-    });
+    if (token) {
+      localStorage.setItem('token', token);
+      setUser({
+        id: userData.id,
+        username: userData.username,
+        departmentCode: userData.departmentCode,
+        departmentName: userData.departmentName,
+        role: userData.role,
+      });
+    }
     return userData;
   };
 

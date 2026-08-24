@@ -109,6 +109,102 @@ const ensureSchema = async (connOrPool) => {
       console.warn('Audit table check warning:', auditErr.message);
     }
 
+    
+    // 2. Extended System Users Table
+    try {
+      await connection.query(`
+        CREATE TABLE IF NOT EXISTS system_users (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          username VARCHAR(100) NOT NULL UNIQUE,
+          password_hash VARCHAR(255) NOT NULL,
+          full_name VARCHAR(150) NOT NULL,
+          role ENUM('admin', 'department', 'staff') NOT NULL DEFAULT 'staff',
+          department_code VARCHAR(50) NOT NULL,
+          department_name VARCHAR(150) DEFAULT NULL,
+          status ENUM('pending', 'active', 'suspended', 'rejected') NOT NULL DEFAULT 'pending',
+          must_change_password TINYINT(1) NOT NULL DEFAULT 0,
+          reset_requested TINYINT(1) NOT NULL DEFAULT 0,
+          reset_requested_at TIMESTAMP NULL DEFAULT NULL,
+          last_login_at TIMESTAMP NULL DEFAULT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          INDEX idx_dept_code (department_code),
+          INDEX idx_status (status),
+          INDEX idx_reset_requested (reset_requested),
+          INDEX idx_username (username)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `);
+    } catch (e) {
+      console.warn('system_users table init warning:', e.message);
+    }
+
+    // 3. Dynamic Custom Forms Table
+    try {
+      await connection.query(`
+        CREATE TABLE IF NOT EXISTS custom_forms (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          code VARCHAR(100) NOT NULL UNIQUE,
+          title VARCHAR(255) NOT NULL,
+          description TEXT DEFAULT NULL,
+          form_type ENUM('input', 'tracker') NOT NULL DEFAULT 'input',
+          theme_color VARCHAR(50) NOT NULL DEFAULT '#2563EB',
+          schema_json LONGTEXT NOT NULL,
+          tracker_config LONGTEXT DEFAULT NULL,
+          is_active TINYINT(1) NOT NULL DEFAULT 1,
+          created_by VARCHAR(100) DEFAULT 'Admin',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          INDEX idx_code (code),
+          INDEX idx_is_active (is_active),
+          INDEX idx_form_type (form_type)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `);
+    } catch (e) {
+      console.warn('custom_forms table init warning:', e.message);
+    }
+
+    // 4. Custom Form Permissions Table
+    try {
+      await connection.query(`
+        CREATE TABLE IF NOT EXISTS custom_form_permissions (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          form_id INT NOT NULL,
+          target_type ENUM('all', 'role', 'department', 'user') NOT NULL,
+          target_value VARCHAR(100) NOT NULL,
+          permission ENUM('view', 'edit') NOT NULL DEFAULT 'edit',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          INDEX idx_form_id (form_id),
+          INDEX idx_target (target_type, target_value),
+          CONSTRAINT fk_custom_perm_form FOREIGN KEY (form_id) REFERENCES custom_forms(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `);
+    } catch (e) {
+      console.warn('custom_form_permissions table init warning:', e.message);
+    }
+
+    // 5. Custom Form Submissions Table
+    try {
+      await connection.query(`
+        CREATE TABLE IF NOT EXISTS custom_form_submissions (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          form_id INT NOT NULL,
+          submitted_by_user VARCHAR(100) NOT NULL,
+          department_code VARCHAR(50) NOT NULL,
+          submission_date DATE NOT NULL,
+          submission_data LONGTEXT NOT NULL,
+          status VARCHAR(50) NOT NULL DEFAULT 'submitted',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          INDEX idx_form_sub_form (form_id),
+          INDEX idx_form_sub_dept_date (department_code, submission_date),
+          INDEX idx_form_sub_date (submission_date),
+          CONSTRAINT fk_custom_sub_form FOREIGN KEY (form_id) REFERENCES custom_forms(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `);
+    } catch (e) {
+      console.warn('custom_form_submissions table init warning:', e.message);
+    }
+
     schemaInitialized = true;
   } catch (err) {
     console.warn('Schema auto-migration check warning:', err.message);
