@@ -16,11 +16,13 @@ import {
   FaChartLine,
   FaPlusCircle,
   FaListUl,
-  FaClipboardCheck
+  FaClipboardCheck,
+  FaEye
 } from 'react-icons/fa';
 import customFormService from '../../services/customFormService';
 import DynamicFormRenderer from '../admin/custom-forms/DynamicFormRenderer';
 import DynamicFormSubmissions from '../admin/custom-forms/DynamicFormSubmissions';
+import TrackerWidgetView from '../admin/custom-forms/TrackerWidgetView';
 
 const PersonalCustomFormsPortal = () => {
   const { user, logout } = useContext(AuthContext);
@@ -30,7 +32,7 @@ const PersonalCustomFormsPortal = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   
-  // view: 'list' | 'fill' | 'submissions'
+  // view: 'list' | 'fill' | 'submissions' | 'tracker'
   const [activeView, setActiveView] = useState('list');
   const [selectedFormCode, setSelectedFormCode] = useState('');
 
@@ -70,6 +72,11 @@ const PersonalCustomFormsPortal = () => {
     setActiveView('fill');
   };
 
+  const handleViewTracker = (code) => {
+    setSelectedFormCode(code);
+    setActiveView('tracker');
+  };
+
   const handleViewSubmissions = (code) => {
     setSelectedFormCode(code);
     setActiveView('submissions');
@@ -78,6 +85,7 @@ const PersonalCustomFormsPortal = () => {
   const handleBackToList = () => {
     setSelectedFormCode('');
     setActiveView('list');
+    fetchAccessibleForms();
   };
 
   const filteredForms = forms.filter(f => 
@@ -170,6 +178,13 @@ const PersonalCustomFormsPortal = () => {
           />
         )}
 
+        {activeView === 'tracker' && (
+          <TrackerWidgetView
+            formCode={selectedFormCode}
+            onBack={handleBackToList}
+          />
+        )}
+
         {activeView === 'submissions' && (
           <DynamicFormSubmissions
             formCode={selectedFormCode}
@@ -255,6 +270,7 @@ const PersonalCustomFormsPortal = () => {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '1.25rem' }}>
                 {filteredForms.map(form => {
                   const themeColor = form.theme_color || '#2563EB';
+                  const isTracker = form.form_type === 'tracker';
 
                   return (
                     <div
@@ -276,14 +292,14 @@ const PersonalCustomFormsPortal = () => {
                       <div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
                           <span style={{
-                            backgroundColor: form.form_type === 'tracker' ? '#EFF6FF' : '#ECFDF5',
-                            color: form.form_type === 'tracker' ? '#1D4ED8' : '#047857',
+                            backgroundColor: isTracker ? '#FEF3C7' : '#EFF6FF',
+                            color: isTracker ? '#92400E' : '#1E40AF',
                             padding: '0.2rem 0.6rem',
                             borderRadius: '6px',
                             fontWeight: '800',
                             fontSize: '0.74rem'
                           }}>
-                            {form.form_type === 'tracker' ? '📊 Data Tracker' : '📝 Form Báo Cáo'}
+                            {isTracker ? '📊 Data Tracker' : '📝 Form Báo Cáo'}
                           </span>
                           <span style={{ fontSize: '0.72rem', fontFamily: 'monospace', color: '#64748B' }}>
                             /{form.code}
@@ -302,28 +318,53 @@ const PersonalCustomFormsPortal = () => {
                       </div>
 
                       <div style={{ display: 'flex', gap: '0.65rem', borderTop: '1px solid #F1F5F9', paddingTop: '0.85rem' }}>
-                        <button
-                          type="button"
-                          onClick={() => handleFillForm(form.code)}
-                          style={{
-                            flex: 1,
-                            backgroundColor: themeColor,
-                            color: '#FFFFFF',
-                            border: 'none',
-                            borderRadius: '9px',
-                            padding: '0.6rem 0.85rem',
-                            fontWeight: '800',
-                            fontSize: '0.84rem',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '0.4rem',
-                            boxShadow: `0 3px 10px ${themeColor}33`
-                          }}
-                        >
-                          <FaPlusCircle /> Điền Báo Cáo
-                        </button>
+                        {isTracker ? (
+                          <button
+                            type="button"
+                            onClick={() => handleViewTracker(form.code)}
+                            style={{
+                              flex: 1,
+                              backgroundColor: themeColor,
+                              color: '#FFFFFF',
+                              border: 'none',
+                              borderRadius: '9px',
+                              padding: '0.6rem 0.85rem',
+                              fontWeight: '800',
+                              fontSize: '0.84rem',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '0.4rem',
+                              boxShadow: `0 3px 10px ${themeColor}33`
+                            }}
+                          >
+                            <FaChartLine /> Xem Theo Dõi Tracker
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleFillForm(form.code)}
+                            style={{
+                              flex: 1,
+                              backgroundColor: themeColor,
+                              color: '#FFFFFF',
+                              border: 'none',
+                              borderRadius: '9px',
+                              padding: '0.6rem 0.85rem',
+                              fontWeight: '800',
+                              fontSize: '0.84rem',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '0.4rem',
+                              boxShadow: `0 3px 10px ${themeColor}33`
+                            }}
+                          >
+                            <FaPlusCircle /> Điền Báo Cáo
+                          </button>
+                        )}
 
                         <button
                           type="button"
@@ -343,7 +384,7 @@ const PersonalCustomFormsPortal = () => {
                           }}
                           title="Xem lịch sử các bản ghi đã nộp"
                         >
-                          <FaClipboardCheck /> Bản ghi
+                          <FaClipboardCheck /> Bản ghi ({form.total_submissions || form.submissions_count || 0})
                         </button>
                       </div>
                     </div>

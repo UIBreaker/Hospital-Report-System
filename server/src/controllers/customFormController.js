@@ -40,8 +40,11 @@ const getAllForms = async (req, res, next) => {
 
     const result = forms.map(form => {
       const formPerms = permissions.filter(p => p.form_id === form.id);
+      const subCount = Number(form.submissions_count || 0);
       return {
         ...form,
+        submissions_count: subCount,
+        total_submissions: subCount,
         schema_json: safeParse(form.schema_json, []),
         tracker_config: safeParse(form.tracker_config, {}),
         permissions: formPerms
@@ -320,26 +323,47 @@ const getFormSubmissions = async (req, res, next) => {
 
     const form = forms[0];
     let query = `
-      SELECT s.*, u.department_name, u.full_name as user_full_name
+      SELECT s.*, 
+             CASE 
+               WHEN s.department_code = 'personal' THEN 'Tài khoản cá nhân'
+               WHEN su.department_name IS NOT NULL THEN su.department_name
+               WHEN u.department_name IS NOT NULL THEN u.department_name
+               ELSE s.department_code 
+             END as department_name,
+             COALESCE(su.full_name, u.full_name, s.submitted_by_user) as user_full_name
       FROM custom_form_submissions s
       LEFT JOIN users u ON s.department_code = u.department_code
+      LEFT JOIN system_users su ON (s.submitted_by_user = su.username OR s.submitted_by_user = su.full_name)
       WHERE s.form_id = ?
     `;
     const params = [form.id];
 
-    if (date) {
-      query += ' AND s.submission_date = ?';
-      params.push(date);
+    if (date && date.trim() !== '') {
+      query += ' AND DATE(s.submission_date) = DATE(?)';
+      params.push(date.trim());
     }
 
     query += ' ORDER BY s.created_at DESC';
 
     const [submissions] = await pool.execute(query, params);
 
-    const formatted = submissions.map(s => ({
-      ...s,
-      submission_data: safeParse(s.submission_data, {})
-    }));
+    const formatted = submissions.map(s => {
+      let subDateStr = s.submission_date;
+      if (s.submission_date instanceof Date) {
+        const y = s.submission_date.getFullYear();
+        const m = String(s.submission_date.getMonth() + 1).padStart(2, '0');
+        const d = String(s.submission_date.getDate()).padStart(2, '0');
+        subDateStr = `${y}-${m}-${d}`;
+      } else if (typeof s.submission_date === 'string' && s.submission_date.includes('T')) {
+        subDateStr = s.submission_date.split('T')[0];
+      }
+
+      return {
+        ...s,
+        submission_date: subDateStr,
+        submission_data: safeParse(s.submission_data, {})
+      };
+    });
 
     res.json({
       success: true,
