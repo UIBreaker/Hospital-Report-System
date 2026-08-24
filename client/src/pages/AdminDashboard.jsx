@@ -23,6 +23,7 @@ import { generateAndDownloadHospitalExcel } from '../services/excelExportService
 import MedicalPrintView from '../components/common/MedicalPrintView';
 import Footer from '../components/common/Footer';
 import AdminReportDetailModal from '../components/admin/modals/AdminReportDetailModal';
+import SecurityLockModal from '../components/admin/modals/SecurityLockModal';
 import MedicalLoader from '../components/common/MedicalLoader';
 
 // Lazy-loaded Tab components for performance and code splitting
@@ -57,6 +58,15 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [lockingAll, setLockingAll] = useState(false);
+  const [securityModal, setSecurityModal] = useState({
+    isOpen: false,
+    mode: 'confirm',
+    targetType: 'all',
+    targetName: 'Toàn Viện',
+    targetDeptCode: '',
+    willLock: true,
+    loading: false
+  });
 
   // Export Excel & Print Modal States
   const [showExportMenu, setShowExportMenu] = useState(false);
@@ -117,7 +127,7 @@ const AdminDashboard = () => {
   }, [date, activeTab]);
 
   // Handle Toggle Lock All Reports for Current Date
-  const handleToggleLockAll = async () => {
+  const handleToggleLockAll = () => {
     const submittedDepts = statusList.filter(s => s.status === 'submitted');
     if (submittedDepts.length === 0) {
       alert(`Ngày ${date} chưa có khoa phòng nào nộp báo cáo.`);
@@ -125,22 +135,15 @@ const AdminDashboard = () => {
     }
     const allLocked = submittedDepts.every(s => s.isLocked);
     const nextLocked = !allLocked;
-    const actionText = allLocked ? 'MỞ KHÓA TOÀN VIỆN' : 'KHÓA SỔ TOÀN VIỆN';
-    if (!window.confirm(`Bạn có chắc chắn muốn ${actionText} cho tất cả báo cáo ngày ${date}?`)) {
-      return;
-    }
-    setLockingAll(true);
-    try {
-      const res = await reportService.toggleLockAllReports(date, nextLocked);
-      if (res.success) {
-        alert(res.message);
-        await fetchStatus();
-      }
-    } catch (err) {
-      alert('Lỗi khóa sổ toàn viện: ' + (err.response?.data?.error || err.message));
-    } finally {
-      setLockingAll(false);
-    }
+    setSecurityModal({
+      isOpen: true,
+      mode: 'confirm',
+      targetType: 'all',
+      targetName: 'Toàn Viện',
+      targetDeptCode: '',
+      willLock: nextLocked,
+      loading: false
+    });
   };
 
   // Normalization Helpers for 4 Clinical Case Categories
@@ -334,21 +337,65 @@ const AdminDashboard = () => {
   };
 
   // Toggle Lock inside Modal
-  const handleToggleModalLock = async () => {
+  const handleToggleModalLock = () => {
     if (!modalDept) return;
-    setTogglingModalLock(true);
+    const nextLocked = !modalReportLocked;
+    setSecurityModal({
+      isOpen: true,
+      mode: 'confirm',
+      targetType: 'single',
+      targetName: modalDept.departmentName || modalDept.departmentCode,
+      targetDeptCode: modalDept.departmentCode,
+      willLock: nextLocked,
+      loading: false
+    });
+  };
+
+  const handleConfirmSecurityAction = async () => {
+    setSecurityModal(prev => ({ ...prev, loading: true }));
     try {
-      const nextLocked = !modalReportLocked;
-      const res = await reportService.toggleLockReport(modalDept.departmentCode, date, nextLocked);
-      if (res && res.success) {
-        setModalReportLocked(nextLocked);
-        await fetchStatus();
+      if (securityModal.targetType === 'all') {
+        const res = await reportService.toggleLockAllReports(date, securityModal.willLock);
+        if (res && res.success) {
+          await fetchStatus();
+          setSecurityModal(prev => ({
+            ...prev,
+            mode: 'animating',
+            loading: false
+          }));
+        }
+      } else {
+        const res = await reportService.toggleReportLock(
+          securityModal.targetDeptCode,
+          date,
+          securityModal.willLock
+        );
+        if (res && res.success) {
+          setModalReportLocked(securityModal.willLock);
+          await fetchStatus();
+          setSecurityModal(prev => ({
+            ...prev,
+            mode: 'animating',
+            loading: false
+          }));
+        }
       }
     } catch (err) {
-      alert('Không thể đổi trạng thái khóa: ' + (err.response?.data?.error || err.message));
-    } finally {
-      setTogglingModalLock(false);
+      alert('Không thể thực hiện tác vụ bảo mật: ' + (err.response?.data?.error || err.message));
+      setSecurityModal(prev => ({ ...prev, isOpen: false, loading: false }));
     }
+  };
+
+  const handleCloseSecurityModal = () => {
+    setSecurityModal({
+      isOpen: false,
+      mode: 'confirm',
+      targetType: 'all',
+      targetName: 'Toàn Viện',
+      targetDeptCode: '',
+      willLock: true,
+      loading: false
+    });
   };
 
   // Form Field Change Handlers
@@ -1124,6 +1171,20 @@ const AdminDashboard = () => {
         handleAddCriticalCase={handleAddCriticalCase}
         handleCriticalCaseChange={handleCriticalCaseChange}
         handleRemoveCriticalCase={handleRemoveCriticalCase}
+      />
+
+      {/* High-Tech Security Lockdown & Unlock Modal */}
+      <SecurityLockModal
+        isOpen={securityModal.isOpen}
+        mode={securityModal.mode}
+        targetType={securityModal.targetType}
+        targetName={securityModal.targetName}
+        date={date}
+        willLock={securityModal.willLock}
+        loading={securityModal.loading}
+        onConfirm={handleConfirmSecurityAction}
+        onCancel={handleCloseSecurityModal}
+        onClose={handleCloseSecurityModal}
       />
 
       {/* Medical Print View Modal */}

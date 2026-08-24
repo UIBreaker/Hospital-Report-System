@@ -51,7 +51,15 @@ const reportService = {
     const response = await api.put(`/admin/reports/${departmentCode}/${date}/toggle-lock`, { isLocked });
     return response.data;
   },
+  toggleLockReport: async (departmentCode, date, isLocked) => {
+    const response = await api.put(`/admin/reports/${departmentCode}/${date}/toggle-lock`, { isLocked });
+    return response.data;
+  },
   toggleLockAllReports: async (date, isLocked) => {
+    const response = await api.put(`/admin/reports/toggle-lock-all/${date}`, { isLocked });
+    return response.data;
+  },
+  toggleLockAll: async (date, isLocked) => {
     const response = await api.put(`/admin/reports/toggle-lock-all/${date}`, { isLocked });
     return response.data;
   }
