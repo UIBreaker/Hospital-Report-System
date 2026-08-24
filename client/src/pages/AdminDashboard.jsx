@@ -1157,6 +1157,7 @@ const AdminDashboard = () => {
                 onOpenDetailModal={handleOpenDetailModal}
               />
             )}
+            {activeTab === 'custom_forms' && <CustomFormsTab />}
             {activeTab === 'staff' && <StaffTab />}
             {activeTab === 'database' && <DatabaseTab date={date} />}
             {activeTab === 'accounts' && <AccountsTab />}
