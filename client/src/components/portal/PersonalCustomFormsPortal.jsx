@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext';
 import {
   FaWpforms,
   FaSignOutAlt,
   FaUser,
-  FaSpinner,
   FaCheckCircle,
   FaFileAlt,
   FaArrowRight,
@@ -17,12 +16,17 @@ import {
   FaPlusCircle,
   FaListUl,
   FaClipboardCheck,
-  FaEye
+  FaHospital,
+  FaSync,
+  FaChevronLeft,
+  FaChevronRight,
+  FaLayerGroup
 } from 'react-icons/fa';
 import customFormService from '../../services/customFormService';
 import DynamicFormRenderer from '../admin/custom-forms/DynamicFormRenderer';
 import DynamicFormSubmissions from '../admin/custom-forms/DynamicFormSubmissions';
 import TrackerWidgetView from '../admin/custom-forms/TrackerWidgetView';
+import MedicalLoader from '../common/MedicalLoader';
 
 const PersonalCustomFormsPortal = () => {
   const { user, logout } = useContext(AuthContext);
@@ -32,7 +36,7 @@ const PersonalCustomFormsPortal = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   
-  // view: 'list' | 'fill' | 'submissions' | 'tracker'
+  // view: 'list' | 'fill' | 'submissions'
   const [activeView, setActiveView] = useState('list');
   const [selectedFormCode, setSelectedFormCode] = useState('');
 
@@ -72,11 +76,6 @@ const PersonalCustomFormsPortal = () => {
     setActiveView('fill');
   };
 
-  const handleViewTracker = (code) => {
-    setSelectedFormCode(code);
-    setActiveView('tracker');
-  };
-
   const handleViewSubmissions = (code) => {
     setSelectedFormCode(code);
     setActiveView('submissions');
@@ -94,35 +93,68 @@ const PersonalCustomFormsPortal = () => {
     (f.description || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const trackerForms = filteredForms.filter(f => f.form_type === 'tracker');
+  const inputForms = filteredForms.filter(f => f.form_type !== 'tracker');
+
+  const todayStr = new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#F8FAFC',
-      fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      width: '100vw',
+      background: 'linear-gradient(135deg, #F0F7FF 0%, #E6F0FA 30%, #F8FAFC 70%, #EBF5FF 100%)',
+      fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
       display: 'flex',
-      flexDirection: 'column'
+      flexDirection: 'column',
+      position: 'relative',
+      overflowX: 'hidden'
     }}>
+
+      {/* Ambient Lighting Layer */}
+      <div 
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'radial-gradient(circle at 15% 15%, rgba(199, 229, 253, 0.45) 0%, transparent 50%), radial-gradient(circle at 85% 20%, rgba(224, 242, 254, 0.5) 0%, transparent 45%), radial-gradient(circle at 80% 85%, rgba(209, 250, 229, 0.4) 0%, transparent 50%)',
+          pointerEvents: 'none',
+          zIndex: 0
+        }}
+        aria-hidden="true"
+      />
+
       {/* Header */}
       <header style={{
         backgroundColor: '#0F2C59',
         color: '#FFFFFF',
-        padding: '1rem 2rem',
+        padding: '0.9rem 2rem',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        boxShadow: '0 4px 15px rgba(15, 44, 89, 0.15)',
+        boxShadow: '0 4px 20px rgba(15, 44, 89, 0.18)',
         position: 'sticky',
         top: 0,
         zIndex: 100
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <img src="/logo.png" alt="Logo" style={{ width: '42px', height: '42px', objectFit: 'contain' }} />
+          <div style={{
+            width: '44px',
+            height: '44px',
+            borderRadius: '50%',
+            backgroundColor: '#FFFFFF',
+            padding: '4px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+          }}>
+            <img src="/logo.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+          </div>
           <div>
-            <h1 style={{ margin: 0, fontSize: '1.15rem', fontWeight: '900', letterSpacing: '0.3px' }}>
+            <h1 style={{ margin: 0, fontSize: '1.12rem', fontWeight: '900', letterSpacing: '0.3px', color: '#FFFFFF' }}>
               TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG
             </h1>
-            <p style={{ margin: 0, fontSize: '0.78rem', color: '#93C5FD', fontWeight: '600' }}>
-              Cổng Biểu Mẫu Cá Nhân • Phân Quyền Báo Cáo
+            <p style={{ margin: 0, fontSize: '0.76rem', color: '#93C5FD', fontWeight: '600', letterSpacing: '0.2px' }}>
+              Cổng Biểu Mẫu Chuyên Môn & Data Tracker Cá Nhân
             </p>
           </div>
         </div>
@@ -133,16 +165,17 @@ const PersonalCustomFormsPortal = () => {
             alignItems: 'center',
             gap: '0.65rem',
             backgroundColor: 'rgba(255, 255, 255, 0.12)',
-            padding: '0.45rem 0.95rem',
+            backdropFilter: 'blur(8px)',
+            padding: '0.45rem 1rem',
             borderRadius: '20px',
-            border: '1px solid rgba(255, 255, 255, 0.2)'
+            border: '1px solid rgba(255, 255, 255, 0.22)'
           }}>
             <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem' }}>
               <FaUser />
             </div>
             <div>
-              <div style={{ fontSize: '0.82rem', fontWeight: '800' }}>{user?.full_name || user?.username}</div>
-              <div style={{ fontSize: '0.7rem', color: '#93C5FD' }}>@{user?.username} • Tài khoản cá nhân</div>
+              <div style={{ fontSize: '0.84rem', fontWeight: '800', color: '#FFFFFF' }}>{user?.full_name || user?.username}</div>
+              <div style={{ fontSize: '0.7rem', color: '#93C5FD', fontWeight: '600' }}>@{user?.username} • Tài khoản cá nhân</div>
             </div>
           </div>
 
@@ -153,16 +186,19 @@ const PersonalCustomFormsPortal = () => {
               backgroundColor: '#EF4444',
               color: '#FFFFFF',
               border: 'none',
-              borderRadius: '8px',
+              borderRadius: '9px',
               padding: '0.5rem 1rem',
-              fontWeight: '700',
+              fontWeight: '800',
               fontSize: '0.84rem',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               gap: '0.45rem',
-              boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)'
+              boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)',
+              transition: 'all 0.15s ease'
             }}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#DC2626'}
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#EF4444'}
           >
             <FaSignOutAlt /> Đăng xuất
           </button>
@@ -170,7 +206,9 @@ const PersonalCustomFormsPortal = () => {
       </header>
 
       {/* Main Area */}
-      <main style={{ flex: 1, maxWidth: '1200px', margin: '0 auto', width: '100%', padding: '2rem 1.5rem', boxSizing: 'border-box' }}>
+      <main style={{ flex: 1, maxWidth: '1240px', margin: '0 auto', width: '100%', padding: '1.75rem 1.5rem 4rem', boxSizing: 'border-box', position: 'relative', zIndex: 10 }}>
+        
+        {/* SUB-VIEW 1: FORM FILL */}
         {activeView === 'fill' && (
           <DynamicFormRenderer
             formCode={selectedFormCode}
@@ -178,13 +216,7 @@ const PersonalCustomFormsPortal = () => {
           />
         )}
 
-        {activeView === 'tracker' && (
-          <TrackerWidgetView
-            formCode={selectedFormCode}
-            onBack={handleBackToList}
-          />
-        )}
-
+        {/* SUB-VIEW 2: SUBMISSIONS */}
         {activeView === 'submissions' && (
           <DynamicFormSubmissions
             formCode={selectedFormCode}
@@ -192,209 +224,317 @@ const PersonalCustomFormsPortal = () => {
           />
         )}
 
+        {/* MAIN PORTAL LIST VIEW */}
         {activeView === 'list' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            {/* Banner Card */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            
+            {/* Hero Banner Card */}
             <div style={{
               backgroundColor: '#FFFFFF',
-              borderRadius: '18px',
+              borderRadius: '24px',
               border: '1px solid #E2E8F0',
-              padding: '1.5rem 1.8rem',
-              boxShadow: '0 4px 20px rgba(15, 44, 89, 0.05)',
+              padding: '1.75rem 2.2rem',
+              boxShadow: '0 10px 30px rgba(15, 44, 89, 0.06)',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
               flexWrap: 'wrap',
-              gap: '1rem'
+              gap: '1.5rem',
+              position: 'relative',
+              overflow: 'hidden'
             }}>
-              <div>
-                <h2 style={{ margin: '0 0 0.35rem 0', fontSize: '1.4rem', fontWeight: '900', color: '#0F2C59' }}>
-                  📋 Danh Sách Biểu Mẫu Được Phân Quyền ({forms.length})
+              {/* Background gradient accent */}
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                width: '320px',
+                height: '100%',
+                background: 'linear-gradient(90deg, transparent 0%, rgba(224, 242, 254, 0.4) 100%)',
+                pointerEvents: 'none'
+              }} />
+
+              <div style={{ position: 'relative', zIndex: 2 }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', backgroundColor: '#EFF6FF', color: '#1E40AF', padding: '0.3rem 0.85rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '800', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                  <FaShieldAlt /> HỆ THỐNG PHÂN QUYỀN TRUY CẬP
+                </div>
+                <h2 style={{ margin: '0 0 0.35rem 0', fontSize: '1.55rem', fontWeight: '900', color: '#0F2C59', letterSpacing: '-0.3px' }}>
+                  Xin chào, {user?.full_name || user?.username}!
                 </h2>
-                <p style={{ margin: 0, fontSize: '0.88rem', color: '#64748B' }}>
-                  Bạn có thể chọn biểu mẫu bên dưới để nhập số liệu báo cáo hoặc theo dõi các bản ghi đã gửi.
+                <p style={{ margin: 0, fontSize: '0.9rem', color: '#64748B', maxWidth: '640px', lineHeight: 1.5 }}>
+                  Dưới đây là các biểu mẫu và bảng theo dõi dữ liệu tự động mà bạn được Ban Giám Đốc & Admin cấp quyền truy cập.
                 </p>
               </div>
 
-              {/* Search Bar */}
-              <div style={{
-                position: 'relative',
-                width: '100%',
-                maxWidth: '320px'
-              }}>
-                <FaSearch style={{ position: 'absolute', top: '50%', left: '0.85rem', transform: 'translateY(-50%)', color: '#94A3B8' }} />
-                <input
-                  type="text"
-                  placeholder="Tìm kiếm biểu mẫu..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.6rem 0.85rem 0.6rem 2.3rem',
-                    borderRadius: '10px',
-                    border: '1.5px solid #CBD5E1',
-                    fontSize: '0.86rem',
-                    outline: 'none',
-                    boxSizing: 'border-box'
-                  }}
-                />
+              {/* Search Bar & Date */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', alignItems: 'flex-end', position: 'relative', zIndex: 2 }}>
+                <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <FaCalendarAlt style={{ color: '#2563EB' }} /> {todayStr}
+                </div>
+                <div style={{ position: 'relative', width: '280px' }}>
+                  <FaSearch style={{ position: 'absolute', top: '50%', left: '0.85rem', transform: 'translateY(-50%)', color: '#94A3B8', fontSize: '0.85rem' }} />
+                  <input
+                    type="text"
+                    placeholder="Tìm nhanh biểu mẫu..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '0.6rem 0.85rem 0.6rem 2.3rem',
+                      borderRadius: '12px',
+                      border: '1.5px solid #CBD5E1',
+                      fontSize: '0.86rem',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                      backgroundColor: '#F8FAFC'
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = '#2563EB';
+                      e.target.style.backgroundColor = '#FFFFFF';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = '#CBD5E1';
+                      e.target.style.backgroundColor = '#F8FAFC';
+                    }}
+                  />
+                </div>
               </div>
             </div>
 
-            {/* Loading Indicator */}
+            {/* Loading */}
             {loading ? (
-              <div style={{ backgroundColor: '#FFFFFF', borderRadius: '18px', padding: '3.5rem', textAlign: 'center', color: '#64748B', boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
-                <FaSpinner className="spinner" style={{ fontSize: '2.2rem', color: '#2563EB', marginBottom: '0.85rem' }} />
-                <p style={{ margin: 0, fontWeight: '700' }}>Đang nạp danh sách biểu mẫu phân quyền của bạn...</p>
-              </div>
+              <MedicalLoader
+                text="Đang nạp danh sách biểu mẫu phân quyền của bạn..."
+                subtext="TTYT Khu Vực Bình Long • Hệ Thống Biểu Mẫu Tùy Chỉnh"
+                minHeight="350px"
+              />
             ) : filteredForms.length === 0 ? (
               <div style={{
                 backgroundColor: '#FFFFFF',
-                borderRadius: '18px',
-                border: '1px dashed #CBD5E1',
-                padding: '3.5rem 2rem',
+                borderRadius: '24px',
+                border: '2px dashed #CBD5E1',
+                padding: '4rem 2rem',
                 textAlign: 'center',
-                color: '#64748B'
+                boxShadow: '0 4px 20px rgba(0,0,0,0.03)'
               }}>
-                <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', fontSize: '1.8rem' }}>
+                <div style={{ width: '70px', height: '70px', borderRadius: '50%', backgroundColor: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem', fontSize: '2rem' }}>
                   <FaWpforms />
                 </div>
-                <h3 style={{ margin: '0 0 0.4rem 0', fontSize: '1.2rem', fontWeight: '800', color: '#0F2C59' }}>
+                <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.25rem', fontWeight: '800', color: '#0F2C59' }}>
                   Chưa Có Biểu Mẫu Nào Được Phân Quyền
                 </h3>
-                <p style={{ margin: 0, fontSize: '0.88rem', color: '#64748B', maxWidth: '500px', margin: '0 auto' }}>
+                <p style={{ margin: 0, fontSize: '0.9rem', color: '#64748B', maxWidth: '520px', margin: '0 auto' }}>
                   Tài khoản cá nhân của bạn hiện chưa được Quản trị viên phân quyền vào biểu mẫu nào. Vui lòng liên hệ Phòng Kế Hoạch Nghiệp Vụ (Admin) để được mở quyền truy cập.
                 </p>
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '1.25rem' }}>
-                {filteredForms.map(form => {
-                  const themeColor = form.theme_color || '#2563EB';
-                  const isTracker = form.form_type === 'tracker';
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
 
-                  return (
-                    <div
-                      key={form.id}
-                      style={{
-                        backgroundColor: '#FFFFFF',
-                        borderRadius: '16px',
-                        border: '1px solid #E2E8F0',
-                        borderLeft: `6px solid ${themeColor}`,
-                        padding: '1.35rem 1.5rem',
-                        boxShadow: '0 4px 14px rgba(15, 44, 89, 0.04)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'space-between',
-                        gap: '1rem',
-                        transition: 'all 0.2s ease'
-                      }}
-                    >
-                      <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-                          <span style={{
-                            backgroundColor: isTracker ? '#FEF3C7' : '#EFF6FF',
-                            color: isTracker ? '#92400E' : '#1E40AF',
-                            padding: '0.2rem 0.6rem',
-                            borderRadius: '6px',
-                            fontWeight: '800',
-                            fontSize: '0.74rem'
-                          }}>
-                            {isTracker ? '📊 Data Tracker' : '📝 Form Báo Cáo'}
-                          </span>
-                          <span style={{ fontSize: '0.72rem', fontFamily: 'monospace', color: '#64748B' }}>
-                            /{form.code}
-                          </span>
-                        </div>
-
-                        <h3 style={{ margin: '0 0 0.35rem 0', fontSize: '1.15rem', fontWeight: '900', color: '#0F2C59' }}>
-                          {form.title}
-                        </h3>
-
-                        {form.description && (
-                          <p style={{ margin: 0, fontSize: '0.84rem', color: '#64748B', lineHeight: 1.45 }}>
-                            {form.description}
-                          </p>
-                        )}
+                {/* ======================================================== */}
+                {/* 1. DATA TRACKERS SECTION: BUNG TRỰC TIẾP RA NGOÀI ĐỂ XEM */}
+                {/* ======================================================== */}
+                {trackerForms.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: '#FEF3C7', color: '#D97706', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>
+                        <FaChartLine />
                       </div>
-
-                      <div style={{ display: 'flex', gap: '0.65rem', borderTop: '1px solid #F1F5F9', paddingTop: '0.85rem' }}>
-                        {isTracker ? (
-                          <button
-                            type="button"
-                            onClick={() => handleViewTracker(form.code)}
-                            style={{
-                              flex: 1,
-                              backgroundColor: themeColor,
-                              color: '#FFFFFF',
-                              border: 'none',
-                              borderRadius: '9px',
-                              padding: '0.6rem 0.85rem',
-                              fontWeight: '800',
-                              fontSize: '0.84rem',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: '0.4rem',
-                              boxShadow: `0 3px 10px ${themeColor}33`
-                            }}
-                          >
-                            <FaChartLine /> Xem Theo Dõi Tracker
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => handleFillForm(form.code)}
-                            style={{
-                              flex: 1,
-                              backgroundColor: themeColor,
-                              color: '#FFFFFF',
-                              border: 'none',
-                              borderRadius: '9px',
-                              padding: '0.6rem 0.85rem',
-                              fontWeight: '800',
-                              fontSize: '0.84rem',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: '0.4rem',
-                              boxShadow: `0 3px 10px ${themeColor}33`
-                            }}
-                          >
-                            <FaPlusCircle /> Điền Báo Cáo
-                          </button>
-                        )}
-
-                        <button
-                          type="button"
-                          onClick={() => handleViewSubmissions(form.code)}
-                          style={{
-                            backgroundColor: '#F1F5F9',
-                            color: '#334155',
-                            border: '1px solid #CBD5E1',
-                            borderRadius: '9px',
-                            padding: '0.6rem 0.85rem',
-                            fontWeight: '700',
-                            fontSize: '0.84rem',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.35rem'
-                          }}
-                          title="Xem lịch sử các bản ghi đã nộp"
-                        >
-                          <FaClipboardCheck /> Bản ghi ({form.total_submissions || form.submissions_count || 0})
-                        </button>
+                      <div>
+                        <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900', color: '#0F2C59' }}>
+                          ⚡ Data Tracker Tự Động ({trackerForms.length})
+                        </h3>
+                        <p style={{ margin: 0, fontSize: '0.82rem', color: '#64748B' }}>
+                          Số liệu tổng hợp trực tiếp từ ca trực các khoa — Có thể chọn ngày để xem ngay
+                        </p>
                       </div>
                     </div>
-                  );
-                })}
+
+                    {/* Render each tracker embedded right here */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                      {trackerForms.map(tracker => (
+                        <div
+                          key={tracker.id}
+                          style={{
+                            backgroundColor: '#FFFFFF',
+                            borderRadius: '24px',
+                            border: '1.5px solid #E2E8F0',
+                            padding: '1.5rem 1.8rem',
+                            boxShadow: '0 10px 30px rgba(15, 44, 89, 0.06)'
+                          }}
+                        >
+                          <TrackerWidgetView
+                            formCode={tracker.code}
+                            isEmbedded={true}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* ======================================================== */}
+                {/* 2. INPUT FORMS SECTION: FORM NHẬP LIỆU & BÁO CÁO        */}
+                {/* ======================================================== */}
+                {inputForms.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: '#DCFCE7', color: '#16A34A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>
+                        <FaFileAlt />
+                      </div>
+                      <div>
+                        <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900', color: '#0F2C59' }}>
+                          📝 Biểu Mẫu Nhập Liệu & Báo Cáo ({inputForms.length})
+                        </h3>
+                        <p style={{ margin: 0, fontSize: '0.82rem', color: '#64748B' }}>
+                          Các mẫu phiếu khảo sát, biên bản kiểm tra cần nhập số liệu định kỳ
+                        </p>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '1.5rem' }}>
+                      {inputForms.map(form => {
+                        const themeColor = form.theme_color || '#2563EB';
+                        const fieldsCount = Array.isArray(form.schema_json) ? form.schema_json.length : 0;
+                        const submissionsCount = form.total_submissions || form.submissions_count || 0;
+
+                        return (
+                          <div
+                            key={form.id}
+                            style={{
+                              backgroundColor: '#FFFFFF',
+                              borderRadius: '20px',
+                              border: '1.5px solid #E2E8F0',
+                              borderTop: `6px solid ${themeColor}`,
+                              padding: '1.5rem',
+                              boxShadow: '0 6px 20px rgba(15, 44, 89, 0.05)',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              justifyContent: 'space-between',
+                              gap: '1.2rem',
+                              transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+                            }}
+                          >
+                            <div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
+                                <span style={{
+                                  backgroundColor: '#ECFDF5',
+                                  color: '#047857',
+                                  padding: '0.25rem 0.65rem',
+                                  borderRadius: '8px',
+                                  fontWeight: '800',
+                                  fontSize: '0.74rem'
+                                }}>
+                                  📝 Form Báo Cáo
+                                </span>
+                                <span style={{ fontSize: '0.75rem', fontFamily: 'monospace', color: '#64748B', fontWeight: '700' }}>
+                                  /{form.code}
+                                </span>
+                              </div>
+
+                              <h3 style={{ margin: '0 0 0.4rem 0', fontSize: '1.25rem', fontWeight: '900', color: '#0F2C59', lineHeight: 1.3 }}>
+                                {form.title}
+                              </h3>
+
+                              {form.description ? (
+                                <p style={{ margin: '0 0 0.85rem 0', fontSize: '0.84rem', color: '#64748B', lineHeight: 1.45 }}>
+                                  {form.description}
+                                </p>
+                              ) : (
+                                <div style={{ height: '0.5rem' }} />
+                              )}
+
+                              {/* Stats Pill */}
+                              <div style={{
+                                backgroundColor: '#F8FAFC',
+                                borderRadius: '12px',
+                                padding: '0.65rem 0.95rem',
+                                border: '1px solid #E2E8F0',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                fontSize: '0.8rem',
+                                color: '#64748B'
+                              }}>
+                                <span>Số trường: <strong style={{ color: '#0F2C59' }}>{fieldsCount}</strong></span>
+                                <span>Đã nộp: <strong style={{ color: themeColor }}>{submissionsCount} bản ghi</strong></span>
+                              </div>
+                            </div>
+
+                            {/* Buttons */}
+                            <div style={{ display: 'flex', gap: '0.75rem', borderTop: '1px solid #F1F5F9', paddingTop: '1rem' }}>
+                              <button
+                                type="button"
+                                onClick={() => handleFillForm(form.code)}
+                                style={{
+                                  flex: 1.2,
+                                  background: `linear-gradient(135deg, ${themeColor} 0%, #10B981 100%)`,
+                                  color: '#FFFFFF',
+                                  border: 'none',
+                                  borderRadius: '12px',
+                                  padding: '0.7rem 1rem',
+                                  fontWeight: '800',
+                                  fontSize: '0.88rem',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '0.45rem',
+                                  boxShadow: `0 4px 12px ${themeColor}33`
+                                }}
+                              >
+                                <FaPlusCircle /> Điền Báo Cáo
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => handleViewSubmissions(form.code)}
+                                style={{
+                                  flex: 0.8,
+                                  backgroundColor: '#F1F5F9',
+                                  color: '#334155',
+                                  border: '1px solid #CBD5E1',
+                                  borderRadius: '12px',
+                                  padding: '0.7rem 0.85rem',
+                                  fontWeight: '700',
+                                  fontSize: '0.84rem',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '0.35rem'
+                                }}
+                                title="Xem lịch sử các bản ghi đã nộp"
+                              >
+                                <FaClipboardCheck /> Bản ghi ({submissionsCount})
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
               </div>
             )}
+
           </div>
         )}
+
       </main>
+
+      {/* Footer */}
+      <footer style={{
+        marginTop: 'auto',
+        textAlign: 'center',
+        padding: '1.5rem',
+        fontSize: '0.78rem',
+        color: '#64748B',
+        fontWeight: '600',
+        borderTop: '1px solid #E2E8F0',
+        backgroundColor: '#FFFFFF'
+      }}>
+        © 2026 Trung Tâm Y Tế Khu Vực Bình Long — Hệ Thống Biểu Mẫu Chuyên Môn & Giao Ban Toàn Viện
+      </footer>
     </div>
   );
 };

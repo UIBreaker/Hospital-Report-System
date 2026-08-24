@@ -21,8 +21,9 @@ import {
   FaMicroscope
 } from 'react-icons/fa';
 import customFormService from '../../../services/customFormService';
+import MedicalLoader from '../../common/MedicalLoader';
 
-const TrackerWidgetView = ({ formCode, onBack }) => {
+const TrackerWidgetView = ({ formCode, onBack, isEmbedded = false }) => {
   const [trackerData, setTrackerData] = useState(null);
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [loading, setLoading] = useState(true);
@@ -54,6 +55,17 @@ const TrackerWidgetView = ({ formCode, onBack }) => {
     const p = String(dStr).split('-');
     if (p.length === 3) return `${p[2]}/${p[1]}/${p[0]}`;
     return dStr;
+  };
+
+  const handleShiftDate = (days) => {
+    const d = new Date(selectedDate);
+    d.setDate(d.getDate() + days);
+    const newStr = d.toISOString().split('T')[0];
+    setSelectedDate(newStr);
+  };
+
+  const handleSetToday = () => {
+    setSelectedDate(new Date().toISOString().split('T')[0]);
   };
 
   return (

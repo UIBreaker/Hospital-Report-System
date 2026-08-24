@@ -15,6 +15,7 @@ import {
   FaSync
 } from 'react-icons/fa';
 import customFormService from '../../../services/customFormService';
+import MedicalLoader from '../../common/MedicalLoader';
 
 const DynamicFormSubmissions = ({ formCode, onBack }) => {
   const [submissions, setSubmissions] = useState([]);
@@ -174,10 +175,7 @@ const DynamicFormSubmissions = ({ formCode, onBack }) => {
         boxShadow: '0 4px 14px rgba(15, 44, 89, 0.04)'
       }}>
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '4rem 1rem', color: '#64748B' }}>
-            <FaSpinner className="spinner" style={{ fontSize: '2.2rem', color: '#2563EB', marginBottom: '0.75rem' }} />
-            <div style={{ fontWeight: '700' }}>Đang tải dữ liệu các bản ghi đã nộp...</div>
-          </div>
+          <MedicalLoader text="Đang tải dữ liệu các bản ghi đã nộp..." subtext="TTYT Khu Vực Bình Long • CSDL Báo Cáo Chuyên Môn" minHeight="280px" />
         ) : submissions.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '4rem 1.5rem', color: '#64748B' }}>
             <FaClipboardList style={{ fontSize: '2.8rem', color: '#CBD5E1', marginBottom: '0.75rem' }} />
