@@ -330,7 +330,7 @@ const getFormSubmissions = async (req, res, next) => {
                WHEN u.department_name IS NOT NULL THEN u.department_name
                ELSE s.department_code 
              END as department_name,
-             COALESCE(su.full_name, u.full_name, s.submitted_by_user) as user_full_name
+             COALESCE(su.full_name, s.submitted_by_user) as user_full_name
       FROM custom_form_submissions s
       LEFT JOIN users u ON s.department_code = u.department_code
       LEFT JOIN system_users su ON (s.submitted_by_user = su.username OR s.submitted_by_user = su.full_name)
