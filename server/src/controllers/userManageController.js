@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
 
 const DEPARTMENT_NAMES = {
+  personal: 'Tài khoản cá nhân',
   lck: 'Khoa Liên Chuyên Khoa',
   xn: 'Khoa Xét nghiệm',
   cdha: 'Khoa Chẩn đoán hình ảnh',

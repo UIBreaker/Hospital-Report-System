@@ -48,6 +48,7 @@ import SurgeryCaseForm from '../components/forms/SurgeryCaseForm';
 import DeathCaseForm from '../components/forms/DeathCaseForm';
 import CriticalCaseForm from '../components/forms/CriticalCaseForm';
 import StaffSelectCombobox from '../components/common/StaffSelectCombobox';
+import PersonalCustomFormsPortal from '../components/portal/PersonalCustomFormsPortal';
 import DepartmentPrintView from '../components/common/DepartmentPrintView';
 import Footer from '../components/common/Footer';
 import MedicalLoader from '../components/common/MedicalLoader';
@@ -514,6 +515,11 @@ const ReportPage = () => {
       setSubmitting(false);
     }
   };
+
+  // Render Personal Portal if logged in user is personal account
+  if (user?.departmentCode === 'personal') {
+    return <PersonalCustomFormsPortal />;
+  }
 
   const FormComponent = DEPARTMENT_FORMS[user?.departmentCode];
 
