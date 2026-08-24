@@ -60,4 +60,4 @@ const adminOnly = async (req, res, next) => {
   res.status(403).json({ success: false, error: 'Access denied. Admin only.' });
 };
 
-module.exports = { auth, adminOnly };
+module.exports = { auth, adminOnly, requireAdmin: adminOnly };

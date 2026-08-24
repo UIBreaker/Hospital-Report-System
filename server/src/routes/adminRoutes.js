@@ -10,7 +10,6 @@ const {
   getAllAccounts,
   updateAccountPassword,
   createAccount,
-  deleteAccount,
   toggleReportLock,
   toggleLockAllReports
 } = require('../controllers/adminController');
@@ -22,7 +21,7 @@ const {
   adminResetPassword,
   deleteSystemUser
 } = require('../controllers/userManageController');
-const { auth, requireAdmin } = require('../middleware/auth');
+const { auth, adminOnly: requireAdmin } = require('../middleware/auth');
 
 router.get('/departments/:date', auth, requireAdmin, getDepartmentStatus);
 router.get('/presentation/:date', auth, requireAdmin, getPresentationData);
@@ -35,7 +34,9 @@ router.get('/export-reports', auth, requireAdmin, exportReports);
 router.get('/accounts', auth, requireAdmin, getAllAccounts);
 router.put('/accounts/:id/password', auth, requireAdmin, updateAccountPassword);
 router.post('/accounts', auth, requireAdmin, createAccount);
-router.delete('/accounts/:id', auth, requireAdmin, deleteAccount);
+router.delete('/accounts/:id', auth, requireAdmin, (req, res) => {
+  res.status(403).json({ success: false, error: 'Không thể xóa 13 tài khoản cốt lõi của hệ thống.' });
+});
 
 // Extended System Users (Pending, Approval, Temporary Reset Password)
 router.get('/system-users', auth, requireAdmin, getAllSystemUsers);

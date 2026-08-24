@@ -10,7 +10,7 @@ const {
   getFormSubmissions,
   getTrackerData
 } = require('../controllers/customFormController');
-const { auth, requireAdmin } = require('../middleware/auth');
+const { auth, adminOnly: requireAdmin } = require('../middleware/auth');
 
 router.get('/', auth, getAllForms);
 router.get('/:code', auth, getFormByCode);
