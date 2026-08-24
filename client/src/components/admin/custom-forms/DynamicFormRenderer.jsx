@@ -295,7 +295,23 @@ const DynamicFormRenderer = ({ formCode, onBack }) => {
           {/* Form Fields Grid */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '1.2rem' }}>
             {(formMeta.schema_json || []).map((field, idx) => {
-              const colSpan = field.gridWidth === '33.3%' ? 4 : field.gridWidth === '50%' ? 6 : 12;
+              if (field.type === 'section') {
+                return (
+                  <div key={field.id || idx} style={{ gridColumn: 'span 12', marginTop: '0.75rem', marginBottom: '0.25rem', borderBottom: `2px solid ${themeColor}`, paddingBottom: '0.4rem' }}>
+                    <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: '900', color: themeColor, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      ❖ {field.label}
+                    </h3>
+                  </div>
+                );
+              }
+
+              let colSpan = 12;
+              const gw = String(field.gridWidth || '').trim();
+              if (gw === '25%') colSpan = 3;
+              else if (gw === '33%' || gw === '33.33%' || gw === '33.3%') colSpan = 4;
+              else if (gw === '50%') colSpan = 6;
+              else if (gw === '75%') colSpan = 9;
+              else colSpan = 12;
 
               return (
                 <div key={field.id || idx} style={{ gridColumn: `span ${colSpan}` }}>

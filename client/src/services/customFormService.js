@@ -34,6 +34,10 @@ const customFormService = {
     const query = new URLSearchParams(params).toString();
     const response = await api.get(`/custom-forms/${code}/tracker${query ? `?${query}` : ''}`);
     return response.data;
+  },
+  getCoreAccounts: async () => {
+    const response = await api.get('/admin/accounts');
+    return response.data;
   }
 };
 

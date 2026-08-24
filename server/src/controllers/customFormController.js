@@ -1,88 +1,69 @@
 const pool = require('../config/db');
 
-// Helper to safe parse JSON
-const safeParse = (val, fallback = {}) => {
-  if (!val) return fallback;
-  if (typeof val === 'object') return val;
+const safeParse = (str, fallback = {}) => {
+  if (!str) return fallback;
+  if (typeof str === 'object') return str;
   try {
-    return JSON.parse(val);
+    return JSON.parse(str);
   } catch (e) {
     return fallback;
   }
 };
 
-// Get All Forms (Admin sees all; Department sees forms they have permission for)
+const parseCaseImages = (caseItem) => {
+  if (!caseItem) return caseItem;
+  let images = caseItem.images;
+  if (typeof images === 'string') {
+    try {
+      images = JSON.parse(images);
+    } catch (e) {
+      images = [images];
+    }
+  }
+  return {
+    ...caseItem,
+    images: Array.isArray(images) ? images : (images ? [images] : [])
+  };
+};
+
+// 1. Get All Custom Forms
 const getAllForms = async (req, res, next) => {
   try {
-    const user = req.user;
-    const isAdmin = user && (user.role === 'admin' || user.username === 'Khnv' || user.departmentCode === 'admin');
+    const [forms] = await pool.execute(
+      `SELECT f.*, 
+        (SELECT COUNT(*) FROM custom_form_submissions s WHERE s.form_id = f.id) as submissions_count
+       FROM custom_forms f
+       ORDER BY f.created_at DESC`
+    );
 
-    let sql = 'SELECT * FROM custom_forms';
-    const params = [];
+    const [permissions] = await pool.execute('SELECT * FROM custom_form_permissions');
 
-    if (!isAdmin) {
-      sql = `
-        SELECT DISTINCT f.*
-        FROM custom_forms f
-        LEFT JOIN custom_form_permissions p ON f.id = p.form_id
-        WHERE f.is_active = 1
-          AND (
-            p.target_type = 'all'
-            OR (p.target_type = 'department' AND p.target_value = ?)
-            OR (p.target_type = 'role' AND p.target_value = ?)
-            OR (p.target_type = 'user' AND p.target_value = ?)
-          )
-      `;
-      params.push(user.departmentCode || '', user.role || '', user.username || '');
-    }
-
-    sql += ' ORDER BY created_at DESC';
-    const [forms] = await pool.execute(sql, params);
-
-    // Attach submission counts
-    const formIds = forms.map(f => f.id);
-    let countsMap = new Map();
-
-    if (formIds.length > 0) {
-      const placeholders = formIds.map(() => '?').join(',');
-      const [counts] = await pool.execute(
-        `SELECT form_id, COUNT(*) as total_submissions, MAX(submission_date) as latest_date
-         FROM custom_form_submissions
-         WHERE form_id IN (${placeholders})
-         GROUP BY form_id`,
-        formIds
-      );
-      counts.forEach(c => countsMap.set(c.form_id, c));
-    }
-
-    const formatted = forms.map(f => {
-      const cnt = countsMap.get(f.id);
+    const result = forms.map(form => {
+      const formPerms = permissions.filter(p => p.form_id === form.id);
       return {
-        ...f,
-        schema_json: safeParse(f.schema_json, []),
-        tracker_config: safeParse(f.tracker_config, null),
-        total_submissions: cnt ? Number(cnt.total_submissions) : 0,
-        latest_submission_date: cnt ? cnt.latest_date : null
+        ...form,
+        schema_json: safeParse(form.schema_json, []),
+        tracker_config: safeParse(form.tracker_config, {}),
+        permissions: formPerms
       };
     });
 
     res.json({
       success: true,
-      data: formatted
+      count: result.length,
+      data: result
     });
   } catch (error) {
     next(error);
   }
 };
 
-// Get Form by Code or ID
+// 2. Get Single Form By Code
 const getFormByCode = async (req, res, next) => {
   try {
     const { code } = req.params;
-    const isNum = /^\d+$/.test(code);
-
     const [forms] = await pool.execute(
-      isNum ? 'SELECT * FROM custom_forms WHERE id = ?' : 'SELECT * FROM custom_forms WHERE code = ?',
+      'SELECT * FROM custom_forms WHERE code = ?',
       [code]
     );
 
@@ -91,10 +72,8 @@ const getFormByCode = async (req, res, next) => {
     }
 
     const form = forms[0];
-
-    // Fetch permissions
     const [permissions] = await pool.execute(
-      'SELECT target_type, target_value, permission FROM custom_form_permissions WHERE form_id = ?',
+      'SELECT * FROM custom_form_permissions WHERE form_id = ?',
       [form.id]
     );
 
@@ -103,8 +82,8 @@ const getFormByCode = async (req, res, next) => {
       data: {
         ...form,
         schema_json: safeParse(form.schema_json, []),
-        tracker_config: safeParse(form.tracker_config, null),
-        permissions: permissions || []
+        tracker_config: safeParse(form.tracker_config, {}),
+        permissions
       }
     });
   } catch (error) {
@@ -112,12 +91,11 @@ const getFormByCode = async (req, res, next) => {
   }
 };
 
-// Admin: Create Custom Form
+// 3. Create Custom Form
 const createForm = async (req, res, next) => {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
-
     const {
       code,
       title,
@@ -126,56 +104,68 @@ const createForm = async (req, res, next) => {
       theme_color,
       schema_json,
       tracker_config,
+      is_active,
       permissions
     } = req.body;
 
-    if (!code || !title || !schema_json) {
+    if (!code || !title) {
       await connection.rollback();
       return res.status(400).json({
         success: false,
-        error: 'Vui lòng cung cấp: Mã biểu mẫu (code), Tên biểu mẫu (title) và Cấu hình trường (schema_json).'
+        error: 'Vui lòng cung cấp Mã định danh (Code) và Tên biểu mẫu (Title).'
       });
     }
 
-    const cleanCode = String(code).trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_');
+    // Check duplicate code
+    const [existing] = await connection.execute(
+      'SELECT id FROM custom_forms WHERE code = ?',
+      [code.trim()]
+    );
 
-    // Check code uniqueness
-    const [existing] = await connection.execute('SELECT id FROM custom_forms WHERE code = ?', [cleanCode]);
     if (existing.length > 0) {
       await connection.rollback();
       return res.status(400).json({
         success: false,
-        error: `Mã biểu mẫu "${cleanCode}" đã tồn tại. Vui lòng chọn mã khác.`
+        error: 'Mã biểu mẫu (Slug Code) này đã tồn tại trên hệ thống. Vui lòng chọn mã khác.'
       });
     }
 
-    const [result] = await connection.execute(
-      `INSERT INTO custom_forms (code, title, description, form_type, theme_color, schema_json, tracker_config, is_active, created_by)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)`,
+    const [insertResult] = await connection.execute(
+      `INSERT INTO custom_forms (
+        code, title, description, form_type, theme_color, schema_json, tracker_config, is_active, created_by
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        cleanCode,
+        code.trim(),
         title.trim(),
-        description || '',
+        description || null,
         form_type || 'input',
         theme_color || '#2563EB',
-        JSON.stringify(schema_json),
-        tracker_config ? JSON.stringify(tracker_config) : null,
+        JSON.stringify(schema_json || []),
+        JSON.stringify(tracker_config || {}),
+        is_active !== undefined ? (is_active ? 1 : 0) : 1,
         req.user?.username || 'Admin'
       ]
     );
 
-    const formId = result.insertId;
+    const formId = insertResult.insertId;
 
     // Insert permissions
-    const perms = Array.isArray(permissions) && permissions.length > 0
-      ? permissions
-      : [{ target_type: 'all', target_value: 'all', permission: 'edit' }];
-
-    for (const p of perms) {
+    if (Array.isArray(permissions) && permissions.length > 0) {
+      for (const perm of permissions) {
+        if (perm.target_type && perm.target_value) {
+          await connection.execute(
+            `INSERT INTO custom_form_permissions (form_id, target_type, target_value, permission)
+             VALUES (?, ?, ?, ?)`,
+            [formId, perm.target_type, perm.target_value, perm.permission || 'edit']
+          );
+        }
+      }
+    } else {
+      // Default: All departments can view and edit
       await connection.execute(
         `INSERT INTO custom_form_permissions (form_id, target_type, target_value, permission)
-         VALUES (?, ?, ?, ?)`,
-        [formId, p.target_type || 'all', p.target_value || 'all', p.permission || 'edit']
+         VALUES (?, 'all', 'all', 'edit')`,
+        [formId]
       );
     }
 
@@ -184,7 +174,7 @@ const createForm = async (req, res, next) => {
     res.json({
       success: true,
       message: 'Tạo biểu mẫu tùy chỉnh thành công!',
-      data: { id: formId, code: cleanCode, title }
+      data: { id: formId, code: code.trim() }
     });
   } catch (error) {
     await connection.rollback();
@@ -194,12 +184,11 @@ const createForm = async (req, res, next) => {
   }
 };
 
-// Admin: Update Custom Form
+// 4. Update Custom Form
 const updateForm = async (req, res, next) => {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
-
     const { id } = req.params;
     const {
       title,
@@ -212,37 +201,49 @@ const updateForm = async (req, res, next) => {
       permissions
     } = req.body;
 
-    const [forms] = await connection.execute('SELECT id FROM custom_forms WHERE id = ?', [id]);
-    if (forms.length === 0) {
+    const [existing] = await connection.execute(
+      'SELECT id FROM custom_forms WHERE id = ?',
+      [id]
+    );
+
+    if (existing.length === 0) {
       await connection.rollback();
       return res.status(404).json({ success: false, error: 'Không tìm thấy biểu mẫu cần cập nhật.' });
     }
 
     await connection.execute(
-      `UPDATE custom_forms
-       SET title = ?, description = ?, form_type = ?, theme_color = ?, schema_json = ?, tracker_config = ?, is_active = ?
+      `UPDATE custom_forms SET
+        title = ?,
+        description = ?,
+        form_type = ?,
+        theme_color = ?,
+        schema_json = ?,
+        tracker_config = ?,
+        is_active = ?
        WHERE id = ?`,
       [
-        title,
-        description || '',
+        title ? title.trim() : '',
+        description !== undefined ? description : null,
         form_type || 'input',
         theme_color || '#2563EB',
         JSON.stringify(schema_json || []),
-        tracker_config ? JSON.stringify(tracker_config) : null,
+        JSON.stringify(tracker_config || {}),
         is_active !== undefined ? (is_active ? 1 : 0) : 1,
         id
       ]
     );
 
-    // Update permissions if provided
+    // Update permissions: Delete old and insert new
     if (Array.isArray(permissions)) {
       await connection.execute('DELETE FROM custom_form_permissions WHERE form_id = ?', [id]);
-      for (const p of permissions) {
-        await connection.execute(
-          `INSERT INTO custom_form_permissions (form_id, target_type, target_value, permission)
-           VALUES (?, ?, ?, ?)`,
-          [id, p.target_type || 'all', p.target_value || 'all', p.permission || 'edit']
-        );
+      for (const perm of permissions) {
+        if (perm.target_type && perm.target_value) {
+          await connection.execute(
+            `INSERT INTO custom_form_permissions (form_id, target_type, target_value, permission)
+             VALUES (?, ?, ?, ?)`,
+            [id, perm.target_type, perm.target_value, perm.permission || 'edit']
+          );
+        }
       }
     }
 
@@ -260,26 +261,25 @@ const updateForm = async (req, res, next) => {
   }
 };
 
-// Admin: Delete Custom Form
+// 5. Delete Custom Form
 const deleteForm = async (req, res, next) => {
   try {
     const { id } = req.params;
     await pool.execute('DELETE FROM custom_forms WHERE id = ?', [id]);
     res.json({
       success: true,
-      message: 'Đã xóa biểu mẫu tùy chỉnh thành công.'
+      message: 'Đã xóa biểu mẫu tùy chỉnh thành công!'
     });
   } catch (error) {
     next(error);
   }
 };
 
-// Submit Custom Form Data
+// 6. Submit Dynamic Form Data
 const submitFormData = async (req, res, next) => {
   try {
     const { code } = req.params;
     const { submission_date, submission_data } = req.body;
-    const user = req.user;
 
     const [forms] = await pool.execute('SELECT * FROM custom_forms WHERE code = ? AND is_active = 1', [code]);
     if (forms.length === 0) {
@@ -287,40 +287,31 @@ const submitFormData = async (req, res, next) => {
     }
 
     const form = forms[0];
-    const deptCode = user?.departmentCode || 'admin';
+    const userDept = req.user?.departmentCode || 'admin';
+    const username = req.user?.username || 'Unknown';
     const subDate = submission_date || new Date().toISOString().split('T')[0];
 
     const [result] = await pool.execute(
-      `INSERT INTO custom_form_submissions (form_id, submitted_by_user, department_code, submission_date, submission_data, status)
-       VALUES (?, ?, ?, ?, ?, 'submitted')`,
-      [
-        form.id,
-        user?.username || 'user',
-        deptCode,
-        subDate,
-        JSON.stringify(submission_data || {})
-      ]
+      `INSERT INTO custom_form_submissions (form_id, submitted_by_user, department_code, submission_date, submission_data)
+       VALUES (?, ?, ?, ?, ?)`,
+      [form.id, username, userDept, subDate, JSON.stringify(submission_data || {})]
     );
 
     res.json({
       success: true,
-      message: 'Nộp báo cáo theo biểu mẫu thành công!',
-      data: {
-        id: result.insertId,
-        form_title: form.title,
-        submission_date: subDate
-      }
+      message: 'Nộp báo cáo biểu mẫu thành công!',
+      submission_id: result.insertId
     });
   } catch (error) {
     next(error);
   }
 };
 
-// Get Submissions for a Form
+// 7. Get Submissions For Form
 const getFormSubmissions = async (req, res, next) => {
   try {
     const { code } = req.params;
-    const { date, department_code } = req.query;
+    const { date } = req.query;
 
     const [forms] = await pool.execute('SELECT * FROM custom_forms WHERE code = ?', [code]);
     if (forms.length === 0) {
@@ -328,22 +319,22 @@ const getFormSubmissions = async (req, res, next) => {
     }
 
     const form = forms[0];
-
-    let sql = 'SELECT * FROM custom_form_submissions WHERE form_id = ?';
+    let query = `
+      SELECT s.*, u.department_name, u.full_name as user_full_name
+      FROM custom_form_submissions s
+      LEFT JOIN users u ON s.department_code = u.department_code
+      WHERE s.form_id = ?
+    `;
     const params = [form.id];
 
     if (date) {
-      sql += ' AND submission_date = ?';
+      query += ' AND s.submission_date = ?';
       params.push(date);
     }
 
-    if (department_code) {
-      sql += ' AND department_code = ?';
-      params.push(department_code);
-    }
+    query += ' ORDER BY s.created_at DESC';
 
-    sql += ' ORDER BY submission_date DESC, created_at DESC';
-    const [submissions] = await pool.execute(sql, params);
+    const [submissions] = await pool.execute(query, params);
 
     const formatted = submissions.map(s => ({
       ...s,
@@ -366,7 +357,7 @@ const getFormSubmissions = async (req, res, next) => {
   }
 };
 
-// Realtime Data Tracker Aggregation
+// 8. Realtime Data Tracker Aggregation for All 3 Sources
 const getTrackerData = async (req, res, next) => {
   try {
     const { code } = req.params;
@@ -380,9 +371,12 @@ const getTrackerData = async (req, res, next) => {
 
     const form = forms[0];
     const trackerConfig = safeParse(form.tracker_config, { source: 'overtime_staff' });
+    const source = trackerConfig.source || 'overtime_staff';
 
-    // 1. Source: Overtime Staff from 12 Departments Reports
-    if (trackerConfig.source === 'overtime_staff' || !trackerConfig.source) {
+    // ==========================================
+    // SOURCE 1: Overtime Staff (Nhân sự tăng cường)
+    // ==========================================
+    if (source === 'overtime_staff') {
       const [reports] = await pool.execute(
         `SELECT r.id, r.department_code, u.department_name, r.doctor_name, r.nurse_name, r.overtime_staff, r.shift_time, r.room
          FROM reports r
@@ -413,6 +407,7 @@ const getTrackerData = async (req, res, next) => {
 
       return res.json({
         success: true,
+        source: 'overtime_staff',
         form: {
           id: form.id,
           code: form.code,
@@ -426,7 +421,199 @@ const getTrackerData = async (req, res, next) => {
       });
     }
 
-    // 2. Fallback: Generic Submissions
+    // ==========================================
+    // SOURCE 2: Clinical Cases (Tổng hợp 4 loại ca bệnh)
+    // ==========================================
+    if (source === 'clinical_cases') {
+      // 1. Transfer cases
+      const [transferRows] = await pool.execute(
+        `SELECT t.*, r.department_code, u.department_name 
+         FROM transfer_cases t
+         JOIN reports r ON t.report_id = r.id
+         LEFT JOIN users u ON r.department_code = u.department_code
+         WHERE r.report_date = ?
+         ORDER BY t.id ASC`,
+        [targetDate]
+      );
+
+      // 2. Surgery cases
+      const [surgeryRows] = await pool.execute(
+        `SELECT s.*, r.department_code, u.department_name 
+         FROM surgery_cases s
+         JOIN reports r ON s.report_id = r.id
+         LEFT JOIN users u ON r.department_code = u.department_code
+         WHERE r.report_date = ?
+         ORDER BY s.id ASC`,
+        [targetDate]
+      );
+
+      // 3. Death cases
+      const [deathRows] = await pool.execute(
+        `SELECT d.*, r.department_code, u.department_name 
+         FROM death_cases d
+         JOIN reports r ON d.report_id = r.id
+         LEFT JOIN users u ON r.department_code = u.department_code
+         WHERE r.report_date = ?
+         ORDER BY d.id ASC`,
+        [targetDate]
+      );
+
+      // 4. Critical cases
+      const [criticalRows] = await pool.execute(
+        `SELECT c.*, r.department_code, u.department_name 
+         FROM critical_cases c
+         JOIN reports r ON c.report_id = r.id
+         LEFT JOIN users u ON r.department_code = u.department_code
+         WHERE r.report_date = ?
+         ORDER BY c.id ASC`,
+        [targetDate]
+      );
+
+      const transferCases = transferRows.map(parseCaseImages);
+      const surgeryCases = surgeryRows.map(parseCaseImages);
+      const deathCases = deathRows.map(parseCaseImages);
+      const criticalCases = criticalRows.map(parseCaseImages);
+
+      return res.json({
+        success: true,
+        source: 'clinical_cases',
+        form: {
+          id: form.id,
+          code: form.code,
+          title: form.title,
+          theme_color: form.theme_color
+        },
+        targetDate,
+        summary: {
+          total_cases: transferCases.length + surgeryCases.length + deathCases.length + criticalCases.length,
+          total_transfer: transferCases.length,
+          total_surgery: surgeryCases.length,
+          total_death: deathCases.length,
+          total_critical: criticalCases.length
+        },
+        data: {
+          transferCases,
+          surgeryCases,
+          deathCases,
+          criticalCases
+        }
+      });
+    }
+
+    // ==========================================
+    // SOURCE 3: Examination Metrics (Thống kê khám & điều trị 12 khoa)
+    // ==========================================
+    if (source === 'examination_metrics') {
+      const [reports] = await pool.execute(
+        `SELECT r.id, r.department_code, u.department_name, r.doctor_name, r.nurse_name, r.report_data, r.status
+         FROM reports r
+         LEFT JOIN users u ON r.department_code = u.department_code
+         WHERE r.report_date = ?`,
+        [targetDate]
+      );
+
+      let totalKham = 0;
+      let totalCu = 0;
+      let totalMoi = 0;
+      let totalXuat = 0;
+      let totalChuyen = 0;
+      let totalHienCon = 0;
+      let totalTuVong = 0;
+      let totalMo = 0;
+      let totalXetNghiem = 0;
+      let totalSieuAm = 0;
+      let totalXquang = 0;
+      let totalCT = 0;
+
+      const deptBreakdown = [];
+
+      (reports || []).forEach(r => {
+        const raw = safeParse(r.report_data, {});
+        
+        // Extract metrics flexibly across department structures
+        const getNum = (key) => {
+          if (raw[key] !== undefined && raw[key] !== null && raw[key] !== '') {
+            return Number(raw[key]) || 0;
+          }
+          return 0;
+        };
+
+        const deptKham = getNum('tongSoKham') || getNum('tongSo') || getNum('soCaKham') || getNum('pk21_tongSo') || (raw.khoiNoi ? Number(raw.khoiNoi.tongSo || 0) : 0);
+        const deptCu = getNum('benhCu') || (raw.khoiNoi ? Number(raw.khoiNoi.benhCu || 0) : 0);
+        const deptMoi = getNum('benhMoi') || (raw.khoiNoi ? Number(raw.khoiNoi.benhMoi || 0) : 0);
+        const deptXuat = getNum('xuatVien') || (raw.khoiNoi ? Number(raw.khoiNoi.xuatVien || 0) : 0);
+        const deptChuyen = getNum('chuyenVien') || (raw.khoiNoi ? Number(raw.khoiNoi.chuyenVien || 0) : 0);
+        const deptHienCon = getNum('hienCon') || getNum('hienCo') || (raw.khoiNoi ? Number(raw.khoiNoi.hienCon || 0) : 0);
+        const deptTuVong = getNum('tuVong') || (raw.khoiNoi ? Number(raw.khoiNoi.tuVong || 0) : 0);
+        const deptMo = getNum('tongSoCaMo') || 0;
+        const deptXN = getNum('tongXetNghiem') || 0;
+        const deptSA = getNum('tongSoSieuAm') || 0;
+        const deptXQ = getNum('tongSoXquang') || 0;
+        const deptCT = getNum('tongSoCT') || 0;
+
+        totalKham += deptKham;
+        totalCu += deptCu;
+        totalMoi += deptMoi;
+        totalXuat += deptXuat;
+        totalChuyen += deptChuyen;
+        totalHienCon += deptHienCon;
+        totalTuVong += deptTuVong;
+        totalMo += deptMo;
+        totalXetNghiem += deptXN;
+        totalSieuAm += deptSA;
+        totalXquang += deptXQ;
+        totalCT += deptCT;
+
+        deptBreakdown.push({
+          department_code: r.department_code,
+          department_name: r.department_name || r.department_code,
+          doctor_name: r.doctor_name,
+          nurse_name: r.nurse_name,
+          kham: deptKham,
+          benh_cu: deptCu,
+          benh_moi: deptMoi,
+          xuat_vien: deptXuat,
+          chuyen_vien: deptChuyen,
+          hien_con: deptHienCon,
+          tu_vong: deptTuVong,
+          ca_mo: deptMo,
+          xet_nghiem: deptXN,
+          sieu_am: deptSA,
+          xquang: deptXQ,
+          ct_scanner: deptCT
+        });
+      });
+
+      return res.json({
+        success: true,
+        source: 'examination_metrics',
+        form: {
+          id: form.id,
+          code: form.code,
+          title: form.title,
+          theme_color: form.theme_color
+        },
+        targetDate,
+        summary: {
+          total_departments_reported: reports.length,
+          total_kham: totalKham,
+          total_benh_cu: totalCu,
+          total_benh_moi: totalMoi,
+          total_xuat_vien: totalXuat,
+          total_chuyen_vien: totalChuyen,
+          total_hien_con: totalHienCon,
+          total_tu_vong: totalTuVong,
+          total_ca_mo: totalMo,
+          total_xet_nghiem: totalXetNghiem,
+          total_sieu_am: totalSieuAm,
+          total_xquang: totalXquang,
+          total_ct_scanner: totalCT
+        },
+        data: deptBreakdown
+      });
+    }
+
+    // Default generic submissions
     const [submissions] = await pool.execute(
       `SELECT s.*, u.department_name
        FROM custom_form_submissions s
@@ -438,6 +625,7 @@ const getTrackerData = async (req, res, next) => {
 
     res.json({
       success: true,
+      source: 'custom_submissions',
       form: {
         id: form.id,
         code: form.code,
