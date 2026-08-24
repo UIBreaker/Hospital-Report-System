@@ -44,7 +44,8 @@ const CustomFormList = ({
         setForms(res.data || []);
       }
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Lỗi khi tải danh sách biểu mẫu.');
+      const rawErr = err.response?.data?.error || err.response?.data?.message || err.message;
+      setError(typeof rawErr === 'string' ? rawErr : (rawErr?.message || 'Lỗi khi tải danh sách biểu mẫu.'));
     } finally {
       setLoading(false);
     }
@@ -154,9 +155,9 @@ const CustomFormList = ({
         </div>
       </div>
 
-      {error && (
+      {Boolean(error) && (
         <div style={{ padding: '0.75rem 1rem', backgroundColor: '#FEF2F2', color: '#DC2626', borderRadius: '10px', fontSize: '0.86rem', fontWeight: '600' }}>
-          ⚠️ {error}
+          ⚠️ {typeof error === 'string' ? error : (error?.message || 'Lỗi khi tải danh sách')}
         </div>
       )}
 

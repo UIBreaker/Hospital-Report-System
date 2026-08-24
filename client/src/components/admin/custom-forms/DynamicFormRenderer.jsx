@@ -46,7 +46,8 @@ const DynamicFormRenderer = ({ formCode, onBack }) => {
           setFormData(initVals);
         }
       } catch (err) {
-        setErrorMsg(err.response?.data?.error || err.message || 'Lỗi khi tải thông tin biểu mẫu.');
+        const rawErr = err.response?.data?.error || err.response?.data?.message || err.message;
+        setErrorMsg(typeof rawErr === 'string' ? rawErr : (rawErr?.message || 'Lỗi khi tải thông tin biểu mẫu.'));
       } finally {
         setLoading(false);
       }
@@ -287,7 +288,7 @@ const DynamicFormRenderer = ({ formCode, onBack }) => {
               alignItems: 'center',
               gap: '0.5rem'
             }}>
-              <FaExclamationTriangle /> {errorMsg}
+              <FaExclamationTriangle /> {typeof errorMsg === 'string' ? errorMsg : (errorMsg?.message || 'Lỗi biểu mẫu')}
             </div>
           )}
 

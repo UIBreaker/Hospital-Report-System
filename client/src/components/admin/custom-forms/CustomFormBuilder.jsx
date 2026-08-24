@@ -187,7 +187,8 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
         if (onSaved) onSaved(res.data);
       }
     } catch (err) {
-      setErrorMsg(err.response?.data?.error || err.message || 'Lỗi khi lưu biểu mẫu.');
+      const rawErr = err.response?.data?.error || err.response?.data?.message || err.message;
+      setErrorMsg(typeof rawErr === 'string' ? rawErr : (rawErr?.message || 'Lỗi khi lưu biểu mẫu.'));
     } finally {
       setSaving(false);
     }
@@ -325,7 +326,7 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
 
       {errorMsg && (
         <div style={{ margin: '1rem 1.65rem 0', padding: '0.75rem 1rem', backgroundColor: '#FEF2F2', color: '#DC2626', borderRadius: '10px', fontSize: '0.86rem', fontWeight: '600' }}>
-          ⚠️ {errorMsg}
+          ⚠️ {typeof errorMsg === 'string' ? errorMsg : (errorMsg?.message || 'Lỗi biểu mẫu')}
         </div>
       )}
 

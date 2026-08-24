@@ -76,7 +76,8 @@ const RegisterPage = () => {
         setSuccessData(res.data || { username, full_name: fullName });
       }
     } catch (err) {
-      setErrorMsg(err.response?.data?.error || err.message || 'Đăng ký không thành công. Vui lòng thử lại.');
+      const rawErr = err.response?.data?.error || err.response?.data?.message || err.message;
+      setErrorMsg(typeof rawErr === 'string' ? rawErr : (rawErr?.message || 'Đăng ký không thành công. Vui lòng thử lại.'));
     } finally {
       setLoading(false);
     }
@@ -193,7 +194,7 @@ const RegisterPage = () => {
                   alignItems: 'center',
                   gap: '0.5rem'
                 }}>
-                  <FaExclamationTriangle /> {errorMsg}
+                  <FaExclamationTriangle /> {typeof errorMsg === 'string' ? errorMsg : (errorMsg?.message || 'Lỗi đăng ký')}
                 </div>
               )}
 

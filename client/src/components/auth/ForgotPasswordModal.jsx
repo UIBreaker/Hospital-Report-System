@@ -27,7 +27,8 @@ const ForgotPasswordModal = ({ isOpen, onClose }) => {
         setSuccessMsg(res.message);
       }
     } catch (err) {
-      setErrorMsg(err.response?.data?.error || err.message || 'Lỗi khi gửi yêu cầu cấp lại mật khẩu.');
+      const rawErr = err.response?.data?.error || err.response?.data?.message || err.message;
+      setErrorMsg(typeof rawErr === 'string' ? rawErr : (rawErr?.message || 'Lỗi khi gửi yêu cầu cấp lại mật khẩu.'));
     } finally {
       setLoading(false);
     }
@@ -151,7 +152,7 @@ const ForgotPasswordModal = ({ isOpen, onClose }) => {
                   alignItems: 'center',
                   gap: '0.45rem'
                 }}>
-                  <FaExclamationTriangle /> {errorMsg}
+                  <FaExclamationTriangle /> {typeof errorMsg === 'string' ? errorMsg : (errorMsg?.message || 'Lỗi yêu cầu')}
                 </div>
               )}
 

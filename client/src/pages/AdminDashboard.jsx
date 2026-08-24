@@ -116,8 +116,9 @@ const AdminDashboard = () => {
       }
     } catch (err) {
       console.error('Lỗi khi tải trạng thái báo cáo:', err);
-      const errMsg = err.response?.data?.error;
-      setError(typeof errMsg === 'string' ? errMsg : 'Không thể kết nối đến máy chủ để tải danh sách báo cáo.');
+      const rawErr = err.response?.data?.error || err.response?.data?.message || err.message;
+      const errMsg = typeof rawErr === 'string' ? rawErr : (rawErr?.message || 'Không thể kết nối đến máy chủ để tải danh sách báo cáo.');
+      setError(errMsg);
     } finally {
       setLoading(false);
     }

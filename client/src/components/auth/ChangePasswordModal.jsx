@@ -54,7 +54,8 @@ const ChangePasswordModal = ({
         if (onSuccess) onSuccess(res.data);
       }
     } catch (err) {
-      setErrorMsg(err.response?.data?.error || err.message || 'Không thể đổi mật khẩu. Vui lòng kiểm tra lại.');
+      const rawErr = err.response?.data?.error || err.response?.data?.message || err.message;
+      setErrorMsg(typeof rawErr === 'string' ? rawErr : (rawErr?.message || 'Không thể đổi mật khẩu. Vui lòng kiểm tra lại.'));
     } finally {
       setLoading(false);
     }
@@ -145,7 +146,7 @@ const ChangePasswordModal = ({
               alignItems: 'center',
               gap: '0.45rem'
             }}>
-              <FaExclamationTriangle /> {errorMsg}
+              <FaExclamationTriangle /> {typeof errorMsg === 'string' ? errorMsg : (errorMsg?.message || 'Lỗi đổi mật khẩu')}
             </div>
           )}
 

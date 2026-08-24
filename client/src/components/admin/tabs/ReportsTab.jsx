@@ -201,10 +201,10 @@ const ReportsTab = ({
         </div>
       </div>
 
-      {error && (
+      {Boolean(error) && (
         <div style={{ marginBottom: '0.5rem' }}>
           <Notice tone="warning" onClose={onClearError}>
-            {error}
+            {typeof error === 'string' ? error : (error?.message || 'Đã xảy ra lỗi')}
           </Notice>
         </div>
       )}

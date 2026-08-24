@@ -78,7 +78,8 @@ const LoginPage = () => {
       }
       navigate(loggedInUser.role === 'admin' ? '/admin' : '/report');
     } catch (err) {
-      setError(err.response?.data?.error || err.response?.data?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại tên đăng nhập hoặc mật khẩu.');
+      const errMsg = err.response?.data?.error || err.response?.data?.message || err.message;
+      setError(typeof errMsg === 'string' ? errMsg : (errMsg?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại tên đăng nhập hoặc mật khẩu.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -477,7 +478,7 @@ const LoginPage = () => {
                 lineHeight: '1.35'
               }}>
                 <FaInfoCircle style={{ flexShrink: 0 }} />
-                <span>{error}</span>
+                <span>{typeof error === 'string' ? error : (error?.message || 'Lỗi đăng nhập')}</span>
               </div>
             )}
 
