@@ -8,17 +8,9 @@ const customFormRoutes = require('./routes/customFormRoutes');
 const { auth } = require('./middleware/auth');
 const { getStaffByDepartment } = require('./controllers/staffController');
 const errorHandler = require('./middleware/errorHandler');
-
 const pool = require('./config/db');
-const app = express();
 
-// Auto ensure schema for serverless lambda cold starts
-app.use(async (req, res, next) => {
-  try {
-    await pool.ensureSchema();
-  } catch (e) {}
-  next();
-});
+const app = express();
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
