@@ -34,7 +34,7 @@ const LoginPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [mustChangePasswordData, setMustChangePasswordData] = useState({ isOpen: false, username: '', fullName: '' });
-  const [showIntro, setShowIntro] = useState(() => !sessionStorage.getItem('portal_intro_shown'));
+  const [showIntro, setShowIntro] = useState(true);
   
   const { login, user, isAdmin } = useContext(AuthContext);
   const navigate = useNavigate();
