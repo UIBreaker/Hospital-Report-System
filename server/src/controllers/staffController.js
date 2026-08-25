@@ -4,25 +4,32 @@ const pool = require('../config/db');
 const getAllStaff = async (req, res, next) => {
   try {
     const { department, position, search } = req.query;
-    let query = 'SELECT * FROM staff_members WHERE 1=1';
+    let query = `
+      SELECT s.*, 
+             s.full_name as name,
+             COALESCE(u.department_name, s.department) as department_name
+      FROM staff_members s
+      LEFT JOIN users u ON s.department = u.department_code
+      WHERE 1=1
+    `;
     const params = [];
 
     if (department && department !== 'all') {
-      query += ' AND department = ?';
+      query += ' AND s.department = ?';
       params.push(department);
     }
 
     if (position && position !== 'all') {
-      query += ' AND position = ?';
+      query += ' AND s.position = ?';
       params.push(position);
     }
 
     if (search && search.trim()) {
-      query += ' AND (full_name LIKE ? OR certificate LIKE ?)';
+      query += ' AND (s.full_name LIKE ? OR s.certificate LIKE ?)';
       params.push(`%${search.trim()}%`, `%${search.trim()}%`);
     }
 
-    query += ' ORDER BY department, position DESC, full_name ASC';
+    query += ' ORDER BY s.department, s.position DESC, s.full_name ASC';
 
     const [staff] = await pool.query(query, params);
     res.json({ success: true, count: staff.length, data: staff });
@@ -44,7 +51,12 @@ const getStaffByDepartment = async (req, res, next) => {
     }
 
     const [staff] = await pool.query(
-      'SELECT id, full_name, position, department, certificate, gender FROM staff_members WHERE department = ? ORDER BY position DESC, full_name ASC',
+      `SELECT s.id, s.full_name, s.full_name as name, s.position, s.department, s.certificate, s.gender,
+              COALESCE(u.department_name, s.department) as department_name
+       FROM staff_members s
+       LEFT JOIN users u ON s.department = u.department_code
+       WHERE s.department = ? 
+       ORDER BY s.position DESC, s.full_name ASC`,
       [departmentCode]
     );
 

@@ -274,15 +274,18 @@ const StaffSelectorField = ({ field, value, onChange, currentUserDept, themeColo
   // Filter staff based on field settings
   const filteredStaff = useMemo(() => {
     return staffList.filter(s => {
+      const sDept = s.department || s.department_code || '';
+      const sName = s.full_name || s.name || s.username || '';
+      const pos = (s.position || '').toLowerCase();
+
       // 1. Department filter
       if (field.staffScope === 'specific_dept' && field.specificDept) {
-        if (s.department_code !== field.specificDept) return false;
+        if (sDept !== field.specificDept) return false;
       } else if (field.staffScope === 'current_dept' && currentUserDept) {
-        if (s.department_code !== currentUserDept) return false;
+        if (sDept !== currentUserDept) return false;
       }
 
       // 2. Role filter
-      const pos = (s.position || '').toLowerCase();
       const isDoc = pos.includes('bác sĩ') || pos.includes('bs') || pos.includes('truong khoa') || pos.includes('phó khoa');
       if (field.staffRole === 'doctor' && !isDoc) return false;
       if (field.staffRole === 'nurse' && isDoc) return false;
@@ -290,9 +293,9 @@ const StaffSelectorField = ({ field, value, onChange, currentUserDept, themeColo
       // 3. Search query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
-        const inName = (s.name || '').toLowerCase().includes(q);
-        const inPos = (s.position || '').toLowerCase().includes(q);
-        const inDept = (s.department_name || '').toLowerCase().includes(q);
+        const inName = sName.toLowerCase().includes(q);
+        const inPos = pos.includes(q);
+        const inDept = (s.department_name || sDept).toLowerCase().includes(q);
         if (!inName && !inPos && !inDept) return false;
       }
 
@@ -304,7 +307,8 @@ const StaffSelectorField = ({ field, value, onChange, currentUserDept, themeColo
   const selectedArray = isMulti ? (Array.isArray(value) ? value : (value ? [value] : [])) : [];
 
   const handleSelectOne = (staff) => {
-    const staffLabel = staff.position ? (staff.name + ' (' + staff.position + ')') : staff.name;
+    const sName = staff.full_name || staff.name || staff.username || '';
+    const staffLabel = staff.position ? (sName + ' (' + staff.position + ')') : sName;
     if (isMulti) {
       if (!selectedArray.includes(staffLabel)) {
         onChange([...selectedArray, staffLabel]);
@@ -397,7 +401,7 @@ const StaffSelectorField = ({ field, value, onChange, currentUserDept, themeColo
           border: '1.5px solid #CBD5E1',
           boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
           zIndex: 9999,
-          maxHeight: '260px',
+          maxHeight: '280px',
           overflowY: 'auto',
           padding: '0.5rem',
           display: 'flex',
@@ -408,7 +412,7 @@ const StaffSelectorField = ({ field, value, onChange, currentUserDept, themeColo
           <div style={{ position: 'sticky', top: 0, backgroundColor: '#FFFFFF', paddingBottom: '0.35rem', zIndex: 2 }}>
             <input
               type="text"
-              placeholder="🔍 Tìm theo tên, chức danh, khoa phòng..."
+              placeholder="🔍 Tìm theo tên bác sĩ, chức danh, khoa phòng..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onClick={(e) => e.stopPropagation()}
@@ -434,9 +438,10 @@ const StaffSelectorField = ({ field, value, onChange, currentUserDept, themeColo
             </div>
           ) : (
             filteredStaff.map(s => {
+              const sName = s.full_name || s.name || s.username || 'Cán bộ';
               const pos = (s.position || '').toLowerCase();
               const isDoc = pos.includes('bác sĩ') || pos.includes('bs');
-              const fullLabel = s.position ? (s.name + ' (' + s.position + ')') : s.name;
+              const fullLabel = s.position ? (sName + ' (' + s.position + ')') : sName;
               const isSelected = isMulti ? selectedArray.includes(fullLabel) : value === fullLabel;
 
               return (
@@ -447,7 +452,7 @@ const StaffSelectorField = ({ field, value, onChange, currentUserDept, themeColo
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    padding: '0.5rem 0.75rem',
+                    padding: '0.55rem 0.75rem',
                     borderRadius: '8px',
                     backgroundColor: isSelected ? '#EFF6FF' : '#F8FAFC',
                     border: '1px solid ' + (isSelected ? '#BFDBFE' : '#F1F5F9'),
@@ -457,26 +462,30 @@ const StaffSelectorField = ({ field, value, onChange, currentUserDept, themeColo
                   onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#EFF6FF'}
                   onMouseOut={(e) => e.currentTarget.style.backgroundColor = isSelected ? '#EFF6FF' : '#F8FAFC'}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
                     <span style={{
-                      width: '28px',
-                      height: '28px',
+                      width: '32px',
+                      height: '32px',
                       borderRadius: '50%',
                       backgroundColor: isDoc ? '#DBEAFE' : '#DCFCE7',
                       color: isDoc ? '#1D4ED8' : '#15803D',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      fontSize: '0.8rem'
+                      fontSize: '0.85rem',
+                      flexShrink: 0
                     }}>
                       {isDoc ? <FaUserMd /> : <FaUserNurse />}
                     </span>
                     <div>
-                      <div style={{ fontSize: '0.86rem', fontWeight: '800', color: '#0F2C59' }}>
-                        {s.name}
+                      <div style={{ fontSize: '0.9rem', fontWeight: '900', color: '#0F2C59' }}>
+                        {sName}
                       </div>
-                      <div style={{ fontSize: '0.74rem', color: '#64748B' }}>
-                        {s.position || 'Nhân viên'} {s.department_name && ('• ' + s.department_name)}
+                      <div style={{ fontSize: '0.75rem', color: '#64748B', display: 'flex', gap: '0.35rem', marginTop: '1px' }}>
+                        <span style={{ fontWeight: '700', color: isDoc ? '#1D4ED8' : '#15803D' }}>{s.position || 'Nhân viên'}</span>
+                        <span>•</span>
+                        <span>{s.department_name || s.department || 'Bệnh viện'}</span>
+                        {s.certificate && <span>• CCHN: {s.certificate}</span>}
                       </div>
                     </div>
                   </div>
