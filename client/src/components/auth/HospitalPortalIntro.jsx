@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   FaHospital, 
   FaSignInAlt, 
@@ -11,236 +11,128 @@ import {
   FaCloudSun,
   FaHeartbeat,
   FaCheckCircle,
-  FaArrowRight,
-  FaVolumeUp,
-  FaVolumeMute,
-  FaMusic
+  FaLock,
+  FaSatelliteDish,
+  FaServer,
+  FaDatabase
 } from 'react-icons/fa';
 
 // =========================================================================
-// HIGH-END CINEMATIC MEDICAL SOUND SYNTHESIZER ENGINE (Web Audio API)
+// PURE IN-MEMORY 16-BIT STEREO WAV AUDIO SYNTHESIZER (Native Browser Autoplay)
 // =========================================================================
 
-let sharedAudioCtx = null;
-const getAudioContext = () => {
-  if (!sharedAudioCtx) {
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (AudioContextClass) {
-      sharedAudioCtx = new AudioContextClass();
+const generateCinematicMedicalAudioWav = () => {
+  const sampleRate = 44100;
+  const duration = 4.6; // 4.6 seconds
+  const totalSamples = Math.floor(sampleRate * duration);
+  const numChannels = 2;
+  const bytesPerSample = 2; // 16-bit PCM
+  const blockAlign = numChannels * bytesPerSample;
+  const byteRate = sampleRate * blockAlign;
+  const dataSize = totalSamples * blockAlign;
+  const buffer = new ArrayBuffer(44 + dataSize);
+  const view = new DataView(buffer);
+
+  // Write WAV RIFF Header
+  const writeString = (offset, string) => {
+    for (let i = 0; i < string.length; i++) {
+      view.setUint8(offset + i, string.charCodeAt(i));
     }
-  }
-  return sharedAudioCtx;
-};
+  };
 
-// 1. Cinematic Medical Grand Opening (Ambient Pad + Real Heartbeat + Crystal Chime)
-const playCinematicMedicalIntro = async () => {
-  try {
-    const ctx = getAudioContext();
-    if (!ctx) return;
-    
-    if (ctx.state === 'suspended') {
-      await ctx.resume().catch(() => {});
-    }
-    if (ctx.state !== 'running') return;
+  writeString(0, 'RIFF');
+  view.setUint32(4, 36 + dataSize, true);
+  writeString(8, 'WAVE');
+  writeString(12, 'fmt ');
+  view.setUint32(16, 16, true); // Subchunk1Size (16 for PCM)
+  view.setUint16(20, 1, true);  // AudioFormat (1 = PCM)
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, byteRate, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, 16, true); // BitsPerSample
+  writeString(36, 'data');
+  view.setUint32(40, dataSize, true);
 
-    const now = ctx.currentTime;
+  // Synthesis Parameters
+  const padFreqs = [146.83, 220.0, 293.66, 369.99, 440.0, 554.37];
+  const crystalChimes = [
+    { time: 0.25, freq: 739.99, pan: -0.4 },
+    { time: 0.50, freq: 880.00, pan: 0.3 },
+    { time: 0.75, freq: 1108.73, pan: -0.2 },
+    { time: 1.00, freq: 1318.51, pan: 0.4 },
+    { time: 1.25, freq: 1760.00, pan: -0.3 },
+    { time: 1.50, freq: 2217.46, pan: 0.2 }
+  ];
 
-    // Master Dynamics Compressor
-    const compressor = ctx.createDynamicsCompressor();
-    compressor.threshold.setValueAtTime(-14, now);
-    compressor.knee.setValueAtTime(14, now);
-    compressor.ratio.setValueAtTime(5, now);
-    compressor.attack.setValueAtTime(0.003, now);
-    compressor.release.setValueAtTime(0.25, now);
-    compressor.connect(ctx.destination);
+  const heartbeats = [
+    { start: 0.60, freq1: 85, freq2: 40, amp: 0.75 },
+    { start: 0.75, freq1: 115, freq2: 45, amp: 0.85 },
+    { start: 2.10, freq1: 85, freq2: 40, amp: 0.60 },
+    { start: 2.25, freq1: 115, freq2: 45, amp: 0.70 }
+  ];
 
-    // Master Gain for Clear & Rich Volume
-    const masterGain = ctx.createGain();
-    masterGain.gain.setValueAtTime(0.65, now);
-    masterGain.connect(compressor);
+  let offset = 44;
+  for (let i = 0; i < totalSamples; i++) {
+    const t = i / sampleRate;
+    let sampleL = 0;
+    let sampleR = 0;
 
-    // --- LAYER A: Warm Healing Ambient Chord Pad (D3, A3, D4, F#4, A4, C#5) ---
-    const padFreqs = [146.83, 220.0, 293.66, 369.99, 440.0, 554.37];
+    // 1. Ambient Healing Pad (D Major with soft swell and decay)
+    let padEnv = 0;
+    if (t < 0.8) padEnv = (t / 0.8) * 0.32;
+    else if (t < 3.2) padEnv = 0.32 - ((t - 0.8) / 2.4) * 0.12;
+    else if (t < duration) padEnv = 0.20 * (1 - (t - 3.2) / 1.4);
+
     padFreqs.forEach((freq, idx) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      const filter = ctx.createBiquadFilter();
-
-      osc.type = idx % 2 === 0 ? 'sine' : 'triangle';
-      osc.frequency.setValueAtTime(freq, now + 0.05);
-
-      filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(950 + idx * 280, now);
-      filter.Q.setValueAtTime(1.5, now);
-
-      gain.gain.setValueAtTime(0.001, now + 0.05);
-      gain.gain.linearRampToValueAtTime(0.12 / (idx * 0.35 + 1), now + 0.5);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 4.8);
-
-      osc.connect(filter);
-      filter.connect(gain);
-      gain.connect(masterGain);
-
-      osc.start(now + 0.05);
-      osc.stop(now + 5.0);
+      const vibrato = Math.sin(t * 3.5 + idx) * 0.6;
+      const osc = Math.sin(2 * Math.PI * (freq + vibrato) * t);
+      const pan = (idx % 2 === 0 ? 0.85 : 1.15) * (1 / (idx * 0.3 + 1));
+      sampleL += osc * padEnv * pan;
+      sampleR += osc * padEnv * (2 - pan);
     });
 
-    // --- LAYER B: Realistic Hospital Vital Heartbeat Pulse ("Lub - Dub") ---
-    const playHeartbeatBeat = (startTime, isLoud = true) => {
-      // Lub (First beat - 85Hz -> 40Hz)
-      const osc1 = ctx.createOscillator();
-      const gain1 = ctx.createGain();
-      const filter1 = ctx.createBiquadFilter();
-
-      osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(85, startTime);
-      osc1.frequency.exponentialRampToValueAtTime(38, startTime + 0.14);
-
-      filter1.type = 'lowpass';
-      filter1.frequency.setValueAtTime(160, startTime);
-
-      gain1.gain.setValueAtTime(0.001, startTime);
-      gain1.gain.linearRampToValueAtTime(isLoud ? 0.42 : 0.28, startTime + 0.03);
-      gain1.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.2);
-
-      osc1.connect(filter1);
-      filter1.connect(gain1);
-      gain1.connect(masterGain);
-
-      osc1.start(startTime);
-      osc1.stop(startTime + 0.22);
-
-      // Dub (Second beat - 115Hz -> 45Hz)
-      const osc2 = ctx.createOscillator();
-      const gain2 = ctx.createGain();
-      const filter2 = ctx.createBiquadFilter();
-
-      const dubTime = startTime + 0.15;
-      osc2.type = 'sine';
-      osc2.frequency.setValueAtTime(115, dubTime);
-      osc2.frequency.exponentialRampToValueAtTime(45, dubTime + 0.15);
-
-      filter2.type = 'lowpass';
-      filter2.frequency.setValueAtTime(180, dubTime);
-
-      gain2.gain.setValueAtTime(0.001, dubTime);
-      gain2.gain.linearRampToValueAtTime(isLoud ? 0.48 : 0.32, dubTime + 0.035);
-      gain2.gain.exponentialRampToValueAtTime(0.0001, dubTime + 0.24);
-
-      osc2.connect(filter2);
-      filter2.connect(gain2);
-      gain2.connect(masterGain);
-
-      osc2.start(dubTime);
-      osc2.stop(dubTime + 0.26);
-    };
-
-    // 2 Cardiac Cycles (First at 0.6s, second at 2.2s)
-    playHeartbeatBeat(now + 0.65, true);
-    playHeartbeatBeat(now + 2.25, false);
-
-    // --- LAYER C: Pure Crystal Water & Celestial Starlight Chime ---
-    const crystalFreqs = [739.99, 880.0, 1108.73, 1318.51, 1760.0, 2217.46];
-    crystalFreqs.forEach((freq, idx) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc.type = 'sine';
-      const chimeTime = now + 0.3 + idx * 0.15;
-      osc.frequency.setValueAtTime(freq, chimeTime);
-
-      gain.gain.setValueAtTime(0.001, chimeTime);
-      gain.gain.linearRampToValueAtTime(0.14 / (idx * 0.3 + 1), chimeTime + 0.03);
-      gain.gain.exponentialRampToValueAtTime(0.0001, chimeTime + 3.2);
-
-      osc.connect(gain);
-      gain.connect(masterGain);
-
-      osc.start(chimeTime);
-      osc.stop(chimeTime + 3.4);
+    // 2. Realistic Cardiac Heartbeats ("Lub - Dub")
+    heartbeats.forEach(hb => {
+      if (t >= hb.start && t < hb.start + 0.22) {
+        const dt = t - hb.start;
+        const pitch = hb.freq1 * Math.exp(-dt * 6) + hb.freq2;
+        const env = Math.sin((dt / 0.22) * Math.PI) * hb.amp;
+        const thump = Math.sin(2 * Math.PI * pitch * dt) * env * 0.45;
+        sampleL += thump;
+        sampleR += thump;
+      }
     });
 
-  } catch (err) {
-    // Graceful fallback
+    // 3. Crystal Water & Celestial Starlight Chimes
+    crystalChimes.forEach(chime => {
+      if (t >= chime.time && t < chime.time + 2.8) {
+        const dt = t - chime.time;
+        const env = Math.exp(-dt * 2.2) * 0.25;
+        const osc = Math.sin(2 * Math.PI * chime.freq * dt) + 0.35 * Math.sin(2 * Math.PI * chime.freq * 2 * dt);
+        const panL = 0.5 - chime.pan * 0.5;
+        const panR = 0.5 + chime.pan * 0.5;
+        sampleL += osc * env * panL;
+        sampleR += osc * env * panR;
+      }
+    });
+
+    // Master Soft Limiter / Compression
+    const clamp = (val) => Math.max(-1, Math.min(1, Math.tanh(val * 0.85)));
+    const intSampleL = Math.floor(clamp(sampleL) * 32767);
+    const intSampleR = Math.floor(clamp(sampleR) * 32767);
+
+    view.setInt16(offset, intSampleL, true);
+    view.setInt16(offset + 2, intSampleR, true);
+    offset += 4;
   }
-};
 
-// 2. Button Hover Sound (Delicate Crystal Shimmer Tick)
-const playHoverSound = () => {
-  try {
-    const ctx = getAudioContext();
-    if (!ctx || ctx.state !== 'running') return;
-    const now = ctx.currentTime;
-
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(1318.51, now); // E6
-    osc.frequency.exponentialRampToValueAtTime(1760.0, now + 0.08); // A6
-
-    gain.gain.setValueAtTime(0.001, now);
-    gain.gain.linearRampToValueAtTime(0.06, now + 0.015);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(now);
-    osc.stop(now + 0.14);
-  } catch (err) {}
-};
-
-// 3. Launch / Enter Confirmation Warp Sound (Futuristic Whoosh + Confirmation Chord)
-const playLaunchSound = () => {
-  try {
-    const ctx = getAudioContext();
-    if (!ctx || ctx.state !== 'running') return;
-    const now = ctx.currentTime;
-
-    // Upward sweep warp whoosh
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    const filter = ctx.createBiquadFilter();
-
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(220, now);
-    osc.frequency.exponentialRampToValueAtTime(920, now + 0.35);
-
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(400, now);
-    filter.frequency.exponentialRampToValueAtTime(4500, now + 0.35);
-
-    gain.gain.setValueAtTime(0.001, now);
-    gain.gain.linearRampToValueAtTime(0.18, now + 0.15);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.55);
-
-    osc.connect(filter);
-    filter.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start(now);
-    osc.stop(now + 0.6);
-
-    // Confirmation chord (D5 + A5 + D6)
-    [587.33, 880.0, 1174.66].forEach((freq) => {
-      const cOsc = ctx.createOscillator();
-      const cGain = ctx.createGain();
-      cOsc.type = 'sine';
-      cOsc.frequency.setValueAtTime(freq, now + 0.12);
-
-      cGain.gain.setValueAtTime(0.001, now + 0.12);
-      cGain.gain.linearRampToValueAtTime(0.08, now + 0.16);
-      cGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
-
-      cOsc.connect(cGain);
-      cGain.connect(ctx.destination);
-      cOsc.start(now + 0.12);
-      cOsc.stop(now + 1.3);
-    });
-  } catch (err) {}
+  const blob = new Blob([buffer], { type: 'audio/wav' });
+  return URL.createObjectURL(blob);
 };
 
 // =========================================================================
-// MAIN COMPONENT
+// MAIN HOSPITAL PORTAL INTRO (CINEMATIC, NO SKIP, PURE AUTOMATIC TRANSITION)
 // =========================================================================
 const HospitalPortalIntro = ({ onComplete }) => {
   const [phase, setPhase] = useState('start');
@@ -248,44 +140,13 @@ const HospitalPortalIntro = ({ onComplete }) => {
   const [dateStr, setDateStr] = useState('');
   const [savedUser, setSavedUser] = useState('');
   const [progress, setProgress] = useState(0);
+  const [statusText, setStatusText] = useState('Khởi tạo cổng bảo mật y tế...');
   const [isExiting, setIsExiting] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
-  const [hasPlayedAudio, setHasPlayedAudio] = useState(false);
   const exitingRef = useRef(false);
   const canvasRef = useRef(null);
-  const hasTriggeredSoundRef = useRef(false);
+  const audioRef = useRef(null);
 
-  // Safe sound starter with Autoplay policy bypass
-  const startAudioSafely = useCallback(async () => {
-    if (hasTriggeredSoundRef.current || isMuted) return;
-    try {
-      const ctx = getAudioContext();
-      if (!ctx) return;
-      if (ctx.state === 'suspended') {
-        await ctx.resume().catch(() => {});
-      }
-      if (ctx.state === 'running') {
-        hasTriggeredSoundRef.current = true;
-        setHasPlayedAudio(true);
-        playCinematicMedicalIntro();
-      }
-    } catch (err) {}
-  }, [isMuted]);
-
-  // Toggle Sound function
-  const toggleSound = (e) => {
-    e.stopPropagation();
-    setIsMuted(prev => {
-      const next = !prev;
-      if (!next) {
-        hasTriggeredSoundRef.current = false;
-        startAudioSafely();
-      }
-      return next;
-    });
-  };
-
-  // Live Clock & User detection
+  // Live Clock & Department details
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
@@ -326,46 +187,59 @@ const HospitalPortalIntro = ({ onComplete }) => {
 
   const greeting = getGreeting();
 
-  const handleSmoothExit = useCallback(() => {
+  // Automatic Smooth Exit (Triggered only when Intro finishes completely at 100%)
+  const handleAutoComplete = () => {
     if (exitingRef.current) return;
     exitingRef.current = true;
     setIsExiting(true);
     setPhase('fade_out');
 
-    if (!isMuted) {
-      playLaunchSound();
-    }
-
     setTimeout(() => {
       setPhase('done');
       if (onComplete) onComplete();
-    }, 550);
-  }, [isMuted, onComplete]);
-
-  const handleScreenClick = (e) => {
-    // If audio hasn't played yet due to browser autoplay restriction, first click starts audio!
-    if (!hasTriggeredSoundRef.current && !isMuted) {
-      startAudioSafely();
-    } else {
-      handleSmoothExit();
-    }
+    }, 650);
   };
 
-  // Canvas Cinematic Animation (Medical Aurora + ECG Pulse + Floating Nodes)
+  // Instant Sound Synthesizer & Autoplay on Mount
   useEffect(() => {
-    // 1. Immediate trigger attempt
-    startAudioSafely();
+    let audioUrl = null;
+    try {
+      audioUrl = generateCinematicMedicalAudioWav();
+      const audio = new Audio(audioUrl);
+      audio.volume = 0.85;
+      audioRef.current = audio;
 
-    // 2. Global browser gesture listener (mouse movement, key, touch, click, scroll)
-    const interactionEvents = ['pointerdown', 'mousemove', 'keydown', 'touchstart', 'wheel', 'click', 'focus'];
-    const handleFirstGesture = () => {
-      startAudioSafely();
+      // Immediate play attempt
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // In case browser strictly required gesture, listen to any micro-interaction
+          const playOnGesture = () => {
+            audio.play().catch(() => {});
+            window.removeEventListener('pointerdown', playOnGesture);
+            window.removeEventListener('keydown', playOnGesture);
+            window.removeEventListener('touchstart', playOnGesture);
+          };
+          window.addEventListener('pointerdown', playOnGesture, { once: true });
+          window.addEventListener('keydown', playOnGesture, { once: true });
+          window.addEventListener('touchstart', playOnGesture, { once: true });
+        });
+      }
+    } catch (e) {}
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+      if (audioUrl) {
+        URL.revokeObjectURL(audioUrl);
+      }
     };
+  }, []);
 
-    interactionEvents.forEach(evt => {
-      window.addEventListener(evt, handleFirstGesture, { passive: true, once: true });
-    });
-
+  // Background Canvas: Medical Aurora, Pulse ECG wave, Starlight Particles
+  useEffect(() => {
     const canvas = canvasRef.current;
     let animId;
     if (canvas) {
@@ -377,8 +251,7 @@ const HospitalPortalIntro = ({ onComplete }) => {
       resize();
       window.addEventListener('resize', resize);
 
-      // Star / Medical Nano-Particles
-      const particles = Array.from({ length: 48 }, () => ({
+      const particles = Array.from({ length: 45 }, () => ({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
         radius: Math.random() * 2.2 + 0.8,
@@ -396,28 +269,28 @@ const HospitalPortalIntro = ({ onComplete }) => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         time += 0.015;
 
-        // 1. Draw glowing horizontal ECG waveform through middle-bottom
+        // 1. Glowing horizontal ECG waveform
         const ecgY = canvas.height * 0.72;
         ctx.beginPath();
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.18)';
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.2)';
         ctx.lineWidth = 1.5;
-        ctx.shadowBlur = 12;
+        ctx.shadowBlur = 14;
         ctx.shadowColor = '#38BDF8';
 
         for (let x = 0; x < canvas.width; x += 3) {
-          const normX = (x + time * 90) % canvas.width;
+          const normX = (x + time * 95) % canvas.width;
           let yOffset = 0;
           const cycle = normX % 380;
           if (cycle > 120 && cycle < 140) {
-            yOffset = Math.sin((cycle - 120) / 20 * Math.PI) * -12; // P wave
+            yOffset = Math.sin((cycle - 120) / 20 * Math.PI) * -12;
           } else if (cycle >= 150 && cycle < 158) {
-            yOffset = ((cycle - 150) / 8) * 8; // Q dip
+            yOffset = ((cycle - 150) / 8) * 8;
           } else if (cycle >= 158 && cycle < 172) {
-            yOffset = Math.sin((cycle - 158) / 14 * Math.PI) * -65; // R spike
+            yOffset = Math.sin((cycle - 158) / 14 * Math.PI) * -65;
           } else if (cycle >= 172 && cycle < 182) {
-            yOffset = ((cycle - 172) / 10) * 14; // S dip
+            yOffset = ((cycle - 172) / 10) * 14;
           } else if (cycle >= 210 && cycle < 245) {
-            yOffset = Math.sin((cycle - 210) / 35 * Math.PI) * -20; // T wave
+            yOffset = Math.sin((cycle - 210) / 35 * Math.PI) * -20;
           }
           if (x === 0) ctx.moveTo(x, ecgY + yOffset);
           else ctx.lineTo(x, ecgY + yOffset);
@@ -425,7 +298,7 @@ const HospitalPortalIntro = ({ onComplete }) => {
         ctx.stroke();
         ctx.shadowBlur = 0;
 
-        // 2. Draw Floating Medical Particles
+        // 2. Floating Medical Nano Particles
         particles.forEach((p) => {
           p.y += p.speedY;
           p.x += p.speedX;
@@ -453,58 +326,48 @@ const HospitalPortalIntro = ({ onComplete }) => {
       return () => {
         window.removeEventListener('resize', resize);
         cancelAnimationFrame(animId);
-        interactionEvents.forEach(evt => {
-          window.removeEventListener(evt, handleFirstGesture);
-        });
       };
     }
+  }, []);
 
-    return () => {
-      interactionEvents.forEach(evt => {
-        window.removeEventListener(evt, handleFirstGesture);
-      });
-    };
-  }, [isMuted, startAudioSafely]);
-
-  // Smooth Loading Progress Counter (0% -> 100% in 2.2s)
+  // System Loading Flow (Exactly 4.0 seconds, NO SKIPPING, Auto transition at 100%)
   useEffect(() => {
     setPhase('flow_in');
     let currentProgress = 0;
+    
+    const statusStages = [
+      { at: 15, text: 'Thiết lập kết nối mã hóa y tế 256-bit...' },
+      { at: 40, text: 'Đồng bộ cơ sở dữ liệu 12 khoa phòng...' },
+      { at: 70, text: 'Tải biểu mẫu giao ban chuyên môn trực tuyến...' },
+      { at: 92, text: 'Hệ thống sẵn sàng! Đang vào cổng làm việc...' }
+    ];
+
     const progressInterval = setInterval(() => {
-      currentProgress += Math.floor(Math.random() * 8) + 4;
+      currentProgress += 2.5; // ~40 ticks * 90ms = 3.6s total loading
       if (currentProgress >= 100) {
         currentProgress = 100;
         setProgress(100);
+        setStatusText('Hoàn tất kết nối! Đang chuyển tiếp...');
         clearInterval(progressInterval);
+
+        // Transition smoothly into Login Page
+        setTimeout(() => {
+          handleAutoComplete();
+        }, 500);
       } else {
-        setProgress(currentProgress);
+        setProgress(Math.floor(currentProgress));
+        const matchedStage = statusStages.slice().reverse().find(s => currentProgress >= s.at);
+        if (matchedStage) setStatusText(matchedStage.text);
       }
-    }, 60);
-
-    const autoTimer = setTimeout(() => {
-      handleSmoothExit();
-    }, 4500);
-
-    const handleKeyDown = (e) => {
-      if (['Space', 'Enter', 'Escape'].includes(e.code)) {
-        if (!hasTriggeredSoundRef.current && !isMuted) {
-          startAudioSafely();
-        }
-        handleSmoothExit();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
+    }, 90);
 
     return () => {
       clearInterval(progressInterval);
-      clearTimeout(autoTimer);
-      window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [handleSmoothExit, isMuted, startAudioSafely]);
+  }, []);
 
   return (
     <div
-      onClick={handleScreenClick}
       style={{
         position: 'fixed',
         inset: 0,
@@ -517,12 +380,11 @@ const HospitalPortalIntro = ({ onComplete }) => {
         alignItems: 'center',
         justifyContent: 'center',
         overflow: 'hidden',
-        cursor: 'pointer',
         userSelect: 'none',
-        transition: 'opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1), transform 0.55s cubic-bezier(0.16, 1, 0.3, 1), filter 0.55s cubic-bezier(0.16, 1, 0.3, 1)',
+        transition: 'opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), filter 0.65s cubic-bezier(0.16, 1, 0.3, 1)',
         opacity: isExiting ? 0 : 1,
-        transform: isExiting ? 'scale(1.03)' : 'scale(1)',
-        filter: isExiting ? 'blur(12px)' : 'blur(0px)',
+        transform: isExiting ? 'scale(1.04)' : 'scale(1)',
+        filter: isExiting ? 'blur(14px)' : 'blur(0px)',
         pointerEvents: isExiting ? 'none' : 'auto',
         fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
       }}
@@ -553,9 +415,9 @@ const HospitalPortalIntro = ({ onComplete }) => {
           50% { filter: drop-shadow(0 0 30px rgba(45, 212, 191, 0.7)); }
         }
 
-        @keyframes soundWavePulse {
-          0%, 100% { transform: scale(1); opacity: 0.8; }
-          50% { transform: scale(1.08); opacity: 1; filter: drop-shadow(0 0 12px #38BDF8); }
+        @keyframes livePulseDot {
+          0%, 100% { opacity: 0.4; transform: scale(0.9); }
+          50% { opacity: 1; transform: scale(1.3); filter: drop-shadow(0 0 8px #10B981); }
         }
 
         @keyframes heroFadeUp {
@@ -571,36 +433,6 @@ const HospitalPortalIntro = ({ onComplete }) => {
           }
         }
       `}</style>
-
-      {/* Top Right Sound Toggle Pill */}
-      <div 
-        onClick={toggleSound}
-        style={{
-          position: 'absolute',
-          top: '1.4rem',
-          right: '1.6rem',
-          zIndex: 30,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          backgroundColor: 'rgba(255, 255, 255, 0.08)',
-          backdropFilter: 'blur(12px)',
-          border: '1px solid rgba(255, 255, 255, 0.15)',
-          borderRadius: '999px',
-          padding: '0.45rem 1rem',
-          fontSize: '0.82rem',
-          fontWeight: '700',
-          color: isMuted ? '#94A3B8' : '#38BDF8',
-          cursor: 'pointer',
-          boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
-          transition: 'all 0.2s ease',
-          animation: !hasPlayedAudio ? 'soundWavePulse 2s ease-in-out infinite' : 'none'
-        }}
-        title={isMuted ? 'Bật âm thanh y tế điện ảnh' : 'Tắt âm thanh'}
-      >
-        {isMuted ? <FaVolumeMute /> : <FaVolumeUp />}
-        <span>{isMuted ? 'Âm thanh: Tắt' : (hasPlayedAudio ? 'Âm thanh: Đang phát ♫' : 'Nhấp bật âm thanh 🔊')}</span>
-      </div>
 
       {/* 1. Cinematic Background Canvas */}
       <canvas
@@ -630,7 +462,7 @@ const HospitalPortalIntro = ({ onComplete }) => {
         pointerEvents: 'none'
       }} />
 
-      {/* 3. CENTER HERO CONTAINER (BORDERLESS, SLEEK, BREATHING) */}
+      {/* 3. CENTER HERO CONTAINER (BORDERLESS, IMMERSIVE, BREATHING) */}
       <div style={{
         position: 'relative',
         zIndex: 10,
@@ -880,13 +712,13 @@ const HospitalPortalIntro = ({ onComplete }) => {
           )}
         </div>
 
-        {/* H. Sleek Futuristic Progress Line */}
+        {/* H. Full Progress Meter (0% -> 100%) */}
         <div style={{
-          width: '280px',
-          height: '4px',
+          width: '320px',
+          height: '5px',
           backgroundColor: 'rgba(255, 255, 255, 0.08)',
           borderRadius: '999px',
-          marginTop: '2rem',
+          marginTop: '2.2rem',
           overflow: 'hidden',
           position: 'relative',
           animation: 'heroFadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 1.1s both'
@@ -896,63 +728,32 @@ const HospitalPortalIntro = ({ onComplete }) => {
             width: `${progress}%`,
             background: 'linear-gradient(90deg, #0284C7 0%, #2DD4BF 100%)',
             borderRadius: '999px',
-            boxShadow: '0 0 12px #2DD4BF',
-            transition: 'width 0.1s ease-out'
+            boxShadow: '0 0 16px #2DD4BF',
+            transition: 'width 0.09s ease-out'
           }} />
         </div>
 
-        {/* I. Interactive Launch Action Button */}
+        {/* I. Live Initialization Status Ticker */}
         <div style={{
-          marginTop: '1.4rem',
-          animation: 'heroFadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 1.2s both'
-        }}>
-          <button
-            type="button"
-            onClick={handleSmoothExit}
-            onMouseEnter={() => {
-              if (!isMuted) playHoverSound();
-            }}
-            style={{
-              background: 'linear-gradient(135deg, rgba(2, 132, 199, 0.85) 0%, rgba(13, 148, 136, 0.85) 100%)',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
-              color: '#FFFFFF',
-              borderRadius: '999px',
-              padding: '0.75rem 2.4rem',
-              fontSize: '0.95rem',
-              fontWeight: '900',
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.65rem',
-              boxShadow: '0 8px 30px rgba(2, 132, 199, 0.4), 0 0 20px rgba(45, 212, 191, 0.25)',
-              transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
-              letterSpacing: '0.8px'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px) scale(1.04)';
-              e.currentTarget.style.boxShadow = '0 12px 35px rgba(2, 132, 199, 0.65), 0 0 30px rgba(45, 212, 191, 0.45)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'translateY(0) scale(1)';
-              e.currentTarget.style.boxShadow = '0 8px 30px rgba(2, 132, 199, 0.4), 0 0 20px rgba(45, 212, 191, 0.25)';
-            }}
-          >
-            <span>VÀO HỆ THỐNG LÀM VIỆC</span>
-            <FaArrowRight style={{ fontSize: '0.9rem' }} />
-          </button>
-        </div>
-
-        {/* J. Subtext Hint */}
-        <div style={{
-          marginTop: '0.85rem',
-          fontSize: '0.75rem',
-          color: 'rgba(255, 255, 255, 0.45)',
+          marginTop: '0.95rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          fontSize: '0.82rem',
+          color: '#94A3B8',
           fontWeight: '600',
           letterSpacing: '0.3px',
-          animation: 'heroFadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 1.3s both'
+          animation: 'heroFadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 1.2s both'
         }}>
-          Nhấn phím cách hoặc click bất kỳ đâu để vào ngay
+          <div style={{
+            width: '7px',
+            height: '7px',
+            borderRadius: '50%',
+            backgroundColor: '#10B981',
+            animation: 'livePulseDot 1.4s ease-in-out infinite'
+          }} />
+          <span>{statusText}</span>
+          <span style={{ color: '#38BDF8', fontWeight: '800', marginLeft: '0.2rem' }}>{progress}%</span>
         </div>
 
       </div>
