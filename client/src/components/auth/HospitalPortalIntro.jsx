@@ -195,67 +195,6 @@ const HospitalPortalIntro = ({ onComplete }) => {
   const canvasRef = useRef(null);
   const animFrameRef = useRef(null);
 
-  useEffect(() => {
-    onCompleteRef.current = onComplete;
-  }, [onComplete]);
-
-  // Live Clock & User detection
-  useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      const hours = String(now.getHours()).padStart(2, '0');
-      const mins = String(now.getMinutes()).padStart(2, '0');
-      const secs = String(now.getSeconds()).padStart(2, '0');
-      setTimeStr(`${hours}:${mins}:${secs}`);
-
-      const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
-      const dayName = days[now.getDay()];
-      const d = String(now.getDate()).padStart(2, '0');
-      const m = String(now.getMonth() + 1).padStart(2, '0');
-      const y = now.getFullYear();
-      setDateStr(`${dayName}, ${d}/${m}/${y}`);
-    };
-
-    updateTime();
-    const interval = setInterval(updateTime, 1000);
-
-    const justLoggedOut = sessionStorage.getItem('just_logged_out_username');
-    if (justLoggedOut) {
-      setLoggedOutUser(justLoggedOut);
-      sessionStorage.removeItem('just_logged_out_username');
-      // Automatically run immediately on logout without pressing button
-      setTimeout(() => {
-        startExperience();
-      }, 150);
-    } else {
-      const remembered = localStorage.getItem('saved_hospital_username');
-      if (remembered) setSavedUser(remembered);
-    }
-
-    return () => clearInterval(interval);
-  }, [startExperience]);
-
-  const getGreeting = () => {
-    if (loggedOutUser) {
-      return { 
-        text: `Đăng Xuất Thành Công • Hẹn Gặp Lại Quý Đồng Nghiệp (${loggedOutUser})`, 
-        icon: <FaSignInAlt style={{ color: '#F87171' }} /> 
-      };
-    }
-    const hour = new Date().getHours();
-    if (hour >= 5 && hour < 11) {
-      return { text: 'Chào Ca Trực Sáng • Chúc Một Ngày Bình An & Thuận Lợi', icon: <FaSun style={{ color: '#FBBF24' }} /> };
-    } else if (hour >= 11 && hour < 14) {
-      return { text: 'Chào Ca Trực Trưa • Chúc Quý Đồng Nghiệp Năng Lượng & Vững Vàng', icon: <FaCloudSun style={{ color: '#38BDF8' }} /> };
-    } else if (hour >= 14 && hour < 18) {
-      return { text: 'Chào Ca Trực Chiều • Tiếp Tục Ca Trực Tận Tâm & An Toàn', icon: <FaCloudSun style={{ color: '#60A5FA' }} /> };
-    } else {
-      return { text: 'Chào Ca Trực Đêm • Chúc Quý Bác Sĩ & Điều Dưỡng Bình Yên, Vững Vàng', icon: <FaMoon style={{ color: '#C084FC' }} /> };
-    }
-  };
-
-  const greeting = getGreeting();
-
   // Automatic Smooth Exit
   const handleAutoComplete = useCallback(() => {
     if (exitingRef.current) return;
@@ -313,6 +252,47 @@ const HospitalPortalIntro = ({ onComplete }) => {
     animFrameRef.current = requestAnimationFrame(tick);
   }, [handleAutoComplete]);
 
+  // Keep onComplete reference current
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
+
+  // Live Clock & User detection
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const mins = String(now.getMinutes()).padStart(2, '0');
+      const secs = String(now.getSeconds()).padStart(2, '0');
+      setTimeStr(`${hours}:${mins}:${secs}`);
+
+      const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+      const dayName = days[now.getDay()];
+      const d = String(now.getDate()).padStart(2, '0');
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const y = now.getFullYear();
+      setDateStr(`${dayName}, ${d}/${m}/${y}`);
+    };
+
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+
+    const justLoggedOut = sessionStorage.getItem('just_logged_out_username');
+    if (justLoggedOut) {
+      setLoggedOutUser(justLoggedOut);
+      sessionStorage.removeItem('just_logged_out_username');
+      // Automatically run immediately on logout without pressing button
+      setTimeout(() => {
+        startExperience();
+      }, 150);
+    } else {
+      const remembered = localStorage.getItem('saved_hospital_username');
+      if (remembered) setSavedUser(remembered);
+    }
+
+    return () => clearInterval(interval);
+  }, [startExperience]);
+
   // Global listener for touch, click, or keypress (Only active on mount)
   useEffect(() => {
     const handleGlobalTrigger = () => {
@@ -339,6 +319,27 @@ const HospitalPortalIntro = ({ onComplete }) => {
       }
     };
   }, []);
+
+  const getGreeting = () => {
+    if (loggedOutUser) {
+      return { 
+        text: `Đăng Xuất Thành Công • Hẹn Gặp Lại Quý Đồng Nghiệp (${loggedOutUser})`, 
+        icon: <FaSignInAlt style={{ color: '#F87171' }} /> 
+      };
+    }
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 11) {
+      return { text: 'Chào Ca Trực Sáng • Chúc Một Ngày Bình An & Thuận Lợi', icon: <FaSun style={{ color: '#FBBF24' }} /> };
+    } else if (hour >= 11 && hour < 14) {
+      return { text: 'Chào Ca Trực Trưa • Chúc Quý Đồng Nghiệp Năng Lượng & Vững Vàng', icon: <FaCloudSun style={{ color: '#38BDF8' }} /> };
+    } else if (hour >= 14 && hour < 18) {
+      return { text: 'Chào Ca Trực Chiều • Tiếp Tục Ca Trực Tận Tâm & An Toàn', icon: <FaCloudSun style={{ color: '#60A5FA' }} /> };
+    } else {
+      return { text: 'Chào Ca Trực Đêm • Chúc Quý Bác Sĩ & Điều Dưỡng Bình Yên, Vững Vàng', icon: <FaMoon style={{ color: '#C084FC' }} /> };
+    }
+  };
+
+  const greeting = getGreeting();
 
   // Background Canvas: Medical Aurora, Pulse ECG wave, Starlight Particles
   useEffect(() => {
