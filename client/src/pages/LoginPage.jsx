@@ -17,13 +17,82 @@ import {
   FaSpinner,
   FaTimes,
   FaInfoCircle,
-  FaHeadset
+  FaHeadset,
+  FaCheckCircle,
+  FaExclamationTriangle,
+  FaHeartbeat
 } from 'react-icons/fa';
 import { APP_VERSION } from '../config/version';
 import AIAssistant from '../components/common/AIAssistant';
 import ForgotPasswordModal from '../components/auth/ForgotPasswordModal';
 import ChangePasswordModal from '../components/auth/ChangePasswordModal';
 import HospitalPortalIntro from '../components/auth/HospitalPortalIntro';
+
+// Web Audio API Sound Synthesizers for Login State Feedback
+const playLoginSuccessSound = () => {
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    const ctx = new AudioContextClass();
+    if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+    const now = ctx.currentTime;
+
+    // Victory Triad Arpeggio (C5 -> E5 -> G5 -> C6)
+    const notes = [523.25, 659.25, 783.99, 1046.50];
+    notes.forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      const t = now + idx * 0.07;
+      osc.frequency.setValueAtTime(freq, t);
+
+      gain.gain.setValueAtTime(0.001, t);
+      gain.gain.linearRampToValueAtTime(0.28, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 1.2);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(t);
+      osc.stop(t + 1.3);
+    });
+  } catch (e) {}
+};
+
+const playLoginErrorSound = () => {
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    const ctx = new AudioContextClass();
+    if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+    const now = ctx.currentTime;
+
+    // Low-end Error Thud
+    const tones = [220, 185];
+    tones.forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      const t = now + idx * 0.12;
+      osc.frequency.setValueAtTime(freq, t);
+
+      gain.gain.setValueAtTime(0.001, t);
+      gain.gain.linearRampToValueAtTime(0.25, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
+
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(400, t);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(t);
+      osc.stop(t + 0.4);
+    });
+  } catch (e) {}
+};
 
 const LoginPage = () => {
   const [username, setUsername] = useState('');
@@ -32,6 +101,9 @@ const LoginPage = () => {
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [successUser, setSuccessUser] = useState(null);
+  const [isShaking, setIsShaking] = useState(false);
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [mustChangePasswordData, setMustChangePasswordData] = useState({ isOpen: false, username: '', fullName: '' });
   const [showIntro, setShowIntro] = useState(true);
@@ -56,10 +128,19 @@ const LoginPage = () => {
     return null;
   }
 
+  const triggerErrorFeedback = (msg) => {
+    setError(msg);
+    setIsShaking(true);
+    playLoginErrorSound();
+    setTimeout(() => {
+      setIsShaking(false);
+    }, 650);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!username.trim() || !password) {
-      setError('Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu.');
+      triggerErrorFeedback('Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu.');
       return;
     }
 
@@ -74,6 +155,7 @@ const LoginPage = () => {
       }
 
       const loggedInUser = await login(username, password);
+      
       if (loggedInUser?.mustChangePassword) {
         setMustChangePasswordData({
           isOpen: true,
@@ -82,10 +164,20 @@ const LoginPage = () => {
         });
         return;
       }
-      navigate(loggedInUser.role === 'admin' ? '/admin' : '/report');
+
+      // Success State Activation
+      setIsSuccess(true);
+      setSuccessUser(loggedInUser);
+      playLoginSuccessSound();
+
+      setTimeout(() => {
+        navigate(loggedInUser.role === 'admin' ? '/admin' : '/report');
+      }, 950);
+
     } catch (err) {
       const errMsg = err.response?.data?.error || err.response?.data?.message || err.message;
-      setError(typeof errMsg === 'string' ? errMsg : (errMsg?.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại tên đăng nhập hoặc mật khẩu.'));
+      const formattedErr = typeof errMsg === 'string' ? errMsg : (errMsg?.message || 'Tên đăng nhập hoặc mật khẩu không chính xác. Vui lòng kiểm tra lại!');
+      triggerErrorFeedback(formattedErr);
     } finally {
       setIsSubmitting(false);
     }
@@ -124,7 +216,7 @@ const LoginPage = () => {
         />
       )}
 
-      {/* Blooming Transition Style for Login Content */}
+      {/* Blooming & Feedback Transition Styles for Login Content */}
       <style>{`
         @keyframes loginBloomExpand {
           0% {
@@ -137,6 +229,48 @@ const LoginPage = () => {
             transform: scale(1);
             filter: blur(0px);
           }
+        }
+
+        @keyframes loginShake {
+          0%, 100% { transform: translateX(0); }
+          15% { transform: translateX(-10px) rotate(-0.5deg); }
+          30% { transform: translateX(9px) rotate(0.5deg); }
+          45% { transform: translateX(-7px); }
+          60% { transform: translateX(6px); }
+          75% { transform: translateX(-3px); }
+          90% { transform: translateX(2px); }
+        }
+
+        @keyframes errorSlideDown {
+          0% { opacity: 0; transform: translateY(-10px) scale(0.96); filter: blur(4px); }
+          100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        }
+
+        @keyframes errorIconPulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.22); filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.8)); }
+        }
+
+        @keyframes successCardMorph {
+          0% { opacity: 0; transform: scale(0.92); filter: blur(6px); }
+          50% { transform: scale(1.02); }
+          100% { opacity: 1; transform: scale(1); filter: blur(0); }
+        }
+
+        @keyframes successCheckBounce {
+          0% { transform: scale(0) rotate(-45deg); opacity: 0; }
+          60% { transform: scale(1.25) rotate(8deg); opacity: 1; }
+          100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        @keyframes successRingPulse {
+          0% { transform: scale(0.85); opacity: 0.8; }
+          100% { transform: scale(1.6); opacity: 0; }
+        }
+
+        @keyframes successProgressLine {
+          0% { width: 0%; }
+          100% { width: 100%; }
         }
       `}</style>
 
@@ -478,132 +612,250 @@ const LoginPage = () => {
               backgroundColor: '#FFFFFF',
               borderRadius: '24px',
               padding: '1.75rem 2rem',
-              boxShadow: '0 25px 60px rgba(15, 44, 89, 0.16), 0 2px 6px rgba(0, 0, 0, 0.04)',
-              border: '1px solid rgba(255, 255, 255, 0.95)',
-              boxSizing: 'border-box'
+              boxShadow: isSuccess
+                ? '0 25px 60px rgba(16, 185, 129, 0.28), 0 0 0 2px rgba(16, 185, 129, 0.5)'
+                : error 
+                ? '0 25px 60px rgba(239, 68, 68, 0.22), 0 0 0 2px rgba(239, 68, 68, 0.4)'
+                : '0 25px 60px rgba(15, 44, 89, 0.16), 0 2px 6px rgba(0, 0, 0, 0.04)',
+              border: isSuccess ? '1.5px solid #6EE7B7' : error ? '1.5px solid #FCA5A5' : '1px solid rgba(255, 255, 255, 0.95)',
+              boxSizing: 'border-box',
+              animation: isShaking ? 'loginShake 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both' : 'none',
+              transition: 'box-shadow 0.3s ease, border 0.3s ease, transform 0.3s ease'
             }}
           >
 
-            {/* Top Shield Icon Badge */}
-            <div 
-              className="login-shield-badge"
-              style={{
-                width: '54px',
-                height: '54px',
-                borderRadius: '50%',
-                backgroundColor: '#EFF6FF',
-                border: '1.5px solid #DBEAFE',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 0.75rem auto',
-                boxShadow: '0 4px 14px rgba(37, 99, 235, 0.12)'
-              }}
-            >
-              <FaShieldAlt style={{ fontSize: '1.65rem', color: '#2563EB' }} />
-            </div>
-
-            {/* Heading */}
-            <h3 
-              className="login-card-title"
-              style={{
-                fontSize: '1.35rem',
-                fontWeight: '800',
-                color: '#0F2C59',
-                margin: '0 0 0.2rem 0',
-                textAlign: 'center',
-                letterSpacing: '0.2px'
-              }}
-            >
-              Chào mừng bạn trở lại!
-            </h3>
-
-            <p 
-              className="login-card-subtitle"
-              style={{
-                fontSize: '0.82rem',
-                color: '#64748B',
-                margin: '0 0 1.15rem 0',
-                textAlign: 'center'
-              }}
-            >
-              Vui lòng đăng nhập để tiếp tục sử dụng hệ thống
-            </p>
-
-            {/* Error Alert */}
-            {error && (
+            {isSuccess ? (
+              /* ================= SUCCESS TRANSFORMATION VIEW ================= */
               <div style={{
-                backgroundColor: '#FEF2F2',
-                border: '1px solid #FCA5A5',
-                borderRadius: '8px',
-                padding: '0.6rem 0.85rem',
-                color: '#991B1B',
-                fontSize: '0.8rem',
-                marginBottom: '1rem',
                 display: 'flex',
+                flexDirection: 'column',
                 alignItems: 'center',
-                gap: '0.45rem',
-                lineHeight: '1.35'
+                textAlign: 'center',
+                padding: '1.2rem 0.5rem',
+                animation: 'successCardMorph 0.5s cubic-bezier(0.16, 1, 0.3, 1) both'
               }}>
-                <FaInfoCircle style={{ flexShrink: 0 }} />
-                <span>{typeof error === 'string' ? error : (error?.message || 'Lỗi đăng nhập')}</span>
-              </div>
-            )}
-
-            {/* Login Form */}
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-              
-              {/* Field 1: Username */}
-              <div>
-                <label style={{
-                  fontSize: '0.78rem',
-                  fontWeight: '700',
-                  color: '#334155',
-                  display: 'block',
-                  marginBottom: '0.35rem'
-                }}>
-                  Tên đăng nhập khoa phòng / Quản trị
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <FaUser style={{
+                {/* Glowing Success Sphere with Animated Ripple Ring */}
+                <div style={{ position: 'relative', width: '84px', height: '84px', marginBottom: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{
                     position: 'absolute',
-                    top: '50%',
-                    left: '0.95rem',
-                    transform: 'translateY(-50%)',
-                    color: '#0284C7',
-                    fontSize: '0.9rem'
+                    inset: '-12px',
+                    borderRadius: '50%',
+                    background: 'radial-gradient(circle, rgba(16, 185, 129, 0.45) 0%, transparent 70%)',
+                    animation: 'successRingPulse 1.6s ease-out infinite'
                   }} />
-                  <input
-                    type="text"
-                    placeholder="VD: Khnv hoặc noi.bvbl..."
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '0.7rem 0.85rem 0.7rem 2.55rem',
-                      border: '1.5px solid #E2E8F0',
-                      borderRadius: '10px',
-                      fontSize: '0.9rem',
-                      outline: 'none',
-                      backgroundColor: '#F8FAFC',
-                      color: '#0F2C59',
-                      fontWeight: '600',
-                      boxSizing: 'border-box',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onFocus={(e) => {
-                      e.target.style.borderColor = '#0284C7';
-                      e.target.style.backgroundColor = '#FFFFFF';
-                      e.target.style.boxShadow = '0 0 0 3px rgba(2, 132, 199, 0.12)';
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = '#E2E8F0';
-                      e.target.style.backgroundColor = '#F8FAFC';
-                      e.target.style.boxShadow = 'none';
-                    }}
-                  />
+                  <div style={{
+                    width: '74px',
+                    height: '74px',
+                    borderRadius: '50%',
+                    backgroundColor: '#ECFDF5',
+                    border: '2px solid #A7F3D0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 0 30px rgba(16, 185, 129, 0.35)',
+                    animation: 'successCheckBounce 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both'
+                  }}>
+                    <FaCheckCircle style={{ fontSize: '2.5rem', color: '#10B981' }} />
+                  </div>
                 </div>
+
+                <h3 style={{
+                  fontSize: '1.45rem',
+                  fontWeight: '900',
+                  color: '#065F46',
+                  margin: '0 0 0.4rem 0',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.6px'
+                }}>
+                  Xác Thực Thành Công!
+                </h3>
+
+                <p style={{
+                  fontSize: '0.94rem',
+                  color: '#1E293B',
+                  fontWeight: '700',
+                  margin: '0 0 0.4rem 0'
+                }}>
+                  Chào mừng: <strong style={{ color: '#0284C7' }}>{successUser?.full_name || successUser?.fullName || successUser?.username || username}</strong>
+                </p>
+
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.45rem',
+                  backgroundColor: '#F0FDF4',
+                  border: '1px solid #BBF7D0',
+                  padding: '0.35rem 0.95rem',
+                  borderRadius: '999px',
+                  fontSize: '0.8rem',
+                  fontWeight: '700',
+                  color: '#15803D',
+                  marginBottom: '1.4rem'
+                }}>
+                  <FaShieldAlt />
+                  <span>{successUser?.role === 'admin' ? 'Quyền Quản Trị Hệ Thống' : `Khoa: ${successUser?.departmentName || successUser?.departmentCode || 'Chuyên Môn'}`}</span>
+                </div>
+
+                {/* Progress bar line */}
+                <div style={{
+                  width: '100%',
+                  height: '6px',
+                  backgroundColor: '#E2E8F0',
+                  borderRadius: '999px',
+                  overflow: 'hidden',
+                  position: 'relative'
+                }}>
+                  <div style={{
+                    height: '100%',
+                    background: 'linear-gradient(90deg, #10B981 0%, #0284C7 100%)',
+                    borderRadius: '999px',
+                    boxShadow: '0 0 10px #10B981',
+                    animation: 'successProgressLine 0.9s cubic-bezier(0.4, 0, 0.2, 1) both'
+                  }} />
+                </div>
+                <span style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '0.6rem', fontWeight: '600' }}>
+                  Đang mở cổng giao ban chuyên môn...
+                </span>
               </div>
+            ) : (
+              <>
+                {/* Top Shield Icon Badge */}
+                <div 
+                  className="login-shield-badge"
+                  style={{
+                    width: '54px',
+                    height: '54px',
+                    borderRadius: '50%',
+                    backgroundColor: error ? '#FEF2F2' : '#EFF6FF',
+                    border: error ? '1.5px solid #FECACA' : '1.5px solid #DBEAFE',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto 0.75rem auto',
+                    boxShadow: error ? '0 4px 14px rgba(239, 68, 68, 0.15)' : '0 4px 14px rgba(37, 99, 235, 0.12)',
+                    transition: 'all 0.3s ease'
+                  }}
+                >
+                  <FaShieldAlt style={{ fontSize: '1.65rem', color: error ? '#DC2626' : '#2563EB' }} />
+                </div>
+
+                {/* Heading */}
+                <h3 
+                  className="login-card-title"
+                  style={{
+                    fontSize: '1.35rem',
+                    fontWeight: '800',
+                    color: '#0F2C59',
+                    margin: '0 0 0.2rem 0',
+                    textAlign: 'center',
+                    letterSpacing: '0.2px'
+                  }}
+                >
+                  Chào mừng bạn trở lại!
+                </h3>
+
+                <p 
+                  className="login-card-subtitle"
+                  style={{
+                    fontSize: '0.82rem',
+                    color: '#64748B',
+                    margin: '0 0 1.15rem 0',
+                    textAlign: 'center'
+                  }}
+                >
+                  Vui lòng đăng nhập để tiếp tục sử dụng hệ thống
+                </p>
+
+                {/* Enhanced Animated Error Alert */}
+                {error && (
+                  <div style={{
+                    backgroundColor: '#FEF2F2',
+                    background: 'linear-gradient(135deg, #FEF2F2 0%, #FEE2E2 100%)',
+                    border: '1.5px solid #F87171',
+                    borderRadius: '12px',
+                    padding: '0.75rem 1rem',
+                    color: '#991B1B',
+                    fontSize: '0.84rem',
+                    marginBottom: '1.15rem',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '0.65rem',
+                    lineHeight: '1.4',
+                    boxShadow: '0 4px 14px rgba(239, 68, 68, 0.15)',
+                    animation: 'errorSlideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1) both'
+                  }}>
+                    <div style={{ animation: 'errorIconPulse 1.6s ease-in-out infinite', color: '#DC2626', fontSize: '1.15rem', marginTop: '1px' }}>
+                      <FaExclamationTriangle />
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: '800', color: '#991B1B', marginBottom: '2px', fontSize: '0.86rem' }}>
+                        Đăng Nhập Không Thành Công
+                      </div>
+                      <div style={{ color: '#B91C1C', fontWeight: '600' }}>
+                        {typeof error === 'string' ? error : (error?.message || 'Lỗi đăng nhập')}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Login Form */}
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                  
+                  {/* Field 1: Username */}
+                  <div>
+                    <label style={{
+                      fontSize: '0.78rem',
+                      fontWeight: '700',
+                      color: '#334155',
+                      display: 'block',
+                      marginBottom: '0.35rem'
+                    }}>
+                      Tên đăng nhập khoa phòng / Quản trị
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <FaUser style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '0.95rem',
+                        transform: 'translateY(-50%)',
+                        color: error ? '#EF4444' : '#0284C7',
+                        fontSize: '0.9rem',
+                        transition: 'color 0.2s ease'
+                      }} />
+                      <input
+                        type="text"
+                        placeholder="VD: Khnv hoặc noi.bvbl..."
+                        value={username}
+                        onChange={(e) => {
+                          setUsername(e.target.value);
+                          if (error) setError('');
+                        }}
+                        style={{
+                          width: '100%',
+                          padding: '0.7rem 0.85rem 0.7rem 2.55rem',
+                          border: error ? '1.5px solid #F87171' : '1.5px solid #E2E8F0',
+                          borderRadius: '10px',
+                          fontSize: '0.9rem',
+                          outline: 'none',
+                          backgroundColor: error ? '#FFF5F5' : '#F8FAFC',
+                          color: '#0F2C59',
+                          fontWeight: '600',
+                          boxSizing: 'border-box',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = error ? '#EF4444' : '#0284C7';
+                          e.target.style.backgroundColor = '#FFFFFF';
+                          e.target.style.boxShadow = error ? '0 0 0 3px rgba(239, 68, 68, 0.15)' : '0 0 0 3px rgba(2, 132, 199, 0.12)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = error ? '#F87171' : '#E2E8F0';
+                          e.target.style.backgroundColor = error ? '#FFF5F5' : '#F8FAFC';
+                          e.target.style.boxShadow = 'none';
+                        }}
+                      />
+                    </div>
+                  </div>
 
               {/* Field 2: Password */}
               <div>
@@ -622,35 +874,39 @@ const LoginPage = () => {
                     top: '50%',
                     left: '0.95rem',
                     transform: 'translateY(-50%)',
-                    color: '#0284C7',
-                    fontSize: '0.9rem'
+                    color: error ? '#EF4444' : '#0284C7',
+                    fontSize: '0.9rem',
+                    transition: 'color 0.2s ease'
                   }} />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (error) setError('');
+                    }}
                     style={{
                       width: '100%',
                       padding: '0.7rem 2.65rem 0.7rem 2.55rem',
-                      border: '1.5px solid #E2E8F0',
+                      border: error ? '1.5px solid #F87171' : '1.5px solid #E2E8F0',
                       borderRadius: '10px',
                       fontSize: '0.9rem',
                       outline: 'none',
-                      backgroundColor: '#F8FAFC',
+                      backgroundColor: error ? '#FFF5F5' : '#F8FAFC',
                       color: '#0F2C59',
                       fontWeight: '600',
                       boxSizing: 'border-box',
                       transition: 'all 0.2s ease'
                     }}
                     onFocus={(e) => {
-                      e.target.style.borderColor = '#0284C7';
+                      e.target.style.borderColor = error ? '#EF4444' : '#0284C7';
                       e.target.style.backgroundColor = '#FFFFFF';
-                      e.target.style.boxShadow = '0 0 0 3px rgba(2, 132, 199, 0.12)';
+                      e.target.style.boxShadow = error ? '0 0 0 3px rgba(239, 68, 68, 0.15)' : '0 0 0 3px rgba(2, 132, 199, 0.12)';
                     }}
                     onBlur={(e) => {
-                      e.target.style.borderColor = '#E2E8F0';
-                      e.target.style.backgroundColor = '#F8FAFC';
+                      e.target.style.borderColor = error ? '#F87171' : '#E2E8F0';
+                      e.target.style.backgroundColor = error ? '#FFF5F5' : '#F8FAFC';
                       e.target.style.boxShadow = 'none';
                     }}
                   />
@@ -778,6 +1034,8 @@ const LoginPage = () => {
               </div>
 
             </form>
+          </>
+        )}
 
             {/* Divider */}
             <div style={{
