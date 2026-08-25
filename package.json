@@ -1,6 +1,6 @@
 {
   "name": "hospital-report-system",
-  "version": "1.34.0",
+  "version": "2.0.0",
   "description": "Hệ thống Báo cáo Giao ban - Bệnh viện Đa khoa Khu vực Bình Long",
   "main": "api/index.js",
   "scripts": {
