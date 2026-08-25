@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   FaHospital, 
   FaSignInAlt, 
@@ -11,22 +11,22 @@ import {
   FaCloudSun,
   FaHeartbeat,
   FaCheckCircle,
-  FaLock,
-  FaSatelliteDish,
-  FaServer,
-  FaDatabase
+  FaVolumeUp,
+  FaVolumeMute,
+  FaPlay,
+  FaMusic
 } from 'react-icons/fa';
 
 // =========================================================================
-// PURE IN-MEMORY 16-BIT STEREO WAV AUDIO SYNTHESIZER (Native Browser Autoplay)
+// PURE IN-MEMORY 16-BIT STEREO WAV AUDIO SYNTHESIZER
 // =========================================================================
 
 const generateCinematicMedicalAudioWav = () => {
   const sampleRate = 44100;
-  const duration = 4.6; // 4.6 seconds
+  const duration = 4.8;
   const totalSamples = Math.floor(sampleRate * duration);
   const numChannels = 2;
-  const bytesPerSample = 2; // 16-bit PCM
+  const bytesPerSample = 2;
   const blockAlign = numChannels * bytesPerSample;
   const byteRate = sampleRate * blockAlign;
   const dataSize = totalSamples * blockAlign;
@@ -44,32 +44,32 @@ const generateCinematicMedicalAudioWav = () => {
   view.setUint32(4, 36 + dataSize, true);
   writeString(8, 'WAVE');
   writeString(12, 'fmt ');
-  view.setUint32(16, 16, true); // Subchunk1Size (16 for PCM)
-  view.setUint16(20, 1, true);  // AudioFormat (1 = PCM)
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
   view.setUint16(22, numChannels, true);
   view.setUint32(24, sampleRate, true);
   view.setUint32(28, byteRate, true);
   view.setUint16(32, blockAlign, true);
-  view.setUint16(34, 16, true); // BitsPerSample
+  view.setUint16(34, 16, true);
   writeString(36, 'data');
   view.setUint32(40, dataSize, true);
 
-  // Synthesis Parameters
+  // Chords, Heartbeats, Bells
   const padFreqs = [146.83, 220.0, 293.66, 369.99, 440.0, 554.37];
   const crystalChimes = [
-    { time: 0.25, freq: 739.99, pan: -0.4 },
-    { time: 0.50, freq: 880.00, pan: 0.3 },
-    { time: 0.75, freq: 1108.73, pan: -0.2 },
-    { time: 1.00, freq: 1318.51, pan: 0.4 },
-    { time: 1.25, freq: 1760.00, pan: -0.3 },
-    { time: 1.50, freq: 2217.46, pan: 0.2 }
+    { time: 0.20, freq: 739.99, pan: -0.4 },
+    { time: 0.45, freq: 880.00, pan: 0.3 },
+    { time: 0.70, freq: 1108.73, pan: -0.2 },
+    { time: 0.95, freq: 1318.51, pan: 0.4 },
+    { time: 1.20, freq: 1760.00, pan: -0.3 },
+    { time: 1.45, freq: 2217.46, pan: 0.2 }
   ];
 
   const heartbeats = [
-    { start: 0.60, freq1: 85, freq2: 40, amp: 0.75 },
-    { start: 0.75, freq1: 115, freq2: 45, amp: 0.85 },
-    { start: 2.10, freq1: 85, freq2: 40, amp: 0.60 },
-    { start: 2.25, freq1: 115, freq2: 45, amp: 0.70 }
+    { start: 0.55, freq1: 90, freq2: 40, amp: 0.85 },
+    { start: 0.72, freq1: 120, freq2: 45, amp: 0.95 },
+    { start: 2.10, freq1: 90, freq2: 40, amp: 0.70 },
+    { start: 2.27, freq1: 120, freq2: 45, amp: 0.80 }
   ];
 
   let offset = 44;
@@ -78,11 +78,11 @@ const generateCinematicMedicalAudioWav = () => {
     let sampleL = 0;
     let sampleR = 0;
 
-    // 1. Ambient Healing Pad (D Major with soft swell and decay)
+    // 1. Ambient Healing Pad
     let padEnv = 0;
-    if (t < 0.8) padEnv = (t / 0.8) * 0.32;
-    else if (t < 3.2) padEnv = 0.32 - ((t - 0.8) / 2.4) * 0.12;
-    else if (t < duration) padEnv = 0.20 * (1 - (t - 3.2) / 1.4);
+    if (t < 0.8) padEnv = (t / 0.8) * 0.38;
+    else if (t < 3.2) padEnv = 0.38 - ((t - 0.8) / 2.4) * 0.15;
+    else if (t < duration) padEnv = 0.23 * (1 - (t - 3.2) / 1.6);
 
     padFreqs.forEach((freq, idx) => {
       const vibrato = Math.sin(t * 3.5 + idx) * 0.6;
@@ -94,11 +94,11 @@ const generateCinematicMedicalAudioWav = () => {
 
     // 2. Realistic Cardiac Heartbeats ("Lub - Dub")
     heartbeats.forEach(hb => {
-      if (t >= hb.start && t < hb.start + 0.22) {
+      if (t >= hb.start && t < hb.start + 0.24) {
         const dt = t - hb.start;
         const pitch = hb.freq1 * Math.exp(-dt * 6) + hb.freq2;
-        const env = Math.sin((dt / 0.22) * Math.PI) * hb.amp;
-        const thump = Math.sin(2 * Math.PI * pitch * dt) * env * 0.45;
+        const env = Math.sin((dt / 0.24) * Math.PI) * hb.amp;
+        const thump = Math.sin(2 * Math.PI * pitch * dt) * env * 0.55;
         sampleL += thump;
         sampleR += thump;
       }
@@ -106,9 +106,9 @@ const generateCinematicMedicalAudioWav = () => {
 
     // 3. Crystal Water & Celestial Starlight Chimes
     crystalChimes.forEach(chime => {
-      if (t >= chime.time && t < chime.time + 2.8) {
+      if (t >= chime.time && t < chime.time + 3.0) {
         const dt = t - chime.time;
-        const env = Math.exp(-dt * 2.2) * 0.25;
+        const env = Math.exp(-dt * 2.0) * 0.32;
         const osc = Math.sin(2 * Math.PI * chime.freq * dt) + 0.35 * Math.sin(2 * Math.PI * chime.freq * 2 * dt);
         const panL = 0.5 - chime.pan * 0.5;
         const panR = 0.5 + chime.pan * 0.5;
@@ -117,8 +117,8 @@ const generateCinematicMedicalAudioWav = () => {
       }
     });
 
-    // Master Soft Limiter / Compression
-    const clamp = (val) => Math.max(-1, Math.min(1, Math.tanh(val * 0.85)));
+    // Master Soft Limiter
+    const clamp = (val) => Math.max(-1, Math.min(1, Math.tanh(val * 0.9)));
     const intSampleL = Math.floor(clamp(sampleL) * 32767);
     const intSampleR = Math.floor(clamp(sampleR) * 32767);
 
@@ -132,7 +132,7 @@ const generateCinematicMedicalAudioWav = () => {
 };
 
 // =========================================================================
-// MAIN HOSPITAL PORTAL INTRO (CINEMATIC, NO SKIP, PURE AUTOMATIC TRANSITION)
+// MAIN HOSPITAL PORTAL INTRO
 // =========================================================================
 const HospitalPortalIntro = ({ onComplete }) => {
   const [phase, setPhase] = useState('start');
@@ -142,11 +142,14 @@ const HospitalPortalIntro = ({ onComplete }) => {
   const [progress, setProgress] = useState(0);
   const [statusText, setStatusText] = useState('Khởi tạo cổng bảo mật y tế...');
   const [isExiting, setIsExiting] = useState(false);
+  const [isAutoplayBlocked, setIsAutoplayBlocked] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
   const exitingRef = useRef(false);
   const canvasRef = useRef(null);
-  const audioRef = useRef(null);
+  const audioInstanceRef = useRef(null);
+  const progressTimerRef = useRef(null);
 
-  // Live Clock & Department details
+  // Live Clock & User detection
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
@@ -188,7 +191,7 @@ const HospitalPortalIntro = ({ onComplete }) => {
   const greeting = getGreeting();
 
   // Automatic Smooth Exit (Triggered only when Intro finishes completely at 100%)
-  const handleAutoComplete = () => {
+  const handleAutoComplete = useCallback(() => {
     if (exitingRef.current) return;
     exitingRef.current = true;
     setIsExiting(true);
@@ -198,45 +201,100 @@ const HospitalPortalIntro = ({ onComplete }) => {
       setPhase('done');
       if (onComplete) onComplete();
     }, 650);
-  };
+  }, [onComplete]);
 
-  // Instant Sound Synthesizer & Autoplay on Mount
-  useEffect(() => {
-    let audioUrl = null;
-    try {
-      audioUrl = generateCinematicMedicalAudioWav();
-      const audio = new Audio(audioUrl);
-      audio.volume = 0.85;
-      audioRef.current = audio;
+  // Start Progress Countdown (Exactly 4.0s)
+  const startProgressCountdown = useCallback(() => {
+    if (progressTimerRef.current) return;
+    setHasStarted(true);
+    setIsAutoplayBlocked(false);
 
-      // Immediate play attempt
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          // In case browser strictly required gesture, listen to any micro-interaction
-          const playOnGesture = () => {
-            audio.play().catch(() => {});
-            window.removeEventListener('pointerdown', playOnGesture);
-            window.removeEventListener('keydown', playOnGesture);
-            window.removeEventListener('touchstart', playOnGesture);
-          };
-          window.addEventListener('pointerdown', playOnGesture, { once: true });
-          window.addEventListener('keydown', playOnGesture, { once: true });
-          window.addEventListener('touchstart', playOnGesture, { once: true });
-        });
+    let currentProgress = 0;
+    const statusStages = [
+      { at: 15, text: 'Thiết lập kết nối mã hóa y tế 256-bit...' },
+      { at: 40, text: 'Đồng bộ cơ sở dữ liệu 12 khoa phòng...' },
+      { at: 70, text: 'Tải biểu mẫu giao ban chuyên môn trực tuyến...' },
+      { at: 92, text: 'Hệ thống sẵn sàng! Đang vào cổng làm việc...' }
+    ];
+
+    progressTimerRef.current = setInterval(() => {
+      currentProgress += 2.5; // ~40 ticks * 95ms = 3.8s total loading
+      if (currentProgress >= 100) {
+        currentProgress = 100;
+        setProgress(100);
+        setStatusText('Hoàn tất kết nối! Đang chuyển tiếp...');
+        clearInterval(progressTimerRef.current);
+        progressTimerRef.current = null;
+
+        setTimeout(() => {
+          handleAutoComplete();
+        }, 500);
+      } else {
+        setProgress(Math.floor(currentProgress));
+        const matchedStage = statusStages.slice().reverse().find(s => currentProgress >= s.at);
+        if (matchedStage) setStatusText(matchedStage.text);
       }
-    } catch (e) {}
+    }, 95);
+  }, [handleAutoComplete]);
+
+  // Play Sound Function
+  const playSound = useCallback(() => {
+    if (!audioInstanceRef.current) {
+      const url = generateCinematicMedicalAudioWav();
+      const audio = new Audio(url);
+      audio.volume = 0.9;
+      audioInstanceRef.current = audio;
+    }
+    return audioInstanceRef.current.play();
+  }, []);
+
+  // Trigger Sound & Intro Activation
+  const triggerIntroWithSound = useCallback(() => {
+    playSound()
+      .then(() => {
+        setIsAutoplayBlocked(false);
+        startProgressCountdown();
+      })
+      .catch(() => {
+        // Browser blocked autoplay without user click
+        setIsAutoplayBlocked(true);
+      });
+  }, [playSound, startProgressCountdown]);
+
+  // Mount Audio Attempt
+  useEffect(() => {
+    triggerIntroWithSound();
+
+    // If browser required a user gesture, listen to any micro-interaction
+    const handleGesture = () => {
+      playSound().catch(() => {});
+      setIsAutoplayBlocked(false);
+      startProgressCountdown();
+      window.removeEventListener('pointerdown', handleGesture);
+      window.removeEventListener('keydown', handleGesture);
+      window.removeEventListener('touchstart', handleGesture);
+      window.removeEventListener('click', handleGesture);
+    };
+
+    window.addEventListener('pointerdown', handleGesture, { once: true });
+    window.addEventListener('keydown', handleGesture, { once: true });
+    window.addEventListener('touchstart', handleGesture, { once: true });
+    window.addEventListener('click', handleGesture, { once: true });
 
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
+      window.removeEventListener('pointerdown', handleGesture);
+      window.removeEventListener('keydown', handleGesture);
+      window.removeEventListener('touchstart', handleGesture);
+      window.removeEventListener('click', handleGesture);
+      if (progressTimerRef.current) {
+        clearInterval(progressTimerRef.current);
       }
-      if (audioUrl) {
-        URL.revokeObjectURL(audioUrl);
+      if (audioInstanceRef.current) {
+        audioInstanceRef.current.pause();
+        audioInstanceRef.current = null;
       }
     };
-  }, []);
+  }, [triggerIntroWithSound, playSound, startProgressCountdown]);
 
   // Background Canvas: Medical Aurora, Pulse ECG wave, Starlight Particles
   useEffect(() => {
@@ -330,44 +388,15 @@ const HospitalPortalIntro = ({ onComplete }) => {
     }
   }, []);
 
-  // System Loading Flow (Exactly 4.0 seconds, NO SKIPPING, Auto transition at 100%)
-  useEffect(() => {
-    setPhase('flow_in');
-    let currentProgress = 0;
-    
-    const statusStages = [
-      { at: 15, text: 'Thiết lập kết nối mã hóa y tế 256-bit...' },
-      { at: 40, text: 'Đồng bộ cơ sở dữ liệu 12 khoa phòng...' },
-      { at: 70, text: 'Tải biểu mẫu giao ban chuyên môn trực tuyến...' },
-      { at: 92, text: 'Hệ thống sẵn sàng! Đang vào cổng làm việc...' }
-    ];
-
-    const progressInterval = setInterval(() => {
-      currentProgress += 2.5; // ~40 ticks * 90ms = 3.6s total loading
-      if (currentProgress >= 100) {
-        currentProgress = 100;
-        setProgress(100);
-        setStatusText('Hoàn tất kết nối! Đang chuyển tiếp...');
-        clearInterval(progressInterval);
-
-        // Transition smoothly into Login Page
-        setTimeout(() => {
-          handleAutoComplete();
-        }, 500);
-      } else {
-        setProgress(Math.floor(currentProgress));
-        const matchedStage = statusStages.slice().reverse().find(s => currentProgress >= s.at);
-        if (matchedStage) setStatusText(matchedStage.text);
-      }
-    }, 90);
-
-    return () => {
-      clearInterval(progressInterval);
-    };
-  }, []);
-
   return (
     <div
+      onClick={() => {
+        if (isAutoplayBlocked || !hasStarted) {
+          playSound().catch(() => {});
+          setIsAutoplayBlocked(false);
+          startProgressCountdown();
+        }
+      }}
       style={{
         position: 'fixed',
         inset: 0,
@@ -380,6 +409,7 @@ const HospitalPortalIntro = ({ onComplete }) => {
         alignItems: 'center',
         justifyContent: 'center',
         overflow: 'hidden',
+        cursor: isAutoplayBlocked ? 'pointer' : 'default',
         userSelect: 'none',
         transition: 'opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), filter 0.65s cubic-bezier(0.16, 1, 0.3, 1)',
         opacity: isExiting ? 0 : 1,
@@ -418,6 +448,11 @@ const HospitalPortalIntro = ({ onComplete }) => {
         @keyframes livePulseDot {
           0%, 100% { opacity: 0.4; transform: scale(0.9); }
           50% { opacity: 1; transform: scale(1.3); filter: drop-shadow(0 0 8px #10B981); }
+        }
+
+        @keyframes soundUnlockPulse {
+          0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(56, 189, 248, 0.4); }
+          50% { transform: scale(1.06); box-shadow: 0 0 35px rgba(45, 212, 191, 0.8); }
         }
 
         @keyframes heroFadeUp {
@@ -733,28 +768,60 @@ const HospitalPortalIntro = ({ onComplete }) => {
           }} />
         </div>
 
-        {/* I. Live Initialization Status Ticker */}
-        <div style={{
-          marginTop: '0.95rem',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          fontSize: '0.82rem',
-          color: '#94A3B8',
-          fontWeight: '600',
-          letterSpacing: '0.3px',
-          animation: 'heroFadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 1.2s both'
-        }}>
+        {/* I. Interactive State: Autoplay Blocked Tap or Status Ticker */}
+        {isAutoplayBlocked ? (
+          <div 
+            onClick={() => {
+              playSound().catch(() => {});
+              setIsAutoplayBlocked(false);
+              startProgressCountdown();
+            }}
+            style={{
+              marginTop: '1.2rem',
+              animation: 'soundUnlockPulse 1.8s ease-in-out infinite, heroFadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 1.2s both',
+              cursor: 'pointer'
+            }}
+          >
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.65rem',
+              background: 'linear-gradient(135deg, #0284C7 0%, #0D9488 100%)',
+              color: '#FFFFFF',
+              borderRadius: '999px',
+              padding: '0.65rem 1.8rem',
+              fontSize: '0.92rem',
+              fontWeight: '900',
+              border: '1.5px solid rgba(255, 255, 255, 0.4)',
+              boxShadow: '0 6px 25px rgba(2, 132, 199, 0.5)'
+            }}>
+              <FaVolumeUp style={{ fontSize: '1.1rem', color: '#67E8F9' }} />
+              <span>CHẠM ĐỂ BẬT ÂM THANH & BẮT ĐẦU</span>
+            </div>
+          </div>
+        ) : (
           <div style={{
-            width: '7px',
-            height: '7px',
-            borderRadius: '50%',
-            backgroundColor: '#10B981',
-            animation: 'livePulseDot 1.4s ease-in-out infinite'
-          }} />
-          <span>{statusText}</span>
-          <span style={{ color: '#38BDF8', fontWeight: '800', marginLeft: '0.2rem' }}>{progress}%</span>
-        </div>
+            marginTop: '0.95rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            fontSize: '0.82rem',
+            color: '#94A3B8',
+            fontWeight: '600',
+            letterSpacing: '0.3px',
+            animation: 'heroFadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 1.2s both'
+          }}>
+            <div style={{
+              width: '7px',
+              height: '7px',
+              borderRadius: '50%',
+              backgroundColor: '#10B981',
+              animation: 'livePulseDot 1.4s ease-in-out infinite'
+            }} />
+            <span>{statusText}</span>
+            <span style={{ color: '#38BDF8', fontWeight: '800', marginLeft: '0.2rem' }}>{progress}%</span>
+          </div>
+        )}
 
       </div>
 
