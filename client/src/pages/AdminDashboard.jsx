@@ -1077,8 +1077,23 @@ const AdminDashboard = () => {
             flexShrink: 0,
             overflow: 'hidden'
           }}>
-            {user?.avatar_url && !user.avatar_url.startsWith('preset_') ? (
-              <img src={user.avatar_url} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            {user?.avatar_url ? (
+              user.avatar_url.startsWith('preset_') ? (
+                <span style={{ fontSize: '1.25rem' }}>
+                  {{
+                    preset_doc_m: '👨‍⚕️',
+                    preset_doc_f: '👩‍⚕️',
+                    preset_nurse_m: '🧑‍⚕️',
+                    preset_nurse_f: '👩‍⚕️',
+                    preset_surgeon: '😷',
+                    preset_admin: '🏛️',
+                    preset_tech: '🔬',
+                    preset_hospital: '🏥'
+                  }[user.avatar_url] || '👨‍⚕️'}
+                </span>
+              ) : (
+                <img src={user.avatar_url} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              )
             ) : (
               <FaUserMd />
             )}

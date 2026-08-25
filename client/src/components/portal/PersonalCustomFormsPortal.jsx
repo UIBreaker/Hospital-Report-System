@@ -211,9 +211,24 @@ const PersonalCustomFormsPortal = () => {
             onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.12)'}
             title="Nhấp để xem & cập nhật Hồ sơ cá nhân"
           >
-            <div style={{ width: '30px', height: '30px', borderRadius: '50%', backgroundColor: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', color: '#fff', overflow: 'hidden' }}>
-              {user?.avatar_url && !user.avatar_url.startsWith('preset_') ? (
-                <img src={user.avatar_url} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', color: '#fff', overflow: 'hidden', flexShrink: 0, border: '1.5px solid rgba(255,255,255,0.4)' }}>
+              {user?.avatar_url ? (
+                user.avatar_url.startsWith('preset_') ? (
+                  <span style={{ fontSize: '1.15rem' }}>
+                    {{
+                      preset_doc_m: '👨‍⚕️',
+                      preset_doc_f: '👩‍⚕️',
+                      preset_nurse_m: '🧑‍⚕️',
+                      preset_nurse_f: '👩‍⚕️',
+                      preset_surgeon: '😷',
+                      preset_admin: '🏛️',
+                      preset_tech: '🔬',
+                      preset_hospital: '🏥'
+                    }[user.avatar_url] || '👨‍⚕️'}
+                  </span>
+                ) : (
+                  <img src={user.avatar_url} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                )
               ) : (
                 <FaUser />
               )}

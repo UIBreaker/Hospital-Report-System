@@ -4,8 +4,15 @@ import authService from '../services/authService';
 export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(() => {
+    try {
+      const cached = localStorage.getItem('user_profile');
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [loading, setLoading] = useState(!user && Boolean(localStorage.getItem('token')));
 
   const initAuth = async () => {
     const token = localStorage.getItem('token');
@@ -14,7 +21,7 @@ export const AuthProvider = ({ children }) => {
         const response = await authService.getMe();
         // Backend returns { success, data: { id, username, department_code, ... } }
         const userData = response.data || response;
-        setUser({
+        const fullUser = {
           id: userData.id,
           username: userData.username,
           fullName: userData.full_name || userData.department_name || userData.username,
@@ -30,11 +37,17 @@ export const AuthProvider = ({ children }) => {
           signature_url: userData.signature_url || '',
           bio: userData.bio || '',
           source: userData.source
-        });
+        };
+        setUser(fullUser);
+        localStorage.setItem('user_profile', JSON.stringify(fullUser));
       } catch (error) {
         localStorage.removeItem('token');
+        localStorage.removeItem('user_profile');
         setUser(null);
       }
+    } else {
+      localStorage.removeItem('user_profile');
+      setUser(null);
     }
     setLoading(false);
   };
@@ -61,7 +74,7 @@ export const AuthProvider = ({ children }) => {
 
     if (token) {
       localStorage.setItem('token', token);
-      setUser({
+      const fullUser = {
         id: userData.id,
         username: userData.username,
         fullName: userData.full_name || userData.departmentName || userData.username,
@@ -77,7 +90,9 @@ export const AuthProvider = ({ children }) => {
         signature_url: userData.signature_url || '',
         bio: userData.bio || '',
         source: userData.source
-      });
+      };
+      setUser(fullUser);
+      localStorage.setItem('user_profile', JSON.stringify(fullUser));
     }
     return userData;
   };
@@ -89,12 +104,16 @@ export const AuthProvider = ({ children }) => {
       if (updatedFields.full_name) {
         merged.fullName = updatedFields.full_name;
       }
+      try {
+        localStorage.setItem('user_profile', JSON.stringify(merged));
+      } catch {}
       return merged;
     });
   };
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user_profile');
     setUser(null);
   };
 

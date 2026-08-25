@@ -85,7 +85,15 @@ const login = async (req, res, next) => {
             full_name: user.full_name || user.department_name,
             departmentCode: user.department_code,
             departmentName: user.department_name,
-            role: userRole
+            role: userRole,
+            avatar_url: user.avatar_url || '',
+            phone: user.phone || '',
+            email: user.email || '',
+            certificate: user.certificate || '',
+            position: user.position || '',
+            signature_url: user.signature_url || '',
+            bio: user.bio || '',
+            source: 'core'
           }
         }
       });
@@ -171,7 +179,15 @@ const login = async (req, res, next) => {
             full_name: sysUser.full_name,
             departmentCode: sysUser.department_code,
             departmentName: sysUser.department_name,
-            role: userRole
+            role: userRole,
+            avatar_url: sysUser.avatar_url || '',
+            phone: sysUser.phone || '',
+            email: sysUser.email || '',
+            certificate: sysUser.certificate || '',
+            position: sysUser.position || '',
+            signature_url: sysUser.signature_url || '',
+            bio: sysUser.bio || '',
+            source: 'system'
           }
         }
       });

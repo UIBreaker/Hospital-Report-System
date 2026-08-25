@@ -856,9 +856,24 @@ const ReportPage = () => {
             }}
             title="Xem và chỉnh sửa Hồ Sơ Cá Nhân & Chữ Ký Mẫu"
           >
-            <div style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: '#2563EB', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', overflow: 'hidden' }}>
-              {user?.avatar_url && !user.avatar_url.startsWith('preset_') ? (
-                <img src={user.avatar_url} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <div style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: '#2563EB', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', overflow: 'hidden', flexShrink: 0 }}>
+              {user?.avatar_url ? (
+                user.avatar_url.startsWith('preset_') ? (
+                  <span>
+                    {{
+                      preset_doc_m: '👨‍⚕️',
+                      preset_doc_f: '👩‍⚕️',
+                      preset_nurse_m: '🧑‍⚕️',
+                      preset_nurse_f: '👩‍⚕️',
+                      preset_surgeon: '😷',
+                      preset_admin: '🏛️',
+                      preset_tech: '🔬',
+                      preset_hospital: '🏥'
+                    }[user.avatar_url] || '👨‍⚕️'}
+                  </span>
+                ) : (
+                  <img src={user.avatar_url} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                )
               ) : (
                 <FaUserMd />
               )}
