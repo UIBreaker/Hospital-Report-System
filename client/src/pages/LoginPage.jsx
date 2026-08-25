@@ -96,15 +96,15 @@ const LoginPage = () => {
   
 
   return (
-    <div style={{
-      height: '100vh',
-      maxHeight: '100vh',
+    <div className="full-dvh-screen" style={{
+      minHeight: '100vh',
       width: '100vw',
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'space-between',
       position: 'relative',
-      overflow: 'hidden',
+      overflowX: 'hidden',
+      overflowY: 'auto',
       background: 'linear-gradient(125deg, #DCEEFE 0%, #C7E5FD 18%, #93C5FD 42%, #3B82F6 72%, #10B981 100%)',
       fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
       boxSizing: 'border-box'
@@ -245,7 +245,7 @@ const LoginPage = () => {
       />
 
       {/* Main Two-Column Content Grid */}
-      <main style={{
+      <main className="login-main-grid" style={{
         flex: 1,
         maxWidth: '1280px',
         margin: '0 auto',
@@ -263,7 +263,7 @@ const LoginPage = () => {
       }}>
 
         {/* ================= LEFT COLUMN: BRAND IDENTITY & FEATURE PILLS ================= */}
-        <section style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '470px' }}>
+        <section className="login-brand-col" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '470px' }}>
           
           {/* Logo with Soft Glow & Replay Intro Trigger */}
           <div 
@@ -347,7 +347,7 @@ const LoginPage = () => {
           </div>
 
           {/* 3 Translucent Frosted Glass Feature Cards */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem', marginTop: '0.25rem', maxWidth: '385px' }}>
+          <div className="login-feature-pills" style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem', marginTop: '0.25rem', maxWidth: '385px' }}>
             
             {/* Feature 1 */}
             <div style={{
@@ -452,7 +452,7 @@ const LoginPage = () => {
         </section>
 
         {/* ================= RIGHT COLUMN: CRISP WHITE LOGIN CARD ================= */}
-        <section style={{ display: 'flex', justifyContent: 'center' }}>
+        <section className="login-card-container" style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
           <div style={{
             width: '100%',
             maxWidth: '485px',

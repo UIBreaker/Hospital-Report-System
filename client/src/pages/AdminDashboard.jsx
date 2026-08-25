@@ -55,6 +55,9 @@ const AdminDashboard = () => {
   // Active Tab State: 'reports' | 'staff' | 'database' | 'accounts'
   const [activeTab, setActiveTab] = useState('reports');
 
+  // Mobile Drawer State
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+
   // Collapsible Sidebar State (persisted in localStorage)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     try {
@@ -682,9 +685,13 @@ const AdminDashboard = () => {
       backgroundColor: '#F8FAFC',
       fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
     }}>
+      {/* Mobile Backdrop Overlay */}
+      {mobileDrawerOpen && (
+        <div className="admin-backdrop-overlay" onClick={() => setMobileDrawerOpen(false)} />
+      )}
       
       {/* ================= 1. LEFT SIDEBAR (Collapsible Dark Navy Gradient) ================= */}
-      <aside style={{
+      <aside className={`admin-sidebar-drawer ${mobileDrawerOpen ? 'open' : ''}`} style={{
         width: isSidebarCollapsed ? '72px' : '240px',
         minWidth: isSidebarCollapsed ? '72px' : '240px',
         transition: 'width 0.25s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.25s cubic-bezier(0.4, 0, 0.2, 1), padding 0.25s ease',
@@ -694,8 +701,9 @@ const AdminDashboard = () => {
         flexDirection: 'column',
         justifyContent: 'space-between',
         padding: isSidebarCollapsed ? '1.25rem 0.5rem' : '1.25rem 0.85rem',
-        position: 'sticky',
+        position: 'fixed',
         top: 0,
+        left: 0,
         height: '100vh',
         boxSizing: 'border-box',
         boxShadow: '4px 0 20px rgba(0, 0, 0, 0.12)',
@@ -791,7 +799,7 @@ const AdminDashboard = () => {
             {/* Item 1: Báo Cáo Giao Ban */}
             <button
               type="button"
-              onClick={() => setActiveTab('reports')}
+              onClick={() => { setActiveTab('reports'); setMobileDrawerOpen(false); }}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -806,10 +814,9 @@ const AdminDashboard = () => {
                 fontSize: '0.86rem',
                 transition: 'all 0.15s ease',
                 textAlign: 'left',
-                boxShadow: activeTab === 'reports' ? '0 4px 12px rgba(37, 99, 235, 0.4)' : 'none',
-                position: 'relative'
+                boxShadow: activeTab === 'reports' ? '0 4px 12px rgba(37, 99, 235, 0.4)' : 'none'
               }}
-              title={isSidebarCollapsed ? `Báo Cáo Giao Ban (${submittedCount}/${statusList.length})` : undefined}
+              title={isSidebarCollapsed ? 'Báo Cáo Giao Ban' : undefined}
               onMouseEnter={(e) => {
                 if (activeTab !== 'reports') {
                   e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
@@ -824,38 +831,27 @@ const AdminDashboard = () => {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                <FaTable style={{ fontSize: isSidebarCollapsed ? '1.15rem' : '0.95rem' }} />
+                <FaClipboardList style={{ fontSize: isSidebarCollapsed ? '1.15rem' : '0.95rem' }} />
                 {!isSidebarCollapsed && <span>Báo Cáo Giao Ban</span>}
               </div>
-              {!isSidebarCollapsed && statusList.length > 0 && (
+              {!isSidebarCollapsed && (
                 <span style={{
-                  backgroundColor: activeTab === 'reports' ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.12)',
+                  backgroundColor: activeTab === 'reports' ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.1)',
                   color: '#FFFFFF',
-                  padding: '0.12rem 0.45rem',
-                  borderRadius: '999px',
-                  fontSize: '0.7rem',
+                  padding: '2px 7px',
+                  borderRadius: '10px',
+                  fontSize: '0.72rem',
                   fontWeight: '800'
                 }}>
-                  {submittedCount}/{statusList.length}
+                  {statusList.filter(s => s.status === 'submitted').length}/12
                 </span>
-              )}
-              {isSidebarCollapsed && statusList.length > 0 && (
-                <span style={{
-                  position: 'absolute',
-                  top: '6px',
-                  right: '6px',
-                  width: '8px',
-                  height: '8px',
-                  borderRadius: '50%',
-                  backgroundColor: submittedCount === statusList.length ? '#10B981' : '#F59E0B'
-                }} />
               )}
             </button>
 
             {/* Item 2: Số Liệu Thống Kê & Biểu Đồ */}
             <button
               type="button"
-              onClick={() => setActiveTab('analytics')}
+              onClick={() => { setActiveTab('analytics'); setMobileDrawerOpen(false); }}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -894,7 +890,7 @@ const AdminDashboard = () => {
             {/* Item 3: Biểu Mẫu Tùy Chỉnh & Tracker */}
             <button
               type="button"
-              onClick={() => setActiveTab('custom_forms')}
+              onClick={() => { setActiveTab('custom_forms'); setMobileDrawerOpen(false); }}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -930,10 +926,10 @@ const AdminDashboard = () => {
               {!isSidebarCollapsed && <span>Biểu Mẫu Tùy Chỉnh</span>}
             </button>
 
-            {/* Item 3: Quản Lý Nhân Sự */}
+            {/* Item 4: Quản Lý Nhân Sự */}
             <button
               type="button"
-              onClick={() => setActiveTab('staff')}
+              onClick={() => { setActiveTab('staff'); setMobileDrawerOpen(false); }}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -969,10 +965,10 @@ const AdminDashboard = () => {
               {!isSidebarCollapsed && <span>Quản Lý Nhân Sự</span>}
             </button>
 
-            {/* Item 4: Quản Trị CSDL & Logs */}
+            {/* Item 5: Quản Trị CSDL & Logs */}
             <button
               type="button"
-              onClick={() => setActiveTab('database')}
+              onClick={() => { setActiveTab('database'); setMobileDrawerOpen(false); }}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -1008,10 +1004,10 @@ const AdminDashboard = () => {
               {!isSidebarCollapsed && <span>Quản Trị CSDL & Logs</span>}
             </button>
 
-            {/* Item 5: Quản Lý Tài Khoản */}
+            {/* Item 6: Quản Lý Tài Khoản */}
             <button
               type="button"
-              onClick={() => setActiveTab('accounts')}
+              onClick={() => { setActiveTab('accounts'); setMobileDrawerOpen(false); }}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -1091,7 +1087,7 @@ const AdminDashboard = () => {
       </aside>
 
       {/* ================= 2. MAIN CONTENT WRAPPER ================= */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflowX: 'hidden' }}>
+      <div className="admin-main-wrapper" style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflowX: 'hidden', marginLeft: isSidebarCollapsed ? '72px' : '240px', transition: 'margin-left 0.25s ease' }}>
         
         {/* Top Header Bar */}
         <header style={{
@@ -1108,13 +1104,37 @@ const AdminDashboard = () => {
           zIndex: 50,
           boxShadow: '0 2px 8px rgba(15, 44, 89, 0.04)'
         }}>
-          <div>
-            <h1 style={{ fontSize: '1.2rem', fontWeight: '900', color: '#0F2C59', margin: 0, lineHeight: 1.2, letterSpacing: '0.3px' }}>
-              TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG
-            </h1>
-            <p style={{ margin: '0.15rem 0 0 0', fontSize: '0.8rem', color: '#64748B', fontWeight: '600' }}>
-              Hệ Thống Quản Trị Báo Cáo Giao Ban Trực Toàn Viện
-            </p>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <button
+              type="button"
+              onClick={() => setMobileDrawerOpen(true)}
+              className="show-flex-mobile"
+              style={{
+                backgroundColor: '#0F2C59',
+                color: '#FFFFFF',
+                border: 'none',
+                borderRadius: '8px',
+                width: '36px',
+                height: '36px',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: '1rem',
+                marginRight: '0.75rem',
+                flexShrink: 0
+              }}
+              title="Mở menu điều hướng"
+            >
+              <FaBars />
+            </button>
+            <div>
+              <h1 style={{ fontSize: '1.15rem', fontWeight: '900', color: '#0F2C59', margin: 0, lineHeight: 1.2, letterSpacing: '0.3px' }}>
+                TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG
+              </h1>
+              <p style={{ margin: '0.15rem 0 0 0', fontSize: '0.78rem', color: '#64748B', fontWeight: '600' }}>
+                Hệ Thống Quản Trị Báo Cáo Giao Ban Trực Toàn Viện
+              </p>
+            </div>
           </div>
 
           {/* Action Controls */}

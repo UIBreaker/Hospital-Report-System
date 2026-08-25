@@ -930,7 +930,7 @@ const DynamicFormSubmissions = ({ formCode, onBack }) => {
               overflow: 'hidden',
               boxShadow: '0 6px 24px rgba(15, 44, 89, 0.05)'
             }}>
-              <div style={{ overflowX: 'auto', maxHeight: '72vh' }}>
+              <div className="touch-scroll responsive-table-wrapper" style={{ overflowX: 'auto', maxHeight: '72vh', marginBottom: 0 }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.86rem', whiteSpace: 'nowrap' }}>
                   <thead style={{ position: 'sticky', top: 0, zIndex: 10 }}>
                     <tr style={{ backgroundColor: '#0F2C59', color: '#FFFFFF', borderBottom: '2px solid #1E3A8A' }}>
@@ -1165,7 +1165,7 @@ const DynamicFormSubmissions = ({ formCode, onBack }) => {
               overflow: 'hidden',
               boxShadow: '0 4px 14px rgba(15, 44, 89, 0.04)'
             }}>
-              <div style={{ overflowX: 'auto' }}>
+              <div className="touch-scroll responsive-table-wrapper" style={{ overflowX: 'auto', marginBottom: 0 }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.86rem' }}>
                   <thead>
                     <tr style={{ backgroundColor: '#F8FAFC', borderBottom: '2px solid #E2E8F0', color: '#0F2C59' }}>
