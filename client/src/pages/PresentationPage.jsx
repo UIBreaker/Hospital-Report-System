@@ -370,21 +370,29 @@ const PresentationPage = () => {
       });
     });
 
+    // Attach aggregated summary metrics to Slide 1 (Title Slide)
+    const summaryData = {
+      tongSoKham: totalKham,
+      benhCu: totalBenhCu,
+      benhMoi: totalBenhMoi,
+      xuatVien: totalXuatVien,
+      chuyenVien: totalChuyenVien,
+      phauThuat: totalPhauThuat,
+      hienCon: totalHienCon,
+      tuVong: totalTuVong
+    };
+
+    if (s.length > 0 && s[0].type === 'title') {
+      s[0].summary = summaryData;
+      s[0].reportsCount = sortedReports.length;
+    }
+
     // 6. Hospital-Wide Summary Slide at the End
     if (sortedReports.length > 0) {
       s.push({
         type: 'summary',
         title: 'TỔNG HỢP TOÀN VIỆN',
-        summary: {
-          tongSoKham: totalKham,
-          benhCu: totalBenhCu,
-          benhMoi: totalBenhMoi,
-          xuatVien: totalXuatVien,
-          chuyenVien: totalChuyenVien,
-          phauThuat: totalPhauThuat,
-          hienCon: totalHienCon,
-          tuVong: totalTuVong
-        },
+        summary: summaryData,
         totalDepts: 12,
         submittedCount: sortedReports.length,
         selectedDate: date
@@ -585,7 +593,7 @@ const PresentationPage = () => {
                   </div>
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontSize: '0.7rem', fontWeight: '800', color: '#93C5FD', textTransform: 'uppercase', lineHeight: '1.2' }}>
-                      SỞ Y TẾ BÌNH PHƯỚC
+                      SỞ Y TẾ THÀNH PHỐ ĐỒNG NAI
                     </div>
                     <div style={{ fontSize: '0.76rem', fontWeight: '900', color: '#FFFFFF', lineHeight: '1.2', marginTop: '1px' }}>
                       TTYT BÌNH LONG
@@ -840,7 +848,12 @@ const PresentationPage = () => {
             >
               {/* 1. Title Slide */}
               {slide.type === 'title' && (
-                <TitleSlide selectedDate={date} reportsCount={reports.length} isFullscreen={true} />
+                <TitleSlide
+                  selectedDate={date}
+                  reportsCount={slide.reportsCount || reports.length}
+                  summary={slide.summary || {}}
+                  isFullscreen={true}
+                />
               )}
 
               {/* 2. Department Overview Slide */}

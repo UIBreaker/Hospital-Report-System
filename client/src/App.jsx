@@ -20,7 +20,7 @@ const PageLoadingFallback = () => (
     fullScreen={true}
     dark={true}
     text="Đang nạp hệ thống giao ban..."
-    subtext="Sở Y Tế Bình Phước • TTYT Khu Vực Bình Long"
+    subtext="SỞ Y TẾ THÀNH PHỐ ĐỒNG NAI • TTYT Khu Vực Bình Long"
   />
 );
 

@@ -401,7 +401,7 @@ const CinematicNetflixIntro = ({ date = '', onComplete }) => {
           transition: 'opacity 0.6s ease-out 0.2s',
           textShadow: '0 0 15px rgba(56, 189, 248, 0.8)'
         }}>
-          SỞ Y TẾ BÌNH PHƯỚC
+          SỞ Y TẾ THÀNH PHỐ ĐỒNG NAI
         </div>
 
         {/* Main Hospital Name with Gentle Letter Expansion */}
