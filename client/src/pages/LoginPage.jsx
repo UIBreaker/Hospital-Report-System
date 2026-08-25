@@ -20,7 +20,9 @@ import {
   FaHeadset,
   FaCheckCircle,
   FaExclamationTriangle,
-  FaHeartbeat
+  FaHeartbeat,
+  FaHospital,
+  FaMicroscope
 } from 'react-icons/fa';
 import { APP_VERSION } from '../config/version';
 import AIAssistant from '../components/common/AIAssistant';
@@ -38,7 +40,6 @@ const playLoginSuccessSound = () => {
     if (ctx.state === 'suspended') ctx.resume().catch(() => {});
     const now = ctx.currentTime;
 
-    // Victory Triad Arpeggio (C5 -> E5 -> G5 -> C6)
     const notes = [523.25, 659.25, 783.99, 1046.50];
     notes.forEach((freq, idx) => {
       const osc = ctx.createOscillator();
@@ -68,7 +69,6 @@ const playLoginErrorSound = () => {
     if (ctx.state === 'suspended') ctx.resume().catch(() => {});
     const now = ctx.currentTime;
 
-    // Low-end Error Thud
     const tones = [220, 185];
     tones.forEach((freq, idx) => {
       const osc = ctx.createOscillator();
@@ -107,6 +107,8 @@ const LoginPage = () => {
   const [isShaking, setIsShaking] = useState(false);
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [mustChangePasswordData, setMustChangePasswordData] = useState({ isOpen: false, username: '', fullName: '' });
+  
+  // Only show intro if it's the very first visit of this browser session or right after logout
   const [showIntro, setShowIntro] = useState(() => {
     const justLoggedOut = sessionStorage.getItem('just_logged_out_username');
     if (justLoggedOut) return true;
@@ -168,22 +170,26 @@ const LoginPage = () => {
           username: loggedInUser.username,
           fullName: loggedInUser.full_name
         });
+        setIsSubmitting(false);
         return;
       }
 
-      // Success State Activation
+      // Success State
       setIsSuccess(true);
       setSuccessUser(loggedInUser);
       playLoginSuccessSound();
 
       setTimeout(() => {
-        navigate(loggedInUser.role === 'admin' ? '/admin' : '/report');
+        navigate(loggedInUser?.role === 'admin' ? '/admin' : '/report');
       }, 950);
 
     } catch (err) {
-      const errMsg = err.response?.data?.error || err.response?.data?.message || err.message;
-      const formattedErr = typeof errMsg === 'string' ? errMsg : (errMsg?.message || 'Tên đăng nhập hoặc mật khẩu không chính xác. Vui lòng kiểm tra lại!');
-      triggerErrorFeedback(formattedErr);
+      const rawMsg = err.response?.data?.error || err.response?.data?.message || err.message;
+      let displayMsg = 'Tên đăng nhập hoặc mật khẩu không chính xác.';
+      if (typeof rawMsg === 'string' && rawMsg.trim()) {
+        displayMsg = rawMsg;
+      }
+      triggerErrorFeedback(displayMsg);
     } finally {
       setIsSubmitting(false);
     }
@@ -195,8 +201,6 @@ const LoginPage = () => {
     setError('');
   };
 
-  
-
   return (
     <div className="full-dvh-screen" style={{
       minHeight: '100vh',
@@ -207,7 +211,7 @@ const LoginPage = () => {
       position: 'relative',
       overflowX: 'hidden',
       overflowY: 'auto',
-      background: 'linear-gradient(125deg, #DCEEFE 0%, #C7E5FD 18%, #93C5FD 42%, #3B82F6 72%, #10B981 100%)',
+      backgroundColor: '#030914',
       fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
       boxSizing: 'border-box'
     }}>
@@ -222,19 +226,11 @@ const LoginPage = () => {
         />
       )}
 
-      {/* Blooming & Feedback Transition Styles for Login Content */}
+      {/* Futuristic Animations and Shimmer Styles */}
       <style>{`
         @keyframes loginBloomExpand {
-          0% {
-            opacity: 0.5;
-            transform: scale(0.96);
-            filter: blur(8px);
-          }
-          100% {
-            opacity: 1;
-            transform: scale(1);
-            filter: blur(0px);
-          }
+          0% { opacity: 0; transform: scale(0.96); filter: blur(10px); }
+          100% { opacity: 1; transform: scale(1); filter: blur(0px); }
         }
 
         @keyframes loginShake {
@@ -247,18 +243,28 @@ const LoginPage = () => {
           90% { transform: translateX(2px); }
         }
 
+        @keyframes haloSpinSlow {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
+        @keyframes haloSpinReverse {
+          0% { transform: rotate(360deg); }
+          100% { transform: rotate(0deg); }
+        }
+
+        @keyframes pulseLogoGlow {
+          0%, 100% { transform: scale(1); box-shadow: 0 0 25px rgba(56, 189, 248, 0.45), 0 0 50px rgba(14, 165, 233, 0.2); }
+          50% { transform: scale(1.04); box-shadow: 0 0 35px rgba(56, 189, 248, 0.75), 0 0 70px rgba(45, 212, 191, 0.35); }
+        }
+
         @keyframes errorSlideDown {
           0% { opacity: 0; transform: translateY(-10px) scale(0.96); filter: blur(4px); }
           100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
         }
 
-        @keyframes errorIconPulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.22); filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.8)); }
-        }
-
         @keyframes successCardMorph {
-          0% { opacity: 0; transform: scale(0.92); filter: blur(6px); }
+          0% { opacity: 0; transform: scale(0.92); filter: blur(8px); }
           50% { transform: scale(1.02); }
           100% { opacity: 1; transform: scale(1); filter: blur(0); }
         }
@@ -278,9 +284,25 @@ const LoginPage = () => {
           0% { width: 0%; }
           100% { width: 100%; }
         }
+
+        .login-input-field:focus {
+          border-color: #38BDF8 !important;
+          background-color: rgba(10, 25, 50, 0.95) !important;
+          box-shadow: 0 0 20px rgba(56, 189, 248, 0.45), inset 0 0 10px rgba(56, 189, 248, 0.1) !important;
+        }
+
+        .feature-pill-hover {
+          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .feature-pill-hover:hover {
+          transform: translateY(-3px) scale(1.02);
+          border-color: #38BDF8 !important;
+          box-shadow: 0 12px 30px rgba(56, 189, 248, 0.22) !important;
+          background: rgba(15, 34, 68, 0.85) !important;
+        }
       `}</style>
 
-      {/* Synchronized Dynamic Medical Background (ECG Canvas, Nano Particles, Auroras, Dot Grid) */}
+      {/* Synchronized Obsidian Dynamic Medical Background (ECG Canvas, Starlight Particles, Auroras) */}
       <MedicalAuthBackground />
 
       {/* Main Two-Column Content Grid */}
@@ -288,10 +310,10 @@ const LoginPage = () => {
         flex: 1,
         maxWidth: '1280px',
         margin: '0 auto',
-        padding: '0.85rem 2.5rem',
+        padding: '1.2rem 2.5rem',
         width: '100%',
         display: 'grid',
-        gridTemplateColumns: '1.1fr 1fr',
+        gridTemplateColumns: '1.15fr 1fr',
         gap: '3.5rem',
         alignItems: 'center',
         position: 'relative',
@@ -301,224 +323,282 @@ const LoginPage = () => {
         animation: 'loginBloomExpand 0.85s cubic-bezier(0.16, 1, 0.3, 1) both'
       }}>
 
-        {/* ================= LEFT COLUMN: BRAND IDENTITY & FEATURE PILLS ================= */}
-        <section className="login-brand-col" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '470px' }}>
+        {/* ================= LEFT COLUMN: BRAND HERO & PREMIUM FEATURE PILLS ================= */}
+        <section className="login-brand-col" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '520px' }}>
           
-          {/* Logo with Soft Glow & Replay Intro Trigger */}
-          <div 
-            className="login-logo-circle"
-            onClick={() => setShowIntro(true)}
-            title="Xem lại hiệu ứng giới thiệu Cổng Thông Tin"
-            style={{
-              width: '72px',
-              height: '72px',
+          {/* Logo with Orbit Rings & Replay Intro Trigger */}
+          <div style={{ position: 'relative', width: '92px', height: '92px', marginBottom: '0.2rem' }}>
+            {/* Outer Rotating Laser Ring */}
+            <div style={{
+              position: 'absolute',
+              inset: '-8px',
               borderRadius: '50%',
-              backgroundColor: '#FFFFFF',
-              boxShadow: '0 10px 25px rgba(2, 132, 199, 0.22), 0 0 0 3.5px rgba(255, 255, 255, 0.95)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '10px',
-              marginBottom: '0.15rem',
-              cursor: 'pointer',
-              transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.08)'}
-            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-          >
-            <img 
-              src="/logo.png" 
-              alt="Logo TTYT Bình Long" 
-              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-            />
+              border: '1.5px dashed rgba(56, 189, 248, 0.5)',
+              animation: 'haloSpinSlow 16s linear infinite',
+              pointerEvents: 'none'
+            }} />
+            
+            {/* Inner Reverse Ring */}
+            <div style={{
+              position: 'absolute',
+              inset: '-3px',
+              borderRadius: '50%',
+              border: '1.5px solid rgba(45, 212, 191, 0.4)',
+              borderTopColor: 'transparent',
+              borderBottomColor: 'transparent',
+              animation: 'haloSpinReverse 9s linear infinite',
+              pointerEvents: 'none'
+            }} />
+
+            {/* Logo Center Sphere */}
+            <div 
+              className="login-logo-circle"
+              onClick={() => setShowIntro(true)}
+              title="Xem lại hiệu ứng giới thiệu Cổng Thông Tin"
+              style={{
+                width: '100%',
+                height: '100%',
+                borderRadius: '50%',
+                backgroundColor: '#FFFFFF',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '12px',
+                cursor: 'pointer',
+                animation: 'pulseLogoGlow 3.5s ease-in-out infinite',
+                boxSizing: 'border-box'
+              }}
+            >
+              <img 
+                src="/logo.png" 
+                alt="Logo TTYT Bình Long" 
+                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              />
+            </div>
           </div>
 
           {/* Titles & Headings */}
           <div>
+            {/* Agency Badge */}
             <div 
               className="login-agency-badge"
               style={{
-                display: 'inline-block',
-                backgroundColor: '#DBEAFE',
-                color: '#1D4ED8',
-                padding: '0.24rem 0.8rem',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                backgroundColor: 'rgba(14, 165, 233, 0.12)',
+                border: '1px solid rgba(56, 189, 248, 0.35)',
+                color: '#38BDF8',
+                padding: '0.3rem 0.95rem',
                 borderRadius: '999px',
-                fontSize: '0.75rem',
-                fontWeight: '800',
-                letterSpacing: '0.5px',
+                fontSize: '0.78rem',
+                fontWeight: '900',
+                letterSpacing: '1px',
                 textTransform: 'uppercase',
-                marginBottom: '0.45rem',
-                boxShadow: '0 2px 6px rgba(29, 78, 216, 0.08)'
+                marginBottom: '0.65rem',
+                boxShadow: '0 0 15px rgba(56, 189, 248, 0.2)'
               }}
             >
-              SỞ Y TẾ THÀNH PHỐ ĐỒNG NAI
+              <FaHospital style={{ color: '#2DD4BF' }} /> SỞ Y TẾ THÀNH PHỐ ĐỒNG NAI
             </div>
 
+            {/* Main Hospital Name */}
             <h1 
               className="login-hospital-title"
               style={{
-                fontSize: '1.9rem',
+                fontSize: '2.15rem',
                 fontWeight: '900',
-                color: '#0F2C59',
-                margin: '0 0 0.25rem 0',
-                lineHeight: '1.18',
+                color: '#FFFFFF',
+                margin: '0 0 0.15rem 0',
+                lineHeight: '1.15',
                 textTransform: 'uppercase',
-                letterSpacing: '0.4px'
+                letterSpacing: '1px'
               }}
             >
-              TRUNG TÂM Y TẾ<br className="hide-on-mobile"/>KHU VỰC BÌNH LONG
+              TRUNG TÂM Y TẾ
             </h1>
 
             <h2 
-              className="login-system-title"
               style={{
-                fontSize: '1.45rem',
-                fontWeight: '800',
-                margin: '0 0 0.4rem 0',
-                background: 'linear-gradient(135deg, #0284C7 0%, #0D9488 100%)',
+                fontSize: '2.35rem',
+                fontWeight: '900',
+                textTransform: 'uppercase',
+                letterSpacing: '1.5px',
+                lineHeight: '1.15',
+                margin: '0 0 0.55rem 0',
+                backgroundImage: 'linear-gradient(135deg, #38BDF8 0%, #2DD4BF 50%, #A7F3D0 100%)',
                 WebkitBackgroundClip: 'text',
+                backgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
-                letterSpacing: '0.2px'
+                color: 'transparent',
+                display: 'inline-block'
               }}
             >
-              Hệ Thống Báo Cáo Giao Ban
+              KHU VỰC BÌNH LONG
             </h2>
+
+            <div 
+              style={{
+                fontSize: '1.05rem',
+                fontWeight: '800',
+                color: '#93C5FD',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.55rem',
+                marginBottom: '0.45rem'
+              }}
+            >
+              <FaHeartbeat style={{ color: '#38BDF8', fontSize: '1.15rem' }} />
+              <span>Hệ Thống Báo Cáo Giao Ban Chuyên Môn Trực Tuyến</span>
+            </div>
 
             <p 
               className="login-desc-text"
               style={{
                 fontSize: '0.88rem',
-                color: '#475569',
-                lineHeight: '1.45',
+                color: '#94A3B8',
+                lineHeight: '1.5',
                 margin: 0,
-                maxWidth: '430px'
+                maxWidth: '470px'
               }}
             >
-              Nền tảng quản lý báo cáo giao ban nhanh chóng, chính xác và hiệu quả cho các đơn vị y tế.
+              Nền tảng số hóa quản lý báo cáo giao ban y khoa nhanh chóng, bảo mật và chính xác phục vụ toàn diện các khoa phòng.
             </p>
           </div>
 
-          {/* 3 Translucent Frosted Glass Feature Cards */}
-          <div className="login-feature-pills" style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem', marginTop: '0.25rem', maxWidth: '385px' }}>
+          {/* 3 Translucent Obsidian Glass Feature Cards */}
+          <div className="login-feature-pills" style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginTop: '0.35rem', maxWidth: '440px' }}>
             
             {/* Feature 1 */}
-            <div style={{
+            <div className="feature-pill-hover" style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.85rem',
-              backgroundColor: 'rgba(255, 255, 255, 0.72)',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
-              padding: '0.55rem 0.9rem',
-              borderRadius: '14px',
-              border: '1px solid rgba(255, 255, 255, 0.9)',
-              boxShadow: '0 4px 14px rgba(15, 44, 89, 0.04)'
+              gap: '0.95rem',
+              backgroundColor: 'rgba(11, 24, 48, 0.72)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              padding: '0.65rem 1.05rem',
+              borderRadius: '16px',
+              border: '1px solid rgba(56, 189, 248, 0.22)',
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.35)'
             }}>
               <div style={{
-                width: '34px',
-                height: '34px',
-                borderRadius: '10px',
-                backgroundColor: '#EFF6FF',
-                color: '#2563EB',
+                width: '38px',
+                height: '38px',
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.3) 0%, rgba(2, 132, 199, 0.5) 100%)',
+                border: '1px solid rgba(56, 189, 248, 0.45)',
+                color: '#38BDF8',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 flexShrink: 0,
-                fontSize: '0.95rem'
+                fontSize: '1.05rem',
+                boxShadow: '0 0 15px rgba(56, 189, 248, 0.25)'
               }}>
                 <FaShieldAlt />
               </div>
               <div>
-                <div style={{ fontWeight: '800', color: '#0F2C59', fontSize: '0.85rem' }}>Bảo mật & An toàn</div>
-                <div style={{ color: '#64748B', fontSize: '0.75rem' }}>Dữ liệu được mã hóa và bảo vệ theo tiêu chuẩn cao nhất</div>
+                <div style={{ fontWeight: '800', color: '#F8FAFC', fontSize: '0.88rem' }}>Bảo Mật & Chuẩn Hóa Y Tế</div>
+                <div style={{ color: '#94A3B8', fontSize: '0.76rem' }}>Mã hóa dữ liệu phân quyền khoa phòng theo tiêu chuẩn ngành</div>
               </div>
             </div>
 
             {/* Feature 2 */}
-            <div style={{
+            <div className="feature-pill-hover" style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.85rem',
-              backgroundColor: 'rgba(255, 255, 255, 0.72)',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
-              padding: '0.55rem 0.9rem',
-              borderRadius: '14px',
-              border: '1px solid rgba(255, 255, 255, 0.9)',
-              boxShadow: '0 4px 14px rgba(15, 44, 89, 0.04)'
+              gap: '0.95rem',
+              backgroundColor: 'rgba(11, 24, 48, 0.72)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              padding: '0.65rem 1.05rem',
+              borderRadius: '16px',
+              border: '1px solid rgba(45, 212, 191, 0.22)',
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.35)'
             }}>
               <div style={{
-                width: '34px',
-                height: '34px',
-                borderRadius: '10px',
-                backgroundColor: '#EFF6FF',
-                color: '#2563EB',
+                width: '38px',
+                height: '38px',
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.3) 0%, rgba(16, 185, 129, 0.5) 100%)',
+                border: '1px solid rgba(45, 212, 191, 0.45)',
+                color: '#2DD4BF',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 flexShrink: 0,
-                fontSize: '0.95rem'
+                fontSize: '1.05rem',
+                boxShadow: '0 0 15px rgba(45, 212, 191, 0.25)'
               }}>
                 <FaClock />
               </div>
               <div>
-                <div style={{ fontWeight: '800', color: '#0F2C59', fontSize: '0.85rem' }}>Nhanh chóng & Hiệu quả</div>
-                <div style={{ color: '#64748B', fontSize: '0.75rem' }}>Tối ưu quy trình, tiết kiệm thời gian và nâng cao hiệu suất</div>
+                <div style={{ fontWeight: '800', color: '#F8FAFC', fontSize: '0.88rem' }}>Giao Ban Thời Gian Thực</div>
+                <div style={{ color: '#94A3B8', fontSize: '0.76rem' }}>Tổng hợp chỉ số toàn viện tức thì chỉ với một thao tác</div>
               </div>
             </div>
 
             {/* Feature 3 */}
-            <div style={{
+            <div className="feature-pill-hover" style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.85rem',
-              backgroundColor: 'rgba(255, 255, 255, 0.72)',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
-              padding: '0.55rem 0.9rem',
-              borderRadius: '14px',
-              border: '1px solid rgba(255, 255, 255, 0.9)',
-              boxShadow: '0 4px 14px rgba(15, 44, 89, 0.04)'
+              gap: '0.95rem',
+              backgroundColor: 'rgba(11, 24, 48, 0.72)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              padding: '0.65rem 1.05rem',
+              borderRadius: '16px',
+              border: '1px solid rgba(99, 102, 241, 0.22)',
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.35)'
             }}>
               <div style={{
-                width: '34px',
-                height: '34px',
-                borderRadius: '10px',
-                backgroundColor: '#EFF6FF',
-                color: '#2563EB',
+                width: '38px',
+                height: '38px',
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.3) 0%, rgba(124, 58, 237, 0.5) 100%)',
+                border: '1px solid rgba(129, 140, 248, 0.45)',
+                color: '#818CF8',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 flexShrink: 0,
-                fontSize: '0.95rem'
+                fontSize: '1.05rem',
+                boxShadow: '0 0 15px rgba(99, 102, 241, 0.25)'
               }}>
                 <FaChartBar />
               </div>
               <div>
-                <div style={{ fontWeight: '800', color: '#0F2C59', fontSize: '0.85rem' }}>Báo cáo chính xác</div>
-                <div style={{ color: '#64748B', fontSize: '0.75rem' }}>Thống kê và tổng hợp dữ liệu trực quan, chính xác</div>
+                <div style={{ fontWeight: '800', color: '#F8FAFC', fontSize: '0.88rem' }}>Trình Chiếu & Xuất Báo Cáo</div>
+                <div style={{ color: '#94A3B8', fontSize: '0.76rem' }}>Chế độ Slide toàn màn hình và xuất PDF văn bản lưu trữ</div>
               </div>
             </div>
 
           </div>
         </section>
 
-        {/* ================= RIGHT COLUMN: CRISP WHITE LOGIN CARD ================= */}
+        {/* ================= RIGHT COLUMN: MASTERPIECE OBSIDIAN GLASS LOGIN CARD ================= */}
         <section className="login-card-container" style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
           <div 
             className="login-card-inner"
             style={{
               width: '100%',
-              maxWidth: '485px',
-              backgroundColor: '#FFFFFF',
+              maxWidth: '490px',
+              backgroundColor: 'rgba(10, 22, 46, 0.84)',
+              backdropFilter: 'blur(28px)',
+              WebkitBackdropFilter: 'blur(28px)',
               borderRadius: '24px',
-              padding: '1.75rem 2rem',
+              padding: '1.85rem 2.15rem',
               boxShadow: isSuccess
-                ? '0 25px 60px rgba(16, 185, 129, 0.28), 0 0 0 2px rgba(16, 185, 129, 0.5)'
+                ? '0 25px 65px rgba(16, 185, 129, 0.35), 0 0 40px rgba(16, 185, 129, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.2)'
                 : error 
-                ? '0 25px 60px rgba(239, 68, 68, 0.22), 0 0 0 2px rgba(239, 68, 68, 0.4)'
-                : '0 25px 60px rgba(15, 44, 89, 0.16), 0 2px 6px rgba(0, 0, 0, 0.04)',
-              border: isSuccess ? '1.5px solid #6EE7B7' : error ? '1.5px solid #FCA5A5' : '1px solid rgba(255, 255, 255, 0.95)',
+                ? '0 25px 65px rgba(239, 68, 68, 0.3), 0 0 40px rgba(239, 68, 68, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.15)'
+                : '0 25px 65px rgba(0, 0, 0, 0.75), 0 0 35px rgba(14, 165, 233, 0.18), inset 0 1px 1px rgba(255, 255, 255, 0.15)',
+              border: isSuccess 
+                ? '1.5px solid #10B981' 
+                : error 
+                ? '1.5px solid #EF4444' 
+                : '1.5px solid rgba(56, 189, 248, 0.3)',
               boxSizing: 'border-box',
               animation: isShaking ? 'loginShake 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both' : 'none',
               transition: 'box-shadow 0.3s ease, border 0.3s ease, transform 0.3s ease'
@@ -532,65 +612,64 @@ const LoginPage = () => {
                 flexDirection: 'column',
                 alignItems: 'center',
                 textAlign: 'center',
-                padding: '1.2rem 0.5rem',
+                padding: '1.4rem 0.5rem',
                 animation: 'successCardMorph 0.5s cubic-bezier(0.16, 1, 0.3, 1) both'
               }}>
-                {/* Glowing Success Sphere with Animated Ripple Ring */}
-                <div style={{ position: 'relative', width: '84px', height: '84px', marginBottom: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ position: 'relative', width: '88px', height: '88px', marginBottom: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <div style={{
                     position: 'absolute',
-                    inset: '-12px',
+                    inset: '-14px',
                     borderRadius: '50%',
-                    background: 'radial-gradient(circle, rgba(16, 185, 129, 0.45) 0%, transparent 70%)',
+                    background: 'radial-gradient(circle, rgba(16, 185, 129, 0.5) 0%, transparent 70%)',
                     animation: 'successRingPulse 1.6s ease-out infinite'
                   }} />
                   <div style={{
-                    width: '74px',
-                    height: '74px',
+                    width: '76px',
+                    height: '76px',
                     borderRadius: '50%',
-                    backgroundColor: '#ECFDF5',
-                    border: '2px solid #A7F3D0',
+                    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                    border: '2px solid #34D399',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    boxShadow: '0 0 30px rgba(16, 185, 129, 0.35)',
+                    boxShadow: '0 0 35px rgba(16, 185, 129, 0.6)',
                     animation: 'successCheckBounce 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both'
                   }}>
-                    <FaCheckCircle style={{ fontSize: '2.5rem', color: '#10B981' }} />
+                    <FaCheckCircle style={{ fontSize: '2.6rem', color: '#10B981' }} />
                   </div>
                 </div>
 
                 <h3 style={{
-                  fontSize: '1.45rem',
+                  fontSize: '1.5rem',
                   fontWeight: '900',
-                  color: '#065F46',
+                  color: '#34D399',
                   margin: '0 0 0.4rem 0',
                   textTransform: 'uppercase',
-                  letterSpacing: '0.6px'
+                  letterSpacing: '0.8px'
                 }}>
                   Xác Thực Thành Công!
                 </h3>
 
                 <p style={{
-                  fontSize: '0.94rem',
-                  color: '#1E293B',
+                  fontSize: '0.96rem',
+                  color: '#F8FAFC',
                   fontWeight: '700',
-                  margin: '0 0 0.4rem 0'
+                  margin: '0 0 0.5rem 0'
                 }}>
-                  Chào mừng: <strong style={{ color: '#0284C7' }}>{successUser?.full_name || successUser?.fullName || successUser?.username || username}</strong>
+                  Chào mừng: <strong style={{ color: '#38BDF8' }}>{successUser?.full_name || successUser?.fullName || successUser?.username || username}</strong>
                 </p>
 
                 <div style={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '0.45rem',
-                  backgroundColor: '#F0FDF4',
-                  border: '1px solid #BBF7D0',
+                  backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                  border: '1px solid rgba(52, 211, 153, 0.4)',
                   padding: '0.35rem 0.95rem',
                   borderRadius: '999px',
-                  fontSize: '0.8rem',
-                  fontWeight: '700',
-                  color: '#15803D',
+                  fontSize: '0.82rem',
+                  fontWeight: '800',
+                  color: '#6EE7B7',
                   marginBottom: '1.4rem'
                 }}>
                   <FaShieldAlt />
@@ -601,21 +680,21 @@ const LoginPage = () => {
                 <div style={{
                   width: '100%',
                   height: '6px',
-                  backgroundColor: '#E2E8F0',
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
                   borderRadius: '999px',
                   overflow: 'hidden',
                   position: 'relative'
                 }}>
                   <div style={{
                     height: '100%',
-                    background: 'linear-gradient(90deg, #10B981 0%, #0284C7 100%)',
+                    background: 'linear-gradient(90deg, #10B981 0%, #38BDF8 100%)',
                     borderRadius: '999px',
-                    boxShadow: '0 0 10px #10B981',
+                    boxShadow: '0 0 12px #38BDF8',
                     animation: 'successProgressLine 0.9s cubic-bezier(0.4, 0, 0.2, 1) both'
                   }} />
                 </div>
-                <span style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '0.6rem', fontWeight: '600' }}>
-                  Đang mở cổng giao ban chuyên môn...
+                <span style={{ fontSize: '0.78rem', color: '#94A3B8', marginTop: '0.65rem', fontWeight: '600' }}>
+                  Đang mở cổng báo cáo giao ban chuyên môn...
                 </span>
               </div>
             ) : (
@@ -624,75 +703,74 @@ const LoginPage = () => {
                 <div 
                   className="login-shield-badge"
                   style={{
-                    width: '54px',
-                    height: '54px',
+                    width: '56px',
+                    height: '56px',
                     borderRadius: '50%',
-                    backgroundColor: error ? '#FEF2F2' : '#EFF6FF',
-                    border: error ? '1.5px solid #FECACA' : '1.5px solid #DBEAFE',
+                    backgroundColor: error ? 'rgba(239, 68, 68, 0.18)' : 'rgba(14, 165, 233, 0.18)',
+                    border: error ? '1.5px solid rgba(239, 68, 68, 0.5)' : '1.5px solid rgba(56, 189, 248, 0.5)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    margin: '0 auto 0.75rem auto',
-                    boxShadow: error ? '0 4px 14px rgba(239, 68, 68, 0.15)' : '0 4px 14px rgba(37, 99, 235, 0.12)',
+                    margin: '0 auto 0.85rem auto',
+                    boxShadow: error ? '0 0 25px rgba(239, 68, 68, 0.35)' : '0 0 25px rgba(56, 189, 248, 0.35)',
                     transition: 'all 0.3s ease'
                   }}
                 >
-                  <FaShieldAlt style={{ fontSize: '1.65rem', color: error ? '#DC2626' : '#2563EB' }} />
+                  <FaShieldAlt style={{ fontSize: '1.75rem', color: error ? '#F87171' : '#38BDF8' }} />
                 </div>
 
                 {/* Heading */}
                 <h3 
                   className="login-card-title"
                   style={{
-                    fontSize: '1.35rem',
-                    fontWeight: '800',
-                    color: '#0F2C59',
-                    margin: '0 0 0.2rem 0',
+                    fontSize: '1.45rem',
+                    fontWeight: '900',
+                    color: '#FFFFFF',
+                    margin: '0 0 0.25rem 0',
                     textAlign: 'center',
-                    letterSpacing: '0.2px'
+                    letterSpacing: '0.5px'
                   }}
                 >
-                  Chào mừng bạn trở lại!
+                  CHÀO MỪNG TRỞ LẠI!
                 </h3>
 
                 <p 
                   className="login-card-subtitle"
                   style={{
-                    fontSize: '0.82rem',
-                    color: '#64748B',
-                    margin: '0 0 1.15rem 0',
+                    fontSize: '0.84rem',
+                    color: '#94A3B8',
+                    margin: '0 0 1.25rem 0',
                     textAlign: 'center'
                   }}
                 >
-                  Vui lòng đăng nhập để tiếp tục sử dụng hệ thống
+                  Cổng Đăng Nhập Quản Trị & Báo Cáo Giao Ban Trực Tuyến
                 </p>
 
                 {/* Enhanced Animated Error Alert */}
                 {error && (
                   <div style={{
-                    backgroundColor: '#FEF2F2',
-                    background: 'linear-gradient(135deg, #FEF2F2 0%, #FEE2E2 100%)',
-                    border: '1.5px solid #F87171',
+                    backgroundColor: 'rgba(220, 38, 38, 0.18)',
+                    border: '1.5px solid rgba(248, 113, 113, 0.55)',
                     borderRadius: '12px',
                     padding: '0.75rem 1rem',
-                    color: '#991B1B',
+                    color: '#FECACA',
                     fontSize: '0.84rem',
                     marginBottom: '1.15rem',
                     display: 'flex',
                     alignItems: 'flex-start',
                     gap: '0.65rem',
                     lineHeight: '1.4',
-                    boxShadow: '0 4px 14px rgba(239, 68, 68, 0.15)',
+                    boxShadow: '0 4px 20px rgba(239, 68, 68, 0.25)',
                     animation: 'errorSlideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1) both'
                   }}>
-                    <div style={{ animation: 'errorIconPulse 1.6s ease-in-out infinite', color: '#DC2626', fontSize: '1.15rem', marginTop: '1px' }}>
+                    <div style={{ color: '#F87171', fontSize: '1.15rem', marginTop: '1px' }}>
                       <FaExclamationTriangle />
                     </div>
                     <div>
-                      <div style={{ fontWeight: '800', color: '#991B1B', marginBottom: '2px', fontSize: '0.86rem' }}>
+                      <div style={{ fontWeight: '800', color: '#FCA5A5', marginBottom: '2px', fontSize: '0.86rem' }}>
                         Đăng Nhập Không Thành Công
                       </div>
-                      <div style={{ color: '#B91C1C', fontWeight: '600' }}>
+                      <div style={{ color: '#FECACA', fontWeight: '600' }}>
                         {typeof error === 'string' ? error : (error?.message || 'Lỗi đăng nhập')}
                       </div>
                     </div>
@@ -700,16 +778,17 @@ const LoginPage = () => {
                 )}
 
                 {/* Login Form */}
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.95rem' }}>
                   
                   {/* Field 1: Username */}
                   <div>
                     <label style={{
-                      fontSize: '0.78rem',
-                      fontWeight: '700',
-                      color: '#334155',
+                      fontSize: '0.82rem',
+                      fontWeight: '800',
+                      color: '#E2E8F0',
                       display: 'block',
-                      marginBottom: '0.35rem'
+                      marginBottom: '0.4rem',
+                      letterSpacing: '0.3px'
                     }}>
                       Tên đăng nhập khoa phòng / Quản trị
                     </label>
@@ -717,13 +796,14 @@ const LoginPage = () => {
                       <FaUser style={{
                         position: 'absolute',
                         top: '50%',
-                        left: '0.95rem',
+                        left: '1rem',
                         transform: 'translateY(-50%)',
-                        color: error ? '#EF4444' : '#0284C7',
-                        fontSize: '0.9rem',
+                        color: error ? '#F87171' : '#38BDF8',
+                        fontSize: '0.92rem',
                         transition: 'color 0.2s ease'
                       }} />
                       <input
+                        className="login-input-field"
                         type="text"
                         placeholder="VD: Khnv hoặc noi.bvbl..."
                         value={username}
@@ -733,290 +813,274 @@ const LoginPage = () => {
                         }}
                         style={{
                           width: '100%',
-                          padding: '0.7rem 0.85rem 0.7rem 2.55rem',
-                          border: error ? '1.5px solid #F87171' : '1.5px solid #E2E8F0',
-                          borderRadius: '10px',
-                          fontSize: '0.9rem',
+                          padding: '0.75rem 0.85rem 0.75rem 2.65rem',
+                          border: error ? '1.5px solid #EF4444' : '1.5px solid rgba(56, 189, 248, 0.28)',
+                          borderRadius: '12px',
+                          fontSize: '0.92rem',
                           outline: 'none',
-                          backgroundColor: error ? '#FFF5F5' : '#F8FAFC',
-                          color: '#0F2C59',
+                          backgroundColor: 'rgba(6, 14, 28, 0.85)',
+                          color: '#FFFFFF',
                           fontWeight: '600',
                           boxSizing: 'border-box',
                           transition: 'all 0.2s ease'
-                        }}
-                        onFocus={(e) => {
-                          e.target.style.borderColor = error ? '#EF4444' : '#0284C7';
-                          e.target.style.backgroundColor = '#FFFFFF';
-                          e.target.style.boxShadow = error ? '0 0 0 3px rgba(239, 68, 68, 0.15)' : '0 0 0 3px rgba(2, 132, 199, 0.12)';
-                        }}
-                        onBlur={(e) => {
-                          e.target.style.borderColor = error ? '#F87171' : '#E2E8F0';
-                          e.target.style.backgroundColor = error ? '#FFF5F5' : '#F8FAFC';
-                          e.target.style.boxShadow = 'none';
                         }}
                       />
                     </div>
                   </div>
 
-              {/* Field 2: Password */}
-              <div>
-                <label style={{
-                  fontSize: '0.78rem',
-                  fontWeight: '700',
-                  color: '#334155',
-                  display: 'block',
-                  marginBottom: '0.35rem'
-                }}>
-                  Mật khẩu
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <FaLock style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '0.95rem',
-                    transform: 'translateY(-50%)',
-                    color: error ? '#EF4444' : '#0284C7',
-                    fontSize: '0.9rem',
-                    transition: 'color 0.2s ease'
-                  }} />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      if (error) setError('');
-                    }}
+                  {/* Field 2: Password */}
+                  <div>
+                    <label style={{
+                      fontSize: '0.82rem',
+                      fontWeight: '800',
+                      color: '#E2E8F0',
+                      display: 'block',
+                      marginBottom: '0.4rem',
+                      letterSpacing: '0.3px'
+                    }}>
+                      Mật khẩu
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <FaLock style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '1rem',
+                        transform: 'translateY(-50%)',
+                        color: error ? '#F87171' : '#38BDF8',
+                        fontSize: '0.92rem',
+                        transition: 'color 0.2s ease'
+                      }} />
+                      <input
+                        className="login-input-field"
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                          if (error) setError('');
+                        }}
+                        style={{
+                          width: '100%',
+                          padding: '0.75rem 2.65rem 0.75rem 2.65rem',
+                          border: error ? '1.5px solid #EF4444' : '1.5px solid rgba(56, 189, 248, 0.28)',
+                          borderRadius: '12px',
+                          fontSize: '0.92rem',
+                          outline: 'none',
+                          backgroundColor: 'rgba(6, 14, 28, 0.85)',
+                          color: '#FFFFFF',
+                          fontWeight: '600',
+                          boxSizing: 'border-box',
+                          transition: 'all 0.2s ease'
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        style={{
+                          position: 'absolute',
+                          top: '50%',
+                          right: '0.85rem',
+                          transform: 'translateY(-50%)',
+                          background: 'none',
+                          border: 'none',
+                          color: '#94A3B8',
+                          cursor: 'pointer',
+                          fontSize: '0.95rem',
+                          padding: '4px',
+                          display: 'flex',
+                          alignItems: 'center'
+                        }}
+                        title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                      >
+                        {showPassword ? <FaEyeSlash /> : <FaEye />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Options Row: Remember Me & Forgot Password */}
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    fontSize: '0.82rem',
+                    marginTop: '0.1rem'
+                  }}>
+                    <label style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      color: '#CBD5E1',
+                      cursor: 'pointer',
+                      fontWeight: '600'
+                    }}>
+                      <input
+                        type="checkbox"
+                        checked={rememberMe}
+                        onChange={(e) => setRememberMe(e.target.checked)}
+                        style={{
+                          width: '16px',
+                          height: '16px',
+                          accentColor: '#38BDF8',
+                          cursor: 'pointer'
+                        }}
+                      />
+                      Ghi nhớ đăng nhập
+                    </label>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowForgotModal(true)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#38BDF8',
+                        fontWeight: '700',
+                        fontSize: '0.82rem',
+                        cursor: 'pointer',
+                        padding: 0,
+                        transition: 'color 0.2s ease'
+                      }}
+                    >
+                      Quên mật khẩu?
+                    </button>
+                  </div>
+
+                  {/* Submit Button */}
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
                     style={{
                       width: '100%',
-                      padding: '0.7rem 2.65rem 0.7rem 2.55rem',
-                      border: error ? '1.5px solid #F87171' : '1.5px solid #E2E8F0',
-                      borderRadius: '10px',
-                      fontSize: '0.9rem',
-                      outline: 'none',
-                      backgroundColor: error ? '#FFF5F5' : '#F8FAFC',
-                      color: '#0F2C59',
-                      fontWeight: '600',
-                      boxSizing: 'border-box',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onFocus={(e) => {
-                      e.target.style.borderColor = error ? '#EF4444' : '#0284C7';
-                      e.target.style.backgroundColor = '#FFFFFF';
-                      e.target.style.boxShadow = error ? '0 0 0 3px rgba(239, 68, 68, 0.15)' : '0 0 0 3px rgba(2, 132, 199, 0.12)';
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = error ? '#F87171' : '#E2E8F0';
-                      e.target.style.backgroundColor = error ? '#FFF5F5' : '#F8FAFC';
-                      e.target.style.boxShadow = 'none';
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    style={{
-                      position: 'absolute',
-                      top: '50%',
-                      right: '0.85rem',
-                      transform: 'translateY(-50%)',
-                      background: 'none',
-                      border: 'none',
-                      color: '#94A3B8',
-                      cursor: 'pointer',
-                      fontSize: '0.92rem',
-                      padding: '4px',
+                      padding: '0.85rem 1rem',
+                      background: 'linear-gradient(135deg, #0284C7 0%, #0EA5E9 40%, #10B981 100%)',
+                      color: '#FFFFFF',
+                      border: '1.5px solid rgba(255, 255, 255, 0.35)',
+                      borderRadius: '12px',
+                      fontWeight: '900',
+                      fontSize: '1.02rem',
                       display: 'flex',
-                      alignItems: 'center'
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.65rem',
+                      cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                      boxShadow: '0 8px 30px rgba(14, 165, 233, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.3)',
+                      transition: 'all 0.25s ease',
+                      marginTop: '0.45rem',
+                      letterSpacing: '0.4px'
                     }}
-                    title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                    onMouseOver={(e) => {
+                      if (!isSubmitting) {
+                        e.currentTarget.style.transform = 'translateY(-2px) scale(1.015)';
+                        e.currentTarget.style.boxShadow = '0 12px 35px rgba(14, 165, 233, 0.75)';
+                      }
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                      e.currentTarget.style.boxShadow = '0 8px 30px rgba(14, 165, 233, 0.5)';
+                    }}
                   >
-                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                    {isSubmitting ? (
+                      <>
+                        <FaSpinner className="spinner" /> Đang xác thực...
+                      </>
+                    ) : (
+                      <>
+                        <FaSignInAlt /> ĐĂNG NHẬP HỆ THỐNG <FaArrowRight />
+                      </>
+                    )}
                   </button>
-                </div>
-              </div>
 
-              {/* Options Row: Remember Me & Forgot Password */}
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                fontSize: '0.8rem',
-                marginTop: '0.05rem'
-              }}>
-                <label style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.45rem',
-                  color: '#475569',
-                  cursor: 'pointer',
-                  fontWeight: '600'
-                }}>
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    style={{
-                      width: '15px',
-                      height: '15px',
-                      accentColor: '#10B981',
-                      cursor: 'pointer'
-                    }}
-                  />
-                  Ghi nhớ đăng nhập
-                </label>
+                  {/* Register Link */}
+                  <div style={{ marginTop: '0.75rem', textAlign: 'center', fontSize: '0.84rem', color: '#94A3B8' }}>
+                    Chưa có tài khoản nhân viên?{' '}
+                    <Link to="/register" style={{ color: '#38BDF8', fontWeight: '800', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                      Đăng ký ngay <FaArrowRight style={{ fontSize: '0.75rem' }} />
+                    </Link>
+                  </div>
 
-                <button
-                  type="button"
-                  onClick={() => setShowForgotModal(true)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: '#0284C7',
-                    fontWeight: '700',
-                    fontSize: '0.8rem',
-                    cursor: 'pointer',
-                    padding: 0
-                  }}
-                >
-                  Quên mật khẩu?
-                </button>
-              </div>
-
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                style={{
-                  width: '100%',
-                  padding: '0.8rem 1rem',
-                  background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
-                  color: '#FFFFFF',
-                  border: 'none',
-                  borderRadius: '10px',
-                  fontWeight: '800',
-                  fontSize: '0.96rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.55rem',
-                  cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                  boxShadow: '0 4px 14px rgba(16, 185, 129, 0.32)',
-                  transition: 'all 0.2s ease',
-                  marginTop: '0.35rem',
-                  letterSpacing: '0.2px'
-                }}
-                onMouseOver={(e) => {
-                  if (!isSubmitting) {
-                    e.currentTarget.style.transform = 'translateY(-1px)';
-                    e.currentTarget.style.boxShadow = '0 6px 18px rgba(16, 185, 129, 0.42)';
-                  }
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 4px 14px rgba(16, 185, 129, 0.32)';
-                }}
-              >
-                {isSubmitting ? (
-                  <>
-                    <FaSpinner className="spinner" /> Đang xác thực...
-                  </>
-                ) : (
-                  <>
-                    <FaSignInAlt /> Đăng Nhập Hệ Thống <FaArrowRight />
-                  </>
-                )}
-              </button>
-              {/* Register Link */}
-              <div style={{ marginTop: '0.85rem', textAlign: 'center', fontSize: '0.82rem', color: '#64748B' }}>
-                Chưa có tài khoản nhân viên?{' '}
-                <Link to="/register" style={{ color: '#0284C7', fontWeight: '800', textDecoration: 'none' }}>
-                  Đăng ký ngay
-                </Link>
-              </div>
-
-            </form>
-          </>
-        )}
+                </form>
+              </>
+            )}
 
             {/* Divider */}
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              margin: '1.05rem 0 0.75rem 0',
-              color: '#94A3B8',
-              fontSize: '0.7rem',
-              fontWeight: '700',
+              margin: '1.2rem 0 0.85rem 0',
+              color: '#64748B',
+              fontSize: '0.72rem',
+              fontWeight: '800',
               textTransform: 'uppercase',
-              letterSpacing: '0.5px'
+              letterSpacing: '0.8px'
             }}>
-              <div style={{ flex: 1, height: '1px', backgroundColor: '#E2E8F0' }} />
-              <span style={{ padding: '0 0.65rem' }}>Thông tin hệ thống</span>
-              <div style={{ flex: 1, height: '1px', backgroundColor: '#E2E8F0' }} />
+              <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(56, 189, 248, 0.2)' }} />
+              <span style={{ padding: '0 0.75rem', color: '#93C5FD' }}>THÔNG TIN HỆ THỐNG</span>
+              <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(56, 189, 248, 0.2)' }} />
             </div>
 
-            {/* 4 System Badges Grid */}
+            {/* 4 Obsidian Glass System Badges Grid */}
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(4, 1fr)',
-              gap: '0.4rem'
+              gap: '0.45rem'
             }}>
               {/* Badge 1: Version */}
               <div style={{
-                backgroundColor: '#F8FAFC',
-                border: '1px solid #E2E8F0',
-                borderRadius: '8px',
-                padding: '0.4rem 0.25rem',
+                backgroundColor: 'rgba(6, 14, 28, 0.75)',
+                border: '1px solid rgba(56, 189, 248, 0.2)',
+                borderRadius: '10px',
+                padding: '0.45rem 0.25rem',
                 textAlign: 'center',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '0.12rem'
+                gap: '0.15rem'
               }}>
-                <div style={{ fontSize: '0.64rem', color: '#64748B', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                  <FaCodeBranch style={{ color: '#0284C7', fontSize: '0.62rem' }} /> Phiên bản
+                <div style={{ fontSize: '0.65rem', color: '#94A3B8', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                  <FaCodeBranch style={{ color: '#38BDF8', fontSize: '0.65rem' }} /> Phiên bản
                 </div>
-                <div style={{ fontSize: '0.72rem', fontWeight: '800', color: '#0F2C59' }}>
+                <div style={{ fontSize: '0.75rem', fontWeight: '900', color: '#38BDF8' }}>
                   v{APP_VERSION}
                 </div>
               </div>
 
               {/* Badge 2: Database */}
               <div style={{
-                backgroundColor: '#F8FAFC',
-                border: '1px solid #E2E8F0',
-                borderRadius: '8px',
-                padding: '0.4rem 0.25rem',
+                backgroundColor: 'rgba(6, 14, 28, 0.75)',
+                border: '1px solid rgba(56, 189, 248, 0.2)',
+                borderRadius: '10px',
+                padding: '0.45rem 0.25rem',
                 textAlign: 'center',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '0.12rem'
+                gap: '0.15rem'
               }}>
-                <div style={{ fontSize: '0.64rem', color: '#64748B', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                  <FaDatabase style={{ color: '#059669', fontSize: '0.62rem' }} /> Cơ sở dữ liệu
+                <div style={{ fontSize: '0.65rem', color: '#94A3B8', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                  <FaDatabase style={{ color: '#34D399', fontSize: '0.65rem' }} /> CSDL
                 </div>
-                <div style={{ fontSize: '0.69rem', fontWeight: '800', color: '#0F2C59', whiteSpace: 'nowrap' }}>
-                  Aiven MySQL SSL
+                <div style={{ fontSize: '0.72rem', fontWeight: '800', color: '#34D399', whiteSpace: 'nowrap' }}>
+                  Aiven SSL
                 </div>
               </div>
 
               {/* Badge 3: Author */}
               <div style={{
-                backgroundColor: '#F8FAFC',
-                border: '1px solid #E2E8F0',
-                borderRadius: '8px',
-                padding: '0.4rem 0.25rem',
+                backgroundColor: 'rgba(6, 14, 28, 0.75)',
+                border: '1px solid rgba(56, 189, 248, 0.2)',
+                borderRadius: '10px',
+                padding: '0.45rem 0.25rem',
                 textAlign: 'center',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '0.12rem'
+                gap: '0.15rem'
               }}>
-                <div style={{ fontSize: '0.64rem', color: '#64748B', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                  <FaUser style={{ color: '#2563EB', fontSize: '0.62rem' }} /> Phát triển bởi
+                <div style={{ fontSize: '0.65rem', color: '#94A3B8', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                  <FaUser style={{ color: '#818CF8', fontSize: '0.65rem' }} /> Tác giả
                 </div>
-                <div style={{ fontSize: '0.67rem', fontWeight: '800', color: '#0F2C59', lineHeight: '1.2' }}>
-                  Nguyễn Vũ Nhật Nam <span style={{ color: '#64748B', fontSize: '0.62rem' }}>(UIBreaker)</span>
+                <div style={{ fontSize: '0.68rem', fontWeight: '800', color: '#F1F5F9', lineHeight: '1.2' }}>
+                  Nhật Nam
                 </div>
               </div>
 
@@ -1026,23 +1090,23 @@ const LoginPage = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
-                  backgroundColor: '#F0F9FF',
-                  border: '1px solid #BAE6FD',
-                  borderRadius: '8px',
-                  padding: '0.4rem 0.25rem',
+                  backgroundColor: 'rgba(14, 165, 233, 0.15)',
+                  border: '1px solid rgba(56, 189, 248, 0.4)',
+                  borderRadius: '10px',
+                  padding: '0.45rem 0.25rem',
                   textAlign: 'center',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  gap: '0.12rem',
+                  gap: '0.15rem',
                   textDecoration: 'none'
                 }}
               >
-                <div style={{ fontSize: '0.64rem', color: '#0284C7', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                  <FaPhoneAlt style={{ color: '#0284C7', fontSize: '0.62rem' }} /> Liên hệ hỗ trợ
+                <div style={{ fontSize: '0.65rem', color: '#38BDF8', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                  <FaPhoneAlt style={{ color: '#38BDF8', fontSize: '0.65rem' }} /> Hỗ trợ
                 </div>
-                <div style={{ fontSize: '0.69rem', fontWeight: '800', color: '#0284C7', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                  <span style={{ backgroundColor: '#0284C7', color: '#FFF', fontSize: '0.55rem', padding: '0.05rem 0.22rem', borderRadius: '3px', fontWeight: '900' }}>Zalo</span> 0916.337.266
+                <div style={{ fontSize: '0.72rem', fontWeight: '900', color: '#FFFFFF', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                  <span style={{ backgroundColor: '#0284C7', color: '#FFF', fontSize: '0.55rem', padding: '0.05rem 0.25rem', borderRadius: '3px', fontWeight: '900' }}>Zalo</span> 0916...
                 </div>
               </a>
 
@@ -1053,20 +1117,20 @@ const LoginPage = () => {
 
       </main>
 
-      {/* Compact Footer */}
+      {/* Sleek Dark Obsidian Footer */}
       <footer style={{
-        padding: '0.55rem 1.5rem',
+        padding: '0.65rem 1.5rem',
         textAlign: 'center',
-        fontSize: '0.8rem',
-        color: '#475569',
-        borderTop: '1px solid rgba(255, 255, 255, 0.45)',
-        backgroundColor: 'rgba(255, 255, 255, 0.45)',
-        backdropFilter: 'blur(6px)',
+        fontSize: '0.82rem',
+        color: '#94A3B8',
+        borderTop: '1px solid rgba(56, 189, 248, 0.15)',
+        backgroundColor: 'rgba(3, 9, 20, 0.75)',
+        backdropFilter: 'blur(10px)',
         position: 'relative',
         zIndex: 10,
         flexShrink: 0
       }}>
-        © 2026 <strong>Trung Tâm Y Tế Khu Vực Bình Long</strong> — Sở Y Tế Thành Phố Đồng Nai.
+        © 2026 <strong style={{ color: '#E2E8F0' }}>Trung Tâm Y Tế Khu Vực Bình Long</strong> — Sở Y Tế Thành Phố Đồng Nai.
       </footer>
 
       {/* Floating AI Assistant */}
@@ -1094,128 +1158,6 @@ const LoginPage = () => {
         }}
         onClose={() => setMustChangePasswordData({ isOpen: false, username: '', fullName: '' })}
       />
-
-      {/* Old Modal Comment */}
-      {showForgotModal && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          backgroundColor: 'rgba(15, 44, 89, 0.65)',
-          backdropFilter: 'blur(5px)',
-          zIndex: 99999,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '1rem'
-        }}>
-          <div style={{
-            maxWidth: '440px',
-            width: '100%',
-            backgroundColor: '#FFFFFF',
-            borderRadius: '20px',
-            padding: '1.75rem',
-            boxShadow: '0 20px 50px rgba(0, 0, 0, 0.25)',
-            textAlign: 'center',
-            position: 'relative',
-            animation: 'scaleUp 0.25s ease-out'
-          }}>
-            <button
-              onClick={() => setShowForgotModal(false)}
-              style={{
-                position: 'absolute',
-                top: '1rem',
-                right: '1rem',
-                background: 'none',
-                border: 'none',
-                color: '#94A3B8',
-                fontSize: '1.25rem',
-                cursor: 'pointer'
-              }}
-            >
-              <FaTimes />
-            </button>
-
-            <div style={{
-              width: '52px',
-              height: '52px',
-              borderRadius: '50%',
-              backgroundColor: '#EFF6FF',
-              color: '#0284C7',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '1.5rem',
-              margin: '0 auto 0.75rem auto'
-            }}>
-              <FaHeadset />
-            </div>
-
-            <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: '#0F2C59', margin: '0 0 0.35rem 0' }}>
-              Hỗ Trợ Tài Khoản & Mật Khẩu
-            </h3>
-
-            <p style={{ fontSize: '0.84rem', color: '#64748B', lineHeight: '1.45', margin: '0 0 1.25rem 0' }}>
-              Nếu khoa/phòng quên mật khẩu hoặc cần cấp lại thông tin đăng nhập, vui lòng liên hệ trực tiếp:
-            </p>
-
-            <div style={{
-              backgroundColor: '#F8FAFC',
-              border: '1px solid #E2E8F0',
-              borderRadius: '10px',
-              padding: '0.85rem 1rem',
-              textAlign: 'left',
-              marginBottom: '1.25rem'
-            }}>
-              <div style={{ fontSize: '0.82rem', color: '#334155', marginBottom: '0.4rem' }}>
-                🏢 <strong>Đơn vị phụ trách:</strong> Phòng Kế Hoạch - Nghiệp Vụ
-              </div>
-              <div style={{ fontSize: '0.82rem', color: '#334155', marginBottom: '0.4rem' }}>
-                👨‍💻 <strong>Kỹ thuật viên:</strong> Nguyễn Vũ Nhật Nam
-              </div>
-              <div style={{ fontSize: '0.82rem', color: '#334155' }}>
-                📞 <strong>Hotline / Zalo:</strong> <a href="https://zalo.me/0916337266" target="_blank" rel="noopener noreferrer" style={{ color: '#0284C7', fontWeight: '800', textDecoration: 'none' }}>0916.337.266</a>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '0.65rem', justifyContent: 'center' }}>
-              <a
-                href="https://zalo.me/0916337266"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  padding: '0.55rem 1.15rem',
-                  backgroundColor: '#0284C7',
-                  color: '#FFFFFF',
-                  borderRadius: '8px',
-                  fontWeight: '700',
-                  fontSize: '0.84rem',
-                  textDecoration: 'none',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.35rem'
-                }}
-              >
-                Nhắn tin qua Zalo
-              </a>
-              <button
-                onClick={() => setShowForgotModal(false)}
-                style={{
-                  padding: '0.55rem 1.15rem',
-                  backgroundColor: '#F1F5F9',
-                  color: '#475569',
-                  border: '1px solid #CBD5E1',
-                  borderRadius: '8px',
-                  fontWeight: '600',
-                  fontSize: '0.84rem',
-                  cursor: 'pointer'
-                }}
-              >
-                Đóng
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
     </div>
   );
