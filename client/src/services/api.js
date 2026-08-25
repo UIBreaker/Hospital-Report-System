@@ -16,8 +16,14 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/';
+      const isAuthEndpoint = error.config?.url?.includes('/auth/login') || error.config?.url?.includes('/auth/register');
+      // Only clear token and redirect if an authenticated session expired, NOT on a failed login attempt
+      if (!isAuthEndpoint) {
+        localStorage.removeItem('token');
+        if (window.location.pathname !== '/' && window.location.pathname !== '/login') {
+          window.location.href = '/';
+        }
+      }
     }
     return Promise.reject(error);
   }

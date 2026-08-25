@@ -16,7 +16,7 @@ import {
 } from 'react-icons/fa';
 
 // =========================================================================
-// 1. REUNION & WELCOME SOUND SYNTHESIZER (Hội ngộ bạn cũ - Nồng ấm, Hào hứng)
+// 1. REUNION & WELCOME SOUND (Hội Ngộ Bạn Cũ - Tươi sáng, Rạng rỡ, Hân hoan)
 // =========================================================================
 export const playReunionWelcomeSound = () => {
   try {
@@ -28,44 +28,44 @@ export const playReunionWelcomeSound = () => {
 
     // Master Dynamics Limiter
     const compressor = ctx.createDynamicsCompressor();
-    compressor.threshold.setValueAtTime(-14, now);
+    compressor.threshold.setValueAtTime(-12, now);
     compressor.knee.setValueAtTime(14, now);
-    compressor.ratio.setValueAtTime(5, now);
+    compressor.ratio.setValueAtTime(4.5, now);
     compressor.attack.setValueAtTime(0.003, now);
     compressor.release.setValueAtTime(0.25, now);
     compressor.connect(ctx.destination);
 
     const masterGain = ctx.createGain();
-    masterGain.gain.setValueAtTime(0.78, now);
+    masterGain.gain.setValueAtTime(0.8, now);
     masterGain.connect(compressor);
 
-    // Layer 1: Warm Reunion Harmony Pad (D Major 9th: D3, A3, F#4, A4, C#5, E5, F#5)
-    const padFreqs = [146.83, 220.0, 369.99, 440.0, 554.37, 659.25, 739.99];
+    // Layer 1: Warm Radiant C-Major Pad (C3, G3, C4, E4, G4, B4, D5)
+    const padFreqs = [130.81, 196.00, 261.63, 329.63, 392.00, 493.88, 587.33];
     padFreqs.forEach((freq, idx) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       const filter = ctx.createBiquadFilter();
 
       osc.type = idx % 2 === 0 ? 'sine' : 'triangle';
-      osc.frequency.setValueAtTime(freq, now + 0.05);
+      osc.frequency.setValueAtTime(freq, now + 0.04);
 
       filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(1100 + idx * 250, now);
-      filter.Q.setValueAtTime(1.4, now);
+      filter.frequency.setValueAtTime(1200 + idx * 300, now);
+      filter.Q.setValueAtTime(1.5, now);
 
-      gain.gain.setValueAtTime(0.001, now + 0.05);
-      gain.gain.linearRampToValueAtTime(0.15 / (idx * 0.3 + 1), now + 0.6);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 5.2);
+      gain.gain.setValueAtTime(0.001, now + 0.04);
+      gain.gain.linearRampToValueAtTime(0.18 / (idx * 0.28 + 1), now + 0.5);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 5.0);
 
       osc.connect(filter);
       filter.connect(gain);
       gain.connect(masterGain);
 
-      osc.start(now + 0.05);
-      osc.stop(now + 5.4);
+      osc.start(now + 0.04);
+      osc.stop(now + 5.2);
     });
 
-    // Layer 2: Vital Hospital Heartbeat ("Lub - Dub") - Nhịp đập thân thuộc
+    // Layer 2: Vital Hospital Heartbeat ("Lub - Dub") - Tràn đầy sức sống
     const playBeat = (startTime, isLoud = true) => {
       const osc1 = ctx.createOscillator();
       const gain1 = ctx.createGain();
@@ -79,7 +79,7 @@ export const playReunionWelcomeSound = () => {
       filter1.frequency.setValueAtTime(160, startTime);
 
       gain1.gain.setValueAtTime(0.001, startTime);
-      gain1.gain.linearRampToValueAtTime(isLoud ? 0.45 : 0.3, startTime + 0.03);
+      gain1.gain.linearRampToValueAtTime(isLoud ? 0.48 : 0.32, startTime + 0.03);
       gain1.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.2);
 
       osc1.connect(filter1);
@@ -102,7 +102,7 @@ export const playReunionWelcomeSound = () => {
       filter2.frequency.setValueAtTime(180, dubTime);
 
       gain2.gain.setValueAtTime(0.001, dubTime);
-      gain2.gain.linearRampToValueAtTime(isLoud ? 0.5 : 0.35, dubTime + 0.035);
+      gain2.gain.linearRampToValueAtTime(isLoud ? 0.52 : 0.38, dubTime + 0.035);
       gain2.gain.exponentialRampToValueAtTime(0.0001, dubTime + 0.24);
 
       osc2.connect(filter2);
@@ -113,35 +113,35 @@ export const playReunionWelcomeSound = () => {
       osc2.stop(dubTime + 0.26);
     };
 
-    playBeat(now + 0.65, true);
-    playBeat(now + 2.25, false);
+    playBeat(now + 0.6, true);
+    playBeat(now + 2.2, false);
 
-    // Layer 3: Emotional Reunion Bells & Harp Arpeggio (F#5 -> A5 -> B5 -> C#6 -> E6 -> F#6 -> A6)
-    const reunionBells = [739.99, 880.0, 987.77, 1108.73, 1318.51, 1479.98, 1760.0];
-    reunionBells.forEach((freq, idx) => {
+    // Layer 3: Ascending Joyful Fanfare Arpeggio (C4 -> E4 -> G4 -> C5 -> E5 -> G5 -> C6 -> E6 -> G6)
+    const fanfareNotes = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98];
+    fanfareNotes.forEach((freq, idx) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
-      osc.type = 'sine';
-      const chimeTime = now + 0.35 + idx * 0.14;
+      osc.type = 'triangle';
+      const chimeTime = now + 0.25 + idx * 0.12;
       osc.frequency.setValueAtTime(freq, chimeTime);
 
       gain.gain.setValueAtTime(0.001, chimeTime);
-      gain.gain.linearRampToValueAtTime(0.18 / (idx * 0.25 + 1), chimeTime + 0.025);
-      gain.gain.exponentialRampToValueAtTime(0.0001, chimeTime + 3.4);
+      gain.gain.linearRampToValueAtTime(0.22 / (idx * 0.2 + 1), chimeTime + 0.025);
+      gain.gain.exponentialRampToValueAtTime(0.0001, chimeTime + 3.2);
 
       osc.connect(gain);
       gain.connect(masterGain);
 
       osc.start(chimeTime);
-      osc.stop(chimeTime + 3.6);
+      osc.stop(chimeTime + 3.5);
     });
 
   } catch (err) {}
 };
 
 // =========================================================================
-// 2. FAREWELL & HOPE SOUND SYNTHESIZER (Tạm biệt êm đềm & Hy vọng ngày gặp lại)
+// 2. FAREWELL & HOPE SOUND (Tạm Biệt Sau Ca Trực & Gửi Gắm Hy Vọng Gặp Lại)
 // =========================================================================
 export const playFarewellHopeSound = () => {
   try {
@@ -153,19 +153,19 @@ export const playFarewellHopeSound = () => {
 
     // Master Dynamics Limiter
     const compressor = ctx.createDynamicsCompressor();
-    compressor.threshold.setValueAtTime(-16, now);
-    compressor.knee.setValueAtTime(16, now);
+    compressor.threshold.setValueAtTime(-15, now);
+    compressor.knee.setValueAtTime(15, now);
     compressor.ratio.setValueAtTime(4, now);
     compressor.attack.setValueAtTime(0.005, now);
     compressor.release.setValueAtTime(0.35, now);
     compressor.connect(ctx.destination);
 
     const masterGain = ctx.createGain();
-    masterGain.gain.setValueAtTime(0.72, now);
+    masterGain.gain.setValueAtTime(0.75, now);
     masterGain.connect(compressor);
 
-    // Layer 1: Peaceful Twilight & Gratitude Horizon Pad (E minor 9th / G Major 7th: E3, B3, G4, B4, D5, F#5)
-    const twilightFreqs = [164.81, 246.94, 392.00, 493.88, 587.33, 739.99];
+    // Layer 1: Lyrical Twilight A-Minor / D-Minor Pad (A2, E3, A3, C4, E4, G4) - Êm đềm, lắng đọng
+    const twilightFreqs = [110.00, 164.81, 220.00, 261.63, 329.63, 392.00];
     twilightFreqs.forEach((freq, idx) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
@@ -175,11 +175,11 @@ export const playFarewellHopeSound = () => {
       osc.frequency.setValueAtTime(freq, now + 0.05);
 
       filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(750 + idx * 180, now);
+      filter.frequency.setValueAtTime(650 + idx * 140, now);
       filter.Q.setValueAtTime(1.2, now);
 
       gain.gain.setValueAtTime(0.001, now + 0.05);
-      gain.gain.linearRampToValueAtTime(0.14 / (idx * 0.35 + 1), now + 0.8);
+      gain.gain.linearRampToValueAtTime(0.16 / (idx * 0.3 + 1), now + 0.8);
       gain.gain.exponentialRampToValueAtTime(0.0001, now + 5.5);
 
       osc.connect(filter);
@@ -187,22 +187,26 @@ export const playFarewellHopeSound = () => {
       gain.connect(masterGain);
 
       osc.start(now + 0.05);
-      osc.stop(now + 5.7);
+      osc.stop(now + 5.8);
     });
 
-    // Layer 2: Gentle Descending Farewell & Ascending Hope Melodic Bells
-    // (B5 -> G5 -> E5 -> D5 -> F#5 -> A5 -> D6)
-    const farewellMelody = [
-      { freq: 987.77, delay: 0.30 }, // B5: Lắng đọng
-      { freq: 783.99, delay: 0.65 }, // G5: Nhẹ nhàng
-      { freq: 659.25, delay: 1.05 }, // E5: Thư thái
-      { freq: 587.33, delay: 1.50 }, // D5: An lành
-      { freq: 739.99, delay: 2.10 }, // F#5: Niềm tin
-      { freq: 880.00, delay: 2.50 }, // A5: Hy vọng
-      { freq: 1174.66, delay: 2.95 } // D6: Nốt cao ngân vang - Hẹn ngày gặp lại
+    // Layer 2: Slow Descending Farewell Bells (E5 -> C5 -> A4 -> F4 -> D4)
+    // then Soaring Ascending Hope (F#5 -> A5 -> D6 -> F#6)
+    const melodySeq = [
+      // Phase A: Lắng đọng tạm biệt
+      { freq: 659.25, delay: 0.35 },  // E5: Nghỉ ngơi
+      { freq: 523.25, delay: 0.80 },  // C5: Thư thái
+      { freq: 440.00, delay: 1.25 },  // A4: Trầm lắng
+      { freq: 349.23, delay: 1.70 },  // F4: Nhẹ nhàng
+      { freq: 293.66, delay: 2.15 },  // D4: Bình yên
+      // Phase B: Vút lên nốt Hy Vọng ngân dài 5 giây
+      { freq: 739.99, delay: 2.70 },  // F#5: Niềm tin
+      { freq: 880.00, delay: 3.10 },  // A5: Hẹn gặp lại
+      { freq: 1174.66, delay: 3.55 }, // D6: Nốt cao hy vọng
+      { freq: 1479.98, delay: 4.00 }  // F#6: Ngân vang bất tận
     ];
 
-    farewellMelody.forEach(({ freq, delay }) => {
+    melodySeq.forEach(({ freq, delay }) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
@@ -210,38 +214,38 @@ export const playFarewellHopeSound = () => {
       const chimeTime = now + delay;
       osc.frequency.setValueAtTime(freq, chimeTime);
 
-      gain.gain.setValueAtTime(0.001, chimeTime);
-      gain.gain.linearRampToValueAtTime(0.20, chimeTime + 0.03);
-      gain.gain.exponentialRampToValueAtTime(0.0001, chimeTime + 3.2);
+      gain.gain.setValueAtTime(0.0001, chimeTime);
+      gain.gain.linearRampToValueAtTime(0.24, chimeTime + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.0001, chimeTime + 3.5);
 
       osc.connect(gain);
       gain.connect(masterGain);
 
       osc.start(chimeTime);
-      osc.stop(chimeTime + 3.4);
+      osc.stop(chimeTime + 3.8);
     });
 
-    // Layer 3: Soft Calming Breath Wind (Thở phào nhẹ nhõm sau ca trực)
+    // Layer 3: Soft Calming Breath Wind (Tiếng thở phào nhẹ nhõm sau ca trực)
     const noiseOsc = ctx.createOscillator();
     const noiseGain = ctx.createGain();
     const noiseFilter = ctx.createBiquadFilter();
 
     noiseOsc.type = 'triangle';
-    noiseOsc.frequency.setValueAtTime(120, now);
+    noiseOsc.frequency.setValueAtTime(110, now);
     noiseFilter.type = 'bandpass';
-    noiseFilter.frequency.setValueAtTime(320, now);
-    noiseFilter.Q.setValueAtTime(2.0, now);
+    noiseFilter.frequency.setValueAtTime(280, now);
+    noiseFilter.Q.setValueAtTime(1.8, now);
 
     noiseGain.gain.setValueAtTime(0.0001, now);
-    noiseGain.gain.linearRampToValueAtTime(0.06, now + 1.2);
-    noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 4.2);
+    noiseGain.gain.linearRampToValueAtTime(0.05, now + 1.2);
+    noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 4.5);
 
     noiseOsc.connect(noiseFilter);
     noiseFilter.connect(noiseGain);
     noiseGain.connect(masterGain);
 
     noiseOsc.start(now);
-    noiseOsc.stop(now + 4.5);
+    noiseOsc.stop(now + 4.8);
 
   } catch (err) {}
 };
@@ -297,6 +301,7 @@ const HospitalPortalIntro = ({ onComplete }) => {
   const isStartedRef = useRef(false);
   const exitingRef = useRef(false);
   const onCompleteRef = useRef(onComplete);
+  const loggedOutUserRef = useRef('');
   const canvasRef = useRef(null);
   const animFrameRef = useRef(null);
 
@@ -306,6 +311,9 @@ const HospitalPortalIntro = ({ onComplete }) => {
     exitingRef.current = true;
     setIsExiting(true);
     setPhase('fade_out');
+
+    // Clean up session storage flag only upon exit
+    sessionStorage.removeItem('just_logged_out_username');
 
     // Play crisp confirmation "Ting!" on entering login
     playSuccessTingChime();
@@ -322,7 +330,7 @@ const HospitalPortalIntro = ({ onComplete }) => {
     isStartedRef.current = true;
     setIsStarted(true);
 
-    const isLogoutMode = Boolean(sessionStorage.getItem('just_logged_out_username') || loggedOutUser);
+    const isLogoutMode = Boolean(loggedOutUserRef.current || loggedOutUser || sessionStorage.getItem('just_logged_out_username'));
 
     // 1. Play specific audio matching emotional context
     if (isLogoutMode) {
@@ -395,8 +403,8 @@ const HospitalPortalIntro = ({ onComplete }) => {
 
     const justLoggedOut = sessionStorage.getItem('just_logged_out_username');
     if (justLoggedOut) {
+      loggedOutUserRef.current = justLoggedOut;
       setLoggedOutUser(justLoggedOut);
-      sessionStorage.removeItem('just_logged_out_username');
       // Automatically run immediately on logout without pressing button
       setTimeout(() => {
         startExperience();
@@ -437,9 +445,11 @@ const HospitalPortalIntro = ({ onComplete }) => {
   }, []);
 
   const getGreeting = () => {
-    if (loggedOutUser) {
+    const isLogout = Boolean(loggedOutUserRef.current || loggedOutUser);
+    if (isLogout) {
+      const userText = loggedOutUserRef.current || loggedOutUser;
       return { 
-        text: `Đăng Xuất Thành Công • Hẹn Gặp Lại Quý Đồng Nghiệp (${loggedOutUser})`, 
+        text: `Đăng Xuất Thành Công • Hẹn Gặp Lại Quý Đồng Nghiệp (${userText})`, 
         icon: <FaSignInAlt style={{ color: '#F87171' }} /> 
       };
     }
@@ -645,7 +655,9 @@ const HospitalPortalIntro = ({ onComplete }) => {
         width: '900px',
         height: '600px',
         borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(14, 165, 233, 0.22) 0%, rgba(20, 184, 166, 0.18) 35%, rgba(99, 102, 241, 0.08) 60%, transparent 80%)',
+        background: loggedOutUserRef.current || loggedOutUser
+          ? 'radial-gradient(circle, rgba(239, 68, 68, 0.22) 0%, rgba(245, 158, 11, 0.18) 35%, rgba(168, 85, 247, 0.08) 60%, transparent 80%)'
+          : 'radial-gradient(circle, rgba(14, 165, 233, 0.22) 0%, rgba(20, 184, 166, 0.18) 35%, rgba(99, 102, 241, 0.08) 60%, transparent 80%)',
         filter: 'blur(90px)',
         zIndex: 2,
         animation: 'ambientAuroraShift 8s ease-in-out infinite',
@@ -704,9 +716,13 @@ const HospitalPortalIntro = ({ onComplete }) => {
             position: 'absolute',
             inset: '-14px',
             borderRadius: '50%',
-            border: '1.5px dashed rgba(56, 189, 248, 0.55)',
+            border: loggedOutUserRef.current || loggedOutUser
+              ? '1.5px dashed rgba(248, 113, 113, 0.55)'
+              : '1.5px dashed rgba(56, 189, 248, 0.55)',
             animation: 'haloSpinSlow 24s linear infinite',
-            filter: 'drop-shadow(0 0 10px rgba(56, 189, 248, 0.5))'
+            filter: loggedOutUserRef.current || loggedOutUser
+              ? 'drop-shadow(0 0 10px rgba(248, 113, 113, 0.5))'
+              : 'drop-shadow(0 0 10px rgba(56, 189, 248, 0.5))'
           }} />
 
           {/* Inner Teal Reticle Ring */}
@@ -714,8 +730,10 @@ const HospitalPortalIntro = ({ onComplete }) => {
             position: 'absolute',
             inset: '-5px',
             borderRadius: '50%',
-            border: '1px solid rgba(45, 212, 191, 0.45)',
-            borderTopColor: '#5EEAD4',
+            border: loggedOutUserRef.current || loggedOutUser
+              ? '1px solid rgba(251, 146, 60, 0.45)'
+              : '1px solid rgba(45, 212, 191, 0.45)',
+            borderTopColor: loggedOutUserRef.current || loggedOutUser ? '#FDBA74' : '#5EEAD4',
             borderRightColor: 'transparent',
             animation: 'haloSpinReverse 14s linear infinite'
           }} />
@@ -725,7 +743,9 @@ const HospitalPortalIntro = ({ onComplete }) => {
             position: 'absolute',
             inset: '-20px',
             borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(56, 189, 248, 0.45) 0%, rgba(45, 212, 191, 0.2) 50%, transparent 75%)',
+            background: loggedOutUserRef.current || loggedOutUser
+              ? 'radial-gradient(circle, rgba(248, 113, 113, 0.45) 0%, rgba(251, 146, 60, 0.2) 50%, transparent 75%)'
+              : 'radial-gradient(circle, rgba(56, 189, 248, 0.45) 0%, rgba(45, 212, 191, 0.2) 50%, transparent 75%)',
             filter: 'blur(16px)',
             animation: 'pulseRadialBeat 2.4s ease-in-out infinite',
             zIndex: 0
@@ -793,7 +813,9 @@ const HospitalPortalIntro = ({ onComplete }) => {
           margin: '0.2rem 0 0 0',
           fontSize: '2.75rem',
           fontWeight: '900',
-          background: 'linear-gradient(135deg, #38BDF8 0%, #2DD4BF 50%, #A7F3D0 100%)',
+          background: loggedOutUserRef.current || loggedOutUser
+            ? 'linear-gradient(135deg, #F87171 0%, #FB923C 50%, #FDE047 100%)'
+            : 'linear-gradient(135deg, #38BDF8 0%, #2DD4BF 50%, #A7F3D0 100%)',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           textTransform: 'uppercase',
@@ -817,7 +839,7 @@ const HospitalPortalIntro = ({ onComplete }) => {
           gap: '0.65rem',
           animation: 'heroFadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.85s both'
         }}>
-          <FaHeartbeat style={{ color: '#38BDF8', fontSize: '1.25rem' }} />
+          <FaHeartbeat style={{ color: loggedOutUserRef.current || loggedOutUser ? '#F87171' : '#38BDF8', fontSize: '1.25rem' }} />
           <span>Hệ Thống Báo Cáo Giao Ban Chuyên Môn Trực Tuyến</span>
         </div>
 
@@ -865,7 +887,7 @@ const HospitalPortalIntro = ({ onComplete }) => {
             <span>{timeStr || 'Thời gian thực'}</span>
           </div>
 
-          {loggedOutUser ? (
+          {loggedOutUserRef.current || loggedOutUser ? (
             <div style={{
               display: 'flex',
               alignItems: 'center',
@@ -880,7 +902,7 @@ const HospitalPortalIntro = ({ onComplete }) => {
               color: '#FCA5A5'
             }}>
               <FaUserCheck style={{ color: '#F87171' }} />
-              <span>Chào tạm biệt: <strong>{loggedOutUser}</strong></span>
+              <span>Chào tạm biệt: <strong>{loggedOutUserRef.current || loggedOutUser}</strong></span>
             </div>
           ) : savedUser ? (
             <div style={{
@@ -933,11 +955,11 @@ const HospitalPortalIntro = ({ onComplete }) => {
           <div style={{
             height: '100%',
             width: `${progress}%`,
-            background: loggedOutUser 
+            background: loggedOutUserRef.current || loggedOutUser 
               ? 'linear-gradient(90deg, #F87171 0%, #F59E0B 100%)' 
               : 'linear-gradient(90deg, #0284C7 0%, #2DD4BF 100%)',
             borderRadius: '999px',
-            boxShadow: loggedOutUser ? '0 0 16px #F87171' : '0 0 16px #2DD4BF',
+            boxShadow: loggedOutUserRef.current || loggedOutUser ? '0 0 16px #F87171' : '0 0 16px #2DD4BF',
             transition: 'width 0.05s linear'
           }} />
         </div>
@@ -962,19 +984,23 @@ const HospitalPortalIntro = ({ onComplete }) => {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.65rem',
-              background: 'linear-gradient(135deg, #0EA5E9 0%, #10B981 100%)',
+              background: loggedOutUserRef.current || loggedOutUser
+                ? 'linear-gradient(135deg, #EF4444 0%, #F59E0B 100%)'
+                : 'linear-gradient(135deg, #0EA5E9 0%, #10B981 100%)',
               color: '#FFFFFF',
               borderRadius: '999px',
               padding: '0.7rem 2.2rem',
               fontSize: '0.94rem',
               fontWeight: '900',
               border: '1.5px solid rgba(255, 255, 255, 0.55)',
-              boxShadow: '0 0 25px rgba(14, 165, 233, 0.45), inset 0 1px 2px rgba(255, 255, 255, 0.5)',
+              boxShadow: loggedOutUserRef.current || loggedOutUser
+                ? '0 0 25px rgba(239, 68, 68, 0.45), inset 0 1px 2px rgba(255, 255, 255, 0.5)'
+                : '0 0 25px rgba(14, 165, 233, 0.45), inset 0 1px 2px rgba(255, 255, 255, 0.5)',
               letterSpacing: '0.6px',
               textShadow: '0 1px 4px rgba(0, 0, 0, 0.2)'
             }}>
               <FaPlay style={{ fontSize: '0.85rem', color: '#CCFBF1' }} />
-              <span>CHẠM ĐỂ BẮT ĐẦU</span>
+              <span>{loggedOutUserRef.current || loggedOutUser ? 'HẸN GẶP LẠI' : 'CHẠM ĐỂ BẮT ĐẦU'}</span>
             </div>
           </div>
         ) : (
@@ -993,11 +1019,11 @@ const HospitalPortalIntro = ({ onComplete }) => {
               width: '7px',
               height: '7px',
               borderRadius: '50%',
-              backgroundColor: loggedOutUser ? '#F87171' : '#10B981',
+              backgroundColor: loggedOutUserRef.current || loggedOutUser ? '#F87171' : '#10B981',
               animation: 'livePulseDot 1.4s ease-in-out infinite'
             }} />
             <span>{statusText}</span>
-            <span style={{ color: loggedOutUser ? '#FCA5A5' : '#38BDF8', fontWeight: '800', marginLeft: '0.2rem' }}>{progress}%</span>
+            <span style={{ color: loggedOutUserRef.current || loggedOutUser ? '#FCA5A5' : '#38BDF8', fontWeight: '800', marginLeft: '0.2rem' }}>{progress}%</span>
           </div>
         )}
 
