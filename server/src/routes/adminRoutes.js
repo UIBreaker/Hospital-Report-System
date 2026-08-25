@@ -21,10 +21,12 @@ const {
   adminResetPassword,
   deleteSystemUser
 } = require('../controllers/userManageController');
+const { getHospitalAnalytics } = require('../controllers/analyticsController');
 const { auth, adminOnly: requireAdmin } = require('../middleware/auth');
 
 router.get('/departments/:date', auth, requireAdmin, getDepartmentStatus);
 router.get('/presentation/:date', auth, requireAdmin, getPresentationData);
+router.get('/analytics/stats', auth, requireAdmin, getHospitalAnalytics);
 router.get('/database-stats', auth, requireAdmin, getDatabaseStats);
 router.get('/reports-payload-size', auth, requireAdmin, getReportsPayloadSize);
 router.get('/audit-logs', auth, requireAdmin, getAuditLogs);

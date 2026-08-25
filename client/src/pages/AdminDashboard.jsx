@@ -21,7 +21,8 @@ import {
   FaUsers,
   FaDatabase,
   FaUserShield,
-  FaUserMd
+  FaUserMd,
+  FaChartLine
 } from 'react-icons/fa';
 import reportService from '../services/reportService';
 import { generateAndDownloadHospitalExcel } from '../services/excelExportService';
@@ -33,6 +34,7 @@ import MedicalLoader from '../components/common/MedicalLoader';
 
 // Lazy-loaded Tab components for performance and code splitting
 const ReportsTab = lazy(() => import('../components/admin/tabs/ReportsTab'));
+const AnalyticsTab = lazy(() => import('../components/admin/tabs/AnalyticsTab'));
 const StaffTab = lazy(() => import('../components/admin/tabs/StaffTab'));
 const DatabaseTab = lazy(() => import('../components/admin/tabs/DatabaseTab'));
 const AccountsTab = lazy(() => import('../components/admin/tabs/AccountsTab'));
@@ -850,7 +852,46 @@ const AdminDashboard = () => {
               )}
             </button>
 
-            {/* Item 2: Biểu Mẫu Tùy Chỉnh & Tracker */}
+            {/* Item 2: Số Liệu Thống Kê & Biểu Đồ */}
+            <button
+              type="button"
+              onClick={() => setActiveTab('analytics')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: isSidebarCollapsed ? 'center' : 'flex-start',
+                gap: '0.65rem',
+                padding: isSidebarCollapsed ? '0.75rem 0' : '0.75rem 0.85rem',
+                borderRadius: '10px',
+                border: 'none',
+                backgroundColor: activeTab === 'analytics' ? '#2563EB' : 'transparent',
+                color: activeTab === 'analytics' ? '#FFFFFF' : '#94A3B8',
+                cursor: 'pointer',
+                fontWeight: activeTab === 'analytics' ? '800' : '600',
+                fontSize: '0.86rem',
+                transition: 'all 0.15s ease',
+                textAlign: 'left',
+                boxShadow: activeTab === 'analytics' ? '0 4px 12px rgba(37, 99, 235, 0.4)' : 'none'
+              }}
+              title={isSidebarCollapsed ? 'Số Liệu Thống Kê & Biểu Đồ' : undefined}
+              onMouseEnter={(e) => {
+                if (activeTab !== 'analytics') {
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
+                  e.currentTarget.style.color = '#FFFFFF';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeTab !== 'analytics') {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = '#94A3B8';
+                }
+              }}
+            >
+              <FaChartLine style={{ fontSize: isSidebarCollapsed ? '1.15rem' : '0.95rem' }} />
+              {!isSidebarCollapsed && <span>Số Liệu Thống Kê</span>}
+            </button>
+
+            {/* Item 3: Biểu Mẫu Tùy Chỉnh & Tracker */}
             <button
               type="button"
               onClick={() => setActiveTab('custom_forms')}
@@ -1270,6 +1311,7 @@ const AdminDashboard = () => {
                 onOpenDetailModal={handleOpenDetailModal}
               />
             )}
+            {activeTab === 'analytics' && <AnalyticsTab initialDate={date} />}
             {activeTab === 'custom_forms' && <CustomFormsTab />}
             {activeTab === 'staff' && <StaffTab />}
             {activeTab === 'database' && <DatabaseTab date={date} />}

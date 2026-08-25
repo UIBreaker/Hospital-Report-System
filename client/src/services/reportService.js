@@ -25,6 +25,12 @@ const reportService = {
     const response = await api.get(`/admin/presentation/${date}`);
     return response.data;
   },
+  getHospitalAnalytics: async (range = 'day', date = '') => {
+    const response = await api.get('/admin/analytics/stats', {
+      params: { range, date }
+    });
+    return response.data;
+  },
   getDepartmentStatus: async (date) => {
     const response = await api.get(`/admin/departments/${date}`);
     return response.data;
