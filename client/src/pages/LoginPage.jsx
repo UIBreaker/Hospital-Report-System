@@ -23,6 +23,7 @@ import { APP_VERSION } from '../config/version';
 import AIAssistant from '../components/common/AIAssistant';
 import ForgotPasswordModal from '../components/auth/ForgotPasswordModal';
 import ChangePasswordModal from '../components/auth/ChangePasswordModal';
+import HospitalPortalIntro from '../components/auth/HospitalPortalIntro';
 
 const LoginPage = () => {
   const [username, setUsername] = useState('');
@@ -33,6 +34,7 @@ const LoginPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [mustChangePasswordData, setMustChangePasswordData] = useState({ isOpen: false, username: '', fullName: '' });
+  const [showIntro, setShowIntro] = useState(() => !sessionStorage.getItem('portal_intro_shown'));
   
   const { login, user, isAdmin } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -90,6 +92,17 @@ const LoginPage = () => {
     setPassword(autoPass);
     setError('');
   };
+
+  if (showIntro) {
+    return (
+      <HospitalPortalIntro
+        onComplete={() => {
+          sessionStorage.setItem('portal_intro_shown', 'true');
+          setShowIntro(false);
+        }}
+      />
+    );
+  }
 
   return (
     <div style={{
@@ -234,19 +247,27 @@ const LoginPage = () => {
         {/* ================= LEFT COLUMN: BRAND IDENTITY & FEATURE PILLS ================= */}
         <section style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '470px' }}>
           
-          {/* Logo with Soft Glow */}
-          <div style={{
-            width: '72px',
-            height: '72px',
-            borderRadius: '50%',
-            backgroundColor: '#FFFFFF',
-            boxShadow: '0 10px 25px rgba(2, 132, 199, 0.22), 0 0 0 3.5px rgba(255, 255, 255, 0.95)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '10px',
-            marginBottom: '0.15rem'
-          }}>
+          {/* Logo with Soft Glow & Replay Intro Trigger */}
+          <div 
+            onClick={() => setShowIntro(true)}
+            title="Xem lại hiệu ứng giới thiệu Cổng Thông Tin"
+            style={{
+              width: '72px',
+              height: '72px',
+              borderRadius: '50%',
+              backgroundColor: '#FFFFFF',
+              boxShadow: '0 10px 25px rgba(2, 132, 199, 0.22), 0 0 0 3.5px rgba(255, 255, 255, 0.95)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '10px',
+              marginBottom: '0.15rem',
+              cursor: 'pointer',
+              transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.08)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          >
             <img 
               src="/logo.png" 
               alt="Logo TTYT Bình Long" 
