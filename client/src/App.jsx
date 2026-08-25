@@ -15,6 +15,7 @@ const ChangePasswordPage = lazy(() => import('./pages/auth/ChangePasswordPage'))
 const DynamicFormRenderer = lazy(() => import('./components/admin/custom-forms/DynamicFormRenderer'));
 const TrackerWidgetView = lazy(() => import('./components/admin/custom-forms/TrackerWidgetView'));
 const DynamicFormSubmissions = lazy(() => import('./components/admin/custom-forms/DynamicFormSubmissions'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 
 const PageLoadingFallback = () => (
   <MedicalLoader
@@ -36,6 +37,16 @@ function App() {
               <Route path="/" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/change-password" element={<ChangePasswordPage />} />
+
+              {/* Protected User Profile Route */}
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <ProfilePage />
+                  </ProtectedRoute>
+                }
+              />
 
               {/* Protected Department & Hospital Report */}
               <Route 

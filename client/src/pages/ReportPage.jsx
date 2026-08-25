@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext, useMemo, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 import { 
   FaCalendarAlt, 
@@ -207,6 +208,7 @@ const ConfettiCanvas = () => {
 
 const ReportPage = () => {
   const { user, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -815,24 +817,54 @@ const ReportPage = () => {
           </div>
         </div>
 
-        {/* Right Side: Department Badge & Logout Button */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        {/* Right Side: Department Badge, Profile & Logout Button */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
           {/* Department Name Badge */}
           <div style={{
             backgroundColor: '#EFF6FF',
             border: '1.5px solid #BFDBFE',
             color: '#1E40AF',
-            padding: '0.5rem 1rem',
+            padding: '0.45rem 0.95rem',
             borderRadius: '12px',
             fontWeight: '800',
-            fontSize: '0.92rem',
+            fontSize: '0.9rem',
             display: 'flex',
             alignItems: 'center',
-            gap: '0.5rem',
+            gap: '0.45rem',
             boxShadow: '0 2px 6px rgba(37, 99, 235, 0.08)'
           }}>
-            <FaHospital style={{ color: '#2563EB', fontSize: '1.05rem' }} /> {user?.departmentName || 'Khoa Phòng'}
+            <FaHospital style={{ color: '#2563EB', fontSize: '1rem' }} /> {user?.departmentName || 'Khoa Phòng'}
           </div>
+
+          {/* User Profile Button */}
+          <button 
+            type="button"
+            onClick={() => navigate('/profile')} 
+            style={{
+              backgroundColor: '#FFFFFF',
+              color: '#0F2C59',
+              border: '1.5px solid #CBD5E1',
+              borderRadius: '10px',
+              padding: '0.45rem 0.85rem',
+              fontWeight: '800',
+              fontSize: '0.84rem',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              transition: 'all 0.15s ease'
+            }}
+            title="Xem và chỉnh sửa Hồ Sơ Cá Nhân & Chữ Ký Mẫu"
+          >
+            <div style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: '#2563EB', color: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', overflow: 'hidden' }}>
+              {user?.avatar_url && !user.avatar_url.startsWith('preset_') ? (
+                <img src={user.avatar_url} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <FaUserMd />
+              )}
+            </div>
+            <span>Hồ Sơ</span>
+          </button>
 
           {/* Logout Button */}
           <button 
@@ -843,9 +875,9 @@ const ReportPage = () => {
               color: '#DC2626',
               border: '1.5px solid #FECACA',
               borderRadius: '10px',
-              padding: '0.5rem 0.95rem',
+              padding: '0.45rem 0.85rem',
               fontWeight: '700',
-              fontSize: '0.85rem',
+              fontSize: '0.84rem',
               cursor: 'pointer',
               display: 'inline-flex',
               alignItems: 'center',

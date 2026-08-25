@@ -1047,18 +1047,22 @@ const AdminDashboard = () => {
 
         {/* Bottom: User Profile Widget */}
         <div
+          onClick={() => navigate('/profile')}
           style={{
             padding: isSidebarCollapsed ? '0.6rem 0.2rem' : '0.75rem',
-            backgroundColor: 'rgba(255, 255, 255, 0.06)',
+            backgroundColor: 'rgba(255, 255, 255, 0.08)',
             borderRadius: '12px',
-            border: '1px solid rgba(255, 255, 255, 0.12)',
+            border: '1px solid rgba(255, 255, 255, 0.16)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: isSidebarCollapsed ? 'center' : 'flex-start',
             gap: '0.65rem',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            transition: 'all 0.15s ease'
           }}
-          title={isSidebarCollapsed ? `Xin chào, ${user?.username || 'Admin'} (Quản trị hệ thống)` : undefined}
+          onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.16)'}
+          onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)'}
+          title="Nhấp để xem và quản lý Hồ Sơ Cá Nhân"
         >
           <div style={{
             width: '34px',
@@ -1070,15 +1074,20 @@ const AdminDashboard = () => {
             alignItems: 'center',
             justifyContent: 'center',
             fontSize: '0.9rem',
-            flexShrink: 0
+            flexShrink: 0,
+            overflow: 'hidden'
           }}>
-            <FaUserMd />
+            {user?.avatar_url && !user.avatar_url.startsWith('preset_') ? (
+              <img src={user.avatar_url} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <FaUserMd />
+            )}
           </div>
           {!isSidebarCollapsed && (
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: '0.7rem', color: '#93C5FD' }}>Xin chào,</div>
+              <div style={{ fontSize: '0.7rem', color: '#93C5FD' }}>Hồ sơ Admin ⚙️</div>
               <div style={{ fontSize: '0.82rem', fontWeight: '800', color: '#FFFFFF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {user?.username || 'Admin'}
+                {user?.full_name || user?.username || 'Admin'}
               </div>
               <div style={{ fontSize: '0.68rem', color: '#94A3B8' }}>Quản trị hệ thống</div>
             </div>

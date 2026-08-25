@@ -189,7 +189,7 @@ const getMe = async (req, res, next) => {
 
     if (source === 'system') {
       const [sysUsers] = await pool.execute(
-        'SELECT id, username, full_name, department_code, department_name, role, status FROM system_users WHERE id = ?',
+        'SELECT id, username, full_name, department_code, department_name, role, avatar_url, phone, email, certificate, position, signature_url, bio, status FROM system_users WHERE id = ?',
         [userId]
       );
       if (sysUsers.length > 0) {
@@ -198,14 +198,14 @@ const getMe = async (req, res, next) => {
     }
 
     const [users] = await pool.execute(
-      'SELECT id, username, department_code, department_name, role FROM users WHERE id = ? OR username = ?',
+      'SELECT id, username, full_name, department_code, department_name, role, avatar_url, phone, email, certificate, position, signature_url, bio FROM users WHERE id = ? OR username = ?',
       [userId, username]
     );
 
     if (users.length === 0) {
       // Fallback check system_users
       const [sysFallback] = await pool.execute(
-        'SELECT id, username, full_name, department_code, department_name, role, status FROM system_users WHERE id = ? OR username = ?',
+        'SELECT id, username, full_name, department_code, department_name, role, avatar_url, phone, email, certificate, position, signature_url, bio, status FROM system_users WHERE id = ? OR username = ?',
         [userId, username]
       );
       if (sysFallback.length > 0) {

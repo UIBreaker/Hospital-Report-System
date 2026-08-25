@@ -192,23 +192,35 @@ const PersonalCustomFormsPortal = () => {
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.65rem',
-            backgroundColor: 'rgba(255, 255, 255, 0.12)',
-            backdropFilter: 'blur(8px)',
-            padding: '0.45rem 1rem',
-            borderRadius: '20px',
-            border: '1px solid rgba(255, 255, 255, 0.22)'
-          }}>
-            <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem' }}>
-              <FaUser />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+          <div
+            onClick={() => navigate('/profile')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.65rem',
+              backgroundColor: 'rgba(255, 255, 255, 0.12)',
+              backdropFilter: 'blur(8px)',
+              padding: '0.42rem 0.95rem',
+              borderRadius: '20px',
+              border: '1px solid rgba(255, 255, 255, 0.22)',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.22)'}
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.12)'}
+            title="Nhấp để xem & cập nhật Hồ sơ cá nhân"
+          >
+            <div style={{ width: '30px', height: '30px', borderRadius: '50%', backgroundColor: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', color: '#fff', overflow: 'hidden' }}>
+              {user?.avatar_url && !user.avatar_url.startsWith('preset_') ? (
+                <img src={user.avatar_url} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <FaUser />
+              )}
             </div>
             <div>
               <div style={{ fontSize: '0.84rem', fontWeight: '800', color: '#FFFFFF' }}>{user?.full_name || user?.username}</div>
-              <div style={{ fontSize: '0.7rem', color: '#93C5FD', fontWeight: '600' }}>@{user?.username} • Tài khoản cá nhân</div>
+              <div style={{ fontSize: '0.7rem', color: '#93C5FD', fontWeight: '600' }}>@{user?.username} • Hồ sơ ⚙️</div>
             </div>
           </div>
 
