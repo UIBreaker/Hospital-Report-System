@@ -324,11 +324,18 @@ const HospitalPortalIntro = ({ onComplete }) => {
     }, 650);
   }, []);
 
-  // Start Experience: Audio + 60fps Timestamp Progress (3.8s) + Automatic Transition
+  // Start Experience: Audio + 60fps Timestamp Progress (3.8s) + Automatic Transition + Fullscreen
   const startExperience = useCallback(() => {
     if (isStartedRef.current) return;
     isStartedRef.current = true;
     setIsStarted(true);
+
+    // Auto-enter Fullscreen mode (F11) upon user gesture
+    try {
+      if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      }
+    } catch (e) {}
 
     const isLogoutMode = Boolean(loggedOutUserRef.current || loggedOutUser || sessionStorage.getItem('just_logged_out_username'));
 
