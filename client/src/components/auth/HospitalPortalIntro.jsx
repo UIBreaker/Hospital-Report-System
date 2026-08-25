@@ -23,22 +23,24 @@ import {
 let sharedAudioCtx = null;
 const getAudioContext = () => {
   if (!sharedAudioCtx) {
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    if (AudioContext) {
-      sharedAudioCtx = new AudioContext();
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (AudioContextClass) {
+      sharedAudioCtx = new AudioContextClass();
     }
-  }
-  if (sharedAudioCtx && sharedAudioCtx.state === 'suspended') {
-    sharedAudioCtx.resume().catch(() => {});
   }
   return sharedAudioCtx;
 };
 
 // 1. Cinematic Medical Grand Opening (Ambient Pad + Real Heartbeat + Crystal Chime)
-const playCinematicMedicalIntro = () => {
+const playCinematicMedicalIntro = async () => {
   try {
     const ctx = getAudioContext();
     if (!ctx) return;
+    
+    if (ctx.state === 'suspended') {
+      await ctx.resume().catch(() => {});
+    }
+
     const now = ctx.currentTime;
 
     // Master Limiter / Compressor to avoid any clipping
@@ -240,22 +242,37 @@ const HospitalPortalIntro = ({ onComplete }) => {
   const [savedUser, setSavedUser] = useState('');
   const [progress, setProgress] = useState(0);
   const [isExiting, setIsExiting] = useState(false);
-  const [isMuted, setIsMuted] = useState(() => localStorage.getItem('hospital_intro_muted') === 'true');
+  const [isMuted, setIsMuted] = useState(false);
   const exitingRef = useRef(false);
   const canvasRef = useRef(null);
+  const hasTriggeredSoundRef = useRef(false);
 
   // Toggle Sound function
   const toggleSound = (e) => {
     e.stopPropagation();
     setIsMuted(prev => {
       const next = !prev;
-      localStorage.setItem('hospital_intro_muted', String(next));
       if (!next) {
+        hasTriggeredSoundRef.current = false;
         playCinematicMedicalIntro();
       }
       return next;
     });
   };
+
+  // Safe sound starter with Autoplay policy bypass
+  const startAudioSafely = useCallback(async () => {
+    if (hasTriggeredSoundRef.current || isMuted) return;
+    try {
+      const ctx = getAudioContext();
+      if (!ctx) return;
+      if (ctx.state === 'suspended') {
+        await ctx.resume().catch(() => {});
+      }
+      hasTriggeredSoundRef.current = true;
+      playCinematicMedicalIntro();
+    } catch (err) {}
+  }, [isMuted]);
 
   // Live Clock & User detection
   useEffect(() => {
@@ -321,19 +338,18 @@ const HospitalPortalIntro = ({ onComplete }) => {
 
   // Canvas Cinematic Animation (Medical Aurora + ECG Pulse + Floating Nodes)
   useEffect(() => {
-    if (!isMuted) {
-      playCinematicMedicalIntro();
-    }
+    // 1. Immediate trigger attempt
+    startAudioSafely();
 
-    // Auto-unlock audio context on first user interaction if blocked by browser policy
-    const unlockAudio = () => {
-      getAudioContext();
-      if (!isMuted) playCinematicMedicalIntro();
-      window.removeEventListener('click', unlockAudio);
-      window.removeEventListener('touchstart', unlockAudio);
+    // 2. Global browser gesture listener (mouse movement, key, touch, click, scroll)
+    const interactionEvents = ['pointerdown', 'mousemove', 'keydown', 'touchstart', 'wheel', 'click', 'focus'];
+    const handleFirstGesture = () => {
+      startAudioSafely();
     };
-    window.addEventListener('click', unlockAudio, { once: true });
-    window.addEventListener('touchstart', unlockAudio, { once: true });
+
+    interactionEvents.forEach(evt => {
+      window.addEventListener(evt, handleFirstGesture, { passive: true, once: true });
+    });
 
     const canvas = canvasRef.current;
     let animId;
