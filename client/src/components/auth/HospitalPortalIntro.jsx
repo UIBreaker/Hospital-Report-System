@@ -789,14 +789,15 @@ const HospitalPortalIntro = ({ onComplete }) => {
               background: 'linear-gradient(135deg, #0284C7 0%, #0D9488 100%)',
               color: '#FFFFFF',
               borderRadius: '999px',
-              padding: '0.65rem 1.8rem',
+              padding: '0.65rem 2rem',
               fontSize: '0.92rem',
               fontWeight: '900',
               border: '1.5px solid rgba(255, 255, 255, 0.4)',
-              boxShadow: '0 6px 25px rgba(2, 132, 199, 0.5)'
+              boxShadow: '0 6px 25px rgba(2, 132, 199, 0.5)',
+              letterSpacing: '0.5px'
             }}>
-              <FaVolumeUp style={{ fontSize: '1.1rem', color: '#67E8F9' }} />
-              <span>CHẠM ĐỂ BẬT ÂM THANH & BẮT ĐẦU</span>
+              <FaPlay style={{ fontSize: '0.85rem', color: '#67E8F9' }} />
+              <span>CHẠM ĐỂ BẮT ĐẦU</span>
             </div>
           </div>
         ) : (
