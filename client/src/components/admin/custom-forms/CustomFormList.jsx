@@ -210,7 +210,8 @@ const CustomFormList = ({
         }}>
           {forms.map(form => {
             const themeColor = form.theme_color || '#2563EB';
-            const isTracker = form.form_type === 'tracker';
+            const hasTrackerField = Array.isArray(form.schema_json) && form.schema_json.some(f => f && f.type && (f.type.startsWith('tracker') || f.type === 'tracker'));
+            const isTracker = form.form_type === 'tracker' || hasTrackerField;
             const fieldsCount = Array.isArray(form.schema_json) ? form.schema_json.length : 0;
 
             return (
@@ -246,7 +247,7 @@ const CustomFormList = ({
                       alignItems: 'center',
                       gap: '0.3rem'
                     }}>
-                      {isTracker ? <><FaChartLine /> Data Tracker</> : <><FaFileAlt /> Form Nhập Liệu</>}
+                      {isTracker ? <><FaChartLine /> Bảng Theo Dõi Tracker</> : <><FaFileAlt /> Form Nhập Liệu</>}
                     </span>
 
                     <span style={{
