@@ -915,6 +915,7 @@ module.exports = {
   deleteForm,
   submitFormData,
   getFormSubmissions,
+  deleteFormSubmission,
   getTrackerData,
   getUniversalTrackerFeed
 };
