@@ -438,11 +438,18 @@ const HospitalPortalIntro = ({ onComplete }) => {
       return () => {
         window.removeEventListener('resize', resize);
         cancelAnimationFrame(animId);
-        window.removeEventListener('click', unlockAudio);
-        window.removeEventListener('touchstart', unlockAudio);
+        interactionEvents.forEach(evt => {
+          window.removeEventListener(evt, handleFirstGesture);
+        });
       };
     }
-  }, [isMuted]);
+
+    return () => {
+      interactionEvents.forEach(evt => {
+        window.removeEventListener(evt, handleFirstGesture);
+      });
+    };
+  }, [isMuted, startAudioSafely]);
 
   // Smooth Loading Progress Counter (0% -> 100% in 2.2s)
   useEffect(() => {
