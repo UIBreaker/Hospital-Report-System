@@ -187,9 +187,10 @@ const HospitalPortalIntro = ({ onComplete }) => {
   const [statusText, setStatusText] = useState('Khởi tạo cổng bảo mật y tế...');
   const [isExiting, setIsExiting] = useState(false);
   const [isStarted, setIsStarted] = useState(false);
+  const isStartedRef = useRef(false);
   const exitingRef = useRef(false);
   const canvasRef = useRef(null);
-  const progressTimerRef = useRef(null);
+  const animFrameRef = useRef(null);
 
   // Live Clock & User detection
   useEffect(() => {
@@ -248,20 +249,19 @@ const HospitalPortalIntro = ({ onComplete }) => {
     }, 650);
   }, [onComplete]);
 
-  // Start Experience: Audio + 3.8s Countdown + Automatic Transition
+  // Start Experience: Audio + 60fps Timestamp Progress (3.8s) + Automatic Transition
   const startExperience = useCallback(() => {
-    if (isStarted) return;
+    if (isStartedRef.current) return;
+    isStartedRef.current = true;
     setIsStarted(true);
 
-    // 1. Play Sound
+    // 1. Play Web Audio API sound immediately
     playCinematicMedicalSound();
 
-    // 2. Run Progress Countdown
-    if (progressTimerRef.current) {
-      clearInterval(progressTimerRef.current);
-    }
+    // 2. Run 60fps Timestamp-based Progress
+    const startTime = Date.now();
+    const duration = 3800; // 3.8 seconds
 
-    let currentProgress = 0;
     const statusStages = [
       { at: 15, text: 'Thiết lập kết nối mã hóa y tế 256-bit...' },
       { at: 40, text: 'Đồng bộ cơ sở dữ liệu 12 khoa phòng...' },
@@ -269,27 +269,28 @@ const HospitalPortalIntro = ({ onComplete }) => {
       { at: 92, text: 'Hệ thống sẵn sàng! Đang vào cổng làm việc...' }
     ];
 
-    progressTimerRef.current = setInterval(() => {
-      currentProgress += 2.5; // ~40 ticks * 95ms = 3.8s total loading
-      if (currentProgress >= 100) {
-        currentProgress = 100;
-        setProgress(100);
-        setStatusText('Hoàn tất kết nối! Đang chuyển tiếp...');
-        clearInterval(progressTimerRef.current);
-        progressTimerRef.current = null;
+    const tick = () => {
+      const elapsed = Date.now() - startTime;
+      const pct = Math.min(100, Math.floor((elapsed / duration) * 100));
+      setProgress(pct);
 
+      const matchedStage = statusStages.slice().reverse().find(s => pct >= s.at);
+      if (matchedStage) setStatusText(matchedStage.text);
+
+      if (pct < 100) {
+        animFrameRef.current = requestAnimationFrame(tick);
+      } else {
+        setStatusText('Hoàn tất kết nối! Đang chuyển tiếp...');
         setTimeout(() => {
           handleAutoComplete();
         }, 450);
-      } else {
-        setProgress(Math.floor(currentProgress));
-        const matchedStage = statusStages.slice().reverse().find(s => currentProgress >= s.at);
-        if (matchedStage) setStatusText(matchedStage.text);
       }
-    }, 95);
-  }, [isStarted, handleAutoComplete]);
+    };
 
-  // Auto-start listener on any gesture (click, tap, keypress)
+    animFrameRef.current = requestAnimationFrame(tick);
+  }, [handleAutoComplete]);
+
+  // Global trigger on any touch, click, or keypress
   useEffect(() => {
     const handleGlobalTrigger = () => {
       startExperience();
@@ -303,8 +304,8 @@ const HospitalPortalIntro = ({ onComplete }) => {
       window.removeEventListener('click', handleGlobalTrigger);
       window.removeEventListener('keydown', handleGlobalTrigger);
       window.removeEventListener('touchstart', handleGlobalTrigger);
-      if (progressTimerRef.current) {
-        clearInterval(progressTimerRef.current);
+      if (animFrameRef.current) {
+        cancelAnimationFrame(animFrameRef.current);
       }
     };
   }, [startExperience]);
@@ -771,7 +772,7 @@ const HospitalPortalIntro = ({ onComplete }) => {
             background: 'linear-gradient(90deg, #0284C7 0%, #2DD4BF 100%)',
             borderRadius: '999px',
             boxShadow: '0 0 16px #2DD4BF',
-            transition: 'width 0.09s ease-out'
+            transition: 'width 0.05s linear'
           }} />
         </div>
 
