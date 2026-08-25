@@ -42,6 +42,21 @@ const DatabaseTab = lazy(() => import('../components/admin/tabs/DatabaseTab'));
 const AccountsTab = lazy(() => import('../components/admin/tabs/AccountsTab'));
 const CustomFormsTab = lazy(() => import('../components/admin/tabs/CustomFormsTab'));
 
+const DEPARTMENT_NAMES = {
+  lck: 'Khoa Liên Chuyên Khoa',
+  xn: 'Khoa Xét Nghiệm',
+  cdha: 'Khoa Chẩn Đoán Hình Ảnh',
+  hscc_tnt: 'Khoa Hồi Sức Cấp Cứu - Thận Nhân Tạo',
+  noi: 'Khoa Nội Tổng Hợp',
+  nhi: 'Khoa Nhi',
+  nhiem: 'Khoa Nhiễm',
+  san: 'Khoa Phụ Sản',
+  yhct_phcn: 'Khoa Y Học Cổ Truyền - PHCN',
+  ngoai_th: 'Khoa Ngoại Tổng Hợp',
+  ctch: 'Khoa Chấn Thương Chỉnh Hình',
+  gmhs: 'Khoa Gây Mê Hồi Sức'
+};
+
 const TabLoadingFallback = () => (
   <MedicalLoader
     text="Đang tải dữ liệu phân hệ quản trị..."
@@ -109,6 +124,7 @@ const AdminDashboard = () => {
   // Report Detail Modal State
   const [modalOpen, setModalOpen] = useState(false);
   const [modalDept, setModalDept] = useState(null);
+  const [modalReportDate, setModalReportDate] = useState(date);
   const [loadingReport, setLoadingReport] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [hasReport, setHasReport] = useState(false);
@@ -278,8 +294,14 @@ const AdminDashboard = () => {
   });
 
   // Open Detail Modal for Department Report
-  const handleOpenDetailModal = async (dept) => {
-    setModalDept(dept);
+  const handleOpenDetailModal = async (dept, specificDate) => {
+    const deptCode = typeof dept === 'string' ? dept : dept?.departmentCode;
+    const deptName = typeof dept === 'string' ? (DEPARTMENT_NAMES[dept] || dept) : (dept?.departmentName || DEPARTMENT_NAMES[deptCode] || deptCode);
+    const resolvedDept = { departmentCode: deptCode, departmentName: deptName };
+    const targetDate = specificDate || date;
+
+    setModalDept(resolvedDept);
+    setModalReportDate(targetDate);
     setModalOpen(true);
     setLoadingReport(true);
     setIsEditing(false);
@@ -287,7 +309,7 @@ const AdminDashboard = () => {
     setShowDeleteConfirm(false);
 
     try {
-      const res = await reportService.getReport(dept.departmentCode, date);
+      const res = await reportService.getReport(deptCode, targetDate);
       if (res && res.data) {
         const r = res.data;
         setHasReport(true);
@@ -312,7 +334,7 @@ const AdminDashboard = () => {
         }
 
         setEditHeader({
-          reportDate: r.report_date || date,
+          reportDate: r.report_date || targetDate,
           doctorName: r.doctor_name || '',
           nurseName: r.nurse_name || '',
           overtimeStaff: Array.isArray(overtime) ? overtime : [],
@@ -348,7 +370,7 @@ const AdminDashboard = () => {
         setHasReport(false);
         setModalReportLocked(false);
         setEditHeader({
-          reportDate: date,
+          reportDate: targetDate,
           doctorName: '',
           nurseName: '',
           overtimeStaff: [],
@@ -362,7 +384,7 @@ const AdminDashboard = () => {
         setEditCriticalCases([]);
       }
     } catch (err) {
-      console.error('Lỗi khi tải chi tiết báo cáo khoa:', err);
+      console.error('Error loading report detail modal:', err);
       setHasReport(false);
     } finally {
       setLoadingReport(false);
@@ -1399,10 +1421,7 @@ const AdminDashboard = () => {
             {activeTab === 'history' && (
               <SubmissionHistoryTab
                 onViewReportDetail={(deptCode, reportDate) => {
-                  if (reportDate && reportDate !== date) {
-                    setDate(reportDate);
-                  }
-                  handleOpenDetailModal(deptCode);
+                  handleOpenDetailModal(deptCode, reportDate);
                 }}
                 onPrintReport={(deptCode, reportDate) => {
                   if (reportDate && reportDate !== date) {
@@ -1429,7 +1448,7 @@ const AdminDashboard = () => {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         modalDept={modalDept}
-        date={date}
+        date={modalReportDate || date}
         editHeader={editHeader}
         setEditHeader={setEditHeader}
         editReportData={editReportData}

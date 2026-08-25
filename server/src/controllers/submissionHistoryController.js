@@ -74,7 +74,7 @@ const getShiftReportHistory = async (req, res, next) => {
         r.updated_at,
         r.report_data,
         u.avatar_url,
-        (SELECT COUNT(*) FROM report_audit_logs ral WHERE ral.report_id = r.id) AS edit_count,
+        (SELECT COUNT(*) FROM report_audit_logs ral WHERE ral.report_id = r.id AND ral.action_type = 'UPDATE') AS edit_count,
         (SELECT COUNT(*) FROM surgery_cases sc WHERE sc.report_id = r.id) AS surgery_count,
         (SELECT COUNT(*) FROM transfer_cases tc WHERE tc.report_id = r.id) AS transfer_count,
         (SELECT COUNT(*) FROM critical_cases cc WHERE cc.report_id = r.id) AS critical_count,
@@ -92,11 +92,14 @@ const getShiftReportHistory = async (req, res, next) => {
       // Determine if submitted on time (Standard: Submitted before 07:30 AM on handover day)
       let isOnTime = true;
       if (r.created_at) {
-        const createdDate = new Date(r.created_at);
-        const hours = createdDate.getHours();
-        const minutes = createdDate.getMinutes();
-        // If created on next day after 07:30 AM
-        if (hours > 7 || (hours === 7 && minutes > 30)) {
+        const dateStr = typeof r.created_at === 'string' && !r.created_at.includes('Z')
+          ? `${r.created_at.replace(' ', 'T')}Z`
+          : r.created_at;
+        const createdDate = new Date(dateStr);
+        // Convert to Vietnam Time (UTC+7)
+        const vnHours = (createdDate.getUTCHours() + 7) % 24;
+        const vnMinutes = createdDate.getUTCMinutes();
+        if (vnHours > 7 || (vnHours === 7 && vnMinutes > 30)) {
           isOnTime = false;
         }
       }

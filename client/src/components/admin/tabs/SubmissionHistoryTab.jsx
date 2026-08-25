@@ -30,6 +30,19 @@ import {
 import submissionHistoryService from '../../../services/submissionHistoryService';
 import MedicalLoader from '../../common/MedicalLoader';
 
+const parseUtcDate = (val) => {
+  if (!val) return null;
+  if (val instanceof Date) return isNaN(val.getTime()) ? null : val;
+  const s = String(val).trim();
+  if (!s) return null;
+  // If MySQL format "YYYY-MM-DD HH:mm:ss" or ISO without timezone indicator, treat as UTC
+  if (/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}(\.\d+)?$/.test(s)) {
+    return new Date(s.replace(' ', 'T') + 'Z');
+  }
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? null : d;
+};
+
 const formatDateVN = (dateStr) => {
   if (!dateStr) return '';
   const parts = String(dateStr).split('-');
@@ -42,8 +55,8 @@ const formatDateVN = (dateStr) => {
 const formatTimeVN = (dateInput) => {
   if (!dateInput) return '—';
   try {
-    const d = new Date(dateInput);
-    if (isNaN(d.getTime())) return dateInput;
+    const d = parseUtcDate(dateInput);
+    if (!d) return String(dateInput);
     const hours = String(d.getHours()).padStart(2, '0');
     const minutes = String(d.getMinutes()).padStart(2, '0');
     const seconds = String(d.getSeconds()).padStart(2, '0');
@@ -52,20 +65,20 @@ const formatTimeVN = (dateInput) => {
     const year = d.getFullYear();
     return `${hours}:${minutes}:${seconds} — ${day}/${month}/${year}`;
   } catch {
-    return dateInput;
+    return String(dateInput);
   }
 };
 
 const getRelativeTimeVN = (dateInput) => {
   if (!dateInput) return '';
   try {
-    const d = new Date(dateInput);
-    if (isNaN(d.getTime())) return '';
+    const d = parseUtcDate(dateInput);
+    if (!d) return '';
     const now = new Date();
     const diffSec = Math.floor((now - d) / 1000);
 
     if (diffSec < 60) return 'Vừa nộp';
-    if (diffSec < 3600) return `${Math.floor(diffSec / 60)} phút trước`;
+    if (diffSec < 3600) return `${Math.max(1, Math.floor(diffSec / 60))} phút trước`;
     if (diffSec < 86400) return `${Math.floor(diffSec / 3600)} giờ trước`;
     if (diffSec < 604800) return `${Math.floor(diffSec / 86400)} ngày trước`;
     return formatDateVN(d.toISOString().split('T')[0]);
@@ -603,20 +616,26 @@ const SubmissionHistoryTab = ({ onViewReportDetail, onPrintReport }) => {
 
                         {/* 5. Status */}
                         <td style={{ padding: '0.75rem 1rem' }}>
-                          {item.isLocked ? (
-                            <span style={{ backgroundColor: '#FEF3C7', color: '#92400E', padding: '0.2rem 0.55rem', borderRadius: '6px', fontSize: '0.72rem', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
-                              <FaLock /> Đã khóa
-                            </span>
-                          ) : (
-                            <span style={{ backgroundColor: '#DCFCE7', color: '#15803D', padding: '0.2rem 0.55rem', borderRadius: '6px', fontSize: '0.72rem', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
-                              <FaCheckCircle /> Đã nộp
-                            </span>
-                          )}
-                          {item.editCount > 0 && (
-                            <div style={{ fontSize: '0.7rem', color: '#64748B', marginTop: '2px' }}>
-                              Sửa {item.editCount} lần
-                            </div>
-                          )}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            {item.isLocked ? (
+                              <span style={{ backgroundColor: '#FEF3C7', color: '#92400E', padding: '0.2rem 0.55rem', borderRadius: '6px', fontSize: '0.72rem', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                                <FaLock /> Đã khóa
+                              </span>
+                            ) : (
+                              <span style={{ backgroundColor: '#DCFCE7', color: '#15803D', padding: '0.2rem 0.55rem', borderRadius: '6px', fontSize: '0.72rem', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                                <FaCheckCircle /> Đã nộp
+                              </span>
+                            )}
+                            {item.editCount > 0 ? (
+                              <span style={{ backgroundColor: '#FEF9C3', color: '#854D0E', padding: '1px 6px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: '700' }}>
+                                Sửa {item.editCount} lần
+                              </span>
+                            ) : (
+                              <span style={{ color: '#94A3B8', fontSize: '0.7rem' }}>
+                                Bản gốc (Chưa sửa)
+                              </span>
+                            )}
+                          </div>
                         </td>
 
                         {/* 6. Action */}
