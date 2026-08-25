@@ -813,15 +813,18 @@ const HospitalPortalIntro = ({ onComplete }) => {
           margin: '0.2rem 0 0 0',
           fontSize: '2.75rem',
           fontWeight: '900',
-          background: loggedOutUserRef.current || loggedOutUser
+          backgroundImage: loggedOutUserRef.current || loggedOutUser
             ? 'linear-gradient(135deg, #F87171 0%, #FB923C 50%, #FDE047 100%)'
             : 'linear-gradient(135deg, #38BDF8 0%, #2DD4BF 50%, #A7F3D0 100%)',
           WebkitBackgroundClip: 'text',
+          backgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
+          color: 'transparent',
+          display: 'inline-block',
           textTransform: 'uppercase',
           letterSpacing: '5px',
           lineHeight: 1.2,
-          animation: 'heroFadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.7s both, textGlowShimmer 4s ease-in-out infinite'
+          animation: 'heroFadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.7s both'
         }}>
           KHU VỰC BÌNH LONG
         </h2>
