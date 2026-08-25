@@ -20,7 +20,9 @@ import {
   FaSync,
   FaChevronLeft,
   FaChevronRight,
-  FaLayerGroup
+  FaLayerGroup,
+  FaEye,
+  FaLock
 } from 'react-icons/fa';
 import customFormService from '../../services/customFormService';
 import DynamicFormRenderer from '../admin/custom-forms/DynamicFormRenderer';
@@ -39,6 +41,7 @@ const PersonalCustomFormsPortal = () => {
   // view: 'list' | 'fill' | 'submissions'
   const [activeView, setActiveView] = useState('list');
   const [selectedFormCode, setSelectedFormCode] = useState('');
+  const [isReadOnlySubmissions, setIsReadOnlySubmissions] = useState(false);
 
   const fetchAccessibleForms = async () => {
     setLoading(true);
@@ -71,18 +74,48 @@ const PersonalCustomFormsPortal = () => {
     fetchAccessibleForms();
   }, [user]);
 
+  // Kiểm tra quyền phân bổ cho tài khoản hiện tại đối với từng biểu mẫu
+  const getUserFormPermission = (form) => {
+    if (!user) return 'none';
+    if (user.role === 'admin') return 'edit';
+
+    const perms = form?.permissions || [];
+    if (perms.length === 0) return 'edit'; // Mặc định mở nếu chưa đặt quyền
+
+    // 1. Kiểm tra trực tiếp theo username của tài khoản
+    const userPerm = perms.find(p => p.target_type === 'user' && p.target_value === user.username);
+    if (userPerm) return userPerm.permission; // 'edit' hoặc 'view'
+
+    // 2. Kiểm tra theo khoa phòng
+    const deptPerm = perms.find(p => p.target_type === 'department' && p.target_value === user.departmentCode);
+    if (deptPerm) return deptPerm.permission;
+
+    // 3. Kiểm tra theo role
+    const rolePerm = perms.find(p => p.target_type === 'role' && (p.target_value === user.role || p.target_value === 'staff' || p.target_value === 'personal'));
+    if (rolePerm) return rolePerm.permission;
+
+    // 4. Quyền toàn viện (all)
+    const allPerm = perms.find(p => p.target_type === 'all');
+    if (allPerm) return allPerm.permission;
+
+    return 'view'; // fallback view-only
+  };
+
   const handleFillForm = (code) => {
     setSelectedFormCode(code);
+    setIsReadOnlySubmissions(false);
     setActiveView('fill');
   };
 
-  const handleViewSubmissions = (code) => {
+  const handleViewSubmissions = (code, readOnlyMode = true) => {
     setSelectedFormCode(code);
+    setIsReadOnlySubmissions(Boolean(readOnlyMode));
     setActiveView('submissions');
   };
 
   const handleBackToList = () => {
     setSelectedFormCode('');
+    setIsReadOnlySubmissions(false);
     setActiveView('list');
     fetchAccessibleForms();
   };
@@ -220,6 +253,7 @@ const PersonalCustomFormsPortal = () => {
         {activeView === 'submissions' && (
           <DynamicFormSubmissions
             formCode={selectedFormCode}
+            readOnly={isReadOnlySubmissions}
             onBack={handleBackToList}
           />
         )}
@@ -396,6 +430,8 @@ const PersonalCustomFormsPortal = () => {
                         const themeColor = form.theme_color || '#2563EB';
                         const fieldsCount = Array.isArray(form.schema_json) ? form.schema_json.length : 0;
                         const submissionsCount = form.total_submissions || form.submissions_count || 0;
+                        const userPerm = getUserFormPermission(form);
+                        const isViewOnly = userPerm === 'view';
 
                         return (
                           <div
@@ -417,14 +453,18 @@ const PersonalCustomFormsPortal = () => {
                             <div>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
                                 <span style={{
-                                  backgroundColor: '#ECFDF5',
-                                  color: '#047857',
+                                  backgroundColor: isViewOnly ? '#FEF3C7' : '#ECFDF5',
+                                  color: isViewOnly ? '#92400E' : '#047857',
+                                  border: isViewOnly ? '1px solid #FDE68A' : 'none',
                                   padding: '0.25rem 0.65rem',
                                   borderRadius: '8px',
                                   fontWeight: '800',
-                                  fontSize: '0.74rem'
+                                  fontSize: '0.74rem',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.35rem'
                                 }}>
-                                  📝 Form Báo Cáo
+                                  {isViewOnly ? <><FaEye /> Quyền Chỉ Xem</> : '📝 Form Báo Cáo'}
                                 </span>
                                 <span style={{ fontSize: '0.75rem', fontFamily: 'monospace', color: '#64748B', fontWeight: '700' }}>
                                   /{form.code}
@@ -459,54 +499,85 @@ const PersonalCustomFormsPortal = () => {
                               </div>
                             </div>
 
-                            {/* Buttons */}
-                            <div style={{ display: 'flex', gap: '0.75rem', borderTop: '1px solid #F1F5F9', paddingTop: '1rem' }}>
-                              <button
-                                type="button"
-                                onClick={() => handleFillForm(form.code)}
-                                style={{
-                                  flex: 1.2,
-                                  background: `linear-gradient(135deg, ${themeColor} 0%, #10B981 100%)`,
-                                  color: '#FFFFFF',
-                                  border: 'none',
-                                  borderRadius: '12px',
-                                  padding: '0.7rem 1rem',
-                                  fontWeight: '800',
-                                  fontSize: '0.88rem',
-                                  cursor: 'pointer',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  gap: '0.45rem',
-                                  boxShadow: `0 4px 12px ${themeColor}33`
-                                }}
-                              >
-                                <FaPlusCircle /> Điền Báo Cáo
-                              </button>
+                            {/* Buttons: Nếu tài khoản chỉ có quyền xem thì CHỈ hiện nút [Xem Dữ Liệu] */}
+                            {isViewOnly ? (
+                              <div style={{ borderTop: '1px solid #F1F5F9', paddingTop: '1rem' }}>
+                                <button
+                                  type="button"
+                                  onClick={() => handleViewSubmissions(form.code, true)}
+                                  style={{
+                                    width: '100%',
+                                    backgroundColor: '#2563EB',
+                                    color: '#FFFFFF',
+                                    border: 'none',
+                                    borderRadius: '12px',
+                                    padding: '0.75rem 1rem',
+                                    fontWeight: '800',
+                                    fontSize: '0.9rem',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '0.5rem',
+                                    boxShadow: '0 4px 14px rgba(37, 99, 235, 0.25)',
+                                    transition: 'all 0.15s ease'
+                                  }}
+                                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#1D4ED8'}
+                                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#2563EB'}
+                                  title="Xem toàn bộ dữ liệu báo cáo (Chế độ chỉ đọc - Không thể thêm, sửa hay xóa)"
+                                >
+                                  <FaEye /> Xem Dữ Liệu ({submissionsCount})
+                                </button>
+                              </div>
+                            ) : (
+                              <div style={{ display: 'flex', gap: '0.75rem', borderTop: '1px solid #F1F5F9', paddingTop: '1rem' }}>
+                                <button
+                                  type="button"
+                                  onClick={() => handleFillForm(form.code)}
+                                  style={{
+                                    flex: 1.2,
+                                    background: `linear-gradient(135deg, ${themeColor} 0%, #10B981 100%)`,
+                                    color: '#FFFFFF',
+                                    border: 'none',
+                                    borderRadius: '12px',
+                                    padding: '0.7rem 1rem',
+                                    fontWeight: '800',
+                                    fontSize: '0.88rem',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '0.45rem',
+                                    boxShadow: `0 4px 12px ${themeColor}33`
+                                  }}
+                                >
+                                  <FaPlusCircle /> Điền Báo Cáo
+                                </button>
 
-                              <button
-                                type="button"
-                                onClick={() => handleViewSubmissions(form.code)}
-                                style={{
-                                  flex: 0.8,
-                                  backgroundColor: '#F1F5F9',
-                                  color: '#334155',
-                                  border: '1px solid #CBD5E1',
-                                  borderRadius: '12px',
-                                  padding: '0.7rem 0.85rem',
-                                  fontWeight: '700',
-                                  fontSize: '0.84rem',
-                                  cursor: 'pointer',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  gap: '0.35rem'
-                                }}
-                                title="Xem lịch sử các bản ghi đã nộp"
-                              >
-                                <FaClipboardCheck /> Bản ghi ({submissionsCount})
-                              </button>
-                            </div>
+                                <button
+                                  type="button"
+                                  onClick={() => handleViewSubmissions(form.code, false)}
+                                  style={{
+                                    flex: 0.8,
+                                    backgroundColor: '#F1F5F9',
+                                    color: '#334155',
+                                    border: '1px solid #CBD5E1',
+                                    borderRadius: '12px',
+                                    padding: '0.7rem 0.85rem',
+                                    fontWeight: '700',
+                                    fontSize: '0.84rem',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '0.35rem'
+                                  }}
+                                  title="Xem lịch sử các bản ghi đã nộp"
+                                >
+                                  <FaClipboardCheck /> Bản ghi ({submissionsCount})
+                                </button>
+                              </div>
+                            )}
                           </div>
                         );
                       })}
