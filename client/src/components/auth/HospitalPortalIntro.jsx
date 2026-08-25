@@ -223,13 +223,17 @@ const HospitalPortalIntro = ({ onComplete }) => {
     if (justLoggedOut) {
       setLoggedOutUser(justLoggedOut);
       sessionStorage.removeItem('just_logged_out_username');
+      // Automatically run immediately on logout without pressing button
+      setTimeout(() => {
+        startExperience();
+      }, 150);
     } else {
       const remembered = localStorage.getItem('saved_hospital_username');
       if (remembered) setSavedUser(remembered);
     }
 
     return () => clearInterval(interval);
-  }, []);
+  }, [startExperience]);
 
   const getGreeting = () => {
     if (loggedOutUser) {
