@@ -267,6 +267,7 @@ const LoginPage = () => {
           
           {/* Logo with Soft Glow & Replay Intro Trigger */}
           <div 
+            className="login-logo-circle"
             onClick={() => setShowIntro(true)}
             title="Xem lại hiệu ứng giới thiệu Cổng Thông Tin"
             style={{
@@ -295,53 +296,65 @@ const LoginPage = () => {
 
           {/* Titles & Headings */}
           <div>
-            <div style={{
-              display: 'inline-block',
-              backgroundColor: '#DBEAFE',
-              color: '#1D4ED8',
-              padding: '0.24rem 0.8rem',
-              borderRadius: '999px',
-              fontSize: '0.75rem',
-              fontWeight: '800',
-              letterSpacing: '0.5px',
-              textTransform: 'uppercase',
-              marginBottom: '0.45rem',
-              boxShadow: '0 2px 6px rgba(29, 78, 216, 0.08)'
-            }}>
+            <div 
+              className="login-agency-badge"
+              style={{
+                display: 'inline-block',
+                backgroundColor: '#DBEAFE',
+                color: '#1D4ED8',
+                padding: '0.24rem 0.8rem',
+                borderRadius: '999px',
+                fontSize: '0.75rem',
+                fontWeight: '800',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+                marginBottom: '0.45rem',
+                boxShadow: '0 2px 6px rgba(29, 78, 216, 0.08)'
+              }}
+            >
               SỞ Y TẾ THÀNH PHỐ ĐỒNG NAI
             </div>
 
-            <h1 style={{
-              fontSize: '1.9rem',
-              fontWeight: '900',
-              color: '#0F2C59',
-              margin: '0 0 0.25rem 0',
-              lineHeight: '1.18',
-              textTransform: 'uppercase',
-              letterSpacing: '0.4px'
-            }}>
-              TRUNG TÂM Y TẾ<br/>KHU VỰC BÌNH LONG
+            <h1 
+              className="login-hospital-title"
+              style={{
+                fontSize: '1.9rem',
+                fontWeight: '900',
+                color: '#0F2C59',
+                margin: '0 0 0.25rem 0',
+                lineHeight: '1.18',
+                textTransform: 'uppercase',
+                letterSpacing: '0.4px'
+              }}
+            >
+              TRUNG TÂM Y TẾ<br className="hide-on-mobile"/>KHU VỰC BÌNH LONG
             </h1>
 
-            <h2 style={{
-              fontSize: '1.45rem',
-              fontWeight: '800',
-              margin: '0 0 0.4rem 0',
-              background: 'linear-gradient(135deg, #0284C7 0%, #0D9488 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              letterSpacing: '0.2px'
-            }}>
+            <h2 
+              className="login-system-title"
+              style={{
+                fontSize: '1.45rem',
+                fontWeight: '800',
+                margin: '0 0 0.4rem 0',
+                background: 'linear-gradient(135deg, #0284C7 0%, #0D9488 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                letterSpacing: '0.2px'
+              }}
+            >
               Hệ Thống Báo Cáo Giao Ban
             </h2>
 
-            <p style={{
-              fontSize: '0.88rem',
-              color: '#475569',
-              lineHeight: '1.45',
-              margin: 0,
-              maxWidth: '430px'
-            }}>
+            <p 
+              className="login-desc-text"
+              style={{
+                fontSize: '0.88rem',
+                color: '#475569',
+                lineHeight: '1.45',
+                margin: 0,
+                maxWidth: '430px'
+              }}
+            >
               Nền tảng quản lý báo cáo giao ban nhanh chóng, chính xác và hiệu quả cho các đơn vị y tế.
             </p>
           </div>
@@ -453,51 +466,63 @@ const LoginPage = () => {
 
         {/* ================= RIGHT COLUMN: CRISP WHITE LOGIN CARD ================= */}
         <section className="login-card-container" style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-          <div style={{
-            width: '100%',
-            maxWidth: '485px',
-            backgroundColor: '#FFFFFF',
-            borderRadius: '24px',
-            padding: '1.75rem 2rem',
-            boxShadow: '0 25px 60px rgba(15, 44, 89, 0.16), 0 2px 6px rgba(0, 0, 0, 0.04)',
-            border: '1px solid rgba(255, 255, 255, 0.95)',
-            boxSizing: 'border-box'
-          }}>
+          <div 
+            className="login-card-inner"
+            style={{
+              width: '100%',
+              maxWidth: '485px',
+              backgroundColor: '#FFFFFF',
+              borderRadius: '24px',
+              padding: '1.75rem 2rem',
+              boxShadow: '0 25px 60px rgba(15, 44, 89, 0.16), 0 2px 6px rgba(0, 0, 0, 0.04)',
+              border: '1px solid rgba(255, 255, 255, 0.95)',
+              boxSizing: 'border-box'
+            }}
+          >
 
             {/* Top Shield Icon Badge */}
-            <div style={{
-              width: '54px',
-              height: '54px',
-              borderRadius: '50%',
-              backgroundColor: '#EFF6FF',
-              border: '1.5px solid #DBEAFE',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 0.75rem auto',
-              boxShadow: '0 4px 14px rgba(37, 99, 235, 0.12)'
-            }}>
+            <div 
+              className="login-shield-badge"
+              style={{
+                width: '54px',
+                height: '54px',
+                borderRadius: '50%',
+                backgroundColor: '#EFF6FF',
+                border: '1.5px solid #DBEAFE',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 0.75rem auto',
+                boxShadow: '0 4px 14px rgba(37, 99, 235, 0.12)'
+              }}
+            >
               <FaShieldAlt style={{ fontSize: '1.65rem', color: '#2563EB' }} />
             </div>
 
             {/* Heading */}
-            <h3 style={{
-              fontSize: '1.35rem',
-              fontWeight: '800',
-              color: '#0F2C59',
-              margin: '0 0 0.2rem 0',
-              textAlign: 'center',
-              letterSpacing: '0.2px'
-            }}>
+            <h3 
+              className="login-card-title"
+              style={{
+                fontSize: '1.35rem',
+                fontWeight: '800',
+                color: '#0F2C59',
+                margin: '0 0 0.2rem 0',
+                textAlign: 'center',
+                letterSpacing: '0.2px'
+              }}
+            >
               Chào mừng bạn trở lại!
             </h3>
 
-            <p style={{
-              fontSize: '0.82rem',
-              color: '#64748B',
-              margin: '0 0 1.15rem 0',
-              textAlign: 'center'
-            }}>
+            <p 
+              className="login-card-subtitle"
+              style={{
+                fontSize: '0.82rem',
+                color: '#64748B',
+                margin: '0 0 1.15rem 0',
+                textAlign: 'center'
+              }}
+            >
               Vui lòng đăng nhập để tiếp tục sử dụng hệ thống
             </p>
 

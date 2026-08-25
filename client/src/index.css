@@ -1077,18 +1077,39 @@ input:focus, textarea:focus, select:focus { box-shadow: var(--focus-ring); }
 @media (max-width: 992px) {
   .login-main-grid {
     grid-template-columns: 1fr !important;
-    gap: 1.5rem !important;
-    padding: 1.25rem 1rem 2.5rem !important;
-    max-width: 500px !important;
+    gap: 0.85rem !important;
+    padding: 0.75rem 1rem 4.5rem !important;
+    max-width: 460px !important;
     margin: 0 auto !important;
   }
   .login-brand-col {
     align-items: center !important;
     text-align: center !important;
     max-width: 100% !important;
+    gap: 0.25rem !important;
   }
-  .login-brand-col p {
-    text-align: center !important;
+  .login-logo-circle {
+    width: 48px !important;
+    height: 48px !important;
+    padding: 6px !important;
+    margin-bottom: 0 !important;
+  }
+  .login-agency-badge {
+    font-size: 0.65rem !important;
+    padding: 0.15rem 0.6rem !important;
+    margin-bottom: 0.15rem !important;
+  }
+  .login-hospital-title {
+    font-size: 1.15rem !important;
+    line-height: 1.2 !important;
+    margin: 0 0 0.1rem 0 !important;
+  }
+  .login-system-title {
+    font-size: 0.95rem !important;
+    margin: 0 !important;
+  }
+  .login-desc-text {
+    display: none !important;
   }
   .login-feature-pills {
     display: none !important;
@@ -1096,6 +1117,46 @@ input:focus, textarea:focus, select:focus { box-shadow: var(--focus-ring); }
   .login-card-container {
     max-width: 100% !important;
     width: 100% !important;
+  }
+  .login-card-inner {
+    padding: 1.25rem 1.15rem !important;
+    border-radius: 20px !important;
+    box-shadow: 0 10px 30px rgba(15, 44, 89, 0.1) !important;
+  }
+  .login-shield-badge {
+    width: 44px !important;
+    height: 44px !important;
+    margin-bottom: 0.45rem !important;
+  }
+  .login-shield-badge svg {
+    font-size: 1.3rem !important;
+  }
+  .login-card-title {
+    font-size: 1.15rem !important;
+    margin-bottom: 0.15rem !important;
+  }
+  .login-card-subtitle {
+    font-size: 0.76rem !important;
+    margin-bottom: 0.75rem !important;
+  }
+}
+
+/* AI Floating Button Mobile Optimization - Prevent Overlapping */
+@media (max-width: 768px) {
+  .ai-floating-container {
+    bottom: 0.85rem !important;
+    right: 0.85rem !important;
+  }
+  .ai-floating-btn {
+    padding: 0.55rem !important;
+    border-radius: 50% !important;
+    width: 46px !important;
+    height: 46px !important;
+    justify-content: center !important;
+    box-shadow: 0 4px 16px rgba(15, 44, 89, 0.4) !important;
+  }
+  .ai-btn-text {
+    display: none !important;
   }
 }
 
@@ -1140,4 +1201,5 @@ input:focus, textarea:focus, select:focus { box-shadow: var(--focus-ring); }
     justify-content: center !important;
   }
 }
+
 
