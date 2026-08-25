@@ -183,6 +183,7 @@ const HospitalPortalIntro = ({ onComplete }) => {
   const [timeStr, setTimeStr] = useState('');
   const [dateStr, setDateStr] = useState('');
   const [savedUser, setSavedUser] = useState('');
+  const [loggedOutUser, setLoggedOutUser] = useState('');
   const [progress, setProgress] = useState(0);
   const [statusText, setStatusText] = useState('Khởi tạo cổng bảo mật y tế...');
   const [isExiting, setIsExiting] = useState(false);
@@ -218,13 +219,25 @@ const HospitalPortalIntro = ({ onComplete }) => {
     updateTime();
     const interval = setInterval(updateTime, 1000);
 
-    const remembered = localStorage.getItem('saved_hospital_username');
-    if (remembered) setSavedUser(remembered);
+    const justLoggedOut = sessionStorage.getItem('just_logged_out_username');
+    if (justLoggedOut) {
+      setLoggedOutUser(justLoggedOut);
+      sessionStorage.removeItem('just_logged_out_username');
+    } else {
+      const remembered = localStorage.getItem('saved_hospital_username');
+      if (remembered) setSavedUser(remembered);
+    }
 
     return () => clearInterval(interval);
   }, []);
 
   const getGreeting = () => {
+    if (loggedOutUser) {
+      return { 
+        text: `Đăng Xuất Thành Công • Hẹn Gặp Lại Quý Đồng Nghiệp (${loggedOutUser})`, 
+        icon: <FaSignInAlt style={{ color: '#F87171' }} /> 
+      };
+    }
     const hour = new Date().getHours();
     if (hour >= 5 && hour < 11) {
       return { text: 'Chào Ca Trực Sáng • Chúc Một Ngày Bình An & Thuận Lợi', icon: <FaSun style={{ color: '#FBBF24' }} /> };
@@ -731,7 +744,24 @@ const HospitalPortalIntro = ({ onComplete }) => {
             <span>{timeStr || 'Thời gian thực'}</span>
           </div>
 
-          {savedUser ? (
+          {loggedOutUser ? (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              backgroundColor: 'rgba(239, 68, 68, 0.08)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(239, 68, 68, 0.22)',
+              padding: '0.35rem 0.9rem',
+              borderRadius: '999px',
+              fontSize: '0.82rem',
+              fontWeight: '700',
+              color: '#FCA5A5'
+            }}>
+              <FaUserCheck style={{ color: '#F87171' }} />
+              <span>Chào tạm biệt: <strong>{loggedOutUser}</strong></span>
+            </div>
+          ) : savedUser ? (
             <div style={{
               display: 'flex',
               alignItems: 'center',

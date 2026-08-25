@@ -112,6 +112,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    if (user?.username) {
+      sessionStorage.setItem('just_logged_out_username', user.username);
+    }
     localStorage.removeItem('token');
     localStorage.removeItem('user_profile');
     setUser(null);
