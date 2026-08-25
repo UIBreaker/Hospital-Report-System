@@ -22,6 +22,7 @@ const {
   deleteSystemUser
 } = require('../controllers/userManageController');
 const { getHospitalAnalytics } = require('../controllers/analyticsController');
+const { getShiftReportHistory, getCustomFormsHistory } = require('../controllers/submissionHistoryController');
 const { auth, adminOnly: requireAdmin } = require('../middleware/auth');
 
 router.get('/departments/:date', auth, requireAdmin, getDepartmentStatus);
@@ -31,6 +32,10 @@ router.get('/database-stats', auth, requireAdmin, getDatabaseStats);
 router.get('/reports-payload-size', auth, requireAdmin, getReportsPayloadSize);
 router.get('/audit-logs', auth, requireAdmin, getAuditLogs);
 router.get('/export-reports', auth, requireAdmin, exportReports);
+
+// Submission History & Realtime Monitoring
+router.get('/submission-history/shift-reports', auth, requireAdmin, getShiftReportHistory);
+router.get('/submission-history/custom-forms', auth, requireAdmin, getCustomFormsHistory);
 
 // Core 13 Accounts
 router.get('/accounts', auth, requireAdmin, getAllAccounts);

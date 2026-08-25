@@ -22,7 +22,8 @@ import {
   FaDatabase,
   FaUserShield,
   FaUserMd,
-  FaChartLine
+  FaChartLine,
+  FaHistory
 } from 'react-icons/fa';
 import reportService from '../services/reportService';
 import { generateAndDownloadHospitalExcel } from '../services/excelExportService';
@@ -34,6 +35,7 @@ import MedicalLoader from '../components/common/MedicalLoader';
 
 // Lazy-loaded Tab components for performance and code splitting
 const ReportsTab = lazy(() => import('../components/admin/tabs/ReportsTab'));
+const SubmissionHistoryTab = lazy(() => import('../components/admin/tabs/SubmissionHistoryTab'));
 const AnalyticsTab = lazy(() => import('../components/admin/tabs/AnalyticsTab'));
 const StaffTab = lazy(() => import('../components/admin/tabs/StaffTab'));
 const DatabaseTab = lazy(() => import('../components/admin/tabs/DatabaseTab'));
@@ -848,7 +850,46 @@ const AdminDashboard = () => {
               )}
             </button>
 
-            {/* Item 2: Số Liệu Thống Kê & Biểu Đồ */}
+            {/* Item 2: Lịch Sử Nộp Báo Cáo */}
+            <button
+              type="button"
+              onClick={() => { setActiveTab('history'); setMobileDrawerOpen(false); }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: isSidebarCollapsed ? 'center' : 'flex-start',
+                gap: '0.65rem',
+                padding: isSidebarCollapsed ? '0.75rem 0' : '0.75rem 0.85rem',
+                borderRadius: '10px',
+                border: 'none',
+                backgroundColor: activeTab === 'history' ? '#2563EB' : 'transparent',
+                color: activeTab === 'history' ? '#FFFFFF' : '#94A3B8',
+                cursor: 'pointer',
+                fontWeight: activeTab === 'history' ? '800' : '600',
+                fontSize: '0.86rem',
+                transition: 'all 0.15s ease',
+                textAlign: 'left',
+                boxShadow: activeTab === 'history' ? '0 4px 12px rgba(37, 99, 235, 0.4)' : 'none'
+              }}
+              title={isSidebarCollapsed ? 'Lịch Sử Nộp Báo Cáo' : undefined}
+              onMouseEnter={(e) => {
+                if (activeTab !== 'history') {
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
+                  e.currentTarget.style.color = '#FFFFFF';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeTab !== 'history') {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = '#94A3B8';
+                }
+              }}
+            >
+              <FaHistory style={{ fontSize: isSidebarCollapsed ? '1.15rem' : '0.95rem' }} />
+              {!isSidebarCollapsed && <span>Lịch Sử Nộp Báo Cáo</span>}
+            </button>
+
+            {/* Item 3: Số Liệu Thống Kê & Biểu Đồ */}
             <button
               type="button"
               onClick={() => { setActiveTab('analytics'); setMobileDrawerOpen(false); }}
@@ -1353,6 +1394,22 @@ const AdminDashboard = () => {
                 error={error}
                 onClearError={() => setError('')}
                 onOpenDetailModal={handleOpenDetailModal}
+              />
+            )}
+            {activeTab === 'history' && (
+              <SubmissionHistoryTab
+                onViewReportDetail={(deptCode, reportDate) => {
+                  if (reportDate && reportDate !== date) {
+                    setDate(reportDate);
+                  }
+                  handleOpenDetailModal(deptCode);
+                }}
+                onPrintReport={(deptCode, reportDate) => {
+                  if (reportDate && reportDate !== date) {
+                    setDate(reportDate);
+                  }
+                  setShowPrintModal(true);
+                }}
               />
             )}
             {activeTab === 'analytics' && <AnalyticsTab initialDate={date} />}
