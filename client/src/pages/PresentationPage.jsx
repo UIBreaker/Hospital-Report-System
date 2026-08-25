@@ -322,13 +322,25 @@ const PresentationPage = () => {
       transferCases.forEach((tc, tcIdx) => {
         s.push({
           type: 'transfer',
-          title: `CA CHUYỂN VIỆN ${tcIdx + 1} – ${deptName}`,
+          title: `CA CHUYỂN VIỆN ${tcIdx + 1} (TIẾP NHẬN & XỬ TRÍ) – ${deptName}`,
           deptCode: r.department_code,
           deptName,
           transferCase: tc,
           caseIndex: tcIdx + 1,
           totalCases: transferCases.length
         });
+
+        if (tc.clinical_symptoms || tc.clinicalSymptoms || tc.clinical_tests || tc.clinicalTests) {
+          s.push({
+            type: 'transfer_clinical',
+            title: `CA CHUYỂN VIỆN ${tcIdx + 1} (LÂM SÀNG & CLS) – ${deptName}`,
+            deptCode: r.department_code,
+            deptName,
+            transferCase: tc,
+            caseIndex: tcIdx + 1,
+            totalCases: transferCases.length
+          });
+        }
 
         if (tc.progress_notes || tc.progressNotes) {
           s.push({
@@ -362,13 +374,25 @@ const PresentationPage = () => {
       surgeryCases.forEach((sc, scIdx) => {
         s.push({
           type: 'surgery',
-          title: `CA PHẪU THUẬT ${scIdx + 1} – ${deptName}`,
+          title: `CA PHẪU THUẬT ${scIdx + 1} (CHẨN ĐOÁN & LỆNH MỔ) – ${deptName}`,
           deptCode: r.department_code,
           deptName,
           surgeryCase: sc,
           caseIndex: scIdx + 1,
           totalCases: surgeryCases.length
         });
+
+        if (sc.clinical_symptoms || sc.clinicalSymptoms || sc.clinical_tests || sc.clinicalTests) {
+          s.push({
+            type: 'surgery_clinical',
+            title: `CA PHẪU THUẬT ${scIdx + 1} (LÂM SÀNG & CLS) – ${deptName}`,
+            deptCode: r.department_code,
+            deptName,
+            surgeryCase: sc,
+            caseIndex: scIdx + 1,
+            totalCases: surgeryCases.length
+          });
+        }
 
         const normImgs = normalizeImages(sc.images);
         normImgs.forEach((imgObj, imgIdx) => {
@@ -390,13 +414,25 @@ const PresentationPage = () => {
       deathCases.forEach((dc, dcIdx) => {
         s.push({
           type: 'death',
-          title: `CA TỬ VONG ${dcIdx + 1} – ${deptName}`,
+          title: `CA TỬ VONG ${dcIdx + 1} (CHẨN ĐOÁN & CẤP CỨU) – ${deptName}`,
           deptCode: r.department_code,
           deptName,
           deathCase: dc,
           caseIndex: dcIdx + 1,
           totalCases: deathCases.length
         });
+
+        if (dc.clinical_symptoms || dc.clinicalSymptoms || dc.clinical_tests || dc.clinicalTests || dc.medical_history || dc.medicalHistory) {
+          s.push({
+            type: 'death_clinical',
+            title: `CA TỬ VONG ${dcIdx + 1} (TIỀN SỬ, LÂM SÀNG & ECG) – ${deptName}`,
+            deptCode: r.department_code,
+            deptName,
+            deathCase: dc,
+            caseIndex: dcIdx + 1,
+            totalCases: deathCases.length
+          });
+        }
 
         const normImgs = normalizeImages(dc.images);
         normImgs.forEach((imgObj, imgIdx) => {
@@ -418,13 +454,25 @@ const PresentationPage = () => {
       criticalCases.forEach((cc, ccIdx) => {
         s.push({
           type: 'critical',
-          title: `CA BỆNH NẶNG ${ccIdx + 1} – ${deptName}`,
+          title: `CA BỆNH NẶNG ${ccIdx + 1} (CHẨN ĐOÁN & XỬ TRÍ) – ${deptName}`,
           deptCode: r.department_code,
           deptName,
           criticalCase: cc,
           caseIndex: ccIdx + 1,
           totalCases: criticalCases.length
         });
+
+        if (cc.clinical_symptoms || cc.clinicalSymptoms || cc.clinical_tests || cc.clinicalTests || cc.medical_history || cc.medicalHistory) {
+          s.push({
+            type: 'critical_clinical',
+            title: `CA BỆNH NẶNG ${ccIdx + 1} (LÂM SÀNG & XÉT NGHIỆM) – ${deptName}`,
+            deptCode: r.department_code,
+            deptName,
+            criticalCase: cc,
+            caseIndex: ccIdx + 1,
+            totalCases: criticalCases.length
+          });
+        }
 
         const normImgs = normalizeImages(cc.images);
         normImgs.forEach((imgObj, imgIdx) => {
@@ -935,23 +983,23 @@ const PresentationPage = () => {
                 <DepartmentSlide slide={slide} isFullscreen={true} />
               )}
 
-              {/* 3. Transfer Case Slide (Part 1 & Part 2) */}
-              {(slide.type === 'transfer' || slide.type === 'transfer_progress') && (
+              {/* 3. Transfer Case Slide (Overview, Clinical & Progress) */}
+              {(slide.type === 'transfer' || slide.type === 'transfer_clinical' || slide.type === 'transfer_progress') && (
                 <TransferSlide slide={slide} isFullscreen={true} />
               )}
 
-              {/* 4. Surgery Case Slide */}
-              {slide.type === 'surgery' && (
+              {/* 4. Surgery Case Slide (Overview & Clinical) */}
+              {(slide.type === 'surgery' || slide.type === 'surgery_clinical') && (
                 <SurgerySlide slide={slide} isFullscreen={true} />
               )}
 
-              {/* 5. Mortality / Death Case Slide */}
-              {slide.type === 'death' && (
+              {/* 5. Mortality / Death Case Slide (Overview & Clinical) */}
+              {(slide.type === 'death' || slide.type === 'death_clinical') && (
                 <DeathSlide slide={slide} isFullscreen={true} />
               )}
 
-              {/* 6. Critical Care Monitored Case Slide */}
-              {slide.type === 'critical' && (
+              {/* 6. Critical Care Monitored Case Slide (Overview & Clinical) */}
+              {(slide.type === 'critical' || slide.type === 'critical_clinical') && (
                 <CriticalSlide slide={slide} isFullscreen={true} />
               )}
 
