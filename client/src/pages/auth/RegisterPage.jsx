@@ -104,22 +104,30 @@ const RegisterPage = () => {
   const isPasswordMatch = password && confirmPassword && password === confirmPassword;
 
   return (
-    <div style={{
-      minHeight: '100vh',
+    <div className="hide-scrollbar" style={{
+      height: '100vh',
+      maxHeight: '100vh',
       width: '100vw',
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'space-between',
       position: 'relative',
-      overflowX: 'hidden',
-      backgroundColor: '#030914',
+      overflow: 'hidden',
       fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
       boxSizing: 'border-box'
     }}>
 
       <style>{`
+        .hide-scrollbar {
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+
         @keyframes regBloomExpand {
-          0% { opacity: 0; transform: scale(0.96); filter: blur(10px); }
+          0% { opacity: 0; transform: scale(0.97); filter: blur(8px); }
           100% { opacity: 1; transform: scale(1); filter: blur(0px); }
         }
 
@@ -134,35 +142,35 @@ const RegisterPage = () => {
         }
 
         .reg-input-field:focus {
-          border-color: #38BDF8 !important;
-          background-color: rgba(10, 25, 50, 0.95) !important;
-          box-shadow: 0 0 20px rgba(56, 189, 248, 0.45), inset 0 0 10px rgba(56, 189, 248, 0.1) !important;
+          border-color: #0284C7 !important;
+          background-color: #FFFFFF !important;
+          box-shadow: 0 0 0 3.5px rgba(2, 132, 199, 0.15) !important;
         }
 
         .reg-feature-hover {
-          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+          transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .reg-feature-hover:hover {
-          transform: translateY(-3px) scale(1.02);
-          border-color: #38BDF8 !important;
-          box-shadow: 0 12px 30px rgba(56, 189, 248, 0.22) !important;
-          background: rgba(15, 34, 68, 0.85) !important;
+          transform: translateY(-2px);
+          border-color: #BAE6FD !important;
+          box-shadow: 0 10px 25px rgba(2, 132, 199, 0.1) !important;
+          background: rgba(255, 255, 255, 0.95) !important;
         }
       `}</style>
 
-      {/* Synchronized Obsidian Dynamic Medical Background (ECG Canvas, Starlight Particles, Auroras) */}
+      {/* Synchronized Light Clinical Medical Background (ECG Canvas, Soft Nano Particles, Gentle Auroras) */}
       <MedicalAuthBackground />
 
       {/* Main Container Grid */}
       <main style={{
         flex: 1,
-        maxWidth: '1280px',
+        maxWidth: '1240px',
         margin: '0 auto',
-        padding: '1.5rem 2.5rem',
+        padding: '0.4rem 2rem',
         width: '100%',
         display: 'grid',
         gridTemplateColumns: '1.1fr 1.15fr',
-        gap: '3.5rem',
+        gap: '3rem',
         alignItems: 'center',
         position: 'relative',
         zIndex: 10,
@@ -172,23 +180,23 @@ const RegisterPage = () => {
       }}>
 
         {/* ================= LEFT COLUMN: BRAND & REGISTRATION INFO ================= */}
-        <section style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '520px' }}>
+        <section style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', maxWidth: '500px' }}>
           
           {/* Logo with Rotating Laser Rings */}
-          <div style={{ position: 'relative', width: '84px', height: '84px', marginBottom: '0.2rem' }}>
+          <div style={{ position: 'relative', width: '78px', height: '78px', marginBottom: '0.1rem' }}>
             <div style={{
               position: 'absolute',
-              inset: '-8px',
+              inset: '-7px',
               borderRadius: '50%',
-              border: '1.5px dashed rgba(56, 189, 248, 0.5)',
+              border: '1.5px dashed rgba(2, 132, 199, 0.45)',
               animation: 'haloSpinSlow 16s linear infinite',
               pointerEvents: 'none'
             }} />
             <div style={{
               position: 'absolute',
-              inset: '-3px',
+              inset: '-2px',
               borderRadius: '50%',
-              border: '1.5px solid rgba(45, 212, 191, 0.4)',
+              border: '1.5px solid rgba(13, 148, 136, 0.4)',
               borderTopColor: 'transparent',
               borderBottomColor: 'transparent',
               animation: 'haloSpinReverse 9s linear infinite',
@@ -203,7 +211,7 @@ const RegisterPage = () => {
               alignItems: 'center',
               justifyContent: 'center',
               padding: '10px',
-              boxShadow: '0 0 25px rgba(56, 189, 248, 0.45)',
+              boxShadow: '0 8px 25px rgba(2, 132, 199, 0.2), 0 0 0 3px rgba(255, 255, 255, 0.95)',
               boxSizing: 'border-box'
             }}>
               <img 
@@ -220,41 +228,41 @@ const RegisterPage = () => {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.45rem',
-              backgroundColor: 'rgba(14, 165, 233, 0.12)',
-              border: '1px solid rgba(56, 189, 248, 0.35)',
-              color: '#38BDF8',
-              padding: '0.3rem 0.95rem',
+              backgroundColor: '#EFF6FF',
+              border: '1px solid #BFDBFE',
+              color: '#1D4ED8',
+              padding: '0.24rem 0.85rem',
               borderRadius: '999px',
-              fontSize: '0.78rem',
-              fontWeight: '900',
-              letterSpacing: '1px',
+              fontSize: '0.75rem',
+              fontWeight: '800',
+              letterSpacing: '0.6px',
               textTransform: 'uppercase',
-              marginBottom: '0.65rem',
-              boxShadow: '0 0 15px rgba(56, 189, 248, 0.2)'
+              marginBottom: '0.45rem',
+              boxShadow: '0 2px 8px rgba(29, 78, 216, 0.08)'
             }}>
-              <FaHospital style={{ color: '#2DD4BF' }} /> SỞ Y TẾ THÀNH PHỐ ĐỒNG NAI
+              <FaHospital style={{ color: '#0284C7' }} /> SỞ Y TẾ THÀNH PHỐ ĐỒNG NAI
             </div>
 
             <h1 style={{
-              fontSize: '2.15rem',
+              fontSize: '1.95rem',
               fontWeight: '900',
-              color: '#FFFFFF',
-              margin: '0 0 0.15rem 0',
+              color: '#0F2C59',
+              margin: '0 0 0.1rem 0',
               lineHeight: '1.15',
               textTransform: 'uppercase',
-              letterSpacing: '1px'
+              letterSpacing: '0.5px'
             }}>
               ĐĂNG KÝ TÀI KHOẢN
             </h1>
 
             <h2 style={{
-              fontSize: '2.25rem',
+              fontSize: '2.05rem',
               fontWeight: '900',
               textTransform: 'uppercase',
-              letterSpacing: '1.5px',
+              letterSpacing: '1px',
               lineHeight: '1.15',
-              margin: '0 0 0.55rem 0',
-              backgroundImage: 'linear-gradient(135deg, #38BDF8 0%, #2DD4BF 50%, #A7F3D0 100%)',
+              margin: '0 0 0.35rem 0',
+              backgroundImage: 'linear-gradient(135deg, #0284C7 0%, #0369A1 50%, #0D9488 100%)',
               WebkitBackgroundClip: 'text',
               backgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
@@ -265,135 +273,133 @@ const RegisterPage = () => {
             </h2>
 
             <p style={{
-              fontSize: '0.9rem',
-              color: '#94A3B8',
-              lineHeight: '1.5',
+              fontSize: '0.84rem',
+              color: '#475569',
+              lineHeight: '1.45',
               margin: 0,
-              maxWidth: '470px'
+              maxWidth: '440px'
             }}>
               Tạo tài khoản cán bộ nhân viên khoa phòng hoặc cá nhân để được phân quyền nhập và theo dõi báo cáo giao ban y khoa trực tuyến.
             </p>
           </div>
 
           {/* Feature Badges */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginTop: '0.35rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.15rem' }}>
             <div className="reg-feature-hover" style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.95rem',
-              backgroundColor: 'rgba(11, 24, 48, 0.72)',
+              gap: '0.85rem',
+              backgroundColor: 'rgba(255, 255, 255, 0.85)',
               backdropFilter: 'blur(16px)',
               WebkitBackdropFilter: 'blur(16px)',
-              padding: '0.65rem 1.05rem',
-              borderRadius: '16px',
-              border: '1px solid rgba(56, 189, 248, 0.22)',
-              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.35)'
+              padding: '0.5rem 0.9rem',
+              borderRadius: '14px',
+              border: '1.5px solid rgba(255, 255, 255, 0.95)',
+              boxShadow: '0 4px 14px rgba(15, 44, 89, 0.05)'
             }}>
               <div style={{
-                width: '38px',
-                height: '38px',
-                borderRadius: '12px',
-                background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.3) 0%, rgba(2, 132, 199, 0.5) 100%)',
-                border: '1px solid rgba(56, 189, 248, 0.45)',
-                color: '#38BDF8',
+                width: '34px',
+                height: '34px',
+                borderRadius: '10px',
+                background: '#EFF6FF',
+                border: '1px solid #BFDBFE',
+                color: '#2563EB',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '1.05rem',
-                flexShrink: 0,
-                boxShadow: '0 0 15px rgba(56, 189, 248, 0.25)'
+                fontSize: '0.95rem',
+                flexShrink: 0
               }}>
                 <FaShieldAlt />
               </div>
               <div>
-                <div style={{ fontWeight: '800', color: '#F8FAFC', fontSize: '0.88rem' }}>Bảo Mật & Phê Duyệt An Toàn</div>
-                <div style={{ color: '#94A3B8', fontSize: '0.76rem' }}>Mọi tài khoản đều được Ban Giám Đốc / Admin duyệt trước khi kích hoạt</div>
+                <div style={{ fontWeight: '800', color: '#0F2C59', fontSize: '0.84rem' }}>Bảo Mật & Phê Duyệt An Toàn</div>
+                <div style={{ color: '#64748B', fontSize: '0.74rem' }}>Mọi tài khoản đều được Ban Giám Đốc / Admin duyệt trước khi kích hoạt</div>
               </div>
             </div>
 
             <div className="reg-feature-hover" style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.95rem',
-              backgroundColor: 'rgba(11, 24, 48, 0.72)',
+              gap: '0.85rem',
+              backgroundColor: 'rgba(255, 255, 255, 0.85)',
               backdropFilter: 'blur(16px)',
               WebkitBackdropFilter: 'blur(16px)',
-              padding: '0.65rem 1.05rem',
-              borderRadius: '16px',
-              border: '1px solid rgba(45, 212, 191, 0.22)',
-              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.35)'
+              padding: '0.5rem 0.9rem',
+              borderRadius: '14px',
+              border: '1.5px solid rgba(255, 255, 255, 0.95)',
+              boxShadow: '0 4px 14px rgba(15, 44, 89, 0.05)'
             }}>
               <div style={{
-                width: '38px',
-                height: '38px',
-                borderRadius: '12px',
-                background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.3) 0%, rgba(16, 185, 129, 0.5) 100%)',
-                border: '1px solid rgba(45, 212, 191, 0.45)',
-                color: '#2DD4BF',
+                width: '34px',
+                height: '34px',
+                borderRadius: '10px',
+                background: '#F0FDF4',
+                border: '1px solid #BBF7D0',
+                color: '#059669',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '1.05rem',
-                flexShrink: 0,
-                boxShadow: '0 0 15px rgba(45, 212, 191, 0.25)'
+                fontSize: '0.95rem',
+                flexShrink: 0
               }}>
                 <FaUser />
               </div>
               <div>
-                <div style={{ fontWeight: '800', color: '#F8FAFC', fontSize: '0.88rem' }}>Đa Dạng Loại Hình Tài Khoản</div>
-                <div style={{ color: '#94A3B8', fontSize: '0.76rem' }}>Đăng ký tài khoản theo 13 chuyên khoa hoặc tài khoản cá nhân linh hoạt</div>
+                <div style={{ fontWeight: '800', color: '#0F2C59', fontSize: '0.84rem' }}>Đa Dạng Loại Hình Tài Khoản</div>
+                <div style={{ color: '#64748B', fontSize: '0.74rem' }}>Đăng ký tài khoản theo 13 chuyên khoa hoặc tài khoản cá nhân linh hoạt</div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* ================= RIGHT COLUMN: MASTERPIECE OBSIDIAN GLASS REGISTRATION CARD ================= */}
+        {/* ================= RIGHT COLUMN: CRYSTAL LIGHT MEDICAL GLASS REGISTRATION CARD ================= */}
         <section style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
           <div style={{
             width: '100%',
-            maxWidth: '520px',
-            backgroundColor: 'rgba(10, 22, 46, 0.84)',
+            maxWidth: '500px',
+            backgroundColor: 'rgba(255, 255, 255, 0.93)',
             backdropFilter: 'blur(28px)',
             WebkitBackdropFilter: 'blur(28px)',
-            borderRadius: '24px',
-            padding: '1.85rem 2.15rem',
-            boxShadow: '0 25px 65px rgba(0, 0, 0, 0.75), 0 0 35px rgba(14, 165, 233, 0.18), inset 0 1px 1px rgba(255, 255, 255, 0.15)',
-            border: '1.5px solid rgba(56, 189, 248, 0.3)',
+            borderRadius: '22px',
+            padding: '1.4rem 1.85rem',
+            boxShadow: '0 20px 50px rgba(15, 44, 89, 0.12), 0 0 0 1px rgba(2, 132, 199, 0.08), 0 2px 6px rgba(0, 0, 0, 0.03)',
+            border: '1.5px solid rgba(255, 255, 255, 1)',
             boxSizing: 'border-box'
           }}>
 
             {/* Top Shield Icon Badge */}
             <div style={{
-              width: '56px',
-              height: '56px',
+              width: '48px',
+              height: '48px',
               borderRadius: '50%',
-              backgroundColor: 'rgba(14, 165, 233, 0.18)',
-              border: '1.5px solid rgba(56, 189, 248, 0.5)',
+              backgroundColor: '#EFF6FF',
+              border: '1.5px solid #DBEAFE',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              margin: '0 auto 0.75rem auto',
-              boxShadow: '0 0 25px rgba(56, 189, 248, 0.35)'
+              margin: '0 auto 0.55rem auto',
+              boxShadow: '0 4px 14px rgba(2, 132, 199, 0.12)'
             }}>
-              <FaUserPlus style={{ fontSize: '1.65rem', color: '#38BDF8' }} />
+              <FaUserPlus style={{ fontSize: '1.45rem', color: '#0284C7' }} />
             </div>
 
             {/* Heading */}
             <h3 style={{
-              fontSize: '1.45rem',
+              fontSize: '1.32rem',
               fontWeight: '900',
-              color: '#FFFFFF',
-              margin: '0 0 0.25rem 0',
+              color: '#0F2C59',
+              margin: '0 0 0.15rem 0',
               textAlign: 'center',
-              letterSpacing: '0.5px'
+              letterSpacing: '0.3px'
             }}>
               TẠO TÀI KHOẢN MỚI
             </h3>
 
             <p style={{
-              fontSize: '0.84rem',
-              color: '#94A3B8',
-              margin: '0 0 1.25rem 0',
+              fontSize: '0.8rem',
+              color: '#64748B',
+              margin: '0 0 0.85rem 0',
               textAlign: 'center'
             }}>
               Điền thông tin bên dưới để gửi yêu cầu cấp quyền tài khoản
@@ -402,19 +408,19 @@ const RegisterPage = () => {
             {/* Error Alert */}
             {errorMsg && (
               <div style={{
-                backgroundColor: 'rgba(220, 38, 38, 0.18)',
-                border: '1.5px solid rgba(248, 113, 113, 0.55)',
-                borderRadius: '12px',
-                padding: '0.75rem 1rem',
-                color: '#FECACA',
-                fontSize: '0.84rem',
-                marginBottom: '1.15rem',
+                backgroundColor: '#FEF2F2',
+                border: '1.5px solid #F87171',
+                borderRadius: '10px',
+                padding: '0.6rem 0.85rem',
+                color: '#991B1B',
+                fontSize: '0.82rem',
+                marginBottom: '0.85rem',
                 display: 'flex',
                 alignItems: 'flex-start',
-                gap: '0.65rem',
-                lineHeight: '1.4'
+                gap: '0.55rem',
+                lineHeight: '1.35'
               }}>
-                <FaInfoCircle style={{ color: '#F87171', fontSize: '1.15rem', marginTop: '1px', flexShrink: 0 }} />
+                <FaInfoCircle style={{ color: '#DC2626', fontSize: '1.05rem', marginTop: '1px', flexShrink: 0 }} />
                 <span>{typeof errorMsg === 'string' ? errorMsg : (errorMsg?.message || 'Lỗi đăng ký')}</span>
               </div>
             )}
@@ -422,23 +428,23 @@ const RegisterPage = () => {
             {/* Success State */}
             {successData ? (
               <div style={{ textAlign: 'center', padding: '1rem 0' }}>
-                <FaCheckCircle style={{ fontSize: '3.8rem', color: '#10B981', marginBottom: '1rem', filter: 'drop-shadow(0 0 15px rgba(16,185,129,0.5))' }} />
-                <h3 style={{ fontSize: '1.45rem', fontWeight: '900', color: '#34D399', margin: '0 0 0.5rem 0' }}>
+                <FaCheckCircle style={{ fontSize: '3.5rem', color: '#10B981', marginBottom: '0.85rem' }} />
+                <h3 style={{ fontSize: '1.35rem', fontWeight: '900', color: '#065F46', margin: '0 0 0.4rem 0' }}>
                   ĐĂNG KÝ THÀNH CÔNG!
                 </h3>
                 <div style={{
-                  backgroundColor: 'rgba(16, 185, 129, 0.15)',
-                  border: '1.5px solid rgba(52, 211, 153, 0.4)',
-                  borderRadius: '14px',
-                  padding: '1.2rem',
-                  fontSize: '0.9rem',
-                  color: '#D1FAE5',
-                  lineHeight: '1.6',
-                  marginBottom: '1.5rem',
+                  backgroundColor: '#F0FDF4',
+                  border: '1.5px solid #BBF7D0',
+                  borderRadius: '12px',
+                  padding: '1rem',
+                  fontSize: '0.88rem',
+                  color: '#166534',
+                  lineHeight: '1.55',
+                  marginBottom: '1.25rem',
                   textAlign: 'left'
                 }}>
-                  <p style={{ margin: '0 0 0.5rem 0' }}>
-                    Tài khoản: <strong style={{ color: '#38BDF8' }}>@{successData.username}</strong> ({successData.full_name})
+                  <p style={{ margin: '0 0 0.4rem 0' }}>
+                    Tài khoản: <strong style={{ color: '#0284C7' }}>@{successData.username}</strong> ({successData.full_name})
                   </p>
                   <p style={{ margin: 0 }}>
                     ⏳ Hồ sơ của bạn đã được chuyển đến <strong>Quản Trị Viên (Admin)</strong> để kiểm tra và phê duyệt. Bạn có thể liên hệ Admin để kích hoạt tài khoản ngay!
@@ -451,15 +457,15 @@ const RegisterPage = () => {
                     style={{
                       display: 'inline-flex',
                       alignItems: 'center',
-                      gap: '0.55rem',
+                      gap: '0.5rem',
                       background: 'linear-gradient(135deg, #0284C7 0%, #0EA5E9 40%, #10B981 100%)',
                       color: '#FFFFFF',
                       textDecoration: 'none',
-                      padding: '0.75rem 1.6rem',
-                      borderRadius: '12px',
+                      padding: '0.65rem 1.5rem',
+                      borderRadius: '10px',
                       fontWeight: '900',
-                      fontSize: '0.92rem',
-                      boxShadow: '0 6px 20px rgba(14, 165, 233, 0.4)'
+                      fontSize: '0.9rem',
+                      boxShadow: '0 6px 20px rgba(2, 132, 199, 0.35)'
                     }}
                   >
                     <FaArrowLeft /> Trở về Trang Đăng Nhập
@@ -467,17 +473,17 @@ const RegisterPage = () => {
                 </div>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.95rem' }}>
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
                 
                 {/* Field 1: Full Name */}
                 <div>
                   <label style={{
-                    fontSize: '0.82rem',
+                    fontSize: '0.78rem',
                     fontWeight: '800',
-                    color: '#E2E8F0',
+                    color: '#334155',
                     display: 'block',
-                    marginBottom: '0.4rem',
-                    letterSpacing: '0.3px'
+                    marginBottom: '0.25rem',
+                    letterSpacing: '0.2px'
                   }}>
                     Họ và tên nhân viên *
                   </label>
@@ -485,10 +491,10 @@ const RegisterPage = () => {
                     <FaIdBadge style={{
                       position: 'absolute',
                       top: '50%',
-                      left: '1rem',
+                      left: '0.95rem',
                       transform: 'translateY(-50%)',
-                      color: '#38BDF8',
-                      fontSize: '0.92rem'
+                      color: '#0284C7',
+                      fontSize: '0.88rem'
                     }} />
                     <input
                       className="reg-input-field"
@@ -498,13 +504,13 @@ const RegisterPage = () => {
                       onChange={(e) => setFullName(e.target.value)}
                       style={{
                         width: '100%',
-                        padding: '0.75rem 0.85rem 0.75rem 2.65rem',
-                        border: '1.5px solid rgba(56, 189, 248, 0.28)',
-                        borderRadius: '12px',
-                        fontSize: '0.92rem',
+                        padding: '0.62rem 0.85rem 0.62rem 2.55rem',
+                        border: '1.5px solid #CBD5E1',
+                        borderRadius: '10px',
+                        fontSize: '0.88rem',
                         outline: 'none',
-                        backgroundColor: 'rgba(6, 14, 28, 0.85)',
-                        color: '#FFFFFF',
+                        backgroundColor: '#F8FAFC',
+                        color: '#0F2C59',
                         fontWeight: '600',
                         boxSizing: 'border-box',
                         transition: 'all 0.2s ease'
@@ -517,12 +523,12 @@ const RegisterPage = () => {
                 {/* Field 2: Department Selector with Personal Account Option */}
                 <div>
                   <label style={{
-                    fontSize: '0.82rem',
+                    fontSize: '0.78rem',
                     fontWeight: '800',
-                    color: '#E2E8F0',
+                    color: '#334155',
                     display: 'block',
-                    marginBottom: '0.4rem',
-                    letterSpacing: '0.3px'
+                    marginBottom: '0.25rem',
+                    letterSpacing: '0.2px'
                   }}>
                     Khoa / Phòng trực thuộc *
                   </label>
@@ -530,10 +536,10 @@ const RegisterPage = () => {
                     <FaHospital style={{
                       position: 'absolute',
                       top: '50%',
-                      left: '1rem',
+                      left: '0.95rem',
                       transform: 'translateY(-50%)',
-                      color: '#38BDF8',
-                      fontSize: '0.92rem',
+                      color: '#0284C7',
+                      fontSize: '0.88rem',
                       zIndex: 1
                     }} />
                     <select
@@ -542,28 +548,28 @@ const RegisterPage = () => {
                       onChange={(e) => setDepartmentCode(e.target.value)}
                       style={{
                         width: '100%',
-                        padding: '0.75rem 0.85rem 0.75rem 2.65rem',
-                        border: '1.5px solid rgba(56, 189, 248, 0.28)',
-                        borderRadius: '12px',
-                        fontSize: '0.88rem',
+                        padding: '0.62rem 0.85rem 0.62rem 2.55rem',
+                        border: '1.5px solid #CBD5E1',
+                        borderRadius: '10px',
+                        fontSize: '0.86rem',
                         outline: 'none',
-                        backgroundColor: 'rgba(6, 14, 28, 0.92)',
-                        color: '#38BDF8',
-                        fontWeight: '800',
+                        backgroundColor: departmentCode === 'personal' ? '#EFF6FF' : '#F8FAFC',
+                        color: departmentCode === 'personal' ? '#1D4ED8' : '#0F2C59',
+                        fontWeight: '700',
                         boxSizing: 'border-box',
                         cursor: 'pointer'
                       }}
                     >
                       {DEPARTMENTS.map(d => (
-                        <option key={d.code} value={d.code} style={{ backgroundColor: '#0A162E', color: '#FFFFFF' }}>
+                        <option key={d.code} value={d.code}>
                           {d.name}
                         </option>
                       ))}
                     </select>
                   </div>
                   {departmentCode === 'personal' && (
-                    <div style={{ fontSize: '0.76rem', color: '#38BDF8', marginTop: '0.35rem', fontWeight: '700' }}>
-                      💡 Tài khoản cá nhân không thuộc khoa cố định và dùng cho các biểu mẫu được Admin cấp quyền riêng.
+                    <div style={{ fontSize: '0.72rem', color: '#1D4ED8', marginTop: '0.2rem', fontWeight: '700' }}>
+                      💡 Tài khoản cá nhân dùng cho các biểu mẫu được Admin cấp quyền riêng.
                     </div>
                   )}
                 </div>
@@ -571,12 +577,12 @@ const RegisterPage = () => {
                 {/* Field 3: Username */}
                 <div>
                   <label style={{
-                    fontSize: '0.82rem',
+                    fontSize: '0.78rem',
                     fontWeight: '800',
-                    color: '#E2E8F0',
+                    color: '#334155',
                     display: 'block',
-                    marginBottom: '0.4rem',
-                    letterSpacing: '0.3px'
+                    marginBottom: '0.25rem',
+                    letterSpacing: '0.2px'
                   }}>
                     Tên đăng nhập mong muốn *
                   </label>
@@ -584,10 +590,10 @@ const RegisterPage = () => {
                     <FaUser style={{
                       position: 'absolute',
                       top: '50%',
-                      left: '1rem',
+                      left: '0.95rem',
                       transform: 'translateY(-50%)',
-                      color: '#38BDF8',
-                      fontSize: '0.92rem'
+                      color: '#0284C7',
+                      fontSize: '0.88rem'
                     }} />
                     <input
                       className="reg-input-field"
@@ -597,13 +603,13 @@ const RegisterPage = () => {
                       onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9._]/g, ''))}
                       style={{
                         width: '100%',
-                        padding: '0.75rem 0.85rem 0.75rem 2.65rem',
-                        border: '1.5px solid rgba(56, 189, 248, 0.28)',
-                        borderRadius: '12px',
-                        fontSize: '0.92rem',
+                        padding: '0.62rem 0.85rem 0.62rem 2.55rem',
+                        border: '1.5px solid #CBD5E1',
+                        borderRadius: '10px',
+                        fontSize: '0.88rem',
                         outline: 'none',
-                        backgroundColor: 'rgba(6, 14, 28, 0.85)',
-                        color: '#FFFFFF',
+                        backgroundColor: '#F8FAFC',
+                        color: '#0F2C59',
                         fontWeight: '600',
                         boxSizing: 'border-box'
                       }}
@@ -613,15 +619,15 @@ const RegisterPage = () => {
                 </div>
 
                 {/* Field 4: Password */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem' }}>
                   <div>
                     <label style={{
-                      fontSize: '0.82rem',
+                      fontSize: '0.78rem',
                       fontWeight: '800',
-                      color: '#E2E8F0',
+                      color: '#334155',
                       display: 'block',
-                      marginBottom: '0.4rem',
-                      letterSpacing: '0.3px'
+                      marginBottom: '0.25rem',
+                      letterSpacing: '0.2px'
                     }}>
                       Mật khẩu *
                     </label>
@@ -629,10 +635,10 @@ const RegisterPage = () => {
                       <FaLock style={{
                         position: 'absolute',
                         top: '50%',
-                        left: '0.9rem',
+                        left: '0.85rem',
                         transform: 'translateY(-50%)',
-                        color: '#38BDF8',
-                        fontSize: '0.88rem'
+                        color: '#0284C7',
+                        fontSize: '0.85rem'
                       }} />
                       <input
                         className="reg-input-field"
@@ -642,13 +648,13 @@ const RegisterPage = () => {
                         onChange={(e) => setPassword(e.target.value)}
                         style={{
                           width: '100%',
-                          padding: '0.75rem 2.2rem 0.75rem 2.35rem',
-                          border: '1.5px solid rgba(56, 189, 248, 0.28)',
-                          borderRadius: '12px',
-                          fontSize: '0.88rem',
+                          padding: '0.62rem 2.1rem 0.62rem 2.25rem',
+                          border: '1.5px solid #CBD5E1',
+                          borderRadius: '10px',
+                          fontSize: '0.86rem',
                           outline: 'none',
-                          backgroundColor: 'rgba(6, 14, 28, 0.85)',
-                          color: '#FFFFFF',
+                          backgroundColor: '#F8FAFC',
+                          color: '#0F2C59',
                           fontWeight: '600',
                           boxSizing: 'border-box'
                         }}
@@ -660,14 +666,14 @@ const RegisterPage = () => {
                         style={{
                           position: 'absolute',
                           top: '50%',
-                          right: '0.65rem',
+                          right: '0.6rem',
                           transform: 'translateY(-50%)',
                           background: 'none',
                           border: 'none',
-                          color: '#94A3B8',
+                          color: '#64748B',
                           cursor: 'pointer',
                           padding: '2px',
-                          fontSize: '0.88rem'
+                          fontSize: '0.85rem'
                         }}
                       >
                         {showPassword ? <FaEyeSlash /> : <FaEye />}
@@ -677,12 +683,12 @@ const RegisterPage = () => {
 
                   <div>
                     <label style={{
-                      fontSize: '0.82rem',
+                      fontSize: '0.78rem',
                       fontWeight: '800',
-                      color: '#E2E8F0',
+                      color: '#334155',
                       display: 'block',
-                      marginBottom: '0.4rem',
-                      letterSpacing: '0.3px'
+                      marginBottom: '0.25rem',
+                      letterSpacing: '0.2px'
                     }}>
                       Xác nhận mật khẩu *
                     </label>
@@ -690,10 +696,10 @@ const RegisterPage = () => {
                       <FaLock style={{
                         position: 'absolute',
                         top: '50%',
-                        left: '0.9rem',
+                        left: '0.85rem',
                         transform: 'translateY(-50%)',
-                        color: '#38BDF8',
-                        fontSize: '0.88rem'
+                        color: '#0284C7',
+                        fontSize: '0.85rem'
                       }} />
                       <input
                         className="reg-input-field"
@@ -703,13 +709,13 @@ const RegisterPage = () => {
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         style={{
                           width: '100%',
-                          padding: '0.75rem 2.2rem 0.75rem 2.35rem',
-                          border: `1.5px solid ${isPasswordMatch ? '#10B981' : confirmPassword ? '#EF4444' : 'rgba(56, 189, 248, 0.28)'}`,
-                          borderRadius: '12px',
-                          fontSize: '0.88rem',
+                          padding: '0.62rem 2.1rem 0.62rem 2.25rem',
+                          border: `1.5px solid ${isPasswordMatch ? '#10B981' : confirmPassword ? '#EF4444' : '#CBD5E1'}`,
+                          borderRadius: '10px',
+                          fontSize: '0.86rem',
                           outline: 'none',
-                          backgroundColor: 'rgba(6, 14, 28, 0.85)',
-                          color: '#FFFFFF',
+                          backgroundColor: '#F8FAFC',
+                          color: '#0F2C59',
                           fontWeight: '600',
                           boxSizing: 'border-box'
                         }}
@@ -721,14 +727,14 @@ const RegisterPage = () => {
                         style={{
                           position: 'absolute',
                           top: '50%',
-                          right: '0.65rem',
+                          right: '0.6rem',
                           transform: 'translateY(-50%)',
                           background: 'none',
                           border: 'none',
-                          color: '#94A3B8',
+                          color: '#64748B',
                           cursor: 'pointer',
                           padding: '2px',
-                          fontSize: '0.88rem'
+                          fontSize: '0.85rem'
                         }}
                       >
                         {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
@@ -739,7 +745,7 @@ const RegisterPage = () => {
 
                 {/* Match indicator */}
                 {confirmPassword && (
-                  <div style={{ fontSize: '0.76rem', fontWeight: '800', color: isPasswordMatch ? '#34D399' : '#F87171', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <div style={{ fontSize: '0.74rem', fontWeight: '800', color: isPasswordMatch ? '#059669' : '#DC2626', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                     {isPasswordMatch ? <><FaCheck /> Mật khẩu xác nhận trùng khớp</> : <>⚠️ Mật khẩu xác nhận chưa khớp</>}
                   </div>
                 )}
@@ -750,32 +756,32 @@ const RegisterPage = () => {
                   disabled={loading}
                   style={{
                     width: '100%',
-                    padding: '0.85rem 1rem',
+                    padding: '0.75rem 1rem',
                     background: 'linear-gradient(135deg, #0284C7 0%, #0EA5E9 40%, #10B981 100%)',
                     color: '#FFFFFF',
-                    border: '1.5px solid rgba(255, 255, 255, 0.35)',
-                    borderRadius: '12px',
+                    border: 'none',
+                    borderRadius: '10px',
                     fontWeight: '900',
-                    fontSize: '1.02rem',
+                    fontSize: '0.96rem',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '0.65rem',
+                    gap: '0.55rem',
                     cursor: loading ? 'not-allowed' : 'pointer',
-                    boxShadow: '0 8px 30px rgba(14, 165, 233, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.3)',
-                    transition: 'all 0.25s ease',
-                    marginTop: '0.45rem',
-                    letterSpacing: '0.4px'
+                    boxShadow: '0 6px 20px rgba(2, 132, 199, 0.35)',
+                    transition: 'all 0.22s ease',
+                    marginTop: '0.3rem',
+                    letterSpacing: '0.3px'
                   }}
                   onMouseOver={(e) => {
                     if (!loading) {
-                      e.currentTarget.style.transform = 'translateY(-2px) scale(1.015)';
-                      e.currentTarget.style.boxShadow = '0 12px 35px rgba(14, 165, 233, 0.75)';
+                      e.currentTarget.style.transform = 'translateY(-1px)';
+                      e.currentTarget.style.boxShadow = '0 8px 24px rgba(2, 132, 199, 0.45)';
                     }
                   }}
                   onMouseOut={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                    e.currentTarget.style.boxShadow = '0 8px 30px rgba(14, 165, 233, 0.5)';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 6px 20px rgba(2, 132, 199, 0.35)';
                   }}
                 >
                   {loading ? (
@@ -790,10 +796,10 @@ const RegisterPage = () => {
                 </button>
 
                 {/* Back to Login Link */}
-                <div style={{ marginTop: '0.75rem', textAlign: 'center', fontSize: '0.84rem', color: '#94A3B8' }}>
+                <div style={{ marginTop: '0.55rem', textAlign: 'center', fontSize: '0.8rem', color: '#64748B' }}>
                   Đã có tài khoản nhân viên?{' '}
-                  <Link to="/" style={{ color: '#38BDF8', fontWeight: '800', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-                    Đăng nhập ngay <FaArrowRight style={{ fontSize: '0.75rem' }} />
+                  <Link to="/" style={{ color: '#0284C7', fontWeight: '800', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
+                    Đăng nhập ngay <FaArrowRight style={{ fontSize: '0.72rem' }} />
                   </Link>
                 </div>
 
@@ -805,20 +811,20 @@ const RegisterPage = () => {
 
       </main>
 
-      {/* Sleek Dark Obsidian Footer */}
+      {/* Sleek Light Medical Crystal Footer */}
       <footer style={{
-        padding: '0.65rem 1.5rem',
+        padding: '0.45rem 1.5rem',
         textAlign: 'center',
-        fontSize: '0.82rem',
-        color: '#94A3B8',
-        borderTop: '1px solid rgba(56, 189, 248, 0.15)',
-        backgroundColor: 'rgba(3, 9, 20, 0.75)',
-        backdropFilter: 'blur(10px)',
+        fontSize: '0.78rem',
+        color: '#475569',
+        borderTop: '1px solid rgba(226, 232, 240, 0.8)',
+        backgroundColor: 'rgba(255, 255, 255, 0.65)',
+        backdropFilter: 'blur(8px)',
         position: 'relative',
         zIndex: 10,
         flexShrink: 0
       }}>
-        © 2026 <strong style={{ color: '#E2E8F0' }}>Trung Tâm Y Tế Khu Vực Bình Long</strong> — Sở Y Tế Thành Phố Đồng Nai.
+        © 2026 <strong style={{ color: '#0F2C59' }}>Trung Tâm Y Tế Khu Vực Bình Long</strong> — Sở Y Tế Thành Phố Đồng Nai.
       </footer>
     </div>
   );
