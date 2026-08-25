@@ -27,6 +27,7 @@ import AIAssistant from '../components/common/AIAssistant';
 import ForgotPasswordModal from '../components/auth/ForgotPasswordModal';
 import ChangePasswordModal from '../components/auth/ChangePasswordModal';
 import HospitalPortalIntro from '../components/auth/HospitalPortalIntro';
+import MedicalAuthBackground from '../components/common/MedicalAuthBackground';
 
 // Web Audio API Sound Synthesizers for Login State Feedback
 const playLoginSuccessSound = () => {
@@ -106,7 +107,12 @@ const LoginPage = () => {
   const [isShaking, setIsShaking] = useState(false);
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [mustChangePasswordData, setMustChangePasswordData] = useState({ isOpen: false, username: '', fullName: '' });
-  const [showIntro, setShowIntro] = useState(true);
+  const [showIntro, setShowIntro] = useState(() => {
+    const justLoggedOut = sessionStorage.getItem('just_logged_out_username');
+    if (justLoggedOut) return true;
+    const alreadyShown = sessionStorage.getItem('portal_intro_shown');
+    return !alreadyShown;
+  });
   
   const { login, user, isAdmin } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -274,113 +280,8 @@ const LoginPage = () => {
         }
       `}</style>
 
-      {/* 1. Ambient Radial Lighting Layers covering entire canvas */}
-      <div 
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background: 'radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.88) 0%, rgba(224, 242, 254, 0.5) 35%, transparent 65%), radial-gradient(circle at 82% 18%, rgba(29, 78, 216, 0.6) 0%, rgba(59, 130, 246, 0.35) 40%, transparent 65%), radial-gradient(circle at 92% 88%, rgba(16, 185, 129, 0.55) 0%, rgba(52, 211, 153, 0.25) 35%, transparent 60%)',
-          pointerEvents: 'none',
-          zIndex: 1
-        }}
-        aria-hidden="true"
-      />
-
-      {/* 2. Concentric Wave Arcs on the Left */}
-      <svg 
-        style={{ 
-          position: 'absolute', 
-          inset: 0, 
-          width: '100%', 
-          height: '100%', 
-          pointerEvents: 'none', 
-          zIndex: 2,
-          opacity: 0.7
-        }} 
-        viewBox="0 0 1440 900" 
-        preserveAspectRatio="none"
-        fill="none"
-        aria-hidden="true"
-      >
-        <circle cx="120" cy="190" r="140" stroke="#38BDF8" strokeWidth="1.5" opacity="0.5" strokeDasharray="3 3" />
-        <circle cx="120" cy="190" r="230" stroke="#60A5FA" strokeWidth="1.5" opacity="0.45" />
-        <circle cx="120" cy="190" r="340" stroke="#93C5FD" strokeWidth="1" opacity="0.35" />
-        <circle cx="120" cy="190" r="480" stroke="#BAE6FD" strokeWidth="1" opacity="0.25" />
-        <path d="M-50,340 Q250,180 600,320 T1300,240" stroke="rgba(56, 189, 248, 0.3)" strokeWidth="1.5" fill="none" />
-      </svg>
-
-      {/* 3. Hospital Building Image - Full Canvas with Smooth Gradient Mask (No cut lines) */}
-      <div 
-        style={{
-          position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
-          backgroundImage: "url('/hospital_building_new.jpg')",
-          backgroundSize: 'cover',
-          backgroundPosition: 'left 20% bottom',
-          backgroundRepeat: 'no-repeat',
-          opacity: 0.38,
-          filter: 'contrast(1.08) brightness(1.03)',
-          WebkitMaskImage: 'radial-gradient(ellipse 75% 70% at 30% 90%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 90%)',
-          maskImage: 'radial-gradient(ellipse 75% 70% at 30% 90%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 90%)',
-          pointerEvents: 'none',
-          zIndex: 2
-        }}
-        aria-hidden="true"
-      />
-
-      {/* 4. Top-Right Decorative Dot Grid Pattern over Deep Blue */}
-      <div 
-        style={{
-          position: 'absolute',
-          top: '2rem',
-          right: '2.5rem',
-          width: '280px',
-          height: '220px',
-          backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.55) 1.5px, transparent 1.5px)',
-          backgroundSize: '16px 16px',
-          opacity: 0.65,
-          pointerEvents: 'none',
-          zIndex: 3
-        }}
-        aria-hidden="true"
-      />
-
-      {/* 5. Glowing Cyan Dot on Left Arc */}
-      <div 
-        style={{
-          position: 'absolute',
-          top: '18%',
-          left: '4.8%',
-          width: '16px',
-          height: '16px',
-          borderRadius: '50%',
-          backgroundColor: '#06B6D4',
-          boxShadow: '0 0 20px rgba(6, 182, 212, 0.85), 0 0 35px rgba(6, 182, 212, 0.45)',
-          pointerEvents: 'none',
-          zIndex: 4
-        }}
-        aria-hidden="true"
-      />
-
-      {/* 6. Subtle Geometric Accent on center-left */}
-      <div 
-        style={{
-          position: 'absolute',
-          top: '35%',
-          left: '37.5%',
-          width: '22px',
-          height: '22px',
-          borderTop: '2px solid #38BDF8',
-          borderRight: '2px solid #38BDF8',
-          transform: 'rotate(25deg)',
-          opacity: 0.5,
-          pointerEvents: 'none',
-          zIndex: 3
-        }}
-        aria-hidden="true"
-      />
+      {/* Synchronized Dynamic Medical Background (ECG Canvas, Nano Particles, Auroras, Dot Grid) */}
+      <MedicalAuthBackground />
 
       {/* Main Two-Column Content Grid */}
       <main className="login-main-grid" style={{

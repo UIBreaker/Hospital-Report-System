@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { 
   FaUserPlus, 
@@ -20,6 +20,7 @@ import {
   FaCheck
 } from 'react-icons/fa';
 import authService from '../../services/authService';
+import MedicalAuthBackground from '../../components/common/MedicalAuthBackground';
 
 const DEPARTMENTS = [
   { code: 'personal', name: '👤 Tài khoản cá nhân (Không thuộc khoa nào - Chỉ dùng Form phân quyền)' },
@@ -49,6 +50,11 @@ const RegisterPage = () => {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successData, setSuccessData] = useState(null);
+
+  // Mark intro as already seen in this session so returning to login doesn't re-trigger it
+  useEffect(() => {
+    sessionStorage.setItem('portal_intro_shown', 'true');
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -105,66 +111,13 @@ const RegisterPage = () => {
       justifyContent: 'center',
       position: 'relative',
       overflowX: 'hidden',
-      background: 'linear-gradient(125deg, #DCEEFE 0%, #C7E5FD 18%, #93C5FD 42%, #3B82F6 72%, #10B981 100%)',
       fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
       boxSizing: 'border-box',
       padding: '2rem 1.5rem'
     }}>
 
-      {/* 1. Ambient Radial Lighting Layers */}
-      <div 
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background: 'radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.88) 0%, rgba(224, 242, 254, 0.5) 35%, transparent 65%), radial-gradient(circle at 82% 18%, rgba(29, 78, 216, 0.6) 0%, rgba(59, 130, 246, 0.35) 40%, transparent 65%), radial-gradient(circle at 92% 88%, rgba(16, 185, 129, 0.55) 0%, rgba(52, 211, 153, 0.25) 35%, transparent 60%)',
-          pointerEvents: 'none',
-          zIndex: 1
-        }}
-        aria-hidden="true"
-      />
-
-      {/* 2. Concentric Wave Arcs */}
-      <svg 
-        style={{ 
-          position: 'absolute', 
-          inset: 0, 
-          width: '100%', 
-          height: '100%', 
-          pointerEvents: 'none', 
-          zIndex: 2,
-          opacity: 0.6
-        }} 
-        viewBox="0 0 1440 900" 
-        preserveAspectRatio="none"
-        fill="none"
-        aria-hidden="true"
-      >
-        <circle cx="120" cy="190" r="140" stroke="#38BDF8" strokeWidth="1.5" opacity="0.5" strokeDasharray="3 3" />
-        <circle cx="120" cy="190" r="230" stroke="#60A5FA" strokeWidth="1.5" opacity="0.45" />
-        <circle cx="120" cy="190" r="340" stroke="#93C5FD" strokeWidth="1" opacity="0.35" />
-        <circle cx="120" cy="190" r="480" stroke="#BAE6FD" strokeWidth="1" opacity="0.25" />
-      </svg>
-
-      {/* 3. Hospital Building Subtle Watermark */}
-      <div 
-        style={{
-          position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
-          backgroundImage: "url('/hospital_building_new.jpg')",
-          backgroundSize: 'cover',
-          backgroundPosition: 'left 20% bottom',
-          backgroundRepeat: 'no-repeat',
-          opacity: 0.3,
-          filter: 'contrast(1.08) brightness(1.03)',
-          WebkitMaskImage: 'radial-gradient(ellipse 75% 70% at 30% 90%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 90%)',
-          maskImage: 'radial-gradient(ellipse 75% 70% at 30% 90%, rgba(0,0,0,1) 0%, rgba(0,0,0,0.85) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 90%)',
-          pointerEvents: 'none',
-          zIndex: 2
-        }}
-        aria-hidden="true"
-      />
+      {/* Synchronized Dynamic Medical Background (ECG Canvas, Nano Particles, Auroras, Dot Grid) */}
+      <MedicalAuthBackground />
 
       {/* Main Container Grid */}
       <main style={{
