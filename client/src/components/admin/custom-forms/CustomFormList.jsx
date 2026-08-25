@@ -292,100 +292,88 @@ const CustomFormList = ({
                   </div>
                 </div>
 
-                {/* Actions Footer */}
+                {/* Actions Footer: Nhập Form & Xem Dữ Liệu */}
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  borderTop: '1px solid #F1F5F9',
+                  borderTop: '1.5px solid #F1F5F9',
                   paddingTop: '0.85rem',
-                  gap: '0.4rem',
+                  gap: '0.5rem',
                   flexWrap: 'wrap'
                 }}>
-                  <div style={{ display: 'flex', gap: '0.35rem' }}>
-                    {isTracker ? (
-                      <button
-                        type="button"
-                        onClick={() => onViewTracker(form.code)}
-                        style={{
-                          backgroundColor: '#EFF6FF',
-                          color: '#1E40AF',
-                          border: '1px solid #BFDBFE',
-                          borderRadius: '8px',
-                          padding: '0.42rem 0.75rem',
-                          fontWeight: '700',
-                          fontSize: '0.78rem',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.3rem'
-                        }}
-                        title="Xem trang theo dõi số liệu trực tiếp"
-                      >
-                        <FaChartLine /> Theo Dõi
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => onSelectForm(form.code)}
-                        style={{
-                          backgroundColor: '#EFF6FF',
-                          color: '#1E40AF',
-                          border: '1px solid #BFDBFE',
-                          borderRadius: '8px',
-                          padding: '0.42rem 0.75rem',
-                          fontWeight: '700',
-                          fontSize: '0.78rem',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.3rem'
-                        }}
-                        title="Xem & Nhập dữ liệu biểu mẫu"
-                      >
-                        <FaEye /> Nhập Liệu
-                      </button>
-                    )}
-
+                  {/* Left: Primary Action Buttons */}
+                  <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap', flex: 1 }}>
+                    {/* Button 1: Nhập Form (Nộp dữ liệu bình thường) */}
                     <button
                       type="button"
-                      onClick={() => onViewSubmissions(form.code)}
+                      onClick={() => onSelectForm(form.code)}
+                      style={{
+                        backgroundColor: '#2563EB',
+                        color: '#FFFFFF',
+                        border: 'none',
+                        borderRadius: '9px',
+                        padding: '0.48rem 0.85rem',
+                        fontWeight: '800',
+                        fontSize: '0.8rem',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.35rem',
+                        boxShadow: '0 2px 6px rgba(37, 99, 235, 0.25)',
+                        transition: 'all 0.15s ease'
+                      }}
+                      onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#1D4ED8'}
+                      onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#2563EB'}
+                      title="Nhập và nộp dữ liệu báo cáo mới"
+                    >
+                      <FaEdit /> Nhập Form
+                    </button>
+
+                    {/* Button 2: Xem Dữ Liệu (Chỉ xem - Không sửa, nộp hay xóa) */}
+                    <button
+                      type="button"
+                      onClick={() => isTracker && onViewTracker ? onViewTracker(form.code) : onViewSubmissions(form.code, true)}
                       style={{
                         backgroundColor: '#F8FAFC',
-                        color: '#475569',
-                        border: '1px solid #CBD5E1',
-                        borderRadius: '8px',
-                        padding: '0.42rem 0.75rem',
-                        fontWeight: '700',
-                        fontSize: '0.78rem',
+                        color: '#0F2C59',
+                        border: '1.5px solid #CBD5E1',
+                        borderRadius: '9px',
+                        padding: '0.48rem 0.85rem',
+                        fontWeight: '800',
+                        fontSize: '0.8rem',
                         cursor: 'pointer',
-                        display: 'flex',
+                        display: 'inline-flex',
                         alignItems: 'center',
-                        gap: '0.3rem'
+                        gap: '0.35rem',
+                        transition: 'all 0.15s ease'
                       }}
-                      title="Danh sách các bản ghi đã nộp"
+                      onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#EFF6FF'; e.currentTarget.style.borderColor = '#93C5FD'; }}
+                      onMouseOut={(e) => { e.currentTarget.style.backgroundColor = '#F8FAFC'; e.currentTarget.style.borderColor = '#CBD5E1'; }}
+                      title="Chế độ xem dữ liệu (Chỉ đọc - Không sửa, nộp hoặc xóa)"
                     >
-                      <FaClipboardList /> Bản Ghi ({form.total_submissions || 0})
+                      <FaEye style={{ color: '#2563EB' }} /> Xem Dữ Liệu ({form.total_submissions || 0})
                     </button>
                   </div>
 
+                  {/* Right: Admin Tools (Edit Schema / Delete Form) */}
                   <div style={{ display: 'flex', gap: '0.35rem' }}>
                     <button
                       type="button"
                       onClick={() => onEditForm(form)}
                       style={{
                         backgroundColor: '#F8FAFC',
-                        color: '#2563EB',
+                        color: '#475569',
                         border: '1px solid #CBD5E1',
                         borderRadius: '8px',
-                        padding: '0.42rem 0.65rem',
+                        padding: '0.45rem 0.65rem',
                         fontWeight: '700',
                         fontSize: '0.78rem',
                         cursor: 'pointer'
                       }}
-                      title="Sửa cấu hình biểu mẫu"
+                      title="Cấu hình & Thiết kế lại trường biểu mẫu"
                     >
-                      <FaEdit />
+                      <FaWpforms />
                     </button>
                     <button
                       type="button"
@@ -395,12 +383,12 @@ const CustomFormList = ({
                         color: '#DC2626',
                         border: '1px solid #FECACA',
                         borderRadius: '8px',
-                        padding: '0.42rem 0.65rem',
+                        padding: '0.45rem 0.65rem',
                         fontWeight: '700',
                         fontSize: '0.78rem',
                         cursor: 'pointer'
                       }}
-                      title="Xóa biểu mẫu"
+                      title="Xóa toàn bộ biểu mẫu"
                     >
                       <FaTrash />
                     </button>

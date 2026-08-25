@@ -10,35 +10,42 @@ const CustomFormsTab = () => {
   const [view, setView] = useState('list');
   const [selectedForm, setSelectedForm] = useState(null);
   const [targetCode, setTargetCode] = useState('');
+  const [isReadOnly, setIsReadOnly] = useState(false);
 
   const handleCreateNew = () => {
     setSelectedForm(null);
+    setIsReadOnly(false);
     setView('builder');
   };
 
   const handleEdit = (form) => {
     setSelectedForm(form);
+    setIsReadOnly(false);
     setView('builder');
   };
 
   const handleSelectForm = (code) => {
     setTargetCode(code);
+    setIsReadOnly(false);
     setView('renderer');
   };
 
   const handleViewTracker = (code) => {
     setTargetCode(code);
+    setIsReadOnly(true);
     setView('tracker');
   };
 
-  const handleViewSubmissions = (code) => {
+  const handleViewSubmissions = (code, readOnlyMode = true) => {
     setTargetCode(code);
+    setIsReadOnly(Boolean(readOnlyMode));
     setView('submissions');
   };
 
   const handleBackToList = () => {
     setSelectedForm(null);
     setTargetCode('');
+    setIsReadOnly(false);
     setView('list');
   };
 
@@ -65,6 +72,7 @@ const CustomFormsTab = () => {
       {view === 'renderer' && (
         <DynamicFormRenderer
           formCode={targetCode}
+          readOnly={isReadOnly}
           onBack={handleBackToList}
         />
       )}
@@ -79,6 +87,7 @@ const CustomFormsTab = () => {
       {view === 'submissions' && (
         <DynamicFormSubmissions
           formCode={targetCode}
+          readOnly={isReadOnly}
           onBack={handleBackToList}
         />
       )}

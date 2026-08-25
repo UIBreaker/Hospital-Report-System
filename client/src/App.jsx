@@ -59,6 +59,16 @@ function App() {
                 } 
               />
               <Route 
+                path="/custom-forms/:code/view" 
+                element={
+                  <ProtectedRoute>
+                    <div style={{ minHeight: '100vh', backgroundColor: '#F8FAFC', padding: '1.5rem 1rem' }}>
+                      <DynamicFormSubmissions readOnly={true} />
+                    </div>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
                 path="/custom-forms/:code/tracker" 
                 element={
                   <ProtectedRoute>

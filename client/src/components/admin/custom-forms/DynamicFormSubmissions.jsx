@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useContext } from 'react';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { 
   FaClipboardList, 
   FaCalendarAlt, 
@@ -7,40 +8,48 @@ import {
   FaPrint, 
   FaTimes, 
   FaEye, 
-  FaHospital,
-  FaUser,
-  FaClock,
-  FaCheckCircle,
-  FaSync,
-  FaSearch,
-  FaThLarge,
-  FaTable,
-  FaList,
-  FaDownload,
-  FaChevronDown,
-  FaChevronUp,
-  FaUsers,
-  FaFileAlt,
-  FaFilter,
-  FaChartBar,
-  FaLayerGroup,
-  FaUserMd,
-  FaMapMarkerAlt,
-  FaHeartbeat,
-  FaStethoscope,
-  FaNotesMedical,
-  FaFilePdf,
-  FaRegFileAlt,
-  FaCheck,
-  FaSignature,
-  FaTrash
+  FaHospital, 
+  FaUser, 
+  FaClock, 
+  FaCheckCircle, 
+  FaSync, 
+  FaSearch, 
+  FaThLarge, 
+  FaTable, 
+  FaList, 
+  FaDownload, 
+  FaChevronDown, 
+  FaChevronUp, 
+  FaUsers, 
+  FaFileAlt, 
+  FaFilter, 
+  FaChartBar, 
+  FaLayerGroup, 
+  FaUserMd, 
+  FaMapMarkerAlt, 
+  FaHeartbeat, 
+  FaStethoscope, 
+  FaNotesMedical, 
+  FaFilePdf, 
+  FaRegFileAlt, 
+  FaCheck, 
+  FaSignature, 
+  FaTrash,
+  FaLock
 } from 'react-icons/fa';
 import customFormService from '../../../services/customFormService';
 import { AuthContext } from '../../../contexts/AuthContext';
 import MedicalLoader from '../../common/MedicalLoader';
 
-const DynamicFormSubmissions = ({ formCode, onBack }) => {
+const DynamicFormSubmissions = ({ formCode: propFormCode, onBack, readOnly = false }) => {
+  const { code: paramCode } = useParams();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const { user } = useContext(AuthContext) || {};
+
+  const formCode = propFormCode || paramCode;
+  const isReadOnly = readOnly || searchParams.get('mode') === 'view' || searchParams.get('readOnly') === 'true' || window.location.pathname.endsWith('/view');
+
   const [submissions, setSubmissions] = useState([]);
   const [formMeta, setFormMeta] = useState(null);
   const [selectedDate, setSelectedDate] = useState('');
@@ -71,8 +80,9 @@ const DynamicFormSubmissions = ({ formCode, onBack }) => {
     if (formCode) fetchSubmissions();
   }, [formCode, selectedDate]);
 
-  // Kiểm tra quyền xóa bản ghi (Chỉ người có quyền sửa / Admin / Người nộp mới được xóa)
+  // Kiểm tra quyền xóa bản ghi (Chỉ người có quyền sửa / Admin / Người nộp mới được xóa, và KHÔNG được xóa khi ở chế độ xem dữ liệu readOnly)
   const canDeleteSubmission = (sub) => {
+    if (isReadOnly) return false; // In read-only mode, absolutely NO deletion allowed
     if (!user) return false;
     if (user.role === 'admin') return true;
     if (sub && sub.submitted_by_user === user.username) return true;
@@ -282,7 +292,7 @@ const DynamicFormSubmissions = ({ formCode, onBack }) => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
           <button
             type="button"
-            onClick={onBack}
+            onClick={onBack || (() => navigate(-1))}
             style={{
               backgroundColor: '#F1F5F9',
               border: '1px solid #CBD5E1',
@@ -302,8 +312,19 @@ const DynamicFormSubmissions = ({ formCode, onBack }) => {
           </button>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
-              <span style={{ backgroundColor: '#EFF6FF', color: '#1E40AF', padding: '0.2rem 0.6rem', borderRadius: '6px', fontSize: '0.74rem', fontWeight: '800' }}>
-                HỒ SƠ BÁO CÁO TRỰC QUAN
+              <span style={{
+                backgroundColor: isReadOnly ? '#FEF3C7' : '#EFF6FF',
+                color: isReadOnly ? '#92400E' : '#1E40AF',
+                border: isReadOnly ? '1px solid #FDE68A' : '1px solid #BFDBFE',
+                padding: '0.2rem 0.6rem',
+                borderRadius: '6px',
+                fontSize: '0.74rem',
+                fontWeight: '800',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem'
+              }}>
+                {isReadOnly ? <><FaLock /> CHẾ ĐỘ XEM DỮ LIỆU (CHỈ ĐỌC)</> : 'HỒ SƠ BÁO CÁO TRỰC QUAN'}
               </span>
               <span style={{ fontSize: '0.75rem', fontFamily: 'monospace', color: '#64748B', fontWeight: '700' }}>
                 /{formCode}
@@ -487,6 +508,35 @@ const DynamicFormSubmissions = ({ formCode, onBack }) => {
           </button>
         </div>
       </div>
+
+      {/* READ-ONLY BANNER NOTICE */}
+      {isReadOnly && (
+        <div style={{
+          backgroundColor: '#EFF6FF',
+          border: '1.5px solid #BFDBFE',
+          borderRadius: '16px',
+          padding: '1rem 1.4rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.85rem',
+          color: '#1E40AF',
+          fontSize: '0.88rem',
+          fontWeight: '700',
+          boxShadow: '0 2px 10px rgba(37, 99, 235, 0.06)'
+        }}>
+          <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#DBEAFE', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <FaEye style={{ fontSize: '1.15rem', color: '#2563EB' }} />
+          </div>
+          <div style={{ lineHeight: 1.45 }}>
+            <div style={{ fontWeight: '900', color: '#1D4ED8', fontSize: '0.92rem', marginBottom: '2px' }}>
+              Chế Độ Xem Dữ Liệu (Chỉ Đọc)
+            </div>
+            <div style={{ color: '#334155', fontWeight: '500' }}>
+              Bạn đang ở chế độ xem thông tin hồ sơ. Mọi tính năng chỉnh sửa, nộp báo cáo mới và xóa bản ghi đã được vô hiệu hóa để bảo đảm an toàn dữ liệu.
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 2. STATS KPI CARDS */}
       <div style={{

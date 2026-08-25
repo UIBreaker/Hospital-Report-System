@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useContext } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { 
   FaWpforms, 
   FaSave, 
@@ -33,7 +33,10 @@ import {
   FaToggleOff,
   FaArrowRight,
   FaUserMd,
-  FaUserNurse
+  FaUserNurse,
+  FaLock,
+  FaEye,
+  FaClipboardList
 } from 'react-icons/fa';
 import customFormService from '../../../services/customFormService';
 import staffService from '../../../services/staffService';
@@ -503,11 +506,13 @@ const StaffSelectorField = ({ field, value, onChange, currentUserDept, themeColo
   );
 };
 
-const DynamicFormRenderer = ({ formCode, initialMeta, onBack }) => {
+const DynamicFormRenderer = ({ formCode, initialMeta, onBack, readOnly = false }) => {
   const { code: paramCode } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useContext(AuthContext) || {};
   const activeCode = formCode || paramCode;
+  const isReadOnly = readOnly || searchParams.get('mode') === 'view' || searchParams.get('readOnly') === 'true';
 
   const [formMeta, setFormMeta] = useState(initialMeta || null);
   const [formData, setFormData] = useState({});
@@ -567,6 +572,7 @@ const DynamicFormRenderer = ({ formCode, initialMeta, onBack }) => {
   }, [activeCode, initialMeta]);
 
   const handleFieldChange = (key, value) => {
+    if (isReadOnly) return;
     setFormData(prev => ({ ...prev, [key]: value }));
   };
 
@@ -749,8 +755,19 @@ const DynamicFormRenderer = ({ formCode, initialMeta, onBack }) => {
           </button>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
-              <span style={{ backgroundColor: '#EFF6FF', color: '#1E40AF', padding: '0.15rem 0.55rem', borderRadius: '6px', fontSize: '0.74rem', fontWeight: '800' }}>
-                FORM NHẬP LIỆU
+              <span style={{
+                backgroundColor: isReadOnly ? '#FEF3C7' : '#EFF6FF',
+                color: isReadOnly ? '#92400E' : '#1E40AF',
+                border: isReadOnly ? '1px solid #FDE68A' : '1px solid #BFDBFE',
+                padding: '0.15rem 0.55rem',
+                borderRadius: '6px',
+                fontSize: '0.74rem',
+                fontWeight: '800',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem'
+              }}>
+                {isReadOnly ? <><FaLock /> CHẾ ĐỘ XEM BIỂU MẪU (CHỈ ĐỌC)</> : 'FORM NHẬP LIỆU'}
               </span>
               <span style={{ fontSize: '0.75rem', fontFamily: 'monospace', color: '#64748B' }}>/{formMeta.code}</span>
             </div>
@@ -763,9 +780,39 @@ const DynamicFormRenderer = ({ formCode, initialMeta, onBack }) => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#EFF6FF', border: '1.5px solid #BFDBFE', padding: '0.45rem 0.95rem', borderRadius: '12px' }}>
           <FaCalendarAlt style={{ color: '#2563EB', fontSize: '0.9rem' }} />
           <span style={{ fontSize: '0.78rem', fontWeight: '800', color: '#1E40AF' }}>NGÀY BÁO CÁO:</span>
-          <input type="date" value={submissionDate} onChange={(e) => setSubmissionDate(e.target.value)} style={{ border: 'none', background: 'transparent', fontWeight: '800', color: '#1E40AF', outline: 'none', fontSize: '0.88rem', cursor: 'pointer' }} />
+          <input type="date" disabled={isReadOnly} value={submissionDate} onChange={(e) => setSubmissionDate(e.target.value)} style={{ border: 'none', background: 'transparent', fontWeight: '800', color: '#1E40AF', outline: 'none', fontSize: '0.88rem', cursor: isReadOnly ? 'default' : 'pointer' }} />
         </div>
       </div>
+
+      {/* READ-ONLY BANNER NOTICE */}
+      {isReadOnly && (
+        <div style={{
+          backgroundColor: '#EFF6FF',
+          border: '1.5px solid #BFDBFE',
+          borderRadius: '16px',
+          padding: '1rem 1.4rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.85rem',
+          color: '#1E40AF',
+          fontSize: '0.88rem',
+          fontWeight: '700',
+          marginBottom: '1.5rem',
+          boxShadow: '0 2px 10px rgba(37, 99, 235, 0.06)'
+        }}>
+          <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#DBEAFE', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <FaEye style={{ fontSize: '1.15rem', color: '#2563EB' }} />
+          </div>
+          <div style={{ lineHeight: 1.45 }}>
+            <div style={{ fontWeight: '900', color: '#1D4ED8', fontSize: '0.92rem', marginBottom: '2px' }}>
+              Chế Độ Xem Biểu Mẫu (Chỉ Đọc)
+            </div>
+            <div style={{ color: '#334155', fontWeight: '500' }}>
+              Bạn đang xem chi tiết và cấu trúc của biểu mẫu này. Không thể chỉnh sửa, nộp báo cáo hoặc xóa dữ liệu ở chế độ này.
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Error Banner */}
       {errorMsg && (
@@ -1257,32 +1304,55 @@ const DynamicFormRenderer = ({ formCode, initialMeta, onBack }) => {
         </div>
 
         {/* Submit Action Bar */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '1rem', borderTop: '1.5px solid #F1F5F9', paddingTop: '1.5rem', marginTop: '0.5rem' }}>
-          <button type="button" onClick={onBack || (() => navigate(-1))} style={{ backgroundColor: '#F1F5F9', color: '#475569', border: '1px solid #CBD5E1', borderRadius: '12px', padding: '0.8rem 1.5rem', fontWeight: '700', fontSize: '0.9rem', cursor: 'pointer' }}>
-            Hủy bỏ
-          </button>
+        {isReadOnly ? (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', borderTop: '1.5px solid #F1F5F9', paddingTop: '1.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+            <button type="button" onClick={onBack || (() => navigate(-1))} style={{ backgroundColor: '#F1F5F9', color: '#475569', border: '1px solid #CBD5E1', borderRadius: '12px', padding: '0.8rem 1.5rem', fontWeight: '700', fontSize: '0.9rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}>
+              <FaArrowLeft /> Quay lại danh sách
+            </button>
 
-          <button
-            type="submit"
-            disabled={submitting}
-            style={{
-              background: 'linear-gradient(135deg, ' + themeColor + ' 0%, #10B981 100%)',
-              color: '#FFFFFF',
-              border: 'none',
+            <div style={{
+              backgroundColor: '#FEF3C7',
+              color: '#92400E',
+              border: '1.5px solid #FDE68A',
+              padding: '0.75rem 1.4rem',
               borderRadius: '12px',
-              padding: '0.8rem 2.2rem',
-              fontWeight: '900',
-              fontSize: '0.96rem',
-              display: 'flex',
+              fontWeight: '800',
+              fontSize: '0.9rem',
+              display: 'inline-flex',
               alignItems: 'center',
-              gap: '0.55rem',
-              cursor: submitting ? 'not-allowed' : 'pointer',
-              boxShadow: '0 6px 18px ' + themeColor + '40'
-            }}
-          >
-            {submitting ? <><FaPaperPlane className="spinner" /> Đang lưu trữ dữ liệu...</> : <><FaCheck /> Nộp & Ghi Nhận Báo Cáo <FaArrowRight /></>}
-          </button>
-        </div>
+              gap: '0.5rem'
+            }}>
+              <FaLock /> Biểu mẫu đang ở chế độ xem (Không thể nộp hoặc sửa)
+            </div>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '1rem', borderTop: '1.5px solid #F1F5F9', paddingTop: '1.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+            <button type="button" onClick={onBack || (() => navigate(-1))} style={{ backgroundColor: '#F1F5F9', color: '#475569', border: '1px solid #CBD5E1', borderRadius: '12px', padding: '0.8rem 1.5rem', fontWeight: '700', fontSize: '0.9rem', cursor: 'pointer' }}>
+              Hủy bỏ
+            </button>
+
+            <button
+              type="submit"
+              disabled={submitting}
+              style={{
+                background: 'linear-gradient(135deg, ' + themeColor + ' 0%, #10B981 100%)',
+                color: '#FFFFFF',
+                border: 'none',
+                borderRadius: '12px',
+                padding: '0.8rem 2.2rem',
+                fontWeight: '900',
+                fontSize: '0.96rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.55rem',
+                cursor: submitting ? 'not-allowed' : 'pointer',
+                boxShadow: '0 6px 18px ' + themeColor + '40'
+              }}
+            >
+              {submitting ? <><FaPaperPlane className="spinner" /> Đang lưu trữ dữ liệu...</> : <><FaCheck /> Nộp & Ghi Nhận Báo Cáo <FaArrowRight /></>}
+            </button>
+          </div>
+        )}
 
       </form>
     </div>
