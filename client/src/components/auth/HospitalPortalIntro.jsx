@@ -16,10 +16,9 @@ import {
 } from 'react-icons/fa';
 
 // =========================================================================
-// HIGH-END CINEMATIC MEDICAL SOUND SYNTHESIZER ENGINE (Web Audio API)
+// 1. REUNION & WELCOME SOUND SYNTHESIZER (Hội ngộ bạn cũ - Nồng ấm, Hào hứng)
 // =========================================================================
-
-const playCinematicMedicalSound = () => {
+export const playReunionWelcomeSound = () => {
   try {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     if (!AudioContextClass) return;
@@ -37,11 +36,11 @@ const playCinematicMedicalSound = () => {
     compressor.connect(ctx.destination);
 
     const masterGain = ctx.createGain();
-    masterGain.gain.setValueAtTime(0.75, now);
+    masterGain.gain.setValueAtTime(0.78, now);
     masterGain.connect(compressor);
 
-    // 1. Ambient Healing Pad (D3, A3, D4, F#4, A4, C#5)
-    const padFreqs = [146.83, 220.0, 293.66, 369.99, 440.0, 554.37];
+    // Layer 1: Warm Reunion Harmony Pad (D Major 9th: D3, A3, F#4, A4, C#5, E5, F#5)
+    const padFreqs = [146.83, 220.0, 369.99, 440.0, 554.37, 659.25, 739.99];
     padFreqs.forEach((freq, idx) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
@@ -51,22 +50,22 @@ const playCinematicMedicalSound = () => {
       osc.frequency.setValueAtTime(freq, now + 0.05);
 
       filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(950 + idx * 280, now);
-      filter.Q.setValueAtTime(1.5, now);
+      filter.frequency.setValueAtTime(1100 + idx * 250, now);
+      filter.Q.setValueAtTime(1.4, now);
 
       gain.gain.setValueAtTime(0.001, now + 0.05);
-      gain.gain.linearRampToValueAtTime(0.14 / (idx * 0.35 + 1), now + 0.5);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 4.8);
+      gain.gain.linearRampToValueAtTime(0.15 / (idx * 0.3 + 1), now + 0.6);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 5.2);
 
       osc.connect(filter);
       filter.connect(gain);
       gain.connect(masterGain);
 
       osc.start(now + 0.05);
-      osc.stop(now + 5.0);
+      osc.stop(now + 5.4);
     });
 
-    // 2. Hospital Vital Heartbeat ("Lub - Dub")
+    // Layer 2: Vital Hospital Heartbeat ("Lub - Dub") - Nhịp đập thân thuộc
     const playBeat = (startTime, isLoud = true) => {
       const osc1 = ctx.createOscillator();
       const gain1 = ctx.createGain();
@@ -117,18 +116,102 @@ const playCinematicMedicalSound = () => {
     playBeat(now + 0.65, true);
     playBeat(now + 2.25, false);
 
-    // 3. Pure Crystal Water & Celestial Starlight Chimes
-    const crystalFreqs = [739.99, 880.0, 1108.73, 1318.51, 1760.0, 2217.46];
-    crystalFreqs.forEach((freq, idx) => {
+    // Layer 3: Emotional Reunion Bells & Harp Arpeggio (F#5 -> A5 -> B5 -> C#6 -> E6 -> F#6 -> A6)
+    const reunionBells = [739.99, 880.0, 987.77, 1108.73, 1318.51, 1479.98, 1760.0];
+    reunionBells.forEach((freq, idx) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
       osc.type = 'sine';
-      const chimeTime = now + 0.3 + idx * 0.15;
+      const chimeTime = now + 0.35 + idx * 0.14;
       osc.frequency.setValueAtTime(freq, chimeTime);
 
       gain.gain.setValueAtTime(0.001, chimeTime);
-      gain.gain.linearRampToValueAtTime(0.16 / (idx * 0.3 + 1), chimeTime + 0.03);
+      gain.gain.linearRampToValueAtTime(0.18 / (idx * 0.25 + 1), chimeTime + 0.025);
+      gain.gain.exponentialRampToValueAtTime(0.0001, chimeTime + 3.4);
+
+      osc.connect(gain);
+      gain.connect(masterGain);
+
+      osc.start(chimeTime);
+      osc.stop(chimeTime + 3.6);
+    });
+
+  } catch (err) {}
+};
+
+// =========================================================================
+// 2. FAREWELL & HOPE SOUND SYNTHESIZER (Tạm biệt êm đềm & Hy vọng ngày gặp lại)
+// =========================================================================
+export const playFarewellHopeSound = () => {
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    const ctx = new AudioContextClass();
+    if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+    const now = ctx.currentTime;
+
+    // Master Dynamics Limiter
+    const compressor = ctx.createDynamicsCompressor();
+    compressor.threshold.setValueAtTime(-16, now);
+    compressor.knee.setValueAtTime(16, now);
+    compressor.ratio.setValueAtTime(4, now);
+    compressor.attack.setValueAtTime(0.005, now);
+    compressor.release.setValueAtTime(0.35, now);
+    compressor.connect(ctx.destination);
+
+    const masterGain = ctx.createGain();
+    masterGain.gain.setValueAtTime(0.72, now);
+    masterGain.connect(compressor);
+
+    // Layer 1: Peaceful Twilight & Gratitude Horizon Pad (E minor 9th / G Major 7th: E3, B3, G4, B4, D5, F#5)
+    const twilightFreqs = [164.81, 246.94, 392.00, 493.88, 587.33, 739.99];
+    twilightFreqs.forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now + 0.05);
+
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(750 + idx * 180, now);
+      filter.Q.setValueAtTime(1.2, now);
+
+      gain.gain.setValueAtTime(0.001, now + 0.05);
+      gain.gain.linearRampToValueAtTime(0.14 / (idx * 0.35 + 1), now + 0.8);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 5.5);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(masterGain);
+
+      osc.start(now + 0.05);
+      osc.stop(now + 5.7);
+    });
+
+    // Layer 2: Gentle Descending Farewell & Ascending Hope Melodic Bells
+    // (B5 -> G5 -> E5 -> D5 -> F#5 -> A5 -> D6)
+    const farewellMelody = [
+      { freq: 987.77, delay: 0.30 }, // B5: Lắng đọng
+      { freq: 783.99, delay: 0.65 }, // G5: Nhẹ nhàng
+      { freq: 659.25, delay: 1.05 }, // E5: Thư thái
+      { freq: 587.33, delay: 1.50 }, // D5: An lành
+      { freq: 739.99, delay: 2.10 }, // F#5: Niềm tin
+      { freq: 880.00, delay: 2.50 }, // A5: Hy vọng
+      { freq: 1174.66, delay: 2.95 } // D6: Nốt cao ngân vang - Hẹn ngày gặp lại
+    ];
+
+    farewellMelody.forEach(({ freq, delay }) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      const chimeTime = now + delay;
+      osc.frequency.setValueAtTime(freq, chimeTime);
+
+      gain.gain.setValueAtTime(0.001, chimeTime);
+      gain.gain.linearRampToValueAtTime(0.20, chimeTime + 0.03);
       gain.gain.exponentialRampToValueAtTime(0.0001, chimeTime + 3.2);
 
       osc.connect(gain);
@@ -137,6 +220,28 @@ const playCinematicMedicalSound = () => {
       osc.start(chimeTime);
       osc.stop(chimeTime + 3.4);
     });
+
+    // Layer 3: Soft Calming Breath Wind (Thở phào nhẹ nhõm sau ca trực)
+    const noiseOsc = ctx.createOscillator();
+    const noiseGain = ctx.createGain();
+    const noiseFilter = ctx.createBiquadFilter();
+
+    noiseOsc.type = 'triangle';
+    noiseOsc.frequency.setValueAtTime(120, now);
+    noiseFilter.type = 'bandpass';
+    noiseFilter.frequency.setValueAtTime(320, now);
+    noiseFilter.Q.setValueAtTime(2.0, now);
+
+    noiseGain.gain.setValueAtTime(0.0001, now);
+    noiseGain.gain.linearRampToValueAtTime(0.06, now + 1.2);
+    noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 4.2);
+
+    noiseOsc.connect(noiseFilter);
+    noiseFilter.connect(noiseGain);
+    noiseGain.connect(masterGain);
+
+    noiseOsc.start(now);
+    noiseOsc.stop(now + 4.5);
 
   } catch (err) {}
 };
@@ -217,18 +322,29 @@ const HospitalPortalIntro = ({ onComplete }) => {
     isStartedRef.current = true;
     setIsStarted(true);
 
-    // 1. Play Web Audio API sound immediately
-    playCinematicMedicalSound();
+    const isLogoutMode = Boolean(sessionStorage.getItem('just_logged_out_username') || loggedOutUser);
 
-    // 2. Run 60fps Timestamp-based Progress
+    // 1. Play specific audio matching emotional context
+    if (isLogoutMode) {
+      playFarewellHopeSound();
+    } else {
+      playReunionWelcomeSound();
+    }
+
+    // 2. Run 60fps Timestamp-based Progress with tailored status text
     const startTime = Date.now();
     const duration = 3800; // 3.8 seconds
 
-    const statusStages = [
-      { at: 15, text: 'Thiết lập kết nối mã hóa y tế 256-bit...' },
-      { at: 40, text: 'Đồng bộ cơ sở dữ liệu 12 khoa phòng...' },
+    const statusStages = isLogoutMode ? [
+      { at: 15, text: 'Ghi nhận đóng góp chuyên môn ca trực vừa qua...' },
+      { at: 40, text: 'Bảo mật và lưu trữ an toàn hồ sơ giao ban...' },
+      { at: 70, text: 'Chúc quý bác sĩ, điều dưỡng nghỉ ngơi bình an...' },
+      { at: 92, text: 'Hẹn gặp lại quý đồng nghiệp trong ca trực tới!' }
+    ] : [
+      { at: 15, text: 'Chào mừng quý đồng nghiệp trở lại ngôi nhà chung...' },
+      { at: 40, text: 'Đồng bộ cơ sở dữ liệu 12 khoa phòng trực ban...' },
       { at: 70, text: 'Tải biểu mẫu giao ban chuyên môn trực tuyến...' },
-      { at: 92, text: 'Hệ thống sẵn sàng! Đang vào cổng làm việc...' }
+      { at: 92, text: 'Hệ thống sẵn sàng! Chúc ca trực hanh thông & an toàn...' }
     ];
 
     const tick = () => {
@@ -242,7 +358,7 @@ const HospitalPortalIntro = ({ onComplete }) => {
       if (pct < 100) {
         animFrameRef.current = requestAnimationFrame(tick);
       } else {
-        setStatusText('Hoàn tất kết nối! Đang chuyển tiếp...');
+        setStatusText(isLogoutMode ? 'Đã lưu phiên! Chúc quý đồng nghiệp vạn sự bình an...' : 'Hoàn tất kết nối! Đang vào cổng làm việc...');
         setTimeout(() => {
           handleAutoComplete();
         }, 450);
@@ -250,7 +366,7 @@ const HospitalPortalIntro = ({ onComplete }) => {
     };
 
     animFrameRef.current = requestAnimationFrame(tick);
-  }, [handleAutoComplete]);
+  }, [handleAutoComplete, loggedOutUser]);
 
   // Keep onComplete reference current
   useEffect(() => {
@@ -817,9 +933,11 @@ const HospitalPortalIntro = ({ onComplete }) => {
           <div style={{
             height: '100%',
             width: `${progress}%`,
-            background: 'linear-gradient(90deg, #0284C7 0%, #2DD4BF 100%)',
+            background: loggedOutUser 
+              ? 'linear-gradient(90deg, #F87171 0%, #F59E0B 100%)' 
+              : 'linear-gradient(90deg, #0284C7 0%, #2DD4BF 100%)',
             borderRadius: '999px',
-            boxShadow: '0 0 16px #2DD4BF',
+            boxShadow: loggedOutUser ? '0 0 16px #F87171' : '0 0 16px #2DD4BF',
             transition: 'width 0.05s linear'
           }} />
         </div>
@@ -875,11 +993,11 @@ const HospitalPortalIntro = ({ onComplete }) => {
               width: '7px',
               height: '7px',
               borderRadius: '50%',
-              backgroundColor: '#10B981',
+              backgroundColor: loggedOutUser ? '#F87171' : '#10B981',
               animation: 'livePulseDot 1.4s ease-in-out infinite'
             }} />
             <span>{statusText}</span>
-            <span style={{ color: '#38BDF8', fontWeight: '800', marginLeft: '0.2rem' }}>{progress}%</span>
+            <span style={{ color: loggedOutUser ? '#FCA5A5' : '#38BDF8', fontWeight: '800', marginLeft: '0.2rem' }}>{progress}%</span>
           </div>
         )}
 
