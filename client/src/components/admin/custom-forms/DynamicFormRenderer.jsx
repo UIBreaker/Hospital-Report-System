@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   FaWpforms, 
@@ -31,9 +31,13 @@ import {
   FaTags,
   FaToggleOn,
   FaToggleOff,
-  FaArrowRight
+  FaArrowRight,
+  FaUserMd,
+  FaUserNurse
 } from 'react-icons/fa';
 import customFormService from '../../../services/customFormService';
+import staffService from '../../../services/staffService';
+import { AuthContext } from '../../../contexts/AuthContext';
 import MedicalLoader from '../../common/MedicalLoader';
 
 // Standard Hospital ICD-10 List
@@ -229,37 +233,296 @@ const SignaturePad = ({ value, onChange, themeColor = '#2563EB' }) => {
   );
 };
 
-const DynamicFormRenderer = ({ formCode, onBack }) => {
+// =========================================================================
+// STAFF SELECTOR COMPONENT (BÁC SĨ / ĐIỀU DƯỠNG FIELD)
+// =========================================================================
+const StaffSelectorField = ({ field, value, onChange, currentUserDept, themeColor = '#2563EB' }) => {
+  const [staffList, setStaffList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const loadStaff = async () => {
+      setLoading(true);
+      try {
+        const res = await staffService.getAllStaff();
+        const rawList = res?.data || (Array.isArray(res) ? res : []);
+        setStaffList(rawList);
+      } catch (err) {
+        console.warn('Could not load staff list:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadStaff();
+  }, []);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Filter staff based on field settings
+  const filteredStaff = useMemo(() => {
+    return staffList.filter(s => {
+      // 1. Department filter
+      if (field.staffScope === 'specific_dept' && field.specificDept) {
+        if (s.department_code !== field.specificDept) return false;
+      } else if (field.staffScope === 'current_dept' && currentUserDept) {
+        if (s.department_code !== currentUserDept) return false;
+      }
+
+      // 2. Role filter
+      const pos = (s.position || '').toLowerCase();
+      const isDoc = pos.includes('bác sĩ') || pos.includes('bs') || pos.includes('truong khoa') || pos.includes('phó khoa');
+      if (field.staffRole === 'doctor' && !isDoc) return false;
+      if (field.staffRole === 'nurse' && isDoc) return false;
+
+      // 3. Search query
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const inName = (s.name || '').toLowerCase().includes(q);
+        const inPos = (s.position || '').toLowerCase().includes(q);
+        const inDept = (s.department_name || '').toLowerCase().includes(q);
+        if (!inName && !inPos && !inDept) return false;
+      }
+
+      return true;
+    });
+  }, [staffList, field, currentUserDept, searchQuery]);
+
+  const isMulti = field.selectionMode === 'multiple';
+  const selectedArray = isMulti ? (Array.isArray(value) ? value : (value ? [value] : [])) : [];
+
+  const handleSelectOne = (staff) => {
+    const staffLabel = staff.position ? (staff.name + ' (' + staff.position + ')') : staff.name;
+    if (isMulti) {
+      if (!selectedArray.includes(staffLabel)) {
+        onChange([...selectedArray, staffLabel]);
+      }
+    } else {
+      onChange(staffLabel);
+      setIsDropdownOpen(false);
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove) => {
+    onChange(selectedArray.filter(t => t !== tagToRemove));
+  };
+
+  return (
+    <div ref={dropdownRef} style={{ position: 'relative', width: '100%' }}>
+      {/* Selection Display Box */}
+      <div
+        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+        style={{
+          width: '100%',
+          minHeight: '44px',
+          padding: '0.45rem 0.75rem',
+          borderRadius: '10px',
+          border: '1.5px solid ' + (isDropdownOpen ? themeColor : '#CBD5E1'),
+          backgroundColor: '#F8FAFC',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          cursor: 'pointer',
+          boxSizing: 'border-box',
+          boxShadow: isDropdownOpen ? '0 0 0 3px ' + themeColor + '22' : 'none'
+        }}
+      >
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', alignItems: 'center', flex: 1 }}>
+          {isMulti ? (
+            selectedArray.length === 0 ? (
+              <span style={{ color: '#94A3B8', fontSize: '0.86rem' }}>{field.placeholder || 'Chọn danh sách bác sĩ / điều dưỡng...'}</span>
+            ) : (
+              selectedArray.map((tag, tIdx) => (
+                <span
+                  key={tIdx}
+                  style={{
+                    backgroundColor: '#EFF6FF',
+                    color: '#1E40AF',
+                    border: '1px solid #BFDBFE',
+                    borderRadius: '20px',
+                    padding: '0.2rem 0.6rem',
+                    fontSize: '0.78rem',
+                    fontWeight: '800',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.35rem'
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <FaUserMd style={{ fontSize: '0.72rem' }} /> {tag}
+                  <FaTimes style={{ cursor: 'pointer', color: '#EF4444' }} onClick={() => handleRemoveTag(tag)} />
+                </span>
+              ))
+            )
+          ) : (
+            value ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.88rem', fontWeight: '800', color: '#0F2C59' }}>
+                <span style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem' }}>
+                  <FaUserMd />
+                </span>
+                <span>{value}</span>
+              </div>
+            ) : (
+              <span style={{ color: '#94A3B8', fontSize: '0.86rem' }}>{field.placeholder || 'Chọn bác sĩ hoặc điều dưỡng...'}</span>
+            )
+          )}
+        </div>
+
+        <div style={{ color: '#94A3B8', fontSize: '0.8rem', marginLeft: '0.5rem' }}>
+          {isDropdownOpen ? '▲' : '▼'}
+        </div>
+      </div>
+
+      {/* Dropdown Options Popup */}
+      {isDropdownOpen && (
+        <div style={{
+          position: 'absolute',
+          top: 'calc(100% + 4px)',
+          left: 0,
+          right: 0,
+          backgroundColor: '#FFFFFF',
+          borderRadius: '14px',
+          border: '1.5px solid #CBD5E1',
+          boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+          zIndex: 9999,
+          maxHeight: '260px',
+          overflowY: 'auto',
+          padding: '0.5rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.35rem'
+        }}>
+          {/* Search box inside dropdown */}
+          <div style={{ position: 'sticky', top: 0, backgroundColor: '#FFFFFF', paddingBottom: '0.35rem', zIndex: 2 }}>
+            <input
+              type="text"
+              placeholder="🔍 Tìm theo tên, chức danh, khoa phòng..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                width: '100%',
+                padding: '0.45rem 0.65rem',
+                borderRadius: '8px',
+                border: '1px solid #CBD5E1',
+                fontSize: '0.82rem',
+                outline: 'none',
+                boxSizing: 'border-box'
+              }}
+            />
+          </div>
+
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '1rem', color: '#64748B', fontSize: '0.82rem' }}>
+              Đang tải danh sách nhân sự...
+            </div>
+          ) : filteredStaff.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '1rem', color: '#94A3B8', fontSize: '0.82rem', fontStyle: 'italic' }}>
+              Không tìm thấy nhân sự phù hợp bộ lọc.
+            </div>
+          ) : (
+            filteredStaff.map(s => {
+              const pos = (s.position || '').toLowerCase();
+              const isDoc = pos.includes('bác sĩ') || pos.includes('bs');
+              const fullLabel = s.position ? (s.name + ' (' + s.position + ')') : s.name;
+              const isSelected = isMulti ? selectedArray.includes(fullLabel) : value === fullLabel;
+
+              return (
+                <div
+                  key={s.id}
+                  onClick={() => handleSelectOne(s)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '0.5rem 0.75rem',
+                    borderRadius: '8px',
+                    backgroundColor: isSelected ? '#EFF6FF' : '#F8FAFC',
+                    border: '1px solid ' + (isSelected ? '#BFDBFE' : '#F1F5F9'),
+                    cursor: 'pointer',
+                    transition: 'all 0.1s ease'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#EFF6FF'}
+                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = isSelected ? '#EFF6FF' : '#F8FAFC'}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
+                    <span style={{
+                      width: '28px',
+                      height: '28px',
+                      borderRadius: '50%',
+                      backgroundColor: isDoc ? '#DBEAFE' : '#DCFCE7',
+                      color: isDoc ? '#1D4ED8' : '#15803D',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.8rem'
+                    }}>
+                      {isDoc ? <FaUserMd /> : <FaUserNurse />}
+                    </span>
+                    <div>
+                      <div style={{ fontSize: '0.86rem', fontWeight: '800', color: '#0F2C59' }}>
+                        {s.name}
+                      </div>
+                      <div style={{ fontSize: '0.74rem', color: '#64748B' }}>
+                        {s.position || 'Nhân viên'} {s.department_name && ('• ' + s.department_name)}
+                      </div>
+                    </div>
+                  </div>
+
+                  {isSelected && (
+                    <span style={{ color: '#2563EB', fontWeight: '900', fontSize: '0.82rem' }}>✓ Đã chọn</span>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const DynamicFormRenderer = ({ formCode, initialMeta, onBack }) => {
   const { code: paramCode } = useParams();
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext) || {};
   const activeCode = formCode || paramCode;
 
-  const [formMeta, setFormMeta] = useState(null);
+  const [formMeta, setFormMeta] = useState(initialMeta || null);
   const [formData, setFormData] = useState({});
   const [submissionDate, setSubmissionDate] = useState(() => new Date().toISOString().split('T')[0]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!initialMeta);
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [submittedDataSummary, setSubmittedDataSummary] = useState(null);
 
   const fetchMeta = async () => {
+    if (initialMeta) {
+      setFormMeta(initialMeta);
+      initFormFields(initialMeta);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setErrorMsg('');
     try {
       const res = await customFormService.getFormByCode(activeCode);
       if (res && res.success) {
         setFormMeta(res.data);
-        const initVals = {};
-        (res.data?.schema_json || []).forEach(f => {
-          if (f.type === 'table') initVals[f.key] = [];
-          else if (f.type === 'multi_checkbox' || f.type === 'multi_select') initVals[f.key] = [];
-          else if (f.type === 'checkbox' || f.type === 'toggle') initVals[f.key] = false;
-          else if (f.type === 'percentage') initVals[f.key] = 50;
-          else if (f.type === 'rating') initVals[f.key] = 0;
-          else initVals[f.key] = f.defaultValue || '';
-        });
-        setFormData(initVals);
+        initFormFields(res.data);
       }
     } catch (err) {
       const rawErr = err.response?.data?.error || err.response?.data?.message || err.message;
@@ -269,9 +532,29 @@ const DynamicFormRenderer = ({ formCode, onBack }) => {
     }
   };
 
+  const initFormFields = (meta) => {
+    const initVals = {};
+    (meta?.schema_json || []).forEach(f => {
+      if (f.type === 'table') initVals[f.key] = [];
+      else if (f.type === 'multi_checkbox' || f.type === 'multi_select') initVals[f.key] = [];
+      else if (f.type === 'staff_selector' && f.selectionMode === 'multiple') initVals[f.key] = [];
+      else if (f.type === 'checkbox' || f.type === 'toggle') initVals[f.key] = false;
+      else if (f.type === 'percentage') initVals[f.key] = 50;
+      else if (f.type === 'rating') initVals[f.key] = 0;
+      else initVals[f.key] = f.defaultValue || '';
+    });
+    setFormData(initVals);
+  };
+
   useEffect(() => {
-    if (activeCode) fetchMeta();
-  }, [activeCode]);
+    if (initialMeta) {
+      setFormMeta(initialMeta);
+      initFormFields(initialMeta);
+      setLoading(false);
+    } else if (activeCode) {
+      fetchMeta();
+    }
+  }, [activeCode, initialMeta]);
 
   const handleFieldChange = (key, value) => {
     setFormData(prev => ({ ...prev, [key]: value }));
@@ -289,7 +572,6 @@ const DynamicFormRenderer = ({ formCode, onBack }) => {
             const numVal = parseFloat(v) || 0;
             expr = expr.split('{' + k + '}').join(numVal);
           });
-          // Only evaluate safe arithmetic
           if (/^[0-9+\-*/().\s]+$/.test(expr)) {
             // eslint-disable-next-line no-eval
             const result = Function('"use strict"; return (' + expr + ')')();
@@ -301,7 +583,7 @@ const DynamicFormRenderer = ({ formCode, onBack }) => {
             }
           }
         } catch (e) {
-          // Ignore syntax errors during typing formula
+          // Ignore syntax errors
         }
       }
     });
@@ -330,6 +612,17 @@ const DynamicFormRenderer = ({ formCode, onBack }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
+
+    // If initialMeta (Preview Mode) -> simulate success
+    if (initialMeta) {
+      setSubmittedDataSummary({
+        submissionDate,
+        formData: { ...formData },
+        timestamp: new Date().toLocaleTimeString('vi-VN') + ' - ' + new Date().toLocaleDateString('vi-VN')
+      });
+      setSubmitted(true);
+      return;
+    }
 
     const missingRequired = [];
     (formMeta?.schema_json || []).forEach(f => {
@@ -368,16 +661,7 @@ const DynamicFormRenderer = ({ formCode, onBack }) => {
   };
 
   const handleResetForNew = () => {
-    const initVals = {};
-    (formMeta?.schema_json || []).forEach(f => {
-      if (f.type === 'table') initVals[f.key] = [];
-      else if (f.type === 'multi_checkbox' || f.type === 'multi_select') initVals[f.key] = [];
-      else if (f.type === 'checkbox' || f.type === 'toggle') initVals[f.key] = false;
-      else if (f.type === 'percentage') initVals[f.key] = 50;
-      else if (f.type === 'rating') initVals[f.key] = 0;
-      else initVals[f.key] = '';
-    });
-    setFormData(initVals);
+    if (formMeta) initFormFields(formMeta);
     setSubmitted(false);
     setSubmittedDataSummary(null);
     setErrorMsg('');
@@ -442,7 +726,7 @@ const DynamicFormRenderer = ({ formCode, onBack }) => {
   }
 
   // ==========================================
-  // MAIN FORM FILL VIEW (27 PRO FIELD TYPES)
+  // MAIN FORM FILL VIEW (28 PRO FIELD TYPES)
   // ==========================================
   return (
     <div style={{ maxWidth: '960px', margin: '0 auto', paddingBottom: '3rem', fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}>
@@ -528,7 +812,18 @@ const DynamicFormRenderer = ({ formCode, onBack }) => {
                   {field.label} {field.required && <span style={{ color: '#EF4444' }}>*</span>}
                 </label>
 
-                {/* 1. TEXT / EMAIL / PHONE */}
+                {/* 1. STAFF SELECTOR (BÁC SĨ / ĐIỀU DƯỠNG) */}
+                {field.type === 'staff_selector' && (
+                  <StaffSelectorField
+                    field={field}
+                    value={formData[field.key]}
+                    onChange={(val) => handleFieldChange(field.key, val)}
+                    currentUserDept={user?.department_code}
+                    themeColor={themeColor}
+                  />
+                )}
+
+                {/* 2. TEXT / EMAIL / PHONE */}
                 {['text', 'email', 'phone'].includes(field.type) && (
                   <input
                     type={field.type === 'phone' ? 'tel' : field.type}
@@ -541,7 +836,7 @@ const DynamicFormRenderer = ({ formCode, onBack }) => {
                   />
                 )}
 
-                {/* 2. TEXTAREA */}
+                {/* 3. TEXTAREA */}
                 {field.type === 'textarea' && (
                   <textarea
                     rows={field.rows || 3}
@@ -554,7 +849,7 @@ const DynamicFormRenderer = ({ formCode, onBack }) => {
                   />
                 )}
 
-                {/* 3. NUMBER / DECIMAL */}
+                {/* 4. NUMBER / DECIMAL */}
                 {['number', 'decimal'].includes(field.type) && (
                   <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
                     <input
@@ -575,7 +870,7 @@ const DynamicFormRenderer = ({ formCode, onBack }) => {
                   </div>
                 )}
 
-                {/* 4. CURRENCY VNĐ */}
+                {/* 5. CURRENCY VNĐ */}
                 {field.type === 'currency' && (
                   <div style={{ position: 'relative' }}>
                     <input
@@ -595,7 +890,7 @@ const DynamicFormRenderer = ({ formCode, onBack }) => {
                   </div>
                 )}
 
-                {/* 5. FORMULA (AUTO CALCULATED) */}
+                {/* 6. FORMULA (AUTO CALCULATED) */}
                 {field.type === 'formula' && (
                   <div style={{ backgroundColor: '#F5F3FF', border: '1.5px solid #DDD6FE', borderRadius: '10px', padding: '0.65rem 0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div style={{ fontSize: '0.82rem', color: '#7C3AED', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
@@ -607,7 +902,7 @@ const DynamicFormRenderer = ({ formCode, onBack }) => {
                   </div>
                 )}
 
-                {/* 6. PERCENTAGE SLIDER */}
+                {/* 7. PERCENTAGE SLIDER */}
                 {field.type === 'percentage' && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', backgroundColor: '#F8FAFC', padding: '0.6rem 1rem', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
                     <input
@@ -624,7 +919,7 @@ const DynamicFormRenderer = ({ formCode, onBack }) => {
                   </div>
                 )}
 
-                {/* 7. ICD-10 SEARCH COMBOBOX */}
+                {/* 8. ICD-10 SEARCH COMBOBOX */}
                 {field.type === 'icd10' && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                     <input
@@ -635,7 +930,6 @@ const DynamicFormRenderer = ({ formCode, onBack }) => {
                       required={field.required}
                       style={{ width: '100%', padding: '0.7rem 0.85rem', borderRadius: '10px', border: '1.5px solid #E2E8F0', fontSize: '0.88rem', outline: 'none', backgroundColor: '#F8FAFC', color: '#0F2C59', fontWeight: '700', boxSizing: 'border-box' }}
                     />
-                    {/* Quick suggestion chips */}
                     <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', marginTop: '2px' }}>
                       {COMMON_ICD10_LIST.slice(0, 5).map(icd => (
                         <button
@@ -651,7 +945,7 @@ const DynamicFormRenderer = ({ formCode, onBack }) => {
                   </div>
                 )}
 
-                {/* 8. SINGLE CHECKBOX / TOGGLE */}
+                {/* 9. SINGLE CHECKBOX / TOGGLE */}
                 {['checkbox', 'toggle'].includes(field.type) && (
                   <label style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', cursor: 'pointer', padding: '0.5rem 0' }}>
                     {field.type === 'toggle' ? (
@@ -693,7 +987,7 @@ const DynamicFormRenderer = ({ formCode, onBack }) => {
                   </label>
                 )}
 
-                {/* 9. MULTI-CHECKBOX */}
+                {/* 10. MULTI-CHECKBOX */}
                 {field.type === 'multi_checkbox' && (
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.65rem', backgroundColor: '#F8FAFC', padding: '0.75rem', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
                     {(field.options || []).map((opt, oIdx) => {
@@ -720,7 +1014,7 @@ const DynamicFormRenderer = ({ formCode, onBack }) => {
                   </div>
                 )}
 
-                {/* 10. RADIO GROUP */}
+                {/* 11. RADIO GROUP */}
                 {field.type === 'radio' && (
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.65rem', backgroundColor: '#F8FAFC', padding: '0.75rem', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
                     {(field.options || []).map((opt, oIdx) => {
@@ -745,7 +1039,7 @@ const DynamicFormRenderer = ({ formCode, onBack }) => {
                   </div>
                 )}
 
-                {/* 11. SELECT DROPDOWN */}
+                {/* 12. SELECT DROPDOWN */}
                 {field.type === 'select' && (
                   <select
                     value={formData[field.key] || ''}
@@ -762,7 +1056,7 @@ const DynamicFormRenderer = ({ formCode, onBack }) => {
                   </select>
                 )}
 
-                {/* 12. MULTI-SELECT TAGS */}
+                {/* 13. MULTI-SELECT TAGS */}
                 {field.type === 'multi_select' && (
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', backgroundColor: '#F8FAFC', padding: '0.65rem', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
                     {(field.options || []).map((opt, oIdx) => {
@@ -798,7 +1092,7 @@ const DynamicFormRenderer = ({ formCode, onBack }) => {
                   </div>
                 )}
 
-                {/* 13. DATE / TIME / DATETIME */}
+                {/* 14. DATE / TIME / DATETIME */}
                 {['date', 'time', 'datetime'].includes(field.type) && (
                   <input
                     type={field.type === 'datetime' ? 'datetime-local' : field.type}
@@ -809,7 +1103,7 @@ const DynamicFormRenderer = ({ formCode, onBack }) => {
                   />
                 )}
 
-                {/* 14. RATING / VAS PAIN SCALE */}
+                {/* 15. RATING / VAS PAIN SCALE */}
                 {field.type === 'rating' && (
                   <div style={{ backgroundColor: '#F8FAFC', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
                     <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -847,7 +1141,7 @@ const DynamicFormRenderer = ({ formCode, onBack }) => {
                   </div>
                 )}
 
-                {/* 15. SIGNATURE PAD */}
+                {/* 16. SIGNATURE PAD */}
                 {field.type === 'signature' && (
                   <SignaturePad
                     value={formData[field.key] || ''}
@@ -856,7 +1150,7 @@ const DynamicFormRenderer = ({ formCode, onBack }) => {
                   />
                 )}
 
-                {/* 16. IMAGE / FILE UPLOAD */}
+                {/* 17. IMAGE / FILE UPLOAD */}
                 {['image', 'file'].includes(field.type) && (
                   <div style={{ backgroundColor: '#F8FAFC', borderRadius: '12px', border: '1.5px dashed #CBD5E1', padding: '1rem', textAlign: 'center' }}>
                     <input
@@ -874,7 +1168,7 @@ const DynamicFormRenderer = ({ formCode, onBack }) => {
                   </div>
                 )}
 
-                {/* 17. SUB-TABLE REPEATER */}
+                {/* 18. SUB-TABLE REPEATER */}
                 {field.type === 'table' && (
                   <div style={{ backgroundColor: '#F8FAFC', borderRadius: '12px', border: '1px solid #E2E8F0', padding: '1rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>

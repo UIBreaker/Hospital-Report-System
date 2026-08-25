@@ -38,6 +38,7 @@ import {
   FaLayerGroup,
   FaDotCircle,
   FaToggleOn,
+  FaToggleOff,
   FaTags,
   FaAlignLeft,
   FaEnvelope,
@@ -59,10 +60,14 @@ import {
   FaCheck,
   FaChevronDown,
   FaChevronUp,
-  FaSearch
+  FaSearch,
+  FaDesktop,
+  FaMobileAlt,
+  FaUserNurse
 } from 'react-icons/fa';
 import customFormService from '../../../services/customFormService';
 import systemUserService from '../../../services/systemUserService';
+import DynamicFormRenderer from './DynamicFormRenderer';
 
 // 8 Theme Color Presets
 const THEME_OPTIONS = [
@@ -76,21 +81,23 @@ const THEME_OPTIONS = [
   { color: '#DB2777', label: 'Hồng Y Tế Nữ Hộ Sinh', bg: '#FDF2F8', border: '#FBCFE8' }
 ];
 
-const HEADER_ICONS = [
-  { key: 'form', label: 'Biểu mẫu', icon: FaWpforms },
-  { key: 'notes', label: 'Hồ sơ bệnh án', icon: FaNotesMedical },
-  { key: 'heart', label: 'Sinh hiệu', icon: FaHeartbeat },
-  { key: 'stethoscope', label: 'Khám bệnh', icon: FaStethoscope },
-  { key: 'doctor', label: 'Bác sĩ', icon: FaUserMd },
-  { key: 'hospital', label: 'Bệnh viện', icon: FaHospital },
-  { key: 'shield', label: 'Bảo mật', icon: FaShieldAlt },
-  { key: 'ambulance', label: 'Cấp cứu', icon: FaAmbulance },
-  { key: 'procedures', label: 'Điều trị', icon: FaProcedures },
-  { key: 'chart', label: 'Thống kê', icon: FaChartLine }
+const DEPARTMENTS = [
+  { code: 'lck', name: 'Khoa Liên Chuyên Khoa' },
+  { code: 'xn', name: 'Khoa Xét nghiệm' },
+  { code: 'cdha', name: 'Khoa Chẩn đoán hình ảnh' },
+  { code: 'hscc_tnt', name: 'Khoa Hồi sức cấp cứu - Thận nhân tạo' },
+  { code: 'noi', name: 'Khoa Nội' },
+  { code: 'nhi', name: 'Khoa Nhi' },
+  { code: 'nhiem', name: 'Khoa Nhiễm' },
+  { code: 'san', name: 'Khoa Sản' },
+  { code: 'yhct_phcn', name: 'Khoa Y học cổ truyền - Phục hồi chức năng' },
+  { code: 'ngoai_th', name: 'Khoa Ngoại tổng hợp' },
+  { code: 'ctch', name: 'Khoa Chấn thương chỉnh hình' },
+  { code: 'gmhs', name: 'Khoa Gây mê Hồi sức' }
 ];
 
 // =========================================================================
-// 6 ENTERPRISE FIELD CATEGORIES (27 PRO FIELD TYPES)
+// 6 ENTERPRISE FIELD CATEGORIES (28 PRO FIELD TYPES WITH STAFF SELECTOR)
 // =========================================================================
 const FIELD_CATEGORIES = [
   {
@@ -115,6 +122,7 @@ const FIELD_CATEGORIES = [
     fields: [
       { type: 'text', label: 'Văn bản ngắn', icon: FaFont, defaultWidth: '50%', placeholder: 'Nhập nội dung ngắn...' },
       { type: 'textarea', label: 'Ghi chú nhiều dòng', icon: FaAlignLeft, defaultWidth: '100%', placeholder: 'Nhập mô tả / ghi chú chi tiết...' },
+      { type: 'staff_selector', label: 'Chọn Bác sĩ / Điều dưỡng (Nhân sự)', icon: FaUserMd, defaultWidth: '50%', placeholder: 'Chọn bác sĩ hoặc điều dưỡng...', staffScope: 'all', staffRole: 'all', selectionMode: 'single', specificDept: 'lck' },
       { type: 'email', label: 'Email', icon: FaEnvelope, defaultWidth: '50%', placeholder: 'ten@benhvien.vn' },
       { type: 'phone', label: 'Số điện thoại', icon: FaPhone, defaultWidth: '50%', placeholder: '09xx xxx xxx' },
       { type: 'icd10', label: 'Tìm kiếm mã bệnh ICD-10', icon: FaStethoscope, defaultWidth: '100%', placeholder: 'Gõ mã hoặc tên bệnh (VD: I10 - Tăng huyết áp, E11 - Đái tháo đường...)' }
@@ -192,7 +200,7 @@ const slugify = (text) => {
 const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
   const isEditing = Boolean(initialForm?.id);
 
-  // Tab State: 'general' | 'fields' | 'tracker' | 'permissions'
+  // Tab State: 'general' | 'fields' | 'permissions'
   const [activeTab, setActiveTab] = useState('fields');
 
   // Form Basic Info
@@ -212,7 +220,7 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
     }
     return [
       { id: 'f_1', key: 'ho_va_ten', label: 'Họ và tên bệnh nhân / người khám', type: 'text', required: true, gridWidth: '50%', placeholder: 'Nhập họ và tên...' },
-      { id: 'f_2', key: 'dia_chi', label: 'Địa chỉ / Xã phường', type: 'text', required: false, gridWidth: '50%', placeholder: 'Nhập địa chỉ...' },
+      { id: 'f_2', key: 'bac_si_kham', label: 'Bác sĩ phụ trách khám', type: 'staff_selector', required: true, gridWidth: '50%', placeholder: 'Chọn bác sĩ...', staffScope: 'all', staffRole: 'doctor', selectionMode: 'single' },
       { id: 'f_3', key: 'ghi_chu', label: 'Ghi chú chuyên môn', type: 'textarea', required: false, gridWidth: '100%', placeholder: 'Nhập ghi chú...' }
     ];
   });
@@ -226,7 +234,10 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
 
   // Drag Reordering
   const [draggedIndex, setDraggedIndex] = useState(null);
-  const [showLiveGridPreview, setShowLiveGridPreview] = useState(true);
+
+  // LIVE PREVIEW MODAL STATE
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [previewDevice, setPreviewDevice] = useState('desktop'); // 'desktop' | 'mobile'
 
   // Permissions Array
   const [permissions, setPermissions] = useState(() => {
@@ -279,6 +290,18 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
     loadAllAccounts();
   }, []);
 
+  // Handle ESC to close Preview Modal
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        if (showPreviewModal) setShowPreviewModal(false);
+        if (editingFieldIndex !== null) setEditingFieldIndex(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showPreviewModal, editingFieldIndex]);
+
   const toggleCategory = (catId) => {
     setOpenCategories(prev => {
       const next = new Set(prev);
@@ -309,12 +332,16 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
       ratingMax: fieldTemplate.ratingMax || (fieldTemplate.type === 'rating' ? 5 : undefined),
       ratingType: fieldTemplate.ratingType || (fieldTemplate.type === 'rating' ? 'star' : undefined),
       calloutType: fieldTemplate.calloutType || (fieldTemplate.type === 'callout' ? 'info' : undefined),
-      unit: fieldTemplate.unit || ''
+      unit: fieldTemplate.unit || '',
+      // Staff selector config
+      staffScope: fieldTemplate.staffScope || 'all',
+      staffRole: fieldTemplate.staffRole || 'all',
+      selectionMode: fieldTemplate.selectionMode || 'single',
+      specificDept: fieldTemplate.specificDept || 'lck'
     };
 
     const newIndex = fields.length;
     setFields([...fields, newField]);
-    // Automatically open settings drawer for the newly added field
     setEditingFieldIndex(newIndex);
   };
 
@@ -483,28 +510,54 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
           </div>
         </div>
 
-        {/* Save Button */}
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={saving}
-          style={{
-            background: `linear-gradient(135deg, ${themeColor} 0%, #10B981 100%)`,
-            color: '#FFFFFF',
-            border: 'none',
-            borderRadius: '12px',
-            padding: '0.75rem 1.8rem',
-            fontWeight: '900',
-            fontSize: '0.92rem',
-            cursor: saving ? 'not-allowed' : 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            boxShadow: `0 6px 18px ${themeColor}40`
-          }}
-        >
-          {saving ? <><FaSpinner className="spinner" /> Đang lưu...</> : <><FaSave /> Lưu & Xuất Bản Biểu Mẫu</>}
-        </button>
+        {/* Top Header Actions (Live Preview Modal & Save) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          {/* NÚT MỞ LIVE PREVIEW MODAL */}
+          <button
+            type="button"
+            onClick={() => setShowPreviewModal(true)}
+            style={{
+              backgroundColor: '#0F2C59',
+              color: '#FFFFFF',
+              border: 'none',
+              borderRadius: '12px',
+              padding: '0.75rem 1.4rem',
+              fontWeight: '800',
+              fontSize: '0.88rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              boxShadow: '0 4px 14px rgba(15, 44, 89, 0.25)'
+            }}
+            title="Mở popup xem trước và kiểm tra giao diện tương tác thật"
+          >
+            <FaEye style={{ color: '#38BDF8' }} /> Xem Trước Bố Cục (Live Preview)
+          </button>
+
+          {/* Save Button */}
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saving}
+            style={{
+              background: `linear-gradient(135deg, ${themeColor} 0%, #10B981 100%)`,
+              color: '#FFFFFF',
+              border: 'none',
+              borderRadius: '12px',
+              padding: '0.75rem 1.8rem',
+              fontWeight: '900',
+              fontSize: '0.92rem',
+              cursor: saving ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              boxShadow: `0 6px 18px ${themeColor}40`
+            }}
+          >
+            {saving ? <><FaSpinner className="spinner" /> Đang lưu...</> : <><FaSave /> Lưu & Xuất Bản Biểu Mẫu</>}
+          </button>
+        </div>
       </div>
 
       {/* Error Banner */}
@@ -592,7 +645,7 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
                 <FaLayerGroup style={{ color: '#2563EB' }} /> Bảng Công Cụ Thêm Trường
               </div>
               <span style={{ fontSize: '0.72rem', backgroundColor: '#EFF6FF', color: '#1E40AF', padding: '0.15rem 0.5rem', borderRadius: '12px', fontWeight: '800' }}>
-                27 loại
+                28 loại
               </span>
             </div>
 
@@ -670,8 +723,8 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
                                 padding: '0.5rem 0.65rem',
                                 borderRadius: '8px',
                                 border: '1px solid #F1F5F9',
-                                backgroundColor: '#FAFAFA',
-                                color: '#1E293B',
+                                backgroundColor: f.type === 'staff_selector' ? '#EFF6FF' : '#FAFAFA',
+                                color: f.type === 'staff_selector' ? '#1E40AF' : '#1E293B',
                                 fontSize: '0.78rem',
                                 fontWeight: '700',
                                 cursor: 'pointer',
@@ -684,13 +737,13 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
                                 e.currentTarget.style.color = '#2563EB';
                               }}
                               onMouseOut={(e) => {
-                                e.currentTarget.style.backgroundColor = '#FAFAFA';
+                                e.currentTarget.style.backgroundColor = f.type === 'staff_selector' ? '#EFF6FF' : '#FAFAFA';
                                 e.currentTarget.style.borderColor = '#F1F5F9';
-                                e.currentTarget.style.color = '#1E293B';
+                                e.currentTarget.style.color = f.type === 'staff_selector' ? '#1E40AF' : '#1E293B';
                               }}
                               title={`Bấm để thêm trường ${f.label} vào form`}
                             >
-                              <FieldIcon style={{ color: cat.badgeColor, fontSize: '0.9rem', flexShrink: 0 }} />
+                              <FieldIcon style={{ color: f.type === 'staff_selector' ? '#2563EB' : cat.badgeColor, fontSize: '0.9rem', flexShrink: 0 }} />
                               <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{f.label}</span>
                               <FaPlus style={{ fontSize: '0.65rem', color: '#94A3B8' }} />
                             </button>
@@ -725,14 +778,14 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
               </div>
               <button
                 type="button"
-                onClick={() => setShowLiveGridPreview(!showLiveGridPreview)}
+                onClick={() => setShowPreviewModal(true)}
                 style={{
-                  backgroundColor: showLiveGridPreview ? '#2563EB' : '#F1F5F9',
-                  color: showLiveGridPreview ? '#FFFFFF' : '#334155',
-                  border: '1px solid #CBD5E1',
+                  backgroundColor: '#EFF6FF',
+                  color: '#2563EB',
+                  border: '1.5px solid #BFDBFE',
                   borderRadius: '8px',
-                  padding: '0.4rem 0.8rem',
-                  fontSize: '0.78rem',
+                  padding: '0.4rem 0.9rem',
+                  fontSize: '0.8rem',
                   fontWeight: '800',
                   cursor: 'pointer',
                   display: 'flex',
@@ -740,7 +793,7 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
                   gap: '0.4rem'
                 }}
               >
-                {showLiveGridPreview ? <><FaEye /> Ẩn Xem Trước</> : <><FaEyeSlash /> Xem Trước Bố Cục</>}
+                <FaEye /> Xem Trước Bố Cục (Modal)
               </button>
             </div>
 
@@ -751,7 +804,7 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
                 const FieldIcon = meta.icon;
                 const isSelected = editingFieldIndex === idx;
                 const isSection = field.type === 'section';
-                const isCallout = field.type === 'callout';
+                const isStaff = field.type === 'staff_selector';
 
                 return (
                   <div
@@ -761,9 +814,9 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
                     onDragOver={(e) => handleDragOver(e, idx)}
                     onDrop={(e) => handleDrop(e, idx)}
                     style={{
-                      backgroundColor: isSelected ? '#F0F9FF' : isSection ? '#F8FAFC' : '#FFFFFF',
+                      backgroundColor: isSelected ? '#F0F9FF' : isStaff ? '#F8FAFF' : isSection ? '#F8FAFC' : '#FFFFFF',
                       border: `2px solid ${isSelected ? '#2563EB' : isSection ? '#BFDBFE' : '#E2E8F0'}`,
-                      borderLeft: `6px solid ${isSelected ? '#2563EB' : isSection ? '#1D4ED8' : themeColor}`,
+                      borderLeft: `6px solid ${isSelected ? '#2563EB' : isStaff ? '#0284C7' : isSection ? '#1D4ED8' : themeColor}`,
                       borderRadius: '16px',
                       padding: '1.1rem 1.4rem',
                       boxShadow: isSelected ? '0 8px 25px rgba(37, 99, 235, 0.15)' : '0 2px 8px rgba(0,0,0,0.02)',
@@ -779,8 +832,8 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
                           <FaGripVertical />
                         </div>
                         <span style={{
-                          backgroundColor: '#EFF6FF',
-                          color: '#1E40AF',
+                          backgroundColor: isStaff ? '#E0F2FE' : '#EFF6FF',
+                          color: isStaff ? '#0369A1' : '#1D4ED8',
                           padding: '0.2rem 0.6rem',
                           borderRadius: '8px',
                           fontSize: '0.74rem',
@@ -797,6 +850,11 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
                         {field.required && (
                           <span style={{ backgroundColor: '#FEE2E2', color: '#DC2626', padding: '0.1rem 0.45rem', borderRadius: '6px', fontSize: '0.68rem', fontWeight: '900' }}>
                             Bắt buộc *
+                          </span>
+                        )}
+                        {isStaff && (
+                          <span style={{ backgroundColor: '#DCFCE7', color: '#15803D', padding: '0.1rem 0.45rem', borderRadius: '6px', fontSize: '0.68rem', fontWeight: '800' }}>
+                            {field.staffRole === 'doctor' ? '🩺 Chỉ Bác sĩ' : field.staffRole === 'nurse' ? '💉 Chỉ Điều dưỡng' : '👥 Toàn bộ chức danh'}
                           </span>
                         )}
                       </div>
@@ -889,66 +947,6 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
                 );
               })}
             </div>
-
-            {/* Live Form Grid Preview */}
-            {showLiveGridPreview && (
-              <div style={{
-                backgroundColor: '#FFFFFF',
-                borderRadius: '20px',
-                border: '1.5px solid #CBD5E1',
-                padding: '1.5rem',
-                boxShadow: '0 6px 20px rgba(0,0,0,0.04)',
-                marginTop: '1rem'
-              }}>
-                <div style={{ fontSize: '0.84rem', fontWeight: '900', color: '#0F2C59', textTransform: 'uppercase', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                  <FaEye style={{ color: themeColor }} /> Xem Trước Giao Diện Thực Tế 12-Cột (Live Grid Preview)
-                </div>
-
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(12, 1fr)',
-                  gap: '1rem',
-                  backgroundColor: '#F8FAFC',
-                  padding: '1.25rem',
-                  borderRadius: '16px',
-                  border: '1px dashed #CBD5E1'
-                }}>
-                  {fields.map((field, idx) => {
-                    const widthMap = { '100%': 12, '75%': 9, '50%': 6, '33.33%': 4, '25%': 3 };
-                    const span = widthMap[field.gridWidth] || 12;
-
-                    if (field.type === 'section') {
-                      return (
-                        <div key={idx} style={{ gridColumn: 'span 12', borderBottom: `2px solid ${themeColor}`, paddingBottom: '0.4rem', marginTop: '0.5rem' }}>
-                          <h4 style={{ margin: 0, color: themeColor, fontSize: '1rem', fontWeight: '900', textTransform: 'uppercase' }}>
-                            ❖ {field.label}
-                          </h4>
-                        </div>
-                      );
-                    }
-
-                    return (
-                      <div key={idx} style={{ gridColumn: `span ${span}`, backgroundColor: '#FFFFFF', padding: '0.75rem', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
-                        <div style={{ fontSize: '0.78rem', fontWeight: '800', color: '#334155', marginBottom: '0.25rem' }}>
-                          {field.label} {field.required && <span style={{ color: '#EF4444' }}>*</span>}
-                        </div>
-                        <div style={{
-                          padding: '0.45rem 0.65rem',
-                          borderRadius: '6px',
-                          border: '1px solid #CBD5E1',
-                          backgroundColor: '#F8FAFC',
-                          color: '#94A3B8',
-                          fontSize: '0.8rem',
-                          fontStyle: 'italic'
-                        }}>
-                          {field.placeholder || `[${field.type}]`}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
 
           </div>
         </div>
@@ -1165,7 +1163,7 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
           <div
             style={{
               width: '100%',
-              maxWidth: '560px',
+              maxWidth: '580px',
               height: '100vh',
               backgroundColor: '#FFFFFF',
               boxShadow: '-10px 0 30px rgba(0,0,0,0.25)',
@@ -1277,7 +1275,124 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
                 </div>
               </div>
 
-              {/* 3. Placeholder & Help text */}
+              {/* 3. STAFF SELECTOR SPECIAL CONFIG */}
+              {editingField.type === 'staff_selector' && (
+                <div style={{ backgroundColor: '#EFF6FF', border: '1.5px solid #BFDBFE', borderRadius: '14px', padding: '1.1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div style={{ fontSize: '0.84rem', fontWeight: '900', color: '#1E40AF', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <FaUserMd /> CẤU HÌNH BỘ LỌC NHÂN SỰ (BÁC SĨ / ĐIỀU DƯỠNG)
+                  </div>
+
+                  {/* Staff Scope */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '800', color: '#1E3A8A', marginBottom: '0.3rem' }}>
+                      1. PHẠM VI LỌC NHÂN SỰ (STAFF SCOPE)
+                    </label>
+                    <select
+                      value={editingField.staffScope || 'all'}
+                      onChange={(e) => updateFieldProp(editingFieldIndex, 'staffScope', e.target.value)}
+                      style={{ width: '100%', padding: '0.55rem', borderRadius: '8px', border: '1px solid #93C5FD', fontSize: '0.84rem', fontWeight: '700', color: '#0F2C59', outline: 'none' }}
+                    >
+                      <option value="all">🌐 Toàn Viện (Tất cả nhân sự bệnh viện)</option>
+                      <option value="current_dept">🏥 Theo Khoa / Phòng của người đang nộp form</option>
+                      <option value="specific_dept">🏢 Theo Khoa / Phòng chỉ định cụ thể</option>
+                    </select>
+                  </div>
+
+                  {/* Specific Department Dropdown */}
+                  {editingField.staffScope === 'specific_dept' && (
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '800', color: '#1E3A8A', marginBottom: '0.3rem' }}>
+                        CHỌN KHOA / PHÒNG CHỈ ĐỊNH:
+                      </label>
+                      <select
+                        value={editingField.specificDept || 'lck'}
+                        onChange={(e) => updateFieldProp(editingFieldIndex, 'specificDept', e.target.value)}
+                        style={{ width: '100%', padding: '0.55rem', borderRadius: '8px', border: '1px solid #93C5FD', fontSize: '0.84rem', fontWeight: '700' }}
+                      >
+                        {DEPARTMENTS.map(d => (
+                          <option key={d.code} value={d.code}>{d.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {/* Staff Role Filter */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '800', color: '#1E3A8A', marginBottom: '0.3rem' }}>
+                      2. LỌC THEO CHỨC DANH (STAFF ROLE)
+                    </label>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.4rem' }}>
+                      {[
+                        { role: 'all', label: '👥 Tất cả' },
+                        { role: 'doctor', label: '🩺 Chỉ Bác sĩ' },
+                        { role: 'nurse', label: '💉 Chỉ ĐD / KTV' }
+                      ].map(r => (
+                        <button
+                          key={r.role}
+                          type="button"
+                          onClick={() => updateFieldProp(editingFieldIndex, 'staffRole', r.role)}
+                          style={{
+                            backgroundColor: editingField.staffRole === r.role ? '#1E40AF' : '#FFFFFF',
+                            color: editingField.staffRole === r.role ? '#FFFFFF' : '#1E3A8A',
+                            border: `1px solid ${editingField.staffRole === r.role ? '#1E40AF' : '#93C5FD'}`,
+                            borderRadius: '8px',
+                            padding: '0.4rem 0.2rem',
+                            fontSize: '0.76rem',
+                            fontWeight: '800',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          {r.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Selection Mode */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '800', color: '#1E3A8A', marginBottom: '0.3rem' }}>
+                      3. CHẾ ĐỘ CHỌN (SELECTION MODE)
+                    </label>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem' }}>
+                      <button
+                        type="button"
+                        onClick={() => updateFieldProp(editingFieldIndex, 'selectionMode', 'single')}
+                        style={{
+                          backgroundColor: (editingField.selectionMode || 'single') === 'single' ? '#1E40AF' : '#FFFFFF',
+                          color: (editingField.selectionMode || 'single') === 'single' ? '#FFFFFF' : '#1E3A8A',
+                          border: `1px solid ${(editingField.selectionMode || 'single') === 'single' ? '#1E40AF' : '#93C5FD'}`,
+                          borderRadius: '8px',
+                          padding: '0.45rem',
+                          fontSize: '0.78rem',
+                          fontWeight: '800',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        👤 Chọn 1 người (Single)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => updateFieldProp(editingFieldIndex, 'selectionMode', 'multiple')}
+                        style={{
+                          backgroundColor: editingField.selectionMode === 'multiple' ? '#1E40AF' : '#FFFFFF',
+                          color: editingField.selectionMode === 'multiple' ? '#FFFFFF' : '#1E3A8A',
+                          border: `1px solid ${editingField.selectionMode === 'multiple' ? '#1E40AF' : '#93C5FD'}`,
+                          borderRadius: '8px',
+                          padding: '0.45rem',
+                          fontSize: '0.78rem',
+                          fontWeight: '800',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        👥 Chọn nhiều người (Tags)
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
+              )}
+
+              {/* 4. Placeholder & Help text */}
               <div>
                 <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '800', color: '#0F2C59', marginBottom: '0.35rem' }}>
                   VĂN BẢN GỢI Ý (PLACEHOLDER)
@@ -1303,7 +1418,7 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
                 />
               </div>
 
-              {/* 4. Constraints (Required / Readonly) */}
+              {/* 5. Constraints (Required / Readonly) */}
               <div style={{ display: 'flex', gap: '1.5rem', backgroundColor: '#F8FAFC', padding: '0.85rem 1rem', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', cursor: 'pointer' }}>
                   <input
@@ -1326,7 +1441,7 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
                 </label>
               </div>
 
-              {/* 5. Options Manager (For select, multi_select, radio, multi_checkbox) */}
+              {/* 6. Options Manager */}
               {['select', 'multi_select', 'radio', 'multi_checkbox'].includes(editingField.type) && (
                 <div style={{ backgroundColor: '#F8FAFC', padding: '1rem', borderRadius: '14px', border: '1.5px solid #CBD5E1' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.65rem' }}>
@@ -1375,7 +1490,7 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
                 </div>
               )}
 
-              {/* 6. Special Config: Formula */}
+              {/* 7. Formula */}
               {editingField.type === 'formula' && (
                 <div style={{ backgroundColor: '#F5F3FF', padding: '1rem', borderRadius: '14px', border: '1.5px solid #DDD6FE' }}>
                   <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '900', color: '#6B21A8', marginBottom: '0.35rem' }}>
@@ -1383,14 +1498,11 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
                   </label>
                   <input
                     type="text"
-                    placeholder="VD: {so_luong} * {don_gia} hoặc {can_nang} / (({chieu_cao}/100) * ({chieu_cao}/100))"
+                    placeholder="VD: {so_luong} * {don_gia}"
                     value={editingField.formula || ''}
                     onChange={(e) => updateFieldProp(editingFieldIndex, 'formula', e.target.value)}
                     style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1px solid #C4B5FD', fontSize: '0.86rem', fontFamily: 'monospace', boxSizing: 'border-box', marginBottom: '0.5rem' }}
                   />
-                  <div style={{ fontSize: '0.74rem', color: '#6B21A8', marginBottom: '0.35rem', fontWeight: '700' }}>
-                    Bấm để chèn mã trường vào công thức:
-                  </div>
                   <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
                     {fields.filter(f => f.key !== editingField.key && f.type === 'number').map(f => (
                       <button
@@ -1409,7 +1521,7 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
                 </div>
               )}
 
-              {/* 7. Special Config: Callout */}
+              {/* 8. Callout */}
               {editingField.type === 'callout' && (
                 <div style={{ backgroundColor: '#FFFBEB', padding: '1rem', borderRadius: '14px', border: '1.5px solid #FDE68A' }}>
                   <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '900', color: '#92400E', marginBottom: '0.35rem' }}>
@@ -1418,7 +1530,7 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
                   <select
                     value={editingField.calloutType || 'info'}
                     onChange={(e) => updateFieldProp(editingFieldIndex, 'calloutType', e.target.value)}
-                    style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '0.86rem', fontWeight: '700', marginBottom: '0.75rem' }}
+                    style={{ width: '100%', padding: '0.5rem', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '0.86rem', fontWeight: '700' }}
                   >
                     <option value="info">ℹ️ Thông tin hướng dẫn (Xanh lam)</option>
                     <option value="warning">⚠️ Lưu ý cảnh báo (Vàng hổ phách)</option>
@@ -1428,7 +1540,7 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
                 </div>
               )}
 
-              {/* 8. Special Config: Sub-table columns */}
+              {/* 9. Sub-table columns */}
               {editingField.type === 'table' && (
                 <div style={{ backgroundColor: '#F8FAFC', padding: '1rem', borderRadius: '14px', border: '1.5px solid #CBD5E1' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.65rem' }}>
@@ -1513,6 +1625,134 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
                 <FaCheck /> Hoàn Tất Cấu Hình
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* FULLSCREEN LIVE PREVIEW MODAL (POPUP RESPONSIVE DEVICE SWITCHER)          */}
+      {/* ========================================================================= */}
+      {showPreviewModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(15, 23, 42, 0.82)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          zIndex: 999999,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          padding: '1rem',
+          boxSizing: 'border-box',
+          overflowY: 'auto'
+        }}>
+          {/* Top Preview Toolbar */}
+          <div style={{
+            width: '100%',
+            maxWidth: previewDevice === 'mobile' ? '460px' : '960px',
+            backgroundColor: '#0F2C59',
+            borderRadius: '16px',
+            padding: '0.75rem 1.4rem',
+            color: '#FFFFFF',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '1rem',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.3)',
+            transition: 'max-width 0.3s ease'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#10B981', display: 'inline-block' }} />
+              <div style={{ fontSize: '0.92rem', fontWeight: '900' }}>
+                LIVE PREVIEW: {title || 'Biểu Mẫu'}
+              </div>
+            </div>
+
+            {/* Device Switcher */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+              <div style={{ display: 'flex', backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: '10px', padding: '3px' }}>
+                <button
+                  type="button"
+                  onClick={() => setPreviewDevice('desktop')}
+                  style={{
+                    backgroundColor: previewDevice === 'desktop' ? '#2563EB' : 'transparent',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    borderRadius: '7px',
+                    padding: '0.35rem 0.75rem',
+                    fontSize: '0.78rem',
+                    fontWeight: '800',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.35rem'
+                  }}
+                >
+                  <FaDesktop /> Màn Hình Máy Tính
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewDevice('mobile')}
+                  style={{
+                    backgroundColor: previewDevice === 'mobile' ? '#2563EB' : 'transparent',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    borderRadius: '7px',
+                    padding: '0.35rem 0.75rem',
+                    fontSize: '0.78rem',
+                    fontWeight: '800',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.35rem'
+                  }}
+                >
+                  <FaMobileAlt /> Điện Thoại / Tablet
+                </button>
+              </div>
+
+              {/* Close Button */}
+              <button
+                type="button"
+                onClick={() => setShowPreviewModal(false)}
+                style={{
+                  backgroundColor: 'rgba(255,255,255,0.18)',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '0.4rem 0.8rem',
+                  fontSize: '0.8rem',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem'
+                }}
+              >
+                <FaTimes /> Đóng (Esc)
+              </button>
+            </div>
+          </div>
+
+          {/* Interactive Live Form Container */}
+          <div style={{
+            width: '100%',
+            maxWidth: previewDevice === 'mobile' ? '460px' : '960px',
+            transition: 'max-width 0.3s ease',
+            marginBottom: '3rem'
+          }}>
+            <DynamicFormRenderer
+              formCode={code}
+              initialMeta={{
+                title: title || 'Biểu Mẫu Xem Trước',
+                code: code || 'preview_code',
+                description: description || 'Mô tả xem trước giao diện thực tế.',
+                theme_color: themeColor,
+                schema_json: fields
+              }}
+              onBack={() => setShowPreviewModal(false)}
+            />
           </div>
         </div>
       )}
