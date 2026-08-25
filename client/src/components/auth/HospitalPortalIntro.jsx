@@ -211,18 +211,16 @@ const HospitalPortalIntro = ({ onComplete }) => {
       render();
     }
 
-    // Peaceful Flow Sequence (Very gentle and relaxed pacing)
+    // Peaceful Flow Sequence
     const t1 = setTimeout(() => setPhase('flow_in'), 80);
     const t2 = setTimeout(() => setPhase('flowing'), 1200);
-    const t3 = setTimeout(() => setPhase('fade_out'), 4800);
-    const t4 = setTimeout(() => {
-      setPhase('done');
-      if (onComplete) onComplete();
-    }, 5400);
+    const t3 = setTimeout(() => {
+      handleSmoothExit();
+    }, 5000);
 
     const handleKeyDown = (e) => {
       if (['Space', 'Enter', 'Escape'].includes(e.code)) {
-        if (onComplete) onComplete();
+        handleSmoothExit();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -231,15 +229,29 @@ const HospitalPortalIntro = ({ onComplete }) => {
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);
-      clearTimeout(t4);
       cancelAnimationFrame(animId);
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [onComplete]);
+  }, []);
+
+  const [isExiting, setIsExiting] = useState(false);
+  const exitingRef = useRef(false);
+
+  const handleSmoothExit = () => {
+    if (exitingRef.current) return;
+    exitingRef.current = true;
+    setIsExiting(true);
+    setPhase('fade_out');
+
+    setTimeout(() => {
+      setPhase('done');
+      if (onComplete) onComplete();
+    }, 600);
+  };
 
   const handleSkip = (e) => {
     e.stopPropagation();
-    if (onComplete) onComplete();
+    handleSmoothExit();
   };
 
   return (
@@ -251,15 +263,18 @@ const HospitalPortalIntro = ({ onComplete }) => {
         width: '100vw',
         height: '100vh',
         backgroundColor: '#041224',
-        zIndex: 999999,
+        zIndex: 99999,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         overflow: 'hidden',
         cursor: 'pointer',
         userSelect: 'none',
-        transition: 'opacity 0.65s cubic-bezier(0.25, 1, 0.5, 1)',
-        opacity: phase === 'done' || phase === 'fade_out' ? 0 : 1,
+        transition: 'opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1), transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), filter 0.6s cubic-bezier(0.25, 1, 0.5, 1)',
+        opacity: isExiting ? 0 : 1,
+        transform: isExiting ? 'scale(1.04)' : 'scale(1)',
+        filter: isExiting ? 'blur(10px)' : 'blur(0px)',
+        pointerEvents: isExiting ? 'none' : 'auto',
         fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
       }}
     >

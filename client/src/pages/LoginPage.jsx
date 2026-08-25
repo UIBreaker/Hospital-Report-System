@@ -93,16 +93,7 @@ const LoginPage = () => {
     setError('');
   };
 
-  if (showIntro) {
-    return (
-      <HospitalPortalIntro
-        onComplete={() => {
-          sessionStorage.setItem('portal_intro_shown', 'true');
-          setShowIntro(false);
-        }}
-      />
-    );
-  }
+  
 
   return (
     <div style={{
@@ -118,6 +109,32 @@ const LoginPage = () => {
       fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
       boxSizing: 'border-box'
     }}>
+
+      {/* Seamless Fluid Water Welcome Overlay (Zero White Flash) */}
+      {showIntro && (
+        <HospitalPortalIntro
+          onComplete={() => {
+            sessionStorage.setItem('portal_intro_shown', 'true');
+            setShowIntro(false);
+          }}
+        />
+      )}
+
+      {/* Blooming Transition Style for Login Content */}
+      <style>{`
+        @keyframes loginBloomExpand {
+          0% {
+            opacity: 0.5;
+            transform: scale(0.96);
+            filter: blur(8px);
+          }
+          100% {
+            opacity: 1;
+            transform: scale(1);
+            filter: blur(0px);
+          }
+        }
+      `}</style>
 
       {/* 1. Ambient Radial Lighting Layers covering entire canvas */}
       <div 
@@ -241,7 +258,8 @@ const LoginPage = () => {
         position: 'relative',
         zIndex: 10,
         boxSizing: 'border-box',
-        minHeight: 0
+        minHeight: 0,
+        animation: 'loginBloomExpand 0.85s cubic-bezier(0.16, 1, 0.3, 1) both'
       }}>
 
         {/* ================= LEFT COLUMN: BRAND IDENTITY & FEATURE PILLS ================= */}
