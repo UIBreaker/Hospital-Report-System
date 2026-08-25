@@ -11,7 +11,7 @@ const SummarySlide = ({ slide, isFullscreen }) => {
     { label: 'Bệnh nhân xuất viện', val: summary.xuatVien || 0, color: '#16A34A', bg: '#F0FDF4', border: '#BBF7D0', icon: '🚪' },
     { label: 'Tổng ca chuyển viện', val: summary.chuyenVien || 0, color: '#D97706', bg: '#FFFBEB', border: '#FDE68A', icon: '🚑' },
     { label: 'Tổng số ca phẫu thuật', val: summary.phauThuat || 0, color: '#0891B2', bg: '#ECFEFF', border: '#A5F3FC', icon: '🔪' },
-    { label: 'Hiện còn toàn viện', val: summary.hienCon || 0, color: '#7C3AED', bg: '#FAF5FF', border: '#DDD6FE', icon: '🛌' },
+    { label: 'Bệnh nặng theo dõi', val: summary.benhNang !== undefined ? summary.benhNang : 0, color: '#7C3AED', bg: '#FAF5FF', border: '#DDD6FE', icon: '🩺' },
     { label: 'Hồ sơ tử vong', val: summary.tuVong || 0, color: '#DC2626', bg: '#FEF2F2', border: '#FECACA', icon: '🚨' },
   ];
 

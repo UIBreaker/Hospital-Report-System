@@ -9,7 +9,7 @@ const TitleSlide = ({ selectedDate, reportsCount = 12, summary = {}, isFullscree
   const tongSoKham = summary.tongSoKham || 0;
   const chuyenVien = summary.chuyenVien || 0;
   const phauThuat = summary.phauThuat || 0;
-  const hienCon = summary.hienCon || 0;
+  const benhNang = summary.benhNang !== undefined ? summary.benhNang : (summary.criticalCasesCount || 0);
   const tuVong = summary.tuVong || 0;
 
   const metricCards = [
@@ -43,7 +43,7 @@ const TitleSlide = ({ selectedDate, reportsCount = 12, summary = {}, isFullscree
     {
       label: 'BỆNH NẶNG THEO DÕI',
       sub: 'Hồi sức & Nặng tại khoa',
-      val: hienCon,
+      val: benhNang,
       icon: <FaHeartbeat />,
       color: '#7C3AED',
       bg: '#FAF5FF',

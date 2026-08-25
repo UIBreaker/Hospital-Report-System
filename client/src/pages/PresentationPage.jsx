@@ -26,6 +26,78 @@ import FullScreenImageSlide from '../components/presentation/slides/FullScreenIm
 import SummarySlide from '../components/presentation/slides/SummarySlide';
 import CinematicNetflixIntro from '../components/presentation/CinematicNetflixIntro';
 
+const parseMetricNum = (val) => {
+  if (val === null || val === undefined || val === '') return 0;
+  if (typeof val === 'number') return isNaN(val) ? 0 : val;
+  const str = String(val).trim();
+  if (str.includes('/')) {
+    const parts = str.split('/');
+    const first = parseFloat(parts[0].trim());
+    return isNaN(first) ? 0 : first;
+  }
+  const parsed = parseFloat(str.replace(/[^0-9.-]/g, ''));
+  return isNaN(parsed) ? 0 : parsed;
+};
+
+const extractDepartmentPatientCount = (rawData, deptCode = '') => {
+  if (!rawData || typeof rawData !== 'object') return 0;
+  const code = (deptCode || '').toLowerCase();
+
+  // 1. HSCC - TNT
+  if (code.includes('hscc') || (rawData.hscc && rawData.tnt)) {
+    const hsccKham = parseMetricNum(rawData.hscc?.tongSoKham || rawData.hscc?.tongSo || rawData.hscc?.benhMoi);
+    const tntKham = parseMetricNum(rawData.tnt?.tongSoKham || rawData.tnt?.tnt_ctdk || rawData.tnt?.ctdk || rawData.tnt?.tnt_benhMoi);
+    const pk21Kham = parseMetricNum(rawData.pk21?.pk21_tongSo || rawData.pk21?.pk21_tongSoKham || rawData.pk21?.tongSo || rawData.pk21?.pk21_ngoaiTru);
+    const sum = hsccKham + tntKham + pk21Kham;
+    if (sum > 0) return sum;
+  }
+
+  // 2. LCK (Liên Chuyên Khoa)
+  if (code.includes('lck') || rawData.tong4ck_tongSo !== undefined || rawData.tmh_tongSo !== undefined) {
+    if (rawData.tong4ck_tongSo) return parseMetricNum(rawData.tong4ck_tongSo);
+    const sum = parseMetricNum(rawData.tmh_tongSo) + parseMetricNum(rawData.mat_tongSo) + parseMetricNum(rawData.rhm_noi_tongSo) + parseMetricNum(rawData.daLieu_tongSo) + parseMetricNum(rawData.nhapVien_tongSo);
+    if (sum > 0) return sum;
+  }
+
+  // 3. CDHA (Chẩn Đoán Hình Ảnh)
+  if (code.includes('cdha') || Array.isArray(rawData.techniques)) {
+    if (Array.isArray(rawData.techniques) && rawData.techniques.length > 0) {
+      return rawData.techniques.reduce((acc, t) => acc + parseMetricNum(t?.tongSo), 0);
+    }
+    if (rawData.tongSo) return parseMetricNum(rawData.tongSo);
+  }
+
+  // 4. XN (Xét Nghiệm)
+  if (code.includes('xn') || rawData.tongXetNghiem) {
+    return parseMetricNum(rawData.tongSo || rawData.tongXetNghiem);
+  }
+
+  // 5. GMHS (Gây Mê Hồi Sức)
+  if (code.includes('gmhs') || rawData.tongSoCaMo) {
+    return parseMetricNum(rawData.tongSoCaMo || rawData.soCaGayMe || 0);
+  }
+
+  // 6. Khoa Nhi
+  if (code.includes('nhi')) {
+    const pk = parseMetricNum(rawData.pk || rawData.tongSoKham || rawData.soCaKham);
+    const bm = parseMetricNum(rawData.benhMoi || rawData.benhMoi_cc || rawData.benhMoi_pk);
+    return pk > 0 ? pk : bm;
+  }
+
+  // 7. Khoa Sản
+  if (code.includes('san')) {
+    const tk = parseMetricNum(rawData.tongSoKham || rawData.soCaKham);
+    const bm = parseMetricNum(rawData.benhMoi || rawData.sanhThuong);
+    return tk > 0 ? tk : bm;
+  }
+
+  // 8. Các khoa lâm sàng khác (Nội, Nhiễm, Ngoại TH, CTCH, YHCT-PHCN)
+  const directKham = parseMetricNum(rawData.tongSoKham || rawData.soCaKham || rawData.tongSo || rawData.tong_so || rawData.tongSoCa);
+  if (directKham > 0) return directKham;
+
+  return parseMetricNum(rawData.benhMoi || 0);
+};
+
 const PresentationPage = () => {
   const { date } = useParams();
   const navigate = useNavigate();
@@ -121,7 +193,7 @@ const PresentationPage = () => {
     };
 
     let totalKham = 0, totalBenhCu = 0, totalBenhMoi = 0, totalXuatVien = 0;
-    let totalChuyenVien = 0, totalPhauThuat = 0, totalHienCon = 0, totalTuVong = 0;
+    let totalChuyenVien = 0, totalPhauThuat = 0, totalBenhNang = 0, totalHienCon = 0, totalTuVong = 0;
 
     sortedReports.forEach(r => {
       const deptName = DEPARTMENT_NAMES[r.department_code] || r.department_code;
@@ -213,15 +285,16 @@ const PresentationPage = () => {
         images: normalizeImages(c.images || c.image_url || c.imageUrl)
       }));
 
-      // Accumulate totals for hospital-wide summary slide
-      totalKham += Number(rawData.tongSoKham || rawData.tongSo || rawData.soCaKham || 0);
-      totalBenhCu += Number(rawData.benhCu || 0);
-      totalBenhMoi += Number(rawData.benhMoi || 0);
-      totalXuatVien += Number(rawData.xuatVien || 0);
-      totalChuyenVien += transferCases.length || Number(rawData.chuyenVien || 0);
-      totalPhauThuat += surgeryCases.length || Number(rawData.tongSoCaMo || rawData.phauThuat || 0);
-      totalTuVong += deathCases.length || Number(rawData.tuVong || 0);
-      totalHienCon += criticalCases.length || Number(rawData.hienCon || 0);
+      // Accumulate totals for hospital-wide summary & title slide
+      totalKham += extractDepartmentPatientCount(rawData, r.department_code);
+      totalBenhCu += parseMetricNum(rawData.benhCu || rawData.hscc?.benhCu || rawData.tnt?.tnt_benhCu || 0);
+      totalBenhMoi += parseMetricNum(rawData.benhMoi || rawData.hscc?.benhMoi || rawData.tnt?.tnt_benhMoi || 0);
+      totalXuatVien += parseMetricNum(rawData.xuatVien || rawData.hscc?.xuatVien || rawData.tnt?.tnt_xuatVien || 0);
+      totalChuyenVien += transferCases.length || parseMetricNum(rawData.chuyenVien || rawData.hscc?.chuyenVien || rawData.tnt?.tnt_chuyenVien || 0);
+      totalPhauThuat += surgeryCases.length || parseMetricNum(rawData.tongSoCaMo || rawData.phauThuat || 0);
+      totalTuVong += deathCases.length || parseMetricNum(rawData.tuVong || rawData.hscc?.tuVong || 0);
+      totalBenhNang += criticalCases.length; // ONLY count clinical critical cases entered for that day
+      totalHienCon += parseMetricNum(rawData.hienCon || rawData.hienCo || rawData.hscc?.hienCon || rawData.tnt?.tnt_hienCon || 0);
 
       // 1. Department Overview Slide
       const deptSections = parseDepartmentSections(rawData, r.department_code);
@@ -378,6 +451,7 @@ const PresentationPage = () => {
       xuatVien: totalXuatVien,
       chuyenVien: totalChuyenVien,
       phauThuat: totalPhauThuat,
+      benhNang: totalBenhNang,
       hienCon: totalHienCon,
       tuVong: totalTuVong
     };
