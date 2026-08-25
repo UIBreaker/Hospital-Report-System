@@ -276,38 +276,47 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
   };
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, gap: '0.55rem' }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, gap: isFullscreen ? '0.75rem' : '0.55rem' }}>
       
-      {/* 1. Header: Department Name */}
+      {/* 1. Header: Executive Department Name Banner */}
       <div style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        paddingBottom: '0.45rem', borderBottom: `2px solid ${theme.border || '#E2E8F0'}`,
+        backgroundColor: '#0F2C59',
+        borderRadius: '14px',
+        padding: isFullscreen ? '0.75rem 1.4rem' : '0.55rem 1rem',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        boxShadow: '0 4px 16px rgba(15, 44, 89, 0.25)',
         flexShrink: 0
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isFullscreen ? '1.1rem' : '0.75rem', flexWrap: 'wrap' }}>
           <div style={{
-            fontSize: isFullscreen ? '1.75rem' : '1.35rem',
-            width: isFullscreen ? '44px' : '36px',
-            height: isFullscreen ? '44px' : '36px',
-            borderRadius: '10px',
-            backgroundColor: theme.bg || '#EFF6FF',
-            border: `1.5px solid ${theme.border || '#BFDBFE'}`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0
+            fontSize: isFullscreen ? '2.1rem' : '1.65rem',
+            fontWeight: '900',
+            color: '#FFFFFF',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.65rem'
           }}>
-            {theme.icon || '🏥'}
+            <FaHospital style={{ color: '#38BDF8', fontSize: isFullscreen ? '2rem' : '1.5rem' }} />
+            <span>{deptName}</span>
           </div>
-          <div>
-            <div style={{ fontSize: isFullscreen ? '0.88rem' : '0.75rem', fontWeight: '800', color: theme.main || '#2563EB', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              BÁO CÁO CA TRỰC KHOA PHÒNG
-            </div>
-            <h2 style={{ fontSize: isFullscreen ? '2.1rem' : '1.65rem', fontWeight: '900', color: '#0F2C59', margin: 0, lineHeight: 1.15 }}>
-              {deptName}
-            </h2>
+          <div style={{
+            backgroundColor: '#2563EB',
+            color: '#FFFFFF',
+            padding: isFullscreen ? '0.35rem 0.95rem' : '0.25rem 0.75rem',
+            borderRadius: '999px',
+            fontSize: isFullscreen ? '1.15rem' : '0.95rem',
+            fontWeight: '900',
+            letterSpacing: '0.5px'
+          }}>
+            BÁO CÁO CA TRỰC KHOA PHÒNG
           </div>
         </div>
 
-        <img src="/logo.png" alt="Logo" style={{ width: isFullscreen ? '46px' : '36px', height: isFullscreen ? '46px' : '36px', borderRadius: '50%', objectFit: 'contain', flexShrink: 0 }} />
+        <img src="/logo.png" alt="Logo" style={{ width: isFullscreen ? '48px' : '38px', height: isFullscreen ? '48px' : '38px', objectFit: 'contain', flexShrink: 0 }} />
       </div>
 
       {/* 2. Staff Banner */}

@@ -1,148 +1,298 @@
 import React from 'react';
-import { FaProcedures } from 'react-icons/fa';
+import { FaProcedures, FaHospital, FaClock, FaMapMarkerAlt, FaFileMedical, FaUserMd } from 'react-icons/fa';
 import { formatPatientAge, normalizeImages } from '../../../utils/medicalFormatters';
 
 const SurgerySlide = ({ slide, isFullscreen }) => {
   const sc = slide.surgeryCase || {};
   const caseImages = normalizeImages(sc.images);
   const ageFormatted = formatPatientAge(sc.birth_year || sc.birthYear || sc.age);
-  const BLUE = { main: '#0284C7', dark: '#0369A1', light: '#F0F9FF', border: '#BAE6FD', soft: '#E0F2FE' };
 
-  const contentLength = [
-    sc.reason || '',
-    sc.clinical_symptoms || sc.clinicalSymptoms || '',
-    sc.clinical_tests || sc.clinicalTests || '',
-    sc.preoperative_diagnosis || sc.preoperativeDiagnosis || '',
-    sc.postoperative_diagnosis || sc.postoperativeDiagnosis || '',
-    sc.consultation_order || sc.consultationOrder || '',
-    sc.current_status || sc.currentStatus || '',
-  ].join('').length;
+  const contentText = [
+    sc.reason, sc.clinical_symptoms, sc.clinicalSymptoms, sc.clinical_tests, sc.clinicalTests,
+    sc.preoperative_diagnosis, sc.preoperativeDiagnosis, sc.postoperative_diagnosis, sc.postoperativeDiagnosis,
+    sc.consultation_order, sc.consultationOrder, sc.current_status, sc.currentStatus
+  ].filter(Boolean).join(' ');
 
-  const af = ((cl) => {
-    if (cl < 200) return { 
-      bodySize: isFullscreen ? '1.4rem' : '1.2rem', 
-      diagSize: isFullscreen ? '1.75rem' : '1.5rem',
-      hdrSize: isFullscreen ? '1.25rem' : '1.1rem',
-      lineH: '1.8', gap: isFullscreen ? '1rem' : '0.8rem', pad: isFullscreen ? '1.1rem 1.4rem' : '0.85rem 1.1rem' 
-    };
-    if (cl < 450) return { 
-      bodySize: isFullscreen ? '1.25rem' : '1.1rem', 
-      diagSize: isFullscreen ? '1.6rem' : '1.38rem',
-      hdrSize: isFullscreen ? '1.18rem' : '1.05rem',
-      lineH: '1.68', gap: isFullscreen ? '0.85rem' : '0.65rem', pad: isFullscreen ? '0.95rem 1.25rem' : '0.75rem 0.95rem' 
-    };
-    if (cl < 800) return { 
-      bodySize: isFullscreen ? '1.15rem' : '1.02rem', 
-      diagSize: isFullscreen ? '1.48rem' : '1.28rem',
-      hdrSize: isFullscreen ? '1.1rem' : '0.98rem',
-      lineH: '1.6', gap: isFullscreen ? '0.7rem' : '0.52rem', pad: isFullscreen ? '0.85rem 1.1rem' : '0.65rem 0.85rem' 
-    };
-    return { 
-      bodySize: isFullscreen ? '1.05rem' : '0.92rem', 
-      diagSize: isFullscreen ? '1.35rem' : '1.18rem',
-      hdrSize: isFullscreen ? '1.02rem' : '0.92rem',
-      lineH: '1.5', gap: isFullscreen ? '0.55rem' : '0.4rem', pad: isFullscreen ? '0.7rem 0.95rem' : '0.55rem 0.75rem' 
-    };
-  })(contentLength);
+  const cl = contentText.length;
+  const bodySize = cl < 200 ? (isFullscreen ? '1.32rem' : '1.15rem')
+    : cl < 450 ? (isFullscreen ? '1.2rem' : '1.05rem')
+    : (isFullscreen ? '1.08rem' : '0.96rem');
+
+  const diagSize = cl < 200 ? (isFullscreen ? '1.75rem' : '1.5rem')
+    : cl < 450 ? (isFullscreen ? '1.55rem' : '1.35rem')
+    : (isFullscreen ? '1.4rem' : '1.22rem');
+
+  const lineH = cl < 200 ? '1.65' : cl < 450 ? '1.55' : '1.48';
+  const preDiag = (sc.preoperative_diagnosis || sc.preoperativeDiagnosis || '—').replace(/^Chẩn đoán:\s*/i, '');
+  const postDiag = (sc.postoperative_diagnosis || sc.postoperativeDiagnosis || '—').replace(/^Chẩn đoán:\s*/i, '');
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, gap: '0.55rem' }}>
-      {/* Slide type label */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-        <div style={{ fontSize: isFullscreen ? '1rem' : '0.85rem', fontWeight: '800', color: BLUE.dark, textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <FaProcedures style={{ color: BLUE.main, fontSize: isFullscreen ? '1.3rem' : '1.1rem' }} />
-          {slide.deptName} &nbsp;•&nbsp; CA PHẪU THUẬT {slide.caseIndex}/{slide.totalCases}
-        </div>
-        <img src="/logo.png" alt="Logo" style={{ width: isFullscreen ? '48px' : '38px', height: isFullscreen ? '48px' : '38px', flexShrink: 0 }} />
-      </div>
-
-      {/* Patient header bar */}
+    <div style={{
+      flex: 1,
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100%',
+      minHeight: 0,
+      gap: isFullscreen ? '0.75rem' : '0.55rem',
+      backgroundColor: '#FFFFFF',
+      borderRadius: '16px',
+      boxSizing: 'border-box'
+    }}>
+      
+      {/* ZONE 1: TÊN KHOA PHÒNG TO BẢN & PHÂN LOẠI CA PHẪU THUẬT */}
       <div style={{
-        backgroundColor: BLUE.soft, border: `2px solid ${BLUE.border}`,
-        borderLeft: `8px solid ${BLUE.main}`, borderRadius: '12px',
+        backgroundColor: '#0F2C59',
+        borderRadius: '14px',
         padding: isFullscreen ? '0.75rem 1.4rem' : '0.55rem 1rem',
-        display: 'flex', alignItems: 'center', gap: '1.2rem', flexWrap: 'wrap',
-        flexShrink: 0, boxShadow: '0 4px 14px rgba(2,132,199,0.15)'
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        boxShadow: '0 4px 16px rgba(15, 44, 89, 0.25)',
+        flexShrink: 0
       }}>
-        <span style={{ fontSize: isFullscreen ? '1.85rem' : '1.5rem', fontWeight: '900', color: BLUE.dark, textTransform: 'uppercase', letterSpacing: '0.5px', lineHeight: 1.1 }}>
-          {sc.patient_name || sc.patientName || 'BỆNH NHÂN PHẪU THUẬT'}
-        </span>
-        {ageFormatted && <span style={{ backgroundColor: BLUE.main, color: '#fff', padding: '0.25rem 0.85rem', borderRadius: '20px', fontWeight: '800', fontSize: isFullscreen ? '1.15rem' : '0.98rem', whiteSpace: 'nowrap', boxShadow: '0 2px 6px rgba(2,132,199,0.3)' }}>{ageFormatted}</span>}
-        {sc.address && <span style={{ color: BLUE.dark, fontWeight: '700', fontSize: isFullscreen ? '1.1rem' : '0.95rem' }}>📍 {sc.address}</span>}
-        {(sc.admission_time || sc.admissionTime) && <span style={{ color: BLUE.dark, fontWeight: '800', fontSize: isFullscreen ? '1.1rem' : '0.95rem', marginLeft: 'auto', whiteSpace: 'nowrap' }}>⏰ Vào: <strong>{sc.admission_time || sc.admissionTime}</strong></span>}
+        <div style={{ display: 'flex', alignItems: 'center', gap: isFullscreen ? '1.1rem' : '0.75rem', flexWrap: 'wrap' }}>
+          {/* TÊN KHOA TO BẢN NHẤT */}
+          <div style={{
+            fontSize: isFullscreen ? '2.1rem' : '1.65rem',
+            fontWeight: '900',
+            color: '#FFFFFF',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.65rem'
+          }}>
+            <FaHospital style={{ color: '#38BDF8', fontSize: isFullscreen ? '2rem' : '1.5rem' }} />
+            <span>{slide.deptName}</span>
+          </div>
+
+          {/* BADGE LOẠI CA */}
+          <div style={{
+            backgroundColor: '#0284C7',
+            color: '#FFFFFF',
+            padding: isFullscreen ? '0.35rem 0.95rem' : '0.25rem 0.75rem',
+            borderRadius: '999px',
+            fontSize: isFullscreen ? '1.15rem' : '0.95rem',
+            fontWeight: '900',
+            letterSpacing: '0.5px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.45rem',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+          }}>
+            <FaProcedures />
+            <span>CA PHẪU THUẬT {slide.caseIndex}/{slide.totalCases}</span>
+          </div>
+        </div>
+
+        <img
+          src="/logo.png"
+          alt="Logo"
+          style={{ width: isFullscreen ? '48px' : '38px', height: isFullscreen ? '48px' : '38px', objectFit: 'contain', flexShrink: 0 }}
+        />
       </div>
 
-      {/* Medical grid — 2 columns with full vertical expansion */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.35fr', gap: '0.65rem', flex: 1, minHeight: 0 }}>
-        {/* Col 1: Lý do, Triệu chứng & CLS */}
-        <div style={{ backgroundColor: '#F0F9FF', borderRadius: '12px', border: `2px solid ${BLUE.border}`, borderLeft: `6px solid ${BLUE.main}`, padding: af.pad, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxShadow: '0 3px 12px rgba(2,132,199,0.06)', overflowY: 'auto' }}>
-          <div style={{ fontSize: af.hdrSize, fontWeight: '900', color: BLUE.dark, textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: `2px solid ${BLUE.border}`, paddingBottom: '0.35rem', flexShrink: 0, marginBottom: '0.4rem' }}>
-            ⏰ LÝ DO & KHÁM LÂM SÀNG
+      {/* ZONE 2: THANH THÔNG TIN BỆNH NHÂN (SUB-HEADER BAR) */}
+      <div style={{
+        backgroundColor: '#E0F2FE',
+        border: '2px solid #BAE6FD',
+        borderLeft: '8px solid #0284C7',
+        borderRadius: '12px',
+        padding: isFullscreen ? '0.65rem 1.25rem' : '0.45rem 0.95rem',
+        display: 'flex',
+        alignItems: 'center',
+        gap: isFullscreen ? '1.5rem' : '1rem',
+        flexWrap: 'wrap',
+        flexShrink: 0,
+        boxShadow: '0 2px 8px rgba(2,132,199,0.1)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <span style={{ fontSize: isFullscreen ? '1.1rem' : '0.95rem', fontWeight: '800', color: '#0369A1' }}>BỆNH NHÂN:</span>
+          <span style={{ fontSize: isFullscreen ? '1.65rem' : '1.35rem', fontWeight: '900', color: '#0C4A6E', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            {sc.patient_name || sc.patientName || 'BỆNH NHÂN PHẪU THUẬT'}
+          </span>
+        </div>
+
+        {ageFormatted && (
+          <span style={{
+            backgroundColor: '#0284C7',
+            color: '#FFFFFF',
+            padding: '0.2rem 0.75rem',
+            borderRadius: '20px',
+            fontWeight: '900',
+            fontSize: isFullscreen ? '1.15rem' : '0.95rem'
+          }}>
+            {ageFormatted}
+          </span>
+        )}
+
+        {sc.address && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#0369A1', fontWeight: '700', fontSize: isFullscreen ? '1.1rem' : '0.95rem' }}>
+            <FaMapMarkerAlt /> <span>{sc.address}</span>
           </div>
-          <div style={{ fontSize: af.bodySize, lineHeight: af.lineH, display: 'flex', flexDirection: 'column', justifyContent: 'space-around', flex: 1, gap: af.gap }}>
-            <div>
-              <span style={{ fontWeight: '800', color: '#1E293B', display: 'block', marginBottom: '2px' }}>Lý do vào viện:</span>
-              <div style={{ color: '#0F172A', fontWeight: '600' }}>{sc.reason || '—'}</div>
+        )}
+
+        {(sc.admission_time || sc.admissionTime) && (
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#0C4A6E', fontWeight: '800', fontSize: isFullscreen ? '1.15rem' : '0.98rem' }}>
+            <FaClock style={{ color: '#0284C7' }} /> <span>Giờ vào viện: <strong>{sc.admission_time || sc.admissionTime}</strong></span>
+          </div>
+        )}
+      </div>
+
+      {/* ZONE 3: NỘI DUNG CHUYÊN MÔN (2 COLUMNS) */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.35fr', gap: isFullscreen ? '0.85rem' : '0.65rem', flex: 1, minHeight: 0 }}>
+        {/* Cột 1: Lý do, Triệu chứng lâm sàng & CLS */}
+        <div style={{
+          backgroundColor: '#F8FAFC',
+          borderRadius: '12px',
+          border: '2px solid #E2E8F0',
+          padding: isFullscreen ? '1rem 1.25rem' : '0.8rem 1rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: isFullscreen ? '1rem' : '0.75rem',
+          overflowY: 'auto'
+        }}>
+          {/* Box Lý do */}
+          <div style={{
+            backgroundColor: '#FFFFFF',
+            borderRadius: '10px',
+            border: '1.5px solid #BAE6FD',
+            borderLeft: '6px solid #0284C7',
+            padding: isFullscreen ? '0.85rem 1.1rem' : '0.65rem 0.85rem'
+          }}>
+            <div style={{ fontSize: isFullscreen ? '1.15rem' : '1rem', fontWeight: '900', color: '#0369A1', textTransform: 'uppercase', marginBottom: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+              <FaClock /> LÝ DO VÀO VIỆN
             </div>
-            {(sc.clinical_symptoms || sc.clinicalSymptoms) && (
-              <div>
-                <span style={{ fontWeight: '800', color: '#1E293B', display: 'block', marginBottom: '2px' }}>Triệu chứng lâm sàng:</span>
-                <div style={{ color: '#0F172A', fontWeight: '600' }}>{sc.clinical_symptoms || sc.clinicalSymptoms}</div>
+            <div style={{ fontSize: bodySize, lineHeight: lineH, color: '#0F172A', fontWeight: '700' }}>
+              {sc.reason || '—'}
+            </div>
+          </div>
+
+          {/* Box Triệu chứng lâm sàng */}
+          {(sc.clinical_symptoms || sc.clinicalSymptoms) && (
+            <div style={{
+              backgroundColor: '#FFFFFF',
+              borderRadius: '10px',
+              border: '1.5px solid #BAE6FD',
+              borderLeft: '6px solid #0284C7',
+              padding: isFullscreen ? '0.85rem 1.1rem' : '0.65rem 0.85rem'
+            }}>
+              <div style={{ fontSize: isFullscreen ? '1.15rem' : '1rem', fontWeight: '900', color: '#0369A1', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
+                🩺 TRIỆU CHỨNG LÂM SÀNG
+              </div>
+              <div style={{ fontSize: bodySize, lineHeight: lineH, color: '#0F172A', fontWeight: '600' }}>
+                {sc.clinical_symptoms || sc.clinicalSymptoms}
+              </div>
+            </div>
+          )}
+
+          {/* Box Cận lâm sàng */}
+          <div style={{
+            backgroundColor: '#FFFFFF',
+            borderRadius: '10px',
+            border: '1.5px solid #BAE6FD',
+            borderLeft: '6px solid #0369A1',
+            padding: isFullscreen ? '0.85rem 1.1rem' : '0.65rem 0.85rem',
+            flex: 1
+          }}>
+            <div style={{ fontSize: isFullscreen ? '1.15rem' : '1rem', fontWeight: '900', color: '#0369A1', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
+              🔬 CẬN LÂM SÀNG & CHẨN ĐOÁN HÌNH ẢNH
+            </div>
+            <div style={{ fontSize: bodySize, lineHeight: lineH, color: '#0F172A', fontWeight: '600' }}>
+              {sc.clinical_tests || sc.clinicalTests || '—'}
+            </div>
+          </div>
+        </div>
+
+        {/* Cột 2: Chẩn đoán trước mổ, Lệnh mổ, Sau mổ & Tình trạng hiện tại */}
+        <div style={{
+          backgroundColor: '#F8FAFC',
+          borderRadius: '12px',
+          border: '2px solid #E2E8F0',
+          padding: isFullscreen ? '1rem 1.25rem' : '0.8rem 1rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: isFullscreen ? '1rem' : '0.75rem',
+          overflowY: 'auto'
+        }}>
+          {/* Box Chẩn đoán trước mổ */}
+          <div style={{
+            backgroundColor: '#E0F2FE',
+            borderRadius: '10px',
+            border: '2px solid #38BDF8',
+            borderLeft: '7px solid #0284C7',
+            padding: isFullscreen ? '0.85rem 1.15rem' : '0.65rem 0.95rem'
+          }}>
+            <div style={{ fontSize: isFullscreen ? '1.1rem' : '0.95rem', fontWeight: '900', color: '#0369A1', textTransform: 'uppercase', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+              <FaFileMedical /> CHẨN ĐOÁN TRƯỚC MỔ
+            </div>
+            <div style={{ fontSize: diagSize, fontWeight: '900', color: '#0C4A6E', lineHeight: '1.3' }}>
+              {preDiag}
+            </div>
+          </div>
+
+          {/* Box Lệnh mổ & Chẩn đoán sau mổ */}
+          <div style={{
+            backgroundColor: '#FFFFFF',
+            borderRadius: '10px',
+            border: '1.5px solid #BAE6FD',
+            borderLeft: '6px solid #0284C7',
+            padding: isFullscreen ? '0.85rem 1.1rem' : '0.65rem 0.85rem'
+          }}>
+            {(sc.consultation_order || sc.consultationOrder) && (
+              <div style={{ marginBottom: '0.55rem' }}>
+                <span style={{ fontSize: isFullscreen ? '1.1rem' : '0.95rem', fontWeight: '800', color: '#0369A1' }}>Lệnh mổ / Phương pháp phẫu thuật:</span>
+                <div style={{ fontSize: bodySize, fontWeight: '700', color: '#0F172A', marginTop: '2px' }}>
+                  {sc.consultation_order || sc.consultationOrder}
+                </div>
               </div>
             )}
             <div>
-              <span style={{ fontWeight: '800', color: '#1E293B', display: 'block', marginBottom: '2px' }}>Cận lâm sàng & Chẩn đoán hình ảnh:</span>
-              <div style={{ color: '#334155', fontWeight: '600' }}>{sc.clinical_tests || sc.clinicalTests || '—'}</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Col 2: Chẩn đoán trước mổ, Lệnh mổ, Sau mổ, Hiện tại */}
-        <div style={{ backgroundColor: '#F0F9FF', borderRadius: '12px', border: `2px solid ${BLUE.border}`, borderLeft: `6px solid #0369A1`, padding: af.pad, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxShadow: '0 3px 12px rgba(2,132,199,0.06)', overflowY: 'auto' }}>
-          <div style={{ fontSize: af.hdrSize, fontWeight: '900', color: '#0369A1', textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: `2px solid ${BLUE.border}`, paddingBottom: '0.35rem', flexShrink: 0, marginBottom: '0.4rem' }}>
-            🔪 CHẨN ĐOÁN & QUÁ TRÌNH PHẪU THUẬT
-          </div>
-          <div style={{ fontSize: af.bodySize, lineHeight: af.lineH, display: 'flex', flexDirection: 'column', justifyContent: 'space-around', flex: 1, gap: af.gap }}>
-            {/* Chẩn đoán trước mổ highlight */}
-            <div style={{ backgroundColor: BLUE.soft, border: `2px solid ${BLUE.main}`, borderRadius: '10px', padding: '0.65rem 0.95rem', boxShadow: '0 3px 10px rgba(2,132,199,0.12)' }}>
-              <span style={{ fontWeight: '900', color: BLUE.dark, fontSize: isFullscreen ? '1.05rem' : '0.9rem', display: 'block', marginBottom: '3px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                🏥 CHẨN ĐOÁN TRƯỚC MỔ:
-              </span>
-              <span style={{ color: '#0369A1', fontWeight: '900', fontSize: af.diagSize, display: 'block', lineHeight: '1.3' }}>
-                {sc.preoperative_diagnosis || sc.preoperativeDiagnosis || '—'}
-              </span>
-            </div>
-
-            {/* Lệnh mổ & CĐ sau mổ */}
-            <div style={{ backgroundColor: '#FFFFFF', border: '1.5px solid #CBD5E1', borderRadius: '8px', padding: '0.6rem 0.85rem', display: 'flex', flexDirection: 'column', gap: '0.4rem', boxShadow: '0 2px 6px rgba(0,0,0,0.04)' }}>
-              {(sc.consultation_order || sc.consultationOrder) && (
-                <div>
-                  <span style={{ fontWeight: '800', color: '#1E293B' }}>Lệnh mổ / Phương pháp: </span>
-                  <span style={{ color: '#0F172A', fontWeight: '700' }}>{sc.consultation_order || sc.consultationOrder}</span>
-                </div>
-              )}
-              <div>
-                <span style={{ fontWeight: '800', color: '#1E293B' }}>Chẩn đoán sau mổ: </span>
-                <span style={{ color: '#0369A1', fontWeight: '800' }}>{sc.postoperative_diagnosis || sc.postoperativeDiagnosis || '—'}</span>
+              <span style={{ fontSize: isFullscreen ? '1.1rem' : '0.95rem', fontWeight: '800', color: '#0369A1' }}>Chẩn đoán sau mổ:</span>
+              <div style={{ fontSize: isFullscreen ? '1.25rem' : '1.1rem', fontWeight: '900', color: '#0284C7', marginTop: '2px' }}>
+                {postDiag}
               </div>
             </div>
+          </div>
 
-            {/* Tình trạng hiện tại */}
-            <div style={{ backgroundColor: '#ECFDF5', border: '1.5px solid #A7F3D0', borderRadius: '8px', padding: '0.55rem 0.85rem' }}>
-              <span style={{ fontWeight: '800', color: '#065F46' }}>Tình trạng hiện tại: </span>
-              <span style={{ color: '#047857', fontWeight: '700' }}>{sc.current_status || sc.currentStatus || '—'}</span>
+          {/* Box Tình trạng hiện tại */}
+          <div style={{
+            backgroundColor: '#ECFDF5',
+            borderRadius: '10px',
+            border: '1.5px solid #A7F3D0',
+            borderLeft: '6px solid #059669',
+            padding: isFullscreen ? '0.85rem 1.1rem' : '0.65rem 0.85rem'
+          }}>
+            <div style={{ fontSize: isFullscreen ? '1.1rem' : '0.95rem', fontWeight: '900', color: '#065F46', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+              💚 TÌNH TRẠNG HIỆN TẠI & HẬU PHẪU
+            </div>
+            <div style={{ fontSize: bodySize, lineHeight: lineH, color: '#065F46', fontWeight: '800' }}>
+              {sc.current_status || sc.currentStatus || 'Bệnh tỉnh, tiếp xúc tốt, vết mổ khô'}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Footer: image badge */}
+      {/* FOOTER: HÌNH ẢNH */}
       {caseImages.length > 0 && (
-        <div style={{ padding: isFullscreen ? '0.5rem 1rem' : '0.38rem 0.8rem', backgroundColor: BLUE.soft, border: `2px dashed ${BLUE.main}`, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: BLUE.dark, fontWeight: '800', fontSize: isFullscreen ? '0.98rem' : '0.85rem', flexShrink: 0 }}>
-          <span>📷 Ca mổ có <strong>{caseImages.length} hình ảnh minh họa</strong></span>
-          <span style={{ fontStyle: 'italic', color: '#0369A1' }}>(Xem ở Slide tiếp theo ➔)</span>
+        <div style={{
+          backgroundColor: '#F0F9FF',
+          border: '1.5px solid #BAE6FD',
+          borderRadius: '8px',
+          padding: '0.35rem 0.85rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          fontSize: isFullscreen ? '0.92rem' : '0.8rem',
+          color: '#0369A1',
+          fontWeight: '800',
+          flexShrink: 0
+        }}>
+          <span>📷 Ca phẫu thuật có <strong>{caseImages.length}</strong> hình ảnh minh họa</span>
+          <span>(Xem ở Slide tiếp theo ➔)</span>
         </div>
       )}
+
     </div>
   );
 };
