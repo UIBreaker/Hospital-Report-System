@@ -1119,96 +1119,546 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
       )}
 
       {/* ========================================================================= */}
-      {/* TAB 4: PHÂN QUYỀN TRUY CẬP                                                */}
+      {/* TAB 4: PHÂN QUYỀN TRUY CẬP (CHỌN TÀI KHOẢN & PHÂN QUYỀN XEM / SỬA)         */}
       {/* ========================================================================= */}
-      {activeTab === 'permissions' && (
-        <div style={{ backgroundColor: '#FFFFFF', borderRadius: '20px', border: '1px solid #E2E8F0', padding: '1.8rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: '900', color: '#0F2C59' }}>
-                Quy Tắc Phân Quyền Truy Cập & Nhập Liệu
-              </h3>
-              <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.82rem', color: '#64748B' }}>
-                Chỉ định chính xác tài khoản cá nhân, khoa phòng, hoặc toàn viện được phép truy cập
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setPermissions([...permissions, { target_type: 'user', target_value: availableAccounts[0]?.username || 'Khnv', permission: 'edit' }])}
-              style={{
-                backgroundColor: '#2563EB',
-                color: '#FFFFFF',
-                border: 'none',
-                borderRadius: '10px',
-                padding: '0.5rem 1rem',
-                fontSize: '0.84rem',
-                fontWeight: '800',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.4rem'
-              }}
-            >
-              <FaPlus /> Thêm Quy Tắc
-            </button>
-          </div>
+      {activeTab === 'permissions' && (() => {
+        const isAllHospital = permissions.some(p => p.target_type === 'all');
+        const allHospitalPerm = permissions.find(p => p.target_type === 'all')?.permission || 'edit';
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {permissions.map((perm, pIdx) => (
-              <div key={pIdx} style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', backgroundColor: '#F8FAFC', padding: '0.85rem 1.1rem', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
-                <select
-                  value={perm.target_type}
-                  onChange={(e) => {
-                    const updated = [...permissions];
-                    updated[pIdx].target_type = e.target.value;
-                    if (e.target.value === 'all') updated[pIdx].target_value = 'all';
-                    else if (e.target.value === 'user') updated[pIdx].target_value = availableAccounts[0]?.username || 'Khnv';
-                    else if (e.target.value === 'role') updated[pIdx].target_value = 'personal';
-                    setPermissions(updated);
-                  }}
-                  style={{ padding: '0.5rem', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '0.84rem', fontWeight: '700' }}
-                >
-                  <option value="all">🌐 Toàn Viện (Tất cả tài khoản)</option>
-                  <option value="user">👤 Chọn Cụ Thể Từng Tài Khoản</option>
-                  <option value="role">👥 Nhóm Tài Khoản Cá Nhân / Mở Rộng</option>
-                </select>
+        // Specific accounts in permission list
+        const userPermMap = new Map();
+        permissions.forEach(p => {
+          if (p.target_type === 'user' && p.target_value) {
+            userPermMap.set(p.target_value, p.permission || 'edit');
+          }
+        });
 
-                {perm.target_type === 'user' && (
-                  <select
-                    value={perm.target_value}
-                    onChange={(e) => {
-                      const updated = [...permissions];
-                      updated[pIdx].target_value = e.target.value;
-                      setPermissions(updated);
-                    }}
-                    style={{ flex: 1, padding: '0.5rem', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '0.84rem', fontWeight: '700' }}
-                  >
-                    {availableAccounts.map(acc => (
-                      <option key={acc.id} value={acc.username}>
-                        {acc.name} (@{acc.username}) — {acc.dept}
-                      </option>
-                    ))}
-                  </select>
-                )}
+        // Search in assigned list
+        const assignedAccounts = availableAccounts.filter(acc => userPermMap.has(acc.username));
+        const filteredAssigned = assignedAccounts.filter(acc => {
+          if (!permissionSearch.trim()) return true;
+          const q = permissionSearch.toLowerCase();
+          return (acc.name || '').toLowerCase().includes(q) ||
+                 (acc.username || '').toLowerCase().includes(q) ||
+                 (acc.dept || '').toLowerCase().includes(q);
+        });
 
+        // Accounts not yet added
+        const unassignedAccounts = availableAccounts.filter(acc => !userPermMap.has(acc.username));
+
+        const handleAddAccount = (username, permType = 'edit') => {
+          if (!username) return;
+          if (isAllHospital) {
+            setPermissions([{ target_type: 'user', target_value: username, permission: permType }]);
+          } else {
+            const updated = permissions.filter(p => p.target_value !== username);
+            updated.push({ target_type: 'user', target_value: username, permission: permType });
+            setPermissions(updated);
+          }
+        };
+
+        const handleSetPermission = (username, newPerm) => {
+          if (isAllHospital) {
+            setPermissions([{ target_type: 'all', target_value: 'all', permission: newPerm }]);
+          } else {
+            const updated = permissions.map(p => {
+              if (p.target_type === 'user' && p.target_value === username) {
+                return { ...p, permission: newPerm };
+              }
+              return p;
+            });
+            setPermissions(updated);
+          }
+        };
+
+        const handleRemoveAccount = (username) => {
+          const updated = permissions.filter(p => !(p.target_type === 'user' && p.target_value === username));
+          setPermissions(updated);
+        };
+
+        const handleSetAllHospital = (permType = 'edit') => {
+          setPermissions([{ target_type: 'all', target_value: 'all', permission: permType }]);
+        };
+
+        const handleAddGroup = (groupType) => {
+          let targets = [];
+          if (groupType === 'all_doctors') {
+            targets = availableAccounts.filter(a => (a.name || '').toLowerCase().includes('bs') || (a.name || '').toLowerCase().includes('bác sĩ'));
+          } else if (groupType === 'all_depts') {
+            targets = availableAccounts.filter(a => a.type === 'core');
+          } else if (groupType === 'all_accounts') {
+            targets = availableAccounts;
+          }
+
+          if (targets.length === 0) targets = availableAccounts;
+
+          const updatedMap = new Map(userPermMap);
+          targets.forEach(t => {
+            if (!updatedMap.has(t.username)) {
+              updatedMap.set(t.username, 'edit');
+            }
+          });
+
+          const newPerms = Array.from(updatedMap.entries()).map(([u, perm]) => ({
+            target_type: 'user',
+            target_value: u,
+            permission: perm
+          }));
+          setPermissions(newPerms);
+        };
+
+        const handleClearAll = () => {
+          setPermissions([]);
+        };
+
+        return (
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '20px', border: '1px solid #E2E8F0', padding: '1.8rem', display: 'flex', flexDirection: 'column', gap: '1.4rem' }}>
+            
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', borderBottom: '1.5px solid #F1F5F9', paddingBottom: '1.1rem' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                  <span style={{ backgroundColor: '#EFF6FF', color: '#2563EB', padding: '0.4rem 0.65rem', borderRadius: '10px', fontSize: '1.1rem', display: 'flex', alignItems: 'center' }}>
+                    <FaShieldAlt />
+                  </span>
+                  <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900', color: '#0F2C59' }}>
+                    Phân Quyền Truy Cập: Chọn Tài Khoản & Cấp Quyền Xem / Sửa
+                  </h3>
+                </div>
+                <p style={{ margin: '0.35rem 0 0 0', fontSize: '0.86rem', color: '#64748B' }}>
+                  Chỉ định chính xác từng tài khoản được phép <strong>Chỉ xem</strong> hoặc <strong>Được sửa / Nhập liệu</strong> biểu mẫu này.
+                </p>
+              </div>
+
+              {/* Quick Group Presets */}
+              <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap' }}>
                 <button
                   type="button"
-                  onClick={() => {
-                    if (permissions.length <= 1) {
-                      alert('Cần có ít nhất 1 quy tắc.');
-                      return;
-                    }
-                    setPermissions(permissions.filter((_, i) => i !== pIdx));
+                  onClick={() => handleSetAllHospital('edit')}
+                  style={{
+                    backgroundColor: isAllHospital ? '#0F2C59' : '#EFF6FF',
+                    color: isAllHospital ? '#FFFFFF' : '#2563EB',
+                    border: '1.5px solid #BFDBFE',
+                    borderRadius: '10px',
+                    padding: '0.5rem 0.85rem',
+                    fontSize: '0.82rem',
+                    fontWeight: '800',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.35rem'
                   }}
-                  style={{ backgroundColor: '#FEE2E2', color: '#DC2626', border: 'none', borderRadius: '8px', padding: '0.5rem 0.8rem', cursor: 'pointer' }}
                 >
-                  <FaTrash />
+                  🌐 Cấp Quyền Toàn Viện
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAddGroup('all_doctors')}
+                  style={{
+                    backgroundColor: '#F0FDF4',
+                    color: '#166534',
+                    border: '1.5px solid #BBF7D0',
+                    borderRadius: '10px',
+                    padding: '0.5rem 0.85rem',
+                    fontSize: '0.82rem',
+                    fontWeight: '800',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.35rem'
+                  }}
+                >
+                  🩺 + Tất cả Bác Sĩ
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAddGroup('all_depts')}
+                  style={{
+                    backgroundColor: '#FAF5FF',
+                    color: '#6B21A8',
+                    border: '1.5px solid #E9D5FF',
+                    borderRadius: '10px',
+                    padding: '0.5rem 0.85rem',
+                    fontSize: '0.82rem',
+                    fontWeight: '800',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.35rem'
+                  }}
+                >
+                  🏥 + Tất cả Khoa Phòng
+                </button>
+                <button
+                  type="button"
+                  onClick={handleClearAll}
+                  style={{
+                    backgroundColor: '#FEF2F2',
+                    color: '#DC2626',
+                    border: '1.5px solid #FECACA',
+                    borderRadius: '10px',
+                    padding: '0.5rem 0.85rem',
+                    fontSize: '0.82rem',
+                    fontWeight: '800',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.35rem'
+                  }}
+                >
+                  ✕ Xóa hết
                 </button>
               </div>
-            ))}
+            </div>
+
+            {/* Quick Add Bar: Dropdown to pick an account and add */}
+            <div style={{
+              backgroundColor: '#F8FAFC',
+              border: '1.5px solid #CBD5E1',
+              borderRadius: '14px',
+              padding: '1rem 1.25rem',
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '0.75rem',
+              alignItems: 'center'
+            }}>
+              <div style={{ fontWeight: '800', fontSize: '0.86rem', color: '#0F2C59', whiteSpace: 'nowrap' }}>
+                ➕ Thêm tài khoản mới:
+              </div>
+
+              <div style={{ flex: 1, minWidth: '260px' }}>
+                <select
+                  defaultValue=""
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      handleAddAccount(e.target.value, 'edit');
+                      e.target.value = '';
+                    }
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '0.6rem 0.85rem',
+                    borderRadius: '10px',
+                    border: '1.5px solid #94A3B8',
+                    fontSize: '0.86rem',
+                    fontWeight: '700',
+                    color: '#0F2C59',
+                    backgroundColor: '#FFFFFF',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <option value="">-- Bấm vào đây để chọn tài khoản cán bộ / khoa phòng --</option>
+                  {unassignedAccounts.map(acc => (
+                    <option key={acc.username} value={acc.username}>
+                      {acc.type === 'core' ? '🏥 [Khoa Phòng]' : '👤 [Cán Bộ]'} {acc.name} (@{acc.username}) — {acc.dept || 'Bệnh viện'}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* IF ALL HOSPITAL MODE */}
+            {isAllHospital ? (
+              <div style={{
+                backgroundColor: '#ECFDF5',
+                border: '2px solid #A7F3D0',
+                borderRadius: '16px',
+                padding: '1.5rem 1.8rem',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '1rem'
+              }}>
+                <div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: '900', color: '#065F46', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <FaCheckCircle style={{ color: '#10B981', fontSize: '1.3rem' }} />
+                    ĐANG CẤP QUYỀN TRUY CẬP CHO TOÀN BỘ BỆNH VIỆN (TẤT CẢ TÀI KHOẢN)
+                  </div>
+                  <div style={{ fontSize: '0.84rem', color: '#047857', marginTop: '0.35rem' }}>
+                    Tất cả các bác sĩ, điều dưỡng, nhân viên và các khoa phòng trong hệ thống đều có thể mở biểu mẫu này.
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <span style={{ fontSize: '0.84rem', fontWeight: '800', color: '#065F46' }}>Quyền toàn viện:</span>
+                  
+                  <div style={{ display: 'inline-flex', backgroundColor: '#FFFFFF', padding: '3px', borderRadius: '10px', border: '1.5px solid #6EE7B7' }}>
+                    <button
+                      type="button"
+                      onClick={() => handleSetPermission('all', 'view')}
+                      style={{
+                        backgroundColor: allHospitalPerm === 'view' ? '#0D9488' : 'transparent',
+                        color: allHospitalPerm === 'view' ? '#FFFFFF' : '#0F2C59',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '0.45rem 0.9rem',
+                        fontSize: '0.82rem',
+                        fontWeight: '800',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.35rem'
+                      }}
+                    >
+                      👁️ Chỉ xem
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSetPermission('all', 'edit')}
+                      style={{
+                        backgroundColor: allHospitalPerm === 'edit' ? '#2563EB' : 'transparent',
+                        color: allHospitalPerm === 'edit' ? '#FFFFFF' : '#0F2C59',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '0.45rem 0.9rem',
+                        fontSize: '0.82rem',
+                        fontWeight: '800',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.35rem'
+                      }}
+                    >
+                      ✏️ Được sửa / Nhập liệu
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setPermissions(availableAccounts.slice(0, 3).map(a => ({ target_type: 'user', target_value: a.username, permission: 'edit' })))}
+                    style={{
+                      backgroundColor: '#FFFFFF',
+                      border: '1.5px solid #CBD5E1',
+                      borderRadius: '10px',
+                      padding: '0.45rem 0.85rem',
+                      fontSize: '0.8rem',
+                      fontWeight: '800',
+                      color: '#0F2C59',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Chuyển sang chọn từng người ➔
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* SPECIFIC ACCOUNTS LIST & PERMISSION TOGGLE */
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
+                
+                {/* Search in granted accounts list */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+                  <div style={{ fontSize: '0.92rem', fontWeight: '800', color: '#0F2C59' }}>
+                    📌 Danh sách tài khoản được cấp quyền (<strong style={{ color: '#2563EB' }}>{assignedAccounts.length}</strong> tài khoản):
+                  </div>
+
+                  {assignedAccounts.length > 3 && (
+                    <div style={{ minWidth: '240px', position: 'relative' }}>
+                      <FaSearch style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8', fontSize: '0.8rem' }} />
+                      <input
+                        type="text"
+                        placeholder="Tìm trong danh sách đã cấp..."
+                        value={permissionSearch}
+                        onChange={(e) => setPermissionSearch(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '0.45rem 0.65rem 0.45rem 2.2rem',
+                          borderRadius: '8px',
+                          border: '1.5px solid #CBD5E1',
+                          fontSize: '0.82rem',
+                          outline: 'none',
+                          boxSizing: 'border-box'
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {assignedAccounts.length === 0 ? (
+                  <div style={{
+                    backgroundColor: '#FEF2F2',
+                    border: '1.5px dashed #FECACA',
+                    borderRadius: '16px',
+                    padding: '2.5rem',
+                    textAlign: 'center',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '0.6rem'
+                  }}>
+                    <div style={{ fontSize: '1.5rem', color: '#DC2626' }}>⚠️</div>
+                    <div style={{ fontSize: '1rem', fontWeight: '900', color: '#991B1B' }}>
+                      Chưa có tài khoản nào được cấp quyền truy cập biểu mẫu này!
+                    </div>
+                    <div style={{ fontSize: '0.84rem', color: '#7F1D1D', maxWidth: '480px' }}>
+                      Vui lòng chọn tài khoản ở ô "➕ Thêm tài khoản mới" phía trên hoặc bấm nút "🌐 Cấp Quyền Toàn Viện" để mọi người đều có thể sử dụng.
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{
+                    border: '1.5px solid #E2E8F0',
+                    borderRadius: '14px',
+                    overflow: 'hidden',
+                    backgroundColor: '#FFFFFF',
+                    boxShadow: '0 2px 8px rgba(15, 44, 89, 0.04)'
+                  }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.86rem' }}>
+                      <thead>
+                        <tr style={{ backgroundColor: '#F1F5F9', borderBottom: '2px solid #CBD5E1', textAlign: 'left' }}>
+                          <th style={{ padding: '0.75rem 1rem', width: '50px', textAlign: 'center', color: '#0F2C59', fontWeight: '800' }}>STT</th>
+                          <th style={{ padding: '0.75rem 1rem', color: '#0F2C59', fontWeight: '800' }}>Tài Khoản / Cán Bộ Được Cấp Quyền</th>
+                          <th style={{ padding: '0.75rem 1rem', width: '320px', textAlign: 'center', color: '#0F2C59', fontWeight: '800' }}>Quyền Hạn Truy Cập</th>
+                          <th style={{ padding: '0.75rem 1rem', width: '70px', textAlign: 'center', color: '#0F2C59', fontWeight: '800' }}>Gỡ</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredAssigned.map((acc, aIdx) => {
+                          const currentPerm = userPermMap.get(acc.username) || 'edit';
+                          return (
+                            <tr
+                              key={acc.username}
+                              style={{
+                                borderBottom: '1px solid #E2E8F0',
+                                backgroundColor: aIdx % 2 === 0 ? '#FFFFFF' : '#F8FAFC',
+                                transition: 'background-color 0.15s ease'
+                              }}
+                            >
+                              {/* STT */}
+                              <td style={{ padding: '0.75rem 1rem', textAlign: 'center', fontWeight: '800', color: '#64748B' }}>
+                                {aIdx + 1}
+                              </td>
+
+                              {/* Account Info */}
+                              <td style={{ padding: '0.75rem 1rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                  <div style={{
+                                    width: '38px',
+                                    height: '38px',
+                                    borderRadius: '50%',
+                                    backgroundColor: acc.type === 'core' ? '#EFF6FF' : '#F0FDF4',
+                                    color: acc.type === 'core' ? '#2563EB' : '#166534',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontWeight: '900',
+                                    fontSize: '0.95rem',
+                                    flexShrink: 0
+                                  }}>
+                                    {acc.type === 'core' ? <FaHospital /> : <FaUserMd />}
+                                  </div>
+
+                                  <div>
+                                    <div style={{ fontWeight: '900', color: '#0F2C59', fontSize: '0.92rem' }}>
+                                      {acc.name}
+                                    </div>
+                                    <div style={{ fontSize: '0.76rem', color: '#64748B', display: 'flex', gap: '0.4rem', alignItems: 'center', marginTop: '2px' }}>
+                                      <span style={{ fontFamily: 'monospace', fontWeight: '700', color: '#2563EB' }}>@{acc.username}</span>
+                                      <span>•</span>
+                                      <span>{acc.dept || 'Toàn viện'}</span>
+                                      <span style={{ backgroundColor: acc.type === 'core' ? '#EFF6FF' : '#F0FDF4', color: acc.type === 'core' ? '#1D4ED8' : '#166534', padding: '0.1rem 0.4rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: '800' }}>
+                                        {acc.type === 'core' ? 'Khoa phòng' : 'Cán bộ'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+
+                              {/* Permission Pill Switcher (Xem vs Sửa) */}
+                              <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>
+                                <div style={{
+                                  display: 'inline-flex',
+                                  backgroundColor: '#F1F5F9',
+                                  padding: '3px',
+                                  borderRadius: '10px',
+                                  border: '1.5px solid #CBD5E1'
+                                }}>
+                                  {/* View Button */}
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSetPermission(acc.username, 'view')}
+                                    style={{
+                                      backgroundColor: currentPerm === 'view' ? '#0D9488' : 'transparent',
+                                      color: currentPerm === 'view' ? '#FFFFFF' : '#475569',
+                                      border: 'none',
+                                      borderRadius: '7px',
+                                      padding: '0.4rem 0.85rem',
+                                      fontSize: '0.8rem',
+                                      fontWeight: '800',
+                                      cursor: 'pointer',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '0.35rem',
+                                      transition: 'all 0.15s ease',
+                                      boxShadow: currentPerm === 'view' ? '0 2px 6px rgba(13, 148, 136, 0.3)' : 'none'
+                                    }}
+                                  >
+                                    👁️ Chỉ xem
+                                  </button>
+
+                                  {/* Edit Button */}
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSetPermission(acc.username, 'edit')}
+                                    style={{
+                                      backgroundColor: currentPerm === 'edit' ? '#2563EB' : 'transparent',
+                                      color: currentPerm === 'edit' ? '#FFFFFF' : '#475569',
+                                      border: 'none',
+                                      borderRadius: '7px',
+                                      padding: '0.4rem 0.85rem',
+                                      fontSize: '0.8rem',
+                                      fontWeight: '800',
+                                      cursor: 'pointer',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '0.35rem',
+                                      transition: 'all 0.15s ease',
+                                      boxShadow: currentPerm === 'edit' ? '0 2px 6px rgba(37, 99, 235, 0.3)' : 'none'
+                                    }}
+                                  >
+                                    ✏️ Được sửa / Nhập liệu
+                                  </button>
+                                </div>
+                              </td>
+
+                              {/* Remove Button */}
+                              <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveAccount(acc.username)}
+                                  style={{
+                                    backgroundColor: '#FEF2F2',
+                                    color: '#DC2626',
+                                    border: '1px solid #FECACA',
+                                    borderRadius: '8px',
+                                    padding: '0.45rem 0.65rem',
+                                    cursor: 'pointer',
+                                    fontSize: '0.8rem',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    transition: 'all 0.15s ease'
+                                  }}
+                                  title="Gỡ quyền tài khoản này"
+                                >
+                                  <FaTrash />
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+              </div>
+            )}
+
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* ========================================================================= */}
       {/* FIELD SETTINGS DRAWER / SLIDE-OVER MODAL                                  */}
