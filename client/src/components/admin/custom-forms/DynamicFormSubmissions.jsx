@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useContext } from 'react';
 import { 
   FaClipboardList, 
   FaCalendarAlt, 
@@ -32,12 +32,15 @@ import {
   FaFilePdf,
   FaRegFileAlt,
   FaCheck,
-  FaSignature
+  FaSignature,
+  FaTrash
 } from 'react-icons/fa';
 import customFormService from '../../../services/customFormService';
+import { AuthContext } from '../../../contexts/AuthContext';
 import MedicalLoader from '../../common/MedicalLoader';
 
 const DynamicFormSubmissions = ({ formCode, onBack }) => {
+  const { user } = useContext(AuthContext) || {};
   const [submissions, setSubmissions] = useState([]);
   const [formMeta, setFormMeta] = useState(null);
   const [selectedDate, setSelectedDate] = useState('');
@@ -67,6 +70,46 @@ const DynamicFormSubmissions = ({ formCode, onBack }) => {
   useEffect(() => {
     if (formCode) fetchSubmissions();
   }, [formCode, selectedDate]);
+
+  // Kiểm tra quyền xóa bản ghi (Chỉ người có quyền sửa / Admin / Người nộp mới được xóa)
+  const canDeleteSubmission = (sub) => {
+    if (!user) return false;
+    if (user.role === 'admin') return true;
+    if (sub && sub.submitted_by_user === user.username) return true;
+
+    // Check permissions from formMeta
+    const perms = formMeta?.permissions || [];
+    if (perms.length === 0) return true; // default open
+
+    return perms.some(p => {
+      if (p.permission !== 'edit') return false;
+      if (p.target_type === 'all') return true;
+      if (p.target_type === 'user' && (p.target_value === user.username || p.target_value === user.departmentCode)) return true;
+      return false;
+    });
+  };
+
+  // Xóa bản ghi
+  const handleDeleteSubmission = async (subId, e) => {
+    if (e) e.stopPropagation();
+    if (!window.confirm('Bạn có chắc chắn muốn xóa bản ghi báo cáo này không?\n\nLưu ý: Dữ liệu sau khi xóa sẽ không thể phục hồi.')) {
+      return;
+    }
+    try {
+      const res = await customFormService.deleteFormSubmission(formCode, subId);
+      if (res && res.success) {
+        setSubmissions(prev => prev.filter(s => s.id !== subId));
+        if (selectedSubmission?.id === subId) {
+          setSelectedSubmission(null);
+        }
+      } else {
+        alert(res?.error || 'Không thể xóa bản ghi.');
+      }
+    } catch (err) {
+      console.error('Delete submission failed:', err);
+      alert(err.response?.data?.error || 'Có lỗi xảy ra khi xóa bản ghi.');
+    }
+  };
 
   // Schema fields (excluding section headers)
   const schemaFields = useMemo(() => {
@@ -699,11 +742,12 @@ const DynamicFormSubmissions = ({ formCode, onBack }) => {
                 </div>
               )}
 
-              {/* Visual Dossier Cards Grid (Bung toàn bộ hồ sơ ra xem trực quan) */}
+              {/* Visual Dossier Cards List (Bung toàn bộ hồ sơ ra xem hàng ngang rộng rãi full-width 100%) */}
               <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
-                gap: '1.5rem'
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1.5rem',
+                width: '100%'
               }}>
                 {filteredSubmissions.map((sub, idx) => {
                   // Find main title name if any (e.g. Tên, Họ và tên)
@@ -723,60 +767,94 @@ const DynamicFormSubmissions = ({ formCode, onBack }) => {
                         flexDirection: 'column',
                         justifyContent: 'space-between',
                         transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                        position: 'relative'
+                        position: 'relative',
+                        width: '100%',
+                        boxSizing: 'border-box'
                       }}
                     >
                       {/* Top Header Card Banner */}
                       <div style={{
                         background: 'linear-gradient(135deg, #0F2C59 0%, #1E40AF 100%)',
-                        padding: '1.1rem 1.4rem',
+                        padding: '1.1rem 1.6rem',
                         color: '#FFFFFF',
                         display: 'flex',
                         justifyContent: 'space-between',
-                        alignItems: 'center'
+                        alignItems: 'center',
+                        flexWrap: 'wrap',
+                        gap: '0.75rem'
                       }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
                           <span style={{
-                            width: '32px',
-                            height: '32px',
+                            width: '34px',
+                            height: '34px',
                             borderRadius: '50%',
                             backgroundColor: 'rgba(255, 255, 255, 0.2)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             fontWeight: '900',
-                            fontSize: '0.86rem'
+                            fontSize: '0.9rem'
                           }}>
                             #{idx + 1}
                           </span>
                           <div>
-                            <div style={{ fontSize: '1.12rem', fontWeight: '900', color: '#FFFFFF', lineHeight: 1.2 }}>
+                            <div style={{ fontSize: '1.18rem', fontWeight: '900', color: '#FFFFFF', lineHeight: 1.2 }}>
                               {String(primaryVal)}
                             </div>
-                            <div style={{ fontSize: '0.75rem', color: '#93C5FD', marginTop: '2px' }}>
+                            <div style={{ fontSize: '0.78rem', color: '#93C5FD', marginTop: '2px' }}>
                               {sub.user_full_name ? `${sub.user_full_name} (@${sub.submitted_by_user})` : `@${sub.submitted_by_user}`}
                             </div>
                           </div>
                         </div>
 
-                        <span style={{
-                          backgroundColor: 'rgba(255, 255, 255, 0.18)',
-                          color: '#FFFFFF',
-                          padding: '0.2rem 0.65rem',
-                          borderRadius: '20px',
-                          fontSize: '0.72rem',
-                          fontWeight: '800'
-                        }}>
-                          {formatDateVN(sub.submission_date)}
-                        </span>
+                        {/* Right: Date Badge & Delete Button */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                          <span style={{
+                            backgroundColor: 'rgba(255, 255, 255, 0.18)',
+                            color: '#FFFFFF',
+                            padding: '0.3rem 0.8rem',
+                            borderRadius: '20px',
+                            fontSize: '0.78rem',
+                            fontWeight: '800'
+                          }}>
+                            {formatDateVN(sub.submission_date)}
+                          </span>
+
+                          {canDeleteSubmission(sub) && (
+                            <button
+                              type="button"
+                              onClick={(e) => handleDeleteSubmission(sub.id, e)}
+                              style={{
+                                backgroundColor: '#EF4444',
+                                border: 'none',
+                                color: '#FFFFFF',
+                                borderRadius: '8px',
+                                padding: '0.35rem 0.8rem',
+                                fontSize: '0.78rem',
+                                fontWeight: '800',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.35rem',
+                                boxShadow: '0 2px 6px rgba(239, 68, 68, 0.35)',
+                                transition: 'all 0.15s ease'
+                              }}
+                              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#DC2626'}
+                              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#EF4444'}
+                              title="Xóa bản ghi này"
+                            >
+                              <FaTrash size={11} /> Xóa bản ghi
+                            </button>
+                          )}
+                        </div>
                       </div>
 
-                      {/* Card Content Grid (All fields fully expanded) */}
-                      <div style={{ padding: '1.4rem', display: 'flex', flexDirection: 'column', gap: '0.85rem', flex: 1 }}>
+                      {/* Card Content Grid (All fields fully expanded horizontally) */}
+                      <div style={{ padding: '1.4rem 1.6rem', display: 'flex', flexDirection: 'column', gap: '0.85rem', flex: 1 }}>
                         <div style={{
                           display: 'grid',
-                          gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-                          gap: '0.75rem'
+                          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                          gap: '0.85rem'
                         }}>
                           {schemaFields.map((field, fIdx) => {
                             const val = sub.submission_data?.[field.key];
@@ -797,16 +875,16 @@ const DynamicFormSubmissions = ({ formCode, onBack }) => {
                                   backgroundColor: color.bg,
                                   border: `1.5px solid ${color.border}`,
                                   borderRadius: '12px',
-                                  padding: '0.65rem 0.85rem',
+                                  padding: '0.75rem 1rem',
                                   display: 'flex',
                                   flexDirection: 'column',
-                                  gap: '0.25rem'
+                                  gap: '0.3rem'
                                 }}
                               >
-                                <span style={{ fontSize: '0.7rem', fontWeight: '800', color: color.label, textTransform: 'uppercase', letterSpacing: '0.3px' }}>
+                                <span style={{ fontSize: '0.74rem', fontWeight: '800', color: color.label, textTransform: 'uppercase', letterSpacing: '0.3px' }}>
                                   {field.label}
                                 </span>
-                                <span style={{ fontSize: '0.94rem', fontWeight: '900', color: '#0F2C59', wordBreak: 'break-word', lineHeight: 1.3 }}>
+                                <span style={{ fontSize: '0.98rem', fontWeight: '900', color: '#0F2C59', wordBreak: 'break-word', lineHeight: 1.35 }}>
                                   {displayVal}
                                 </span>
                               </div>
@@ -817,19 +895,19 @@ const DynamicFormSubmissions = ({ formCode, onBack }) => {
 
                       {/* Card Footer Bar */}
                       <div style={{
-                        padding: '0.8rem 1.4rem',
+                        padding: '0.85rem 1.6rem',
                         backgroundColor: '#F8FAFC',
                         borderTop: '1px solid #E2E8F0',
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
-                        fontSize: '0.76rem',
+                        fontSize: '0.78rem',
                         color: '#64748B'
                       }}>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                           <FaHospital style={{ color: '#2563EB' }} /> {sub.department_name || (sub.department_code === 'personal' ? 'Tài khoản cá nhân' : sub.department_code)}
                         </span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                           <FaClock /> {new Date(sub.created_at).toLocaleTimeString('vi-VN')}
                         </span>
                       </div>
@@ -931,26 +1009,51 @@ const DynamicFormSubmissions = ({ formCode, onBack }) => {
                         <td style={{ padding: '0.85rem 1rem', color: '#64748B', fontSize: '0.8rem' }}>
                           {new Date(sub.created_at).toLocaleString('vi-VN')}
                         </td>
-                        <td style={{ padding: '0.85rem 1rem', textAlign: 'center' }}>
-                          <button
-                            type="button"
-                            onClick={() => setSelectedSubmission(sub)}
-                            style={{
-                              backgroundColor: '#EFF6FF',
-                              color: '#2563EB',
-                              border: '1.5px solid #BFDBFE',
-                              borderRadius: '8px',
-                              padding: '0.35rem 0.75rem',
-                              fontWeight: '800',
-                              fontSize: '0.78rem',
-                              cursor: 'pointer',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '0.3rem'
-                            }}
-                          >
-                            <FaEye /> Xem
-                          </button>
+                        <td style={{ padding: '0.85rem 1rem', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                          <div style={{ display: 'inline-flex', gap: '0.35rem', alignItems: 'center' }}>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedSubmission(sub)}
+                              style={{
+                                backgroundColor: '#EFF6FF',
+                                color: '#2563EB',
+                                border: '1.5px solid #BFDBFE',
+                                borderRadius: '8px',
+                                padding: '0.35rem 0.65rem',
+                                fontWeight: '800',
+                                fontSize: '0.78rem',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.3rem'
+                              }}
+                            >
+                              <FaEye /> Xem
+                            </button>
+
+                            {canDeleteSubmission(sub) && (
+                              <button
+                                type="button"
+                                onClick={(e) => handleDeleteSubmission(sub.id, e)}
+                                style={{
+                                  backgroundColor: '#FEF2F2',
+                                  color: '#DC2626',
+                                  border: '1.5px solid #FECACA',
+                                  borderRadius: '8px',
+                                  padding: '0.35rem 0.6rem',
+                                  fontWeight: '800',
+                                  fontSize: '0.78rem',
+                                  cursor: 'pointer',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.25rem'
+                                }}
+                                title="Xóa bản ghi này"
+                              >
+                                <FaTrash size={11} /> Xóa
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -1098,26 +1201,51 @@ const DynamicFormSubmissions = ({ formCode, onBack }) => {
                         <td style={{ padding: '0.8rem 1rem', color: '#64748B', fontSize: '0.8rem' }}>
                           {new Date(sub.created_at).toLocaleString('vi-VN')}
                         </td>
-                        <td style={{ padding: '0.8rem 1rem', textAlign: 'center' }}>
-                          <button
-                            type="button"
-                            onClick={() => setSelectedSubmission(sub)}
-                            style={{
-                              backgroundColor: '#EFF6FF',
-                              color: '#2563EB',
-                              border: '1.5px solid #BFDBFE',
-                              borderRadius: '8px',
-                              padding: '0.4rem 0.85rem',
-                              fontWeight: '800',
-                              fontSize: '0.8rem',
-                              cursor: 'pointer',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '0.35rem'
-                            }}
-                          >
-                            <FaEye /> Xem chi tiết
-                          </button>
+                        <td style={{ padding: '0.8rem 1rem', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                          <div style={{ display: 'inline-flex', gap: '0.35rem', alignItems: 'center' }}>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedSubmission(sub)}
+                              style={{
+                                backgroundColor: '#EFF6FF',
+                                color: '#2563EB',
+                                border: '1.5px solid #BFDBFE',
+                                borderRadius: '8px',
+                                padding: '0.4rem 0.75rem',
+                                fontWeight: '800',
+                                fontSize: '0.8rem',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.35rem'
+                              }}
+                            >
+                              <FaEye /> Xem
+                            </button>
+
+                            {canDeleteSubmission(sub) && (
+                              <button
+                                type="button"
+                                onClick={(e) => handleDeleteSubmission(sub.id, e)}
+                                style={{
+                                  backgroundColor: '#FEF2F2',
+                                  color: '#DC2626',
+                                  border: '1.5px solid #FECACA',
+                                  borderRadius: '8px',
+                                  padding: '0.4rem 0.65rem',
+                                  fontWeight: '800',
+                                  fontSize: '0.8rem',
+                                  cursor: 'pointer',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.25rem'
+                                }}
+                                title="Xóa bản ghi này"
+                              >
+                                <FaTrash size={11} /> Xóa
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -1211,7 +1339,31 @@ const DynamicFormSubmissions = ({ formCode, onBack }) => {
             </div>
 
             {/* Modal Footer */}
-            <div style={{ padding: '1rem 1.6rem', borderTop: '1px solid #E2E8F0', display: 'flex', justifyContent: 'flex-end', backgroundColor: '#F8FAFC' }}>
+            <div style={{ padding: '1rem 1.6rem', borderTop: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F8FAFC' }}>
+              <div>
+                {canDeleteSubmission(selectedSubmission) && (
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteSubmission(selectedSubmission.id)}
+                    style={{
+                      backgroundColor: '#FEF2F2',
+                      color: '#DC2626',
+                      border: '1.5px solid #FECACA',
+                      borderRadius: '10px',
+                      padding: '0.55rem 1.1rem',
+                      fontWeight: '800',
+                      fontSize: '0.85rem',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.4rem'
+                    }}
+                  >
+                    <FaTrash size={12} /> Xóa Bản Ghi Này
+                  </button>
+                )}
+              </div>
+
               <button
                 type="button"
                 onClick={() => setSelectedSubmission(null)}

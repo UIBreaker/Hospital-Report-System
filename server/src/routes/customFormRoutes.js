@@ -8,6 +8,7 @@ const {
   deleteForm,
   submitFormData,
   getFormSubmissions,
+  deleteFormSubmission,
   getTrackerData,
   getUniversalTrackerFeed
 } = require('../controllers/customFormController');
@@ -22,6 +23,7 @@ router.delete('/:id', auth, requireAdmin, deleteForm);
 
 router.post('/:code/submit', auth, submitFormData);
 router.get('/:code/submissions', auth, getFormSubmissions);
+router.delete('/:code/submissions/:submissionId', auth, deleteFormSubmission);
 router.get('/:code/tracker', auth, getTrackerData);
 
 module.exports = router;

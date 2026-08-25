@@ -372,9 +372,67 @@ const getFormSubmissions = async (req, res, next) => {
         code: form.code,
         title: form.title,
         theme_color: form.theme_color,
-        schema_json: safeParse(form.schema_json, [])
+        schema_json: safeParse(form.schema_json, []),
+        permissions: safeParse(form.permissions, [])
       },
       data: formatted
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 7.1 Xóa bản ghi đã nộp (Chỉ người có quyền sửa / Admin / Người nộp mới được xóa)
+const deleteFormSubmission = async (req, res, next) => {
+  try {
+    const { code, submissionId } = req.params;
+    const user = req.user;
+
+    const [forms] = await pool.execute('SELECT * FROM custom_forms WHERE code = ?', [code]);
+    if (forms.length === 0) {
+      return res.status(404).json({ success: false, error: 'Không tìm thấy biểu mẫu.' });
+    }
+
+    const form = forms[0];
+    const [submissions] = await pool.execute(
+      'SELECT * FROM custom_form_submissions WHERE id = ? AND form_id = ?',
+      [submissionId, form.id]
+    );
+
+    if (submissions.length === 0) {
+      return res.status(404).json({ success: false, error: 'Không tìm thấy bản ghi cần xóa.' });
+    }
+
+    const submission = submissions[0];
+
+    // Check permission to delete
+    let canDelete = false;
+    if (user.role === 'admin') {
+      canDelete = true;
+    } else if (submission.submitted_by_user === user.username) {
+      canDelete = true;
+    } else {
+      const perms = safeParse(form.permissions, [{ target_type: 'all', target_value: 'all', permission: 'edit' }]);
+      const hasEditPerm = perms.some(p => {
+        if (p.permission !== 'edit') return false;
+        if (p.target_type === 'all') return true;
+        if (p.target_type === 'user' && (p.target_value === user.username || p.target_value === user.departmentCode)) return true;
+        return false;
+      });
+      if (hasEditPerm) {
+        canDelete = true;
+      }
+    }
+
+    if (!canDelete) {
+      return res.status(403).json({ success: false, error: 'Bạn không có quyền xóa bản ghi này (Chỉ người được cấp quyền sửa hoặc Admin mới có thể xóa).' });
+    }
+
+    await pool.execute('DELETE FROM custom_form_submissions WHERE id = ?', [submissionId]);
+
+    res.json({
+      success: true,
+      message: 'Đã xóa bản ghi thành công.'
     });
   } catch (error) {
     next(error);
