@@ -106,6 +106,7 @@ const PresentationPage = () => {
   const activeThumbRef = useRef(null);
 
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [slideDirection, setSlideDirection] = useState('next');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false); // Default full screen (Image 2) without sidebar
   const [reports, setReports] = useState([]);
@@ -530,15 +531,19 @@ const PresentationPage = () => {
       if (lightboxOpen) return;
       if (['ArrowRight', 'ArrowDown', 'PageDown', ' '].includes(e.key)) {
         e.preventDefault();
+        setSlideDirection('next');
         setCurrentSlide((prev) => Math.min(prev + 1, slides.length - 1));
       } else if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key)) {
         e.preventDefault();
+        setSlideDirection('prev');
         setCurrentSlide((prev) => Math.max(prev - 1, 0));
       } else if (e.key === 'Home') {
         e.preventDefault();
+        setSlideDirection('prev');
         setCurrentSlide(0);
       } else if (e.key === 'End') {
         e.preventDefault();
+        setSlideDirection('next');
         setCurrentSlide(slides.length - 1);
       } else if (e.key === 'f' || e.key === 'F') {
         toggleFullscreen();
@@ -568,8 +573,14 @@ const PresentationPage = () => {
     }
   };
 
-  const handleNext = () => setCurrentSlide((prev) => Math.min(prev + 1, slides.length - 1));
-  const handlePrev = () => setCurrentSlide((prev) => Math.max(prev - 1, 0));
+  const handleNext = () => {
+    setSlideDirection('next');
+    setCurrentSlide((prev) => Math.min(prev + 1, slides.length - 1));
+  };
+  const handlePrev = () => {
+    setSlideDirection('prev');
+    setCurrentSlide((prev) => Math.max(prev - 1, 0));
+  };
 
   // Export to PowerPoint
   const handleExportPowerPoint = async () => {
@@ -635,20 +646,112 @@ const PresentationPage = () => {
       }}
     >
       <style>{`
-        @keyframes presentationSlideSmoothEnter {
+        @keyframes presentationSlideNext {
           0% {
             opacity: 0;
-            transform: translateY(6px);
+            transform: translateX(42px) scale(0.965);
+            filter: blur(4px);
+          }
+          65% {
+            opacity: 1;
+            transform: translateX(-3px) scale(1.003);
+            filter: blur(0px);
           }
           100% {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateX(0) scale(1);
+            filter: blur(0px);
           }
         }
-        .presentation-slide-smooth-enter {
-          animation: presentationSlideSmoothEnter 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-          will-change: opacity, transform;
+
+        @keyframes presentationSlidePrev {
+          0% {
+            opacity: 0;
+            transform: translateX(-42px) scale(0.965);
+            filter: blur(4px);
+          }
+          65% {
+            opacity: 1;
+            transform: translateX(3px) scale(1.003);
+            filter: blur(0px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+            filter: blur(0px);
+          }
         }
+
+        .presentation-slide-next {
+          animation: presentationSlideNext 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          will-change: opacity, transform, filter;
+        }
+
+        .presentation-slide-prev {
+          animation: presentationSlidePrev 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          will-change: opacity, transform, filter;
+        }
+
+        @keyframes animHeaderDrop {
+          0% {
+            opacity: 0;
+            transform: translateY(-16px) scale(0.98);
+            filter: blur(3px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0px);
+          }
+        }
+        .anim-header-drop {
+          animation: animHeaderDrop 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        @keyframes animInfoPop {
+          0% {
+            opacity: 0;
+            transform: translateY(22px) scale(0.92);
+          }
+          65% {
+            opacity: 1;
+            transform: translateY(-4px) scale(1.018);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+        .anim-info-pop {
+          animation: animInfoPop 0.46s cubic-bezier(0.175, 0.885, 0.32, 1.15) both;
+        }
+
+        @keyframes animMetricPop {
+          0% {
+            transform: scale(0.65);
+            opacity: 0;
+          }
+          70% {
+            transform: scale(1.15);
+            opacity: 1;
+          }
+          100% {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+        .anim-metric-pop {
+          animation: animMetricPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.25) both;
+        }
+
+        .anim-delay-1 { animation-delay: 0.05s !important; }
+        .anim-delay-2 { animation-delay: 0.10s !important; }
+        .anim-delay-3 { animation-delay: 0.15s !important; }
+        .anim-delay-4 { animation-delay: 0.20s !important; }
+        .anim-delay-5 { animation-delay: 0.25s !important; }
+        .anim-delay-6 { animation-delay: 0.30s !important; }
+        .anim-delay-7 { animation-delay: 0.35s !important; }
+        .anim-delay-8 { animation-delay: 0.40s !important; }
 
         @keyframes drawerSlideIn {
           from {
@@ -805,6 +908,7 @@ const PresentationPage = () => {
                       type="button"
                       ref={isActive ? activeThumbRef : null}
                       onClick={() => {
+                        setSlideDirection(idx >= currentSlide ? 'next' : 'prev');
                         setCurrentSlide(idx);
                         setShowSidebar(false);
                       }}
@@ -956,7 +1060,7 @@ const PresentationPage = () => {
             {/* Dynamic Scaled Slide Content Container */}
             <div
               key={currentSlide}
-              className="presentation-slide-smooth-enter"
+              className={slideDirection === 'next' ? 'presentation-slide-next' : 'presentation-slide-prev'}
               ref={scrollContainerRef}
               style={{
                 flex: 1,

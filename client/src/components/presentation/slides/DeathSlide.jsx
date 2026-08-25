@@ -43,16 +43,19 @@ const DeathSlide = ({ slide, isFullscreen }) => {
     }}>
       
       {/* 1. ZONE 1: TÊN KHOA PHÒNG TO BẢN & PHÂN LOẠI CA TỬ VONG */}
-      <div style={{
-        backgroundColor: '#0F2C59',
-        borderRadius: '14px',
-        padding: isFullscreen ? '0.75rem 1.4rem' : '0.55rem 1rem',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        boxShadow: '0 4px 16px rgba(15, 44, 89, 0.25)',
-        flexShrink: 0
-      }}>
+      <div 
+        className="anim-header-drop"
+        style={{
+          backgroundColor: '#0F2C59',
+          borderRadius: '14px',
+          padding: isFullscreen ? '0.75rem 1.4rem' : '0.55rem 1rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          boxShadow: '0 4px 16px rgba(15, 44, 89, 0.25)',
+          flexShrink: 0
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: isFullscreen ? '1.1rem' : '0.75rem', flexWrap: 'wrap' }}>
           <div style={{
             fontSize: FONT_DEPT,
@@ -94,19 +97,22 @@ const DeathSlide = ({ slide, isFullscreen }) => {
       </div>
 
       {/* 2. ZONE 2: THANH THÔNG TIN BỆNH NHÂN */}
-      <div style={{
-        backgroundColor: '#FEE2E2',
-        border: '2px solid #FECACA',
-        borderLeft: '8px solid #DC2626',
-        borderRadius: '12px',
-        padding: isFullscreen ? '0.6rem 1.25rem' : '0.42rem 0.95rem',
-        display: 'flex',
-        alignItems: 'center',
-        gap: isFullscreen ? '1.5rem' : '1rem',
-        flexWrap: 'wrap',
-        flexShrink: 0,
-        boxShadow: '0 2px 8px rgba(220,38,38,0.1)'
-      }}>
+      <div 
+        className="anim-info-pop anim-delay-1"
+        style={{
+          backgroundColor: '#FEE2E2',
+          border: '2px solid #FECACA',
+          borderLeft: '8px solid #DC2626',
+          borderRadius: '12px',
+          padding: isFullscreen ? '0.6rem 1.25rem' : '0.42rem 0.95rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: isFullscreen ? '1.5rem' : '1rem',
+          flexWrap: 'wrap',
+          flexShrink: 0,
+          boxShadow: '0 2px 8px rgba(220,38,38,0.1)'
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <span style={{ fontSize: isFullscreen ? '1.15rem' : '0.98rem', fontWeight: '800', color: '#991B1B' }}>BỆNH NHÂN:</span>
           <span style={{ fontSize: FONT_PT_NAME, fontWeight: '900', color: '#7F1D1D', textTransform: 'uppercase', letterSpacing: '0.5px' }}>

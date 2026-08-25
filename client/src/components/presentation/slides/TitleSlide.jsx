@@ -99,41 +99,50 @@ const TitleSlide = ({ selectedDate, reportsCount = 12, summary = {}, isFullscree
 
       {/* 2. Top Header Agency Badge */}
       <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-        <div style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '0.65rem',
-          padding: '0.45rem 1.45rem',
-          borderRadius: '999px',
-          backgroundColor: '#EFF6FF',
-          border: '1.5px solid #DBEAFE',
-          color: '#1E40AF',
-          fontWeight: '900',
-          fontSize: isFullscreen ? '1.05rem' : '0.88rem',
-          marginBottom: isFullscreen ? '0.95rem' : '0.65rem',
-          letterSpacing: '0.5px',
-          textTransform: 'uppercase',
-          boxShadow: '0 2px 10px rgba(37, 99, 235, 0.08)'
-        }}>
+        <div 
+          className="anim-header-drop"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.65rem',
+            padding: '0.45rem 1.45rem',
+            borderRadius: '999px',
+            backgroundColor: '#EFF6FF',
+            border: '1.5px solid #DBEAFE',
+            color: '#1E40AF',
+            fontWeight: '900',
+            fontSize: isFullscreen ? '1.05rem' : '0.88rem',
+            marginBottom: isFullscreen ? '0.95rem' : '0.65rem',
+            letterSpacing: '0.5px',
+            textTransform: 'uppercase',
+            boxShadow: '0 2px 10px rgba(37, 99, 235, 0.08)'
+          }}
+        >
           <img src="/logo.png" alt="Logo" style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
           <span>SỞ Y TẾ THÀNH PHỐ ĐỒNG NAI • TTYT KHU VỰC BÌNH LONG</span>
         </div>
 
         {/* Main Presentation Title */}
-        <h1 style={{
-          fontSize: isFullscreen ? '2.95rem' : '2.2rem',
-          fontWeight: '900',
-          color: '#0F2C59',
-          letterSpacing: '-0.5px',
-          lineHeight: '1.15',
-          margin: '0 0 0.45rem 0',
-          textTransform: 'uppercase'
-        }}>
+        <h1 
+          className="anim-info-pop anim-delay-1"
+          style={{
+            fontSize: isFullscreen ? '2.95rem' : '2.2rem',
+            fontWeight: '900',
+            color: '#0F2C59',
+            letterSpacing: '-0.5px',
+            lineHeight: '1.15',
+            margin: '0 0 0.45rem 0',
+            textTransform: 'uppercase'
+          }}
+        >
           BÁO CÁO GIAO BAN CHUYÊN MÔN
         </h1>
 
         {/* Decorative ECG Heartbeat Pulse Line */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', maxWidth: '320px', margin: '0 auto 0.45rem auto' }}>
+        <div 
+          className="anim-info-pop anim-delay-1"
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', maxWidth: '320px', margin: '0 auto 0.45rem auto' }}
+        >
           <svg viewBox="0 0 300 24" style={{ width: '100%', height: '18px' }} fill="none">
             <path 
               d="M0,12 L110,12 L120,4 L128,20 L136,2 L144,22 L152,8 L160,16 L168,12 L300,12" 
@@ -146,16 +155,19 @@ const TitleSlide = ({ selectedDate, reportsCount = 12, summary = {}, isFullscree
         </div>
 
         {/* Date Display */}
-        <div style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '0.45rem',
-          fontSize: isFullscreen ? '1.35rem' : '1.1rem',
-          color: '#D97706',
-          fontWeight: '800',
-          textTransform: 'capitalize',
-          marginBottom: isFullscreen ? '1rem' : '0.65rem'
-        }}>
+        <div 
+          className="anim-info-pop anim-delay-1"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.45rem',
+            fontSize: isFullscreen ? '1.35rem' : '1.1rem',
+            color: '#D97706',
+            fontWeight: '800',
+            textTransform: 'capitalize',
+            marginBottom: isFullscreen ? '1rem' : '0.65rem'
+          }}
+        >
           <FaCalendarAlt style={{ fontSize: '1rem' }} />
           <span>{formatDate(selectedDate)}</span>
         </div>
@@ -174,6 +186,7 @@ const TitleSlide = ({ selectedDate, reportsCount = 12, summary = {}, isFullscree
         {metricCards.map((card, idx) => (
           <div
             key={idx}
+            className={`anim-info-pop anim-delay-${idx + 2}`}
             style={{
               backgroundColor: card.bg,
               border: `2px solid ${card.border}`,
@@ -220,19 +233,22 @@ const TitleSlide = ({ selectedDate, reportsCount = 12, summary = {}, isFullscree
 
             {/* Middle: Big Metric Number Badge */}
             <div style={{ margin: '0.45rem 0' }}>
-              <span style={{
-                backgroundColor: '#FFFFFF',
-                color: card.color,
-                border: `2px solid ${card.border}`,
-                padding: isFullscreen ? '0.3rem 1.15rem' : '0.2rem 0.85rem',
-                borderRadius: '12px',
-                fontSize: isFullscreen ? '2.4rem' : '1.85rem',
-                fontWeight: '900',
-                fontFamily: "'Roboto Mono', monospace",
-                display: 'inline-block',
-                minWidth: isFullscreen ? '80px' : '64px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
-              }}>
+              <span 
+                className="anim-metric-pop"
+                style={{
+                  backgroundColor: '#FFFFFF',
+                  color: card.color,
+                  border: `2px solid ${card.border}`,
+                  padding: isFullscreen ? '0.3rem 1.15rem' : '0.2rem 0.85rem',
+                  borderRadius: '12px',
+                  fontSize: isFullscreen ? '2.4rem' : '1.85rem',
+                  fontWeight: '900',
+                  fontFamily: "'Roboto Mono', monospace",
+                  display: 'inline-block',
+                  minWidth: isFullscreen ? '80px' : '64px',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+                }}
+              >
                 {card.val}
               </span>
             </div>
@@ -251,21 +267,24 @@ const TitleSlide = ({ selectedDate, reportsCount = 12, summary = {}, isFullscree
       </div>
 
       {/* 4. Bottom Footer Info Pill */}
-      <div style={{
-        position: 'relative',
-        zIndex: 1,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '1.5rem',
-        padding: isFullscreen ? '0.65rem 1.75rem' : '0.45rem 1.25rem',
-        backgroundColor: '#F8FAFC',
-        border: '1.5px solid #E2E8F0',
-        borderRadius: '12px',
-        width: '100%',
-        maxWidth: '750px',
-        marginTop: isFullscreen ? '0.85rem' : '0.5rem'
-      }}>
+      <div 
+        className="anim-info-pop anim-delay-7"
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '1.5rem',
+          padding: isFullscreen ? '0.65rem 1.75rem' : '0.45rem 1.25rem',
+          backgroundColor: '#F8FAFC',
+          border: '1.5px solid #E2E8F0',
+          borderRadius: '12px',
+          width: '100%',
+          maxWidth: '750px',
+          marginTop: isFullscreen ? '0.85rem' : '0.5rem'
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: isFullscreen ? '0.92rem' : '0.8rem', fontWeight: '800', color: '#1E40AF' }}>
           <FaHospital style={{ color: '#2563EB' }} />
           <span>Báo Cáo: <strong>{reportsCount}/12 Khoa Phòng</strong></span>

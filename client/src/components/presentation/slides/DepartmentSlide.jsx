@@ -279,16 +279,19 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, gap: isFullscreen ? '0.75rem' : '0.55rem' }}>
       
       {/* 1. Header: Executive Department Name Banner */}
-      <div style={{
-        backgroundColor: '#0F2C59',
-        borderRadius: '14px',
-        padding: isFullscreen ? '0.75rem 1.4rem' : '0.55rem 1rem',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        boxShadow: '0 4px 16px rgba(15, 44, 89, 0.25)',
-        flexShrink: 0
-      }}>
+      <div 
+        className="anim-header-drop"
+        style={{
+          backgroundColor: '#0F2C59',
+          borderRadius: '14px',
+          padding: isFullscreen ? '0.75rem 1.4rem' : '0.55rem 1rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          boxShadow: '0 4px 16px rgba(15, 44, 89, 0.25)',
+          flexShrink: 0
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: isFullscreen ? '1.1rem' : '0.75rem', flexWrap: 'wrap' }}>
           <div style={{
             fontSize: isFullscreen ? '2.1rem' : '1.65rem',
@@ -320,12 +323,15 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
       </div>
 
       {/* 2. Staff Banner */}
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap',
-        backgroundColor: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '10px',
-        padding: isFullscreen ? '0.45rem 1rem' : '0.35rem 0.8rem', flexShrink: 0,
-        boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
-      }}>
+      <div 
+        className="anim-info-pop anim-delay-1"
+        style={{
+          display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap',
+          backgroundColor: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '10px',
+          padding: isFullscreen ? '0.45rem 1rem' : '0.35rem 0.8rem', flexShrink: 0,
+          boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
+        }}
+      >
         {doctorName ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', backgroundColor: '#EFF6FF', padding: '0.22rem 0.7rem', borderRadius: '6px', border: '1px solid #BFDBFE' }}>
             <FaUserMd style={{ color: '#2563EB' }} />
@@ -543,7 +549,10 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
 
         {/* 4. Clinical Cases Section on Department Overview Slide */}
         {totalCasesCount > 0 && (
-          <div style={{ marginTop: '0.4rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <div 
+            className="anim-info-pop anim-delay-3"
+            style={{ marginTop: '0.4rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}
+          >
             <div style={{
               fontSize: FONT_SECTION_HEADER, fontWeight: '900', color: '#0F2C59',
               backgroundColor: '#F1F5F9', padding: '0.35rem 0.85rem', borderRadius: '8px',
@@ -559,10 +568,14 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '0.55rem' }}>
               {/* Transfer Cases */}
               {transferCases.map((tc, idx) => (
-                <div key={`tc_${idx}`} style={{
-                  backgroundColor: '#FFFBEB', border: '1.5px solid #FDE68A', borderLeft: '5px solid #D97706',
-                  borderRadius: '10px', padding: '0.6rem 0.85rem', boxShadow: '0 2px 6px rgba(217,119,6,0.06)'
-                }}>
+                <div 
+                  key={`tc_${idx}`} 
+                  className={`anim-info-pop anim-delay-${Math.min(idx + 4, 8)}`}
+                  style={{
+                    backgroundColor: '#FFFBEB', border: '1.5px solid #FDE68A', borderLeft: '5px solid #D97706',
+                    borderRadius: '10px', padding: '0.6rem 0.85rem', boxShadow: '0 2px 6px rgba(217,119,6,0.06)'
+                  }}
+                >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '3px' }}>
                     <span style={{ fontSize: '0.78rem', fontWeight: '800', color: '#92400E', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                       <FaAmbulance style={{ color: '#D97706' }} /> CHUYỂN VIỆN #{idx + 1}
@@ -584,10 +597,14 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
 
               {/* Surgery Cases */}
               {surgeryCases.map((sc, idx) => (
-                <div key={`sc_${idx}`} style={{
-                  backgroundColor: '#F0F9FF', border: '1.5px solid #BAE6FD', borderLeft: '5px solid #0284C7',
-                  borderRadius: '10px', padding: '0.6rem 0.85rem', boxShadow: '0 2px 6px rgba(2,132,199,0.06)'
-                }}>
+                <div 
+                  key={`sc_${idx}`} 
+                  className={`anim-info-pop anim-delay-${Math.min(idx + 4, 8)}`}
+                  style={{
+                    backgroundColor: '#F0F9FF', border: '1.5px solid #BAE6FD', borderLeft: '5px solid #0284C7',
+                    borderRadius: '10px', padding: '0.6rem 0.85rem', boxShadow: '0 2px 6px rgba(2,132,199,0.06)'
+                  }}
+                >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '3px' }}>
                     <span style={{ fontSize: '0.78rem', fontWeight: '800', color: '#0369A1', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                       <FaProcedures style={{ color: '#0284C7' }} /> PHẪU THUẬT #{idx + 1}
@@ -609,10 +626,14 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
 
               {/* Critical Cases */}
               {criticalCases.map((cc, idx) => (
-                <div key={`cc_${idx}`} style={{
-                  backgroundColor: '#FAF5FF', border: '1.5px solid #DDD6FE', borderLeft: '5px solid #7C3AED',
-                  borderRadius: '10px', padding: '0.6rem 0.85rem', boxShadow: '0 2px 6px rgba(124,58,237,0.06)'
-                }}>
+                <div 
+                  key={`cc_${idx}`} 
+                  className={`anim-info-pop anim-delay-${Math.min(idx + 4, 8)}`}
+                  style={{
+                    backgroundColor: '#FAF5FF', border: '1.5px solid #DDD6FE', borderLeft: '5px solid #7C3AED',
+                    borderRadius: '10px', padding: '0.6rem 0.85rem', boxShadow: '0 2px 6px rgba(124,58,237,0.06)'
+                  }}
+                >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '3px' }}>
                     <span style={{ fontSize: '0.78rem', fontWeight: '800', color: '#5B21B6', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                       <FaHeartbeat style={{ color: '#7C3AED' }} /> BỆNH NẶNG #{idx + 1}
@@ -634,10 +655,14 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
 
               {/* Death Cases */}
               {deathCases.map((dc, idx) => (
-                <div key={`dc_${idx}`} style={{
-                  backgroundColor: '#FEF2F2', border: '1.5px solid #FECACA', borderLeft: '5px solid #DC2626',
-                  borderRadius: '10px', padding: '0.6rem 0.85rem', boxShadow: '0 2px 6px rgba(220,38,38,0.06)'
-                }}>
+                <div 
+                  key={`dc_${idx}`} 
+                  className={`anim-info-pop anim-delay-${Math.min(idx + 4, 8)}`}
+                  style={{
+                    backgroundColor: '#FEF2F2', border: '1.5px solid #FECACA', borderLeft: '5px solid #DC2626',
+                    borderRadius: '10px', padding: '0.6rem 0.85rem', boxShadow: '0 2px 6px rgba(220,38,38,0.06)'
+                  }}
+                >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '3px' }}>
                     <span style={{ fontSize: '0.78rem', fontWeight: '800', color: '#991B1B', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                       <FaSkullCrossbones style={{ color: '#DC2626' }} /> TỬ VONG #{idx + 1}

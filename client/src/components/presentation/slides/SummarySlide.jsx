@@ -21,10 +21,13 @@ const SummarySlide = ({ slide, isFullscreen }) => {
       justifyContent: 'space-between', gap: isFullscreen ? '1.2rem' : '0.8rem'
     }}>
       {/* Header Bar */}
-      <div style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        paddingBottom: '0.6rem', borderBottom: '2px solid #E2E8F0', flexShrink: 0
-      }}>
+      <div 
+        className="anim-header-drop"
+        style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          paddingBottom: '0.6rem', borderBottom: '2px solid #E2E8F0', flexShrink: 0
+        }}
+      >
         <div>
           <div style={{ fontSize: isFullscreen ? '1.1rem' : '0.9rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             TỔNG HỢP TOÀN VIỆN
@@ -51,6 +54,7 @@ const SummarySlide = ({ slide, isFullscreen }) => {
         {statCards.map((c, idx) => (
           <div
             key={idx}
+            className={`anim-info-pop anim-delay-${idx + 1}`}
             style={{
               backgroundColor: c.bg, border: `2px solid ${c.border}`,
               borderLeft: `7px solid ${c.color}`, borderRadius: '14px',
@@ -65,11 +69,14 @@ const SummarySlide = ({ slide, isFullscreen }) => {
               </span>
               <span style={{ fontSize: isFullscreen ? '1.8rem' : '1.4rem' }}>{c.icon}</span>
             </div>
-            <div style={{
-              fontSize: isFullscreen ? '3.2rem' : '2.4rem', fontWeight: '900',
-              color: c.color, fontFamily: "'Roboto Mono', monospace",
-              textAlign: 'right', marginTop: '0.3rem', lineHeight: 1
-            }}>
+            <div 
+              className="anim-metric-pop"
+              style={{
+                fontSize: isFullscreen ? '3.2rem' : '2.4rem', fontWeight: '900',
+                color: c.color, fontFamily: "'Roboto Mono', monospace",
+                textAlign: 'right', marginTop: '0.3rem', lineHeight: 1
+              }}
+            >
               {c.val}
             </div>
           </div>

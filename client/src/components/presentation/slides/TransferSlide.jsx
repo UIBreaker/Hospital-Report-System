@@ -45,16 +45,19 @@ const TransferSlide = ({ slide, isFullscreen }) => {
     }}>
       
       {/* 1. ZONE 1: TÊN KHOA PHÒNG TO BẢN & PHÂN LOẠI CA BỆNH */}
-      <div style={{
-        backgroundColor: '#0F2C59',
-        borderRadius: '14px',
-        padding: isFullscreen ? '0.75rem 1.4rem' : '0.55rem 1rem',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        boxShadow: '0 4px 16px rgba(15, 44, 89, 0.25)',
-        flexShrink: 0
-      }}>
+      <div 
+        className="anim-header-drop"
+        style={{
+          backgroundColor: '#0F2C59',
+          borderRadius: '14px',
+          padding: isFullscreen ? '0.75rem 1.4rem' : '0.55rem 1rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          boxShadow: '0 4px 16px rgba(15, 44, 89, 0.25)',
+          flexShrink: 0
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: isFullscreen ? '1.1rem' : '0.75rem', flexWrap: 'wrap' }}>
           <div style={{
             fontSize: FONT_DEPT,
@@ -96,19 +99,22 @@ const TransferSlide = ({ slide, isFullscreen }) => {
       </div>
 
       {/* 2. ZONE 2: THANH THÔNG TIN BỆNH NHÂN */}
-      <div style={{
-        backgroundColor: '#FEF3C7',
-        border: '2px solid #FDE68A',
-        borderLeft: '8px solid #D97706',
-        borderRadius: '12px',
-        padding: isFullscreen ? '0.6rem 1.25rem' : '0.42rem 0.95rem',
-        display: 'flex',
-        alignItems: 'center',
-        gap: isFullscreen ? '1.5rem' : '1rem',
-        flexWrap: 'wrap',
-        flexShrink: 0,
-        boxShadow: '0 2px 8px rgba(217,119,6,0.1)'
-      }}>
+      <div 
+        className="anim-info-pop anim-delay-1"
+        style={{
+          backgroundColor: '#FEF3C7',
+          border: '2px solid #FDE68A',
+          borderLeft: '8px solid #D97706',
+          borderRadius: '12px',
+          padding: isFullscreen ? '0.6rem 1.25rem' : '0.42rem 0.95rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: isFullscreen ? '1.5rem' : '1rem',
+          flexWrap: 'wrap',
+          flexShrink: 0,
+          boxShadow: '0 2px 8px rgba(217,119,6,0.1)'
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <span style={{ fontSize: isFullscreen ? '1.15rem' : '0.98rem', fontWeight: '800', color: '#92400E' }}>BỆNH NHÂN:</span>
           <span style={{ fontSize: FONT_PT_NAME, fontWeight: '900', color: '#78350F', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
@@ -147,15 +153,18 @@ const TransferSlide = ({ slide, isFullscreen }) => {
         /* SLIDE 1: TIẾP NHẬN, CHẨN ĐOÁN & XỬ TRÍ BAN ĐẦU */
         <div style={{ display: 'flex', flexDirection: 'column', gap: isFullscreen ? '0.85rem' : '0.65rem', flex: 1, minHeight: 0 }}>
           {/* Box Chẩn đoán cực đại */}
-          <div style={{
-            backgroundColor: '#FEF3C7',
-            border: '2.5px solid #F59E0B',
-            borderLeft: '10px solid #D97706',
-            borderRadius: '14px',
-            padding: isFullscreen ? '1.25rem 1.6rem' : '0.95rem 1.25rem',
-            boxShadow: '0 4px 16px rgba(217,119,6,0.12)',
-            flexShrink: 0
-          }}>
+          <div 
+            className="anim-info-pop anim-delay-2"
+            style={{
+              backgroundColor: '#FEF3C7',
+              border: '2.5px solid #F59E0B',
+              borderLeft: '10px solid #D97706',
+              borderRadius: '14px',
+              padding: isFullscreen ? '1.25rem 1.6rem' : '0.95rem 1.25rem',
+              boxShadow: '0 4px 16px rgba(217,119,6,0.12)',
+              flexShrink: 0
+            }}
+          >
             <div style={{ fontSize: FONT_DIAG_TITLE, fontWeight: '900', color: '#92400E', textTransform: 'uppercase', marginBottom: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
               <FaFileMedical /> CHẨN ĐOÁN XÁC ĐỊNH
             </div>
