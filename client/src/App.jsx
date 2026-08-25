@@ -4,6 +4,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import MedicalLoader from './components/common/MedicalLoader';
+import ScrollToTopButton from './components/common/ScrollToTopButton';
 
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const ReportPage = lazy(() => import('./pages/ReportPage'));
@@ -100,6 +101,8 @@ function App() {
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Suspense>
+          {/* Global Floating Scroll To Top Button across all pages */}
+          <ScrollToTopButton />
         </Router>
       </AuthProvider>
     </ErrorBoundary>
