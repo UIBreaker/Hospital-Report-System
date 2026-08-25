@@ -60,28 +60,15 @@ const RegisterPage = () => {
     sessionStorage.setItem('portal_intro_shown', 'true');
   }, []);
 
-  // Fullscreen Change Listener & Auto-enter Fullscreen on First User Interaction
+  // Fullscreen Change Listener
   useEffect(() => {
     const onFullscreenChange = () => {
       setIsFullscreen(Boolean(document.fullscreenElement));
     };
     document.addEventListener('fullscreenchange', onFullscreenChange);
 
-    const triggerAutoFullscreen = () => {
-      try {
-        if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
-          document.documentElement.requestFullscreen().catch(() => {});
-        }
-      } catch (e) {}
-    };
-
-    window.addEventListener('click', triggerAutoFullscreen, { once: true });
-    window.addEventListener('keydown', triggerAutoFullscreen, { once: true });
-
     return () => {
       document.removeEventListener('fullscreenchange', onFullscreenChange);
-      window.removeEventListener('click', triggerAutoFullscreen);
-      window.removeEventListener('keydown', triggerAutoFullscreen);
     };
   }, []);
 

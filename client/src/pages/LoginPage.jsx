@@ -135,28 +135,15 @@ const LoginPage = () => {
     }
   }, [user, isAdmin, navigate]);
 
-  // Fullscreen Change Listener & Auto-enter Fullscreen on First User Interaction
+  // Fullscreen Change Listener
   useEffect(() => {
     const onFullscreenChange = () => {
       setIsFullscreen(Boolean(document.fullscreenElement));
     };
     document.addEventListener('fullscreenchange', onFullscreenChange);
 
-    const triggerAutoFullscreen = () => {
-      try {
-        if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
-          document.documentElement.requestFullscreen().catch(() => {});
-        }
-      } catch (e) {}
-    };
-
-    window.addEventListener('click', triggerAutoFullscreen, { once: true });
-    window.addEventListener('keydown', triggerAutoFullscreen, { once: true });
-
     return () => {
       document.removeEventListener('fullscreenchange', onFullscreenChange);
-      window.removeEventListener('click', triggerAutoFullscreen);
-      window.removeEventListener('keydown', triggerAutoFullscreen);
     };
   }, []);
 
@@ -804,15 +791,16 @@ const LoginPage = () => {
                 <h3 
                   className="login-card-title"
                   style={{
-                    fontSize: '1.35rem',
+                    fontSize: '1.38rem',
                     fontWeight: '900',
                     color: '#FFFFFF',
-                    margin: '0 0 0.15rem 0',
+                    margin: '0 0 0.18rem 0',
                     textAlign: 'center',
-                    letterSpacing: '0.4px'
+                    letterSpacing: '0.4px',
+                    whiteSpace: 'nowrap'
                   }}
                 >
-                  CHÀO MỪNG ĐỒNG NGHIỆP TRỞ LẠI!
+                  CHÀO MỪNG TRỞ LẠI!
                 </h3>
 
                 <p 
