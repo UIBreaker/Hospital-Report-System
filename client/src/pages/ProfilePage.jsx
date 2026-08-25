@@ -39,6 +39,7 @@ import {
 import profileService from '../services/profileService';
 import userManageService from '../services/systemUserService';
 import { uploadSingleMedicalImage } from '../services/uploadService';
+import { compressImageFile } from '../utils/imageUtils';
 import MedicalLoader from '../components/common/MedicalLoader';
 
 // 8 Medical Avatar Presets (SVG/Emoji representations that cost 0 DB space)
@@ -220,20 +221,36 @@ const ProfilePage = () => {
 
     setUploadingAvatar(true);
     try {
-      const uploaded = await uploadSingleMedicalImage(file);
-      if (uploaded && uploaded.url) {
-        const res = await profileService.updateAvatar(uploaded.url);
-        if (res && res.success) {
-          setProfileData(prev => ({ ...prev, avatar_url: uploaded.url }));
-          setCustomAvatarUrl(uploaded.url);
-          updateCurrentUser({ avatar_url: uploaded.url });
-          setShowAvatarModal(false);
-          setSuccessMsg('✓ Đã tải và nén ảnh đại diện thành công!');
-          setTimeout(() => setSuccessMsg(''), 3000);
+      // 1. Nén ảnh đại diện về kích thước vuông chuẩn 280x280px (< 25KB)
+      const compressedAvatarDataUrl = await compressImageFile(file, {
+        maxWidth: 280,
+        maxHeight: 280,
+        quality: 0.8,
+        mimeType: 'image/jpeg'
+      });
+
+      // 2. Thử tải lên Cloud hoặc dùng dữ liệu nén
+      let avatarFinalUrl = compressedAvatarDataUrl;
+      try {
+        const uploaded = await uploadSingleMedicalImage(file);
+        if (uploaded && uploaded.url && uploaded.isCloud) {
+          avatarFinalUrl = uploaded.url;
         }
+      } catch (uploadErr) {
+        console.warn('Dùng ảnh nén trực tiếp:', uploadErr);
+      }
+
+      const res = await profileService.updateAvatar(avatarFinalUrl);
+      if (res && res.success) {
+        setProfileData(prev => ({ ...prev, avatar_url: avatarFinalUrl }));
+        setCustomAvatarUrl(avatarFinalUrl);
+        updateCurrentUser({ avatar_url: avatarFinalUrl });
+        setShowAvatarModal(false);
+        setSuccessMsg('✓ Đã cập nhật ảnh đại diện thành công!');
+        setTimeout(() => setSuccessMsg(''), 3000);
       }
     } catch (err) {
-      alert('Lỗi tải ảnh: ' + err.message);
+      alert('Lỗi tải ảnh: ' + (err.response?.data?.error || err.message));
     } finally {
       setUploadingAvatar(false);
     }

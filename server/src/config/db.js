@@ -76,20 +76,25 @@ const ensureSchema = async (connOrPool) => {
       'ALTER TABLE critical_cases ADD CONSTRAINT fk_critical_cases_report FOREIGN KEY (report_id) REFERENCES reports(id) ON DELETE CASCADE',
       // User Profile & Medical Credentials Columns
       'ALTER TABLE users ADD COLUMN full_name VARCHAR(150) DEFAULT NULL',
-      'ALTER TABLE users ADD COLUMN avatar_url VARCHAR(500) DEFAULT NULL',
+      'ALTER TABLE users ADD COLUMN avatar_url LONGTEXT DEFAULT NULL',
       'ALTER TABLE users ADD COLUMN phone VARCHAR(50) DEFAULT NULL',
       'ALTER TABLE users ADD COLUMN email VARCHAR(150) DEFAULT NULL',
       'ALTER TABLE users ADD COLUMN certificate VARCHAR(100) DEFAULT NULL',
       'ALTER TABLE users ADD COLUMN position VARCHAR(100) DEFAULT NULL',
-      'ALTER TABLE users ADD COLUMN signature_url TEXT DEFAULT NULL',
+      'ALTER TABLE users ADD COLUMN signature_url LONGTEXT DEFAULT NULL',
       'ALTER TABLE users ADD COLUMN bio TEXT DEFAULT NULL',
-      'ALTER TABLE system_users ADD COLUMN avatar_url VARCHAR(500) DEFAULT NULL',
+      'ALTER TABLE system_users ADD COLUMN avatar_url LONGTEXT DEFAULT NULL',
       'ALTER TABLE system_users ADD COLUMN phone VARCHAR(50) DEFAULT NULL',
       'ALTER TABLE system_users ADD COLUMN email VARCHAR(150) DEFAULT NULL',
       'ALTER TABLE system_users ADD COLUMN certificate VARCHAR(100) DEFAULT NULL',
       'ALTER TABLE system_users ADD COLUMN position VARCHAR(100) DEFAULT NULL',
-      'ALTER TABLE system_users ADD COLUMN signature_url TEXT DEFAULT NULL',
-      'ALTER TABLE system_users ADD COLUMN bio TEXT DEFAULT NULL'
+      'ALTER TABLE system_users ADD COLUMN signature_url LONGTEXT DEFAULT NULL',
+      'ALTER TABLE system_users ADD COLUMN bio TEXT DEFAULT NULL',
+      // Ensure existing tables are upgraded to LONGTEXT for avatar & signature data URLs
+      'ALTER TABLE users MODIFY COLUMN avatar_url LONGTEXT DEFAULT NULL',
+      'ALTER TABLE system_users MODIFY COLUMN avatar_url LONGTEXT DEFAULT NULL',
+      'ALTER TABLE users MODIFY COLUMN signature_url LONGTEXT DEFAULT NULL',
+      'ALTER TABLE system_users MODIFY COLUMN signature_url LONGTEXT DEFAULT NULL'
     ];
 
     for (const sql of alters) {
