@@ -8,11 +8,13 @@ const {
   deleteForm,
   submitFormData,
   getFormSubmissions,
-  getTrackerData
+  getTrackerData,
+  getUniversalTrackerFeed
 } = require('../controllers/customFormController');
 const { auth, adminOnly: requireAdmin } = require('../middleware/auth');
 
 router.get('/', auth, getAllForms);
+router.get('/feed/tracker-data', auth, getUniversalTrackerFeed);
 router.get('/:code', auth, getFormByCode);
 router.post('/', auth, requireAdmin, createForm);
 router.put('/:id', auth, requireAdmin, updateForm);

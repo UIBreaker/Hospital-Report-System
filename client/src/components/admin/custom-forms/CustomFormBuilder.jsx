@@ -165,6 +165,63 @@ const FIELD_CATEGORIES = [
     ]
   },
   {
+    id: 'tracker',
+    name: '7. Dữ Liệu Theo Dõi Toàn Viện (Data Trackers)',
+    icon: FaChartLine,
+    badgeColor: '#0284C7',
+    fields: [
+      { 
+        type: 'tracker_overtime', 
+        label: 'Danh Sách Cán Bộ Trực Tăng Cường & Thêm Giờ', 
+        icon: FaUsers, 
+        defaultWidth: '100%', 
+        trackerSource: 'overtime_staff', 
+        dataScope: 'all', 
+        specificDept: 'lck', 
+        displayMode: 'card', 
+        allowDateFilter: true,
+        helpText: 'Tự động xổ ra danh sách cán bộ trực tăng cường & thêm giờ theo ngày'
+      },
+      { 
+        type: 'tracker_clinical_stats', 
+        label: 'Thống Kê Số Lượng Ca Bệnh Chuyên Môn (Chuyển / Mổ / Nặng / Tử Vong)', 
+        icon: FaHeartbeat, 
+        defaultWidth: '100%', 
+        trackerSource: 'clinical_stats', 
+        dataScope: 'all', 
+        specificDept: 'lck', 
+        displayMode: 'metric_boxes', 
+        allowDateFilter: true,
+        helpText: 'Thống kê tổng số 4 loại ca bệnh lâm sàng của tất cả các khoa'
+      },
+      { 
+        type: 'tracker_clinical_cases', 
+        label: 'Bảng Chi Tiết Ca Lâm Sàng (Chuyển / Mổ / Nặng / Tử Vong)', 
+        icon: FaProcedures, 
+        defaultWidth: '100%', 
+        trackerSource: 'clinical_cases', 
+        caseFilter: 'all', 
+        dataScope: 'all', 
+        specificDept: 'lck', 
+        displayMode: 'interactive_table', 
+        allowDateFilter: true, 
+        allowExpandCase: true,
+        helpText: 'Xổ ra danh sách chi tiết các ca chuyển viện, mổ, nặng, tử vong để dễ dàng theo dõi hoặc chỉnh sửa'
+      },
+      { 
+        type: 'tracker_linked_form', 
+        label: 'Bản Ghi Dữ Liệu Từ Biểu Mẫu Khác (Linked Form Submissions)', 
+        icon: FaTable, 
+        defaultWidth: '100%', 
+        trackerSource: 'linked_form', 
+        linkedFormCode: '', 
+        displayMode: 'data_table', 
+        allowDateFilter: true,
+        helpText: 'Nhúng dữ liệu các bản ghi đã nộp từ biểu mẫu tùy chỉnh khác'
+      }
+    ]
+  },
+  {
     id: 'layout',
     name: '6. Bố cục & Nhóm (Layout & Structure)',
     icon: FaLayerGroup,
@@ -226,7 +283,7 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
   });
 
   // Active Category Accordion (Palette)
-  const [openCategories, setOpenCategories] = useState(new Set(['choice', 'text', 'number', 'datetime', 'media', 'layout']));
+  const [openCategories, setOpenCategories] = useState(new Set(['choice', 'text', 'number', 'datetime', 'media', 'tracker', 'layout']));
   const [paletteSearch, setPaletteSearch] = useState('');
 
   // Selected Field for Drawer Settings
@@ -249,6 +306,9 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
 
   // Accounts List for User-Specific Permissions
   const [availableAccounts, setAvailableAccounts] = useState([]);
+  const [allCreatedForms, setAllCreatedForms] = useState([]);
+  const [permissionSearch, setPermissionSearch] = useState('');
+  const [permissionRoleFilter, setPermissionRoleFilter] = useState('all');
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -288,6 +348,11 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
     };
 
     loadAllAccounts();
+    customFormService.getAllForms().then(res => {
+      if (res && res.success && Array.isArray(res.data)) {
+        setAllCreatedForms(res.data.filter(f => f.code !== (initialForm?.code || '')));
+      }
+    }).catch(() => {});
   }, []);
 
   // Handle ESC to close Preview Modal
@@ -1387,6 +1452,153 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
                         👥 Chọn nhiều người (Tags)
                       </button>
                     </div>
+                  </div>
+
+                </div>
+              )}
+
+              {/* 3.5. DATA TRACKER SPECIAL CONFIG (CẤU HÌNH BỘ THEO DÕI DỮ LIỆU) */}
+              {['tracker_overtime', 'tracker_clinical_stats', 'tracker_clinical_cases', 'tracker_linked_form'].includes(editingField.type) && (
+                <div style={{ backgroundColor: '#F0F9FF', border: '1.5px solid #BAE6FD', borderRadius: '14px', padding: '1.1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div style={{ fontSize: '0.86rem', fontWeight: '900', color: '#0369A1', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <FaChartLine /> CẤU HÌNH NGUỒN THEO DÕI DỮ LIỆU (DATA TRACKER)
+                  </div>
+
+                  {/* Data Scope */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '800', color: '#0369A1', marginBottom: '0.3rem' }}>
+                      1. PHẠM VI NGUỒN DỮ LIỆU (DATA SCOPE)
+                    </label>
+                    <select
+                      value={editingField.dataScope || 'all'}
+                      onChange={(e) => updateFieldProp(editingFieldIndex, 'dataScope', e.target.value)}
+                      style={{ width: '100%', padding: '0.55rem', borderRadius: '8px', border: '1px solid #7DD3FC', fontSize: '0.84rem', fontWeight: '700', color: '#0F2C59', outline: 'none' }}
+                    >
+                      <option value="all">🌐 Toàn Viện (Tất cả 12 khoa phòng)</option>
+                      <option value="current_dept">🏥 Theo Khoa / Phòng của người đang mở form</option>
+                      <option value="specific_dept">🏢 Theo Khoa / Phòng chỉ định cụ thể</option>
+                    </select>
+                  </div>
+
+                  {/* Specific Department Dropdown */}
+                  {editingField.dataScope === 'specific_dept' && (
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '800', color: '#0369A1', marginBottom: '0.3rem' }}>
+                        CHỌN KHOA / PHÒNG CHỈ ĐỊNH:
+                      </label>
+                      <select
+                        value={editingField.specificDept || 'lck'}
+                        onChange={(e) => updateFieldProp(editingFieldIndex, 'specificDept', e.target.value)}
+                        style={{ width: '100%', padding: '0.55rem', borderRadius: '8px', border: '1px solid #7DD3FC', fontSize: '0.84rem', fontWeight: '700' }}
+                      >
+                        {DEPARTMENTS.map(d => (
+                          <option key={d.code} value={d.code}>{d.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {/* Clinical Case Filter (for clinical_cases / stats) */}
+                  {['tracker_clinical_cases', 'tracker_clinical_stats'].includes(editingField.type) && (
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '800', color: '#0369A1', marginBottom: '0.3rem' }}>
+                        2. BỘ LỌC LOẠI CA BỆNH CHUYÊN MÔN
+                      </label>
+                      <select
+                        value={editingField.caseFilter || 'all'}
+                        onChange={(e) => updateFieldProp(editingFieldIndex, 'caseFilter', e.target.value)}
+                        style={{ width: '100%', padding: '0.55rem', borderRadius: '8px', border: '1px solid #7DD3FC', fontSize: '0.84rem', fontWeight: '700' }}
+                      >
+                        <option value="all">📋 Tất cả 4 loại ca (Chuyển viện, Phẫu thuật, Nặng, Tử vong)</option>
+                        <option value="transfer">🚑 Chỉ Ca Chuyển Viện</option>
+                        <option value="surgery">🔪 Chỉ Ca Phẫu Thuật</option>
+                        <option value="critical">⚠️ Chỉ Bệnh Nhân Nặng Cần Theo Dõi</option>
+                        <option value="death">⚰️ Chỉ Hồ Sơ Bệnh Nhân Tử Vong</option>
+                      </select>
+                    </div>
+                  )}
+
+                  {/* Linked Form Code (for tracker_linked_form) */}
+                  {editingField.type === 'tracker_linked_form' && (
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '800', color: '#0369A1', marginBottom: '0.3rem' }}>
+                        2. CHỌN BIỂU MẪU NGUỒN ĐỂ XỔ DỮ LIỆU BẢN GHI:
+                      </label>
+                      <select
+                        value={editingField.linkedFormCode || ''}
+                        onChange={(e) => updateFieldProp(editingFieldIndex, 'linkedFormCode', e.target.value)}
+                        style={{ width: '100%', padding: '0.55rem', borderRadius: '8px', border: '1px solid #7DD3FC', fontSize: '0.84rem', fontWeight: '700' }}
+                      >
+                        <option value="">-- Chọn biểu mẫu tùy chỉnh liên kết --</option>
+                        {allCreatedForms.map(f => (
+                          <option key={f.code} value={f.code}>{f.title} ({f.code})</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {/* Display Mode */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '800', color: '#0369A1', marginBottom: '0.3rem' }}>
+                      3. CHẾ ĐỘ TRÌNH BÀY GIAO DIỆN (DISPLAY MODE)
+                    </label>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem' }}>
+                      <button
+                        type="button"
+                        onClick={() => updateFieldProp(editingFieldIndex, 'displayMode', 'card')}
+                        style={{
+                          backgroundColor: (editingField.displayMode || 'card') === 'card' ? '#0284C7' : '#FFFFFF',
+                          color: (editingField.displayMode || 'card') === 'card' ? '#FFFFFF' : '#0369A1',
+                          border: '1px solid #7DD3FC',
+                          borderRadius: '8px',
+                          padding: '0.45rem',
+                          fontSize: '0.78rem',
+                          fontWeight: '800',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        🗂️ Dạng Thẻ Widget Card
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => updateFieldProp(editingFieldIndex, 'displayMode', 'table')}
+                        style={{
+                          backgroundColor: editingField.displayMode === 'table' ? '#0284C7' : '#FFFFFF',
+                          color: editingField.displayMode === 'table' ? '#FFFFFF' : '#0369A1',
+                          border: '1px solid #7DD3FC',
+                          borderRadius: '8px',
+                          padding: '0.45rem',
+                          fontSize: '0.78rem',
+                          fontWeight: '800',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        📊 Dạng Bảng Chi Tiết
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Interactive checkboxes */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginTop: '0.2rem' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', cursor: 'pointer', fontSize: '0.8rem', fontWeight: '700', color: '#0369A1' }}>
+                      <input
+                        type="checkbox"
+                        checked={editingField.allowDateFilter !== false}
+                        onChange={(e) => updateFieldProp(editingFieldIndex, 'allowDateFilter', e.target.checked)}
+                        style={{ width: '16px', height: '16px', accentColor: '#0284C7' }}
+                      />
+                      <span>Cho phép người dùng chuyển đổi ngày xem (Date Shift / Picker)</span>
+                    </label>
+
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', cursor: 'pointer', fontSize: '0.8rem', fontWeight: '700', color: '#0369A1' }}>
+                      <input
+                        type="checkbox"
+                        checked={editingField.allowExpandCase !== false}
+                        onChange={(e) => updateFieldProp(editingFieldIndex, 'allowExpandCase', e.target.checked)}
+                        style={{ width: '16px', height: '16px', accentColor: '#0284C7' }}
+                      />
+                      <span>Cho phép người dùng bấm xem chi tiết / xổ thông tin ca bệnh</span>
+                    </label>
                   </div>
 
                 </div>

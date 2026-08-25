@@ -39,6 +39,7 @@ import customFormService from '../../../services/customFormService';
 import staffService from '../../../services/staffService';
 import { AuthContext } from '../../../contexts/AuthContext';
 import MedicalLoader from '../../common/MedicalLoader';
+import EmbeddedTrackerField from './EmbeddedTrackerField';
 
 // Standard Hospital ICD-10 List
 const COMMON_ICD10_LIST = [
@@ -802,6 +803,20 @@ const DynamicFormRenderer = ({ formCode, initialMeta, onBack }) => {
                     <div style={{ fontWeight: '800', color: style.color, fontSize: '0.88rem' }}>{field.label}</div>
                     {field.placeholder && <div style={{ fontSize: '0.82rem', color: style.color, opacity: 0.9, marginTop: '2px' }}>{field.placeholder}</div>}
                   </div>
+                </div>
+              );
+            }
+
+            // DATA TRACKER LIVE WIDGETS
+            if (field.type && field.type.startsWith('tracker_')) {
+              return (
+                <div key={field.id || idx} style={{ gridColumn: 'span 12', marginTop: '0.35rem', marginBottom: '0.35rem' }}>
+                  <EmbeddedTrackerField
+                    field={field}
+                    themeColor={themeColor}
+                    currentDate={submissionDate}
+                    currentUserDept={user?.department_code}
+                  />
                 </div>
               );
             }

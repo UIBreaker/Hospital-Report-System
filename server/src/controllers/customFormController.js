@@ -664,6 +664,191 @@ const getTrackerData = async (req, res, next) => {
   }
 };
 
+// 9. Universal Live Data Tracker Feed (For any embedded tracker widgets)
+const getUniversalTrackerFeed = async (req, res, next) => {
+  try {
+    const { source, date, department_code, form_code } = req.query;
+    const targetDate = date || new Date().toISOString().split('T')[0];
+
+    // SOURCE A: OVERTIME STAFF
+    if (source === 'overtime_staff' || source === 'tracker_overtime') {
+      let query = `
+        SELECT r.id, r.department_code, u.department_name, r.doctor_name, r.nurse_name, r.overtime_staff, r.shift_time, r.room
+        FROM reports r
+        LEFT JOIN users u ON r.department_code = u.department_code
+        WHERE r.report_date = ?
+      `;
+      const params = [targetDate];
+
+      if (department_code && department_code !== 'all') {
+        query += ' AND r.department_code = ?';
+        params.push(department_code);
+      }
+
+      const [reports] = await pool.execute(query, params);
+
+      const overtimeList = [];
+      (reports || []).forEach(r => {
+        const safeOvertime = safeParse(r.overtime_staff, []);
+        if (Array.isArray(safeOvertime) && safeOvertime.length > 0) {
+          safeOvertime.forEach(ot => {
+            if (ot && (ot.staffName || ot.staff_name || ot.time)) {
+              overtimeList.push({
+                report_id: r.id,
+                department_code: r.department_code,
+                department_name: r.department_name || r.department_code,
+                doctor_name: r.doctor_name,
+                nurse_name: r.nurse_name,
+                staff_name: ot.staffName || ot.staff_name || '—',
+                time: ot.time || '—',
+                room: r.room || '—'
+              });
+            }
+          });
+        }
+      });
+
+      return res.json({
+        success: true,
+        source: 'overtime_staff',
+        targetDate,
+        department_code: department_code || 'all',
+        total_staff: overtimeList.length,
+        total_departments: reports.length,
+        data: overtimeList
+      });
+    }
+
+    // SOURCE B: CLINICAL CASES & STATS
+    if (source === 'clinical_cases' || source === 'clinical_stats' || source === 'tracker_clinical_stats' || source === 'tracker_clinical_cases') {
+      let deptFilter = '';
+      const params = [targetDate];
+
+      if (department_code && department_code !== 'all') {
+        deptFilter = ' AND r.department_code = ?';
+        params.push(department_code);
+      }
+
+      // 1. Transfer cases
+      const [transferRows] = await pool.execute(
+        `SELECT t.*, r.department_code, u.department_name, r.doctor_name, r.nurse_name 
+         FROM transfer_cases t
+         JOIN reports r ON t.report_id = r.id
+         LEFT JOIN users u ON r.department_code = u.department_code
+         WHERE r.report_date = ? ${deptFilter}
+         ORDER BY t.id ASC`,
+        params
+      );
+
+      // 2. Surgery cases
+      const [surgeryRows] = await pool.execute(
+        `SELECT s.*, r.department_code, u.department_name, r.doctor_name, r.nurse_name 
+         FROM surgery_cases s
+         JOIN reports r ON s.report_id = r.id
+         LEFT JOIN users u ON r.department_code = u.department_code
+         WHERE r.report_date = ? ${deptFilter}
+         ORDER BY s.id ASC`,
+        params
+      );
+
+      // 3. Death cases
+      const [deathRows] = await pool.execute(
+        `SELECT d.*, r.department_code, u.department_name, r.doctor_name, r.nurse_name 
+         FROM death_cases d
+         JOIN reports r ON d.report_id = r.id
+         LEFT JOIN users u ON r.department_code = u.department_code
+         WHERE r.report_date = ? ${deptFilter}
+         ORDER BY d.id ASC`,
+        params
+      );
+
+      // 4. Critical cases
+      const [criticalRows] = await pool.execute(
+        `SELECT c.*, r.department_code, u.department_name, r.doctor_name, r.nurse_name 
+         FROM critical_cases c
+         JOIN reports r ON c.report_id = r.id
+         LEFT JOIN users u ON r.department_code = u.department_code
+         WHERE r.report_date = ? ${deptFilter}
+         ORDER BY c.id ASC`,
+        params
+      );
+
+      const transferCases = transferRows.map(parseCaseImages);
+      const surgeryCases = surgeryRows.map(parseCaseImages);
+      const deathCases = deathRows.map(parseCaseImages);
+      const criticalCases = criticalRows.map(parseCaseImages);
+
+      return res.json({
+        success: true,
+        source: 'clinical_cases',
+        targetDate,
+        department_code: department_code || 'all',
+        summary: {
+          total_cases: transferCases.length + surgeryCases.length + deathCases.length + criticalCases.length,
+          total_transfer: transferCases.length,
+          total_surgery: surgeryCases.length,
+          total_death: deathCases.length,
+          total_critical: criticalCases.length
+        },
+        data: {
+          transferCases,
+          surgeryCases,
+          deathCases,
+          criticalCases
+        }
+      });
+    }
+
+    // SOURCE C: LINKED FORM SUBMISSIONS
+    if (source === 'linked_form' || source === 'tracker_linked_form' || form_code) {
+      const targetFormCode = form_code || source;
+      const [forms] = await pool.execute('SELECT * FROM custom_forms WHERE code = ?', [targetFormCode]);
+      if (forms.length === 0) {
+        return res.json({ success: true, source: 'linked_form', data: [] });
+      }
+
+      const form = forms[0];
+      const [submissions] = await pool.execute(
+        `SELECT s.*, 
+                CASE 
+                  WHEN s.department_code = 'personal' THEN 'Tài khoản cá nhân'
+                  WHEN su.department_name IS NOT NULL THEN su.department_name
+                  WHEN u.department_name IS NOT NULL THEN u.department_name
+                  ELSE s.department_code 
+                END as department_name,
+                COALESCE(su.full_name, s.submitted_by_user) as user_full_name
+         FROM custom_form_submissions s
+         LEFT JOIN users u ON s.department_code = u.department_code
+         LEFT JOIN system_users su ON (s.submitted_by_user = su.username OR s.submitted_by_user = su.full_name)
+         WHERE s.form_id = ? AND DATE(s.submission_date) = DATE(?)
+         ORDER BY s.created_at DESC`,
+        [form.id, targetDate]
+      );
+
+      return res.json({
+        success: true,
+        source: 'linked_form',
+        targetDate,
+        form: {
+          id: form.id,
+          code: form.code,
+          title: form.title,
+          theme_color: form.theme_color,
+          schema_json: safeParse(form.schema_json, [])
+        },
+        data: submissions.map(s => ({
+          ...s,
+          submission_data: safeParse(s.submission_data, {})
+        }))
+      });
+    }
+
+    res.json({ success: false, error: 'Không tìm thấy nguồn dữ liệu tracker yêu cầu.' });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getAllForms,
   getFormByCode,
@@ -672,5 +857,6 @@ module.exports = {
   deleteForm,
   submitFormData,
   getFormSubmissions,
-  getTrackerData
+  getTrackerData,
+  getUniversalTrackerFeed
 };
