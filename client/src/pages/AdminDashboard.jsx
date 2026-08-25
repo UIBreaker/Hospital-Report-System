@@ -9,6 +9,9 @@ import {
   FaFilePdf,
   FaFileExcel,
   FaChevronDown,
+  FaChevronLeft,
+  FaChevronRight,
+  FaBars,
   FaSpinner, 
   FaLock,
   FaUnlockAlt,
@@ -49,6 +52,25 @@ const AdminDashboard = () => {
   
   // Active Tab State: 'reports' | 'staff' | 'database' | 'accounts'
   const [activeTab, setActiveTab] = useState('reports');
+
+  // Collapsible Sidebar State (persisted in localStorage)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem('admin_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed(prev => {
+      const next = !prev;
+      try {
+        localStorage.setItem('admin_sidebar_collapsed', String(next));
+      } catch {}
+      return next;
+    });
+  };
 
   // Report Date State
   const [date, setDate] = useState(() => {
@@ -954,13 +976,40 @@ const AdminDashboard = () => {
           zIndex: 50,
           boxShadow: '0 2px 8px rgba(15, 44, 89, 0.04)'
         }}>
-          <div>
-            <h1 style={{ fontSize: '1.2rem', fontWeight: '900', color: '#0F2C59', margin: 0, lineHeight: 1.2, letterSpacing: '0.3px' }}>
-              TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG
-            </h1>
-            <p style={{ margin: '0.15rem 0 0 0', fontSize: '0.8rem', color: '#64748B', fontWeight: '600' }}>
-              Hệ Thống Quản Trị Báo Cáo Giao Ban Trực Toàn Viện
-            </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
+            {/* Dashboard Sidebar Collapse / Expand Button */}
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              style={{
+                backgroundColor: isSidebarCollapsed ? '#0F2C59' : '#F1F5F9',
+                color: isSidebarCollapsed ? '#FFFFFF' : '#0F2C59',
+                border: '1.5px solid ' + (isSidebarCollapsed ? '#0F2C59' : '#CBD5E1'),
+                borderRadius: '10px',
+                padding: '0.5rem 0.85rem',
+                fontSize: '0.86rem',
+                fontWeight: '800',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                boxShadow: isSidebarCollapsed ? '0 4px 12px rgba(15, 44, 89, 0.25)' : 'none',
+                transition: 'all 0.2s ease'
+              }}
+              title={isSidebarCollapsed ? 'Mở rộng bảng menu điều hướng Dashboard' : 'Thu gọn menu điều hướng để mở rộng không gian làm việc'}
+            >
+              <FaBars style={{ color: isSidebarCollapsed ? '#38BDF8' : '#0284C7' }} />
+              <span>{isSidebarCollapsed ? 'Mở Menu' : 'Thu Gọn'}</span>
+            </button>
+
+            <div>
+              <h1 style={{ fontSize: '1.2rem', fontWeight: '900', color: '#0F2C59', margin: 0, lineHeight: 1.2, letterSpacing: '0.3px' }}>
+                TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG
+              </h1>
+              <p style={{ margin: '0.15rem 0 0 0', fontSize: '0.8rem', color: '#64748B', fontWeight: '600' }}>
+                Hệ Thống Quản Trị Báo Cáo Giao Ban Trực Toàn Viện
+              </p>
+            </div>
           </div>
 
           {/* Action Controls */}
