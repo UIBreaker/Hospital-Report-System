@@ -48,9 +48,13 @@ const LoginPage = () => {
 
   useEffect(() => {
     if (user) {
-      navigate(isAdmin ? '/admin' : '/report');
+      navigate(isAdmin ? '/admin' : '/report', { replace: true });
     }
   }, [user, isAdmin, navigate]);
+
+  if (user) {
+    return null;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -187,10 +187,16 @@ const HospitalPortalIntro = ({ onComplete }) => {
   const [statusText, setStatusText] = useState('Khởi tạo cổng bảo mật y tế...');
   const [isExiting, setIsExiting] = useState(false);
   const [isStarted, setIsStarted] = useState(false);
+  
   const isStartedRef = useRef(false);
   const exitingRef = useRef(false);
+  const onCompleteRef = useRef(onComplete);
   const canvasRef = useRef(null);
   const animFrameRef = useRef(null);
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
   // Live Clock & User detection
   useEffect(() => {
@@ -245,9 +251,9 @@ const HospitalPortalIntro = ({ onComplete }) => {
 
     setTimeout(() => {
       setPhase('done');
-      if (onComplete) onComplete();
+      if (onCompleteRef.current) onCompleteRef.current();
     }, 650);
-  }, [onComplete]);
+  }, []);
 
   // Start Experience: Audio + 60fps Timestamp Progress (3.8s) + Automatic Transition
   const startExperience = useCallback(() => {
@@ -290,7 +296,7 @@ const HospitalPortalIntro = ({ onComplete }) => {
     animFrameRef.current = requestAnimationFrame(tick);
   }, [handleAutoComplete]);
 
-  // Global trigger on any touch, click, or keypress
+  // Global listener for touch, click, or keypress (Only active on mount)
   useEffect(() => {
     const handleGlobalTrigger = () => {
       startExperience();
@@ -304,11 +310,18 @@ const HospitalPortalIntro = ({ onComplete }) => {
       window.removeEventListener('click', handleGlobalTrigger);
       window.removeEventListener('keydown', handleGlobalTrigger);
       window.removeEventListener('touchstart', handleGlobalTrigger);
-      if (animFrameRef.current) {
-        cancelAnimationFrame(animFrameRef.current);
-      }
     };
   }, [startExperience]);
+
+  // Cleanup animation frame ONLY on component unmount
+  useEffect(() => {
+    return () => {
+      if (animFrameRef.current) {
+        cancelAnimationFrame(animFrameRef.current);
+        animFrameRef.current = null;
+      }
+    };
+  }, []);
 
   // Background Canvas: Medical Aurora, Pulse ECG wave, Starlight Particles
   useEffect(() => {
