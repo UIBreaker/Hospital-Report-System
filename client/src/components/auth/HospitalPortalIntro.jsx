@@ -132,6 +132,40 @@ const generateCinematicMedicalAudioWav = () => {
 };
 
 // =========================================================================
+// SUCCESS CONFIRMATION "TING!" CHIME (Web Audio API)
+// =========================================================================
+export const playSuccessTingChime = () => {
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    const ctx = new AudioContextClass();
+    if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+    const now = ctx.currentTime;
+
+    // Harmonic Sparkle Bell Sequence (E6 -> A6 -> C#7 -> E7)
+    const tones = [1318.51, 1760.0, 2217.46, 2637.02];
+    tones.forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      const chimeStart = now + idx * 0.045;
+      osc.frequency.setValueAtTime(freq, chimeStart);
+
+      gain.gain.setValueAtTime(0.0001, chimeStart);
+      gain.gain.linearRampToValueAtTime(0.32 / (idx * 0.35 + 1), chimeStart + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, chimeStart + 1.8);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(chimeStart);
+      osc.stop(chimeStart + 2.0);
+    });
+  } catch (e) {}
+};
+
+// =========================================================================
 // MAIN HOSPITAL PORTAL INTRO
 // =========================================================================
 const HospitalPortalIntro = ({ onComplete }) => {
@@ -197,6 +231,9 @@ const HospitalPortalIntro = ({ onComplete }) => {
     setIsExiting(true);
     setPhase('fade_out');
 
+    // Play crisp confirmation "Ting!" on entering login
+    playSuccessTingChime();
+
     setTimeout(() => {
       setPhase('done');
       if (onComplete) onComplete();
@@ -228,7 +265,7 @@ const HospitalPortalIntro = ({ onComplete }) => {
 
         setTimeout(() => {
           handleAutoComplete();
-        }, 500);
+        }, 450);
       } else {
         setProgress(Math.floor(currentProgress));
         const matchedStage = statusStages.slice().reverse().find(s => currentProgress >= s.at);
@@ -451,8 +488,8 @@ const HospitalPortalIntro = ({ onComplete }) => {
         }
 
         @keyframes soundUnlockPulse {
-          0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(56, 189, 248, 0.4); }
-          50% { transform: scale(1.06); box-shadow: 0 0 35px rgba(45, 212, 191, 0.8); }
+          0%, 100% { transform: scale(1); filter: drop-shadow(0 0 16px rgba(16, 185, 129, 0.45)); }
+          50% { transform: scale(1.04); filter: drop-shadow(0 0 28px rgba(56, 189, 248, 0.85)); }
         }
 
         @keyframes heroFadeUp {
@@ -777,26 +814,30 @@ const HospitalPortalIntro = ({ onComplete }) => {
               startProgressCountdown();
             }}
             style={{
-              marginTop: '1.2rem',
-              animation: 'soundUnlockPulse 1.8s ease-in-out infinite, heroFadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 1.2s both',
-              cursor: 'pointer'
+              marginTop: '1.4rem',
+              animation: 'soundUnlockPulse 2.2s ease-in-out infinite, heroFadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 1.2s both',
+              cursor: 'pointer',
+              borderRadius: '999px',
+              display: 'inline-flex',
+              padding: '0'
             }}
           >
             <div style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.65rem',
-              background: 'linear-gradient(135deg, #0284C7 0%, #0D9488 100%)',
+              background: 'linear-gradient(135deg, #0EA5E9 0%, #10B981 100%)',
               color: '#FFFFFF',
               borderRadius: '999px',
-              padding: '0.65rem 2rem',
-              fontSize: '0.92rem',
+              padding: '0.7rem 2.2rem',
+              fontSize: '0.94rem',
               fontWeight: '900',
-              border: '1.5px solid rgba(255, 255, 255, 0.4)',
-              boxShadow: '0 6px 25px rgba(2, 132, 199, 0.5)',
-              letterSpacing: '0.5px'
+              border: '1.5px solid rgba(255, 255, 255, 0.55)',
+              boxShadow: '0 0 25px rgba(14, 165, 233, 0.45), inset 0 1px 2px rgba(255, 255, 255, 0.5)',
+              letterSpacing: '0.6px',
+              textShadow: '0 1px 4px rgba(0, 0, 0, 0.2)'
             }}>
-              <FaPlay style={{ fontSize: '0.85rem', color: '#67E8F9' }} />
+              <FaPlay style={{ fontSize: '0.85rem', color: '#CCFBF1' }} />
               <span>CHẠM ĐỂ BẮT ĐẦU</span>
             </div>
           </div>
