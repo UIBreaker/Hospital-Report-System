@@ -19,42 +19,36 @@ export const parseDepartmentSections = (reportData, deptCode = '') => {
 
   // ================= 0. KHOA LIÊN CHUYÊN KHOA (LCK) =================
   if (normalizedDept === 'lck' || data.tmh_tongSo !== undefined || data.tong4ck_tongSo !== undefined) {
-    const sumMetrics = [];
-    if (data.tong4ck_tongSo !== undefined && data.tong4ck_tongSo !== '') {
-      sumMetrics.push({ key: 'tong4ck_tongSo', label: 'TỔNG SỐ 4 CHUYÊN KHOA (TMH + Mắt + Răng Hàm Mặt + Da liễu)', value: String(data.tong4ck_tongSo) });
-    }
-    if (data.tong4ck_thuThuat !== undefined && data.tong4ck_thuThuat !== '') {
-      sumMetrics.push({ key: 'tong4ck_thuThuat', label: 'TỔNG THỦ THUẬT 4 CHUYÊN KHOA', value: String(data.tong4ck_thuThuat) });
-    }
-    if (sumMetrics.length > 0) {
-      sections.push({
-        title: '📊 TỔNG QUAN 4 CHUYÊN KHOA (4CK)',
-        items: sumMetrics
+    const tableRows = [
+      { name: 'Tai Mũi Họng (TMH)', tongSo: data.tmh_tongSo || '0', thuThuat: data.tmh_thuThuat || '0', nhapVien: data.nhapVien_tongSo || '0', chuyenVien: data.chuyenVien_tongSo || '0' },
+      { name: 'Mắt', tongSo: data.mat_tongSo || '0', thuThuat: data.mat_thuThuat || '0', nhapVien: '0', chuyenVien: '0' },
+      { name: 'Răng Hàm Mặt (RHM)', tongSo: data.rhm_noi_tongSo || '0', thuThuat: data.rhm_noi_thuThuat || '0', nhapVien: data.rhm_noiTru || '0', chuyenVien: data.rhm_ngoaiTru || '0' },
+      { name: 'Da Liễu', tongSo: data.daLieu_tongSo || '0', thuThuat: '0', nhapVien: '0', chuyenVien: '0' },
+    ];
+
+    if (data.tong4ck_tongSo || data.tong4ck_thuThuat) {
+      tableRows.push({
+        name: '⭐ TỔNG 4 CHUYÊN KHOA',
+        tongSo: data.tong4ck_tongSo || '0',
+        thuThuat: data.tong4ck_thuThuat || '0',
+        nhapVien: data.nhapVien_tongSo || '0',
+        chuyenVien: data.chuyenVien_tongSo || '0',
+        isTotal: true
       });
     }
 
-    const detailMetrics = [];
-    if (data.tmh_tongSo !== undefined && data.tmh_tongSo !== '') detailMetrics.push({ key: 'tmh_tongSo', label: 'Tai Mũi Họng (Tổng số)', value: String(data.tmh_tongSo) });
-    if (data.tmh_thuThuat !== undefined && data.tmh_thuThuat !== '') detailMetrics.push({ key: 'tmh_thuThuat', label: 'Tai Mũi Họng (Thủ thuật)', value: String(data.tmh_thuThuat) });
-    if (data.mat_tongSo !== undefined && data.mat_tongSo !== '') detailMetrics.push({ key: 'mat_tongSo', label: 'Mắt (Tổng số)', value: String(data.mat_tongSo) });
-    if (data.mat_thuThuat !== undefined && data.mat_thuThuat !== '') detailMetrics.push({ key: 'mat_thuThuat', label: 'Mắt (Thủ thuật)', value: String(data.mat_thuThuat) });
-    if (data.rhm_noi_tongSo !== undefined && data.rhm_noi_tongSo !== '') detailMetrics.push({ key: 'rhm_noi_tongSo', label: 'Răng Hàm Mặt (Tổng số)', value: String(data.rhm_noi_tongSo) });
-    if (data.rhm_noi_thuThuat !== undefined && data.rhm_noi_thuThuat !== '') detailMetrics.push({ key: 'rhm_noi_thuThuat', label: 'Răng Hàm Mặt (Thủ thuật)', value: String(data.rhm_noi_thuThuat) });
-    if (data.daLieu_tongSo !== undefined && data.daLieu_tongSo !== '') detailMetrics.push({ key: 'daLieu_tongSo', label: 'Da Liễu (Tổng số)', value: String(data.daLieu_tongSo) });
-    if (data.nhapVien_tongSo !== undefined && data.nhapVien_tongSo !== '') detailMetrics.push({ key: 'nhapVien_tongSo', label: 'Nhập viện', value: String(data.nhapVien_tongSo) });
-    if (data.chuyenVien_tongSo !== undefined && data.chuyenVien_tongSo !== '') detailMetrics.push({ key: 'chuyenVien_tongSo', label: 'Chuyển viện', value: String(data.chuyenVien_tongSo) });
-
-    if (detailMetrics.length > 0) {
-      sections.push({
-        title: '📋 CHI TIẾT THEO TỪNG PHÒNG CHUYÊN KHOA',
-        items: detailMetrics
-      });
-    }
+    sections.push({
+      title: 'THỐNG KÊ HOẠT ĐỘNG 4 CHUYÊN KHOA (TMH - MẮT - RHM - DA LIỄU)',
+      tableType: 'custom_table',
+      headers: ['CHUYÊN KHOA', 'TỔNG SỐ KHÁM', 'THỦ THUẬT', 'NHẬP VIỆN', 'CHUYỂN VIỆN'],
+      rowKeys: ['name', 'tongSo', 'thuThuat', 'nhapVien', 'chuyenVien'],
+      tableRows
+    });
 
     if (data.themGio) {
       sections.push({
         type: 'note',
-        title: 'GHI CHÚ THÊM GIỜ & DIỄN BIẾN CA TRỰC',
+        title: 'THÊM GIỜ & GHI CHÚ',
         value: data.themGio
       });
     }
@@ -72,33 +66,34 @@ export const parseDepartmentSections = (reportData, deptCode = '') => {
       });
     }
 
-    const gmhsItems = [];
-    if (data.tongSoCaMo !== undefined && data.tongSoCaMo !== '') {
-      gmhsItems.push({ key: 'tongSoCaMo', label: 'Tổng số ca mổ (Cấp cứu + Kế hoạch)', value: String(data.tongSoCaMo) });
-    }
-    if (data.hienCon !== undefined && data.hienCon !== '') {
-      gmhsItems.push({ key: 'hienCon', label: 'Hiện còn theo dõi tại Hồi tỉnh', value: String(data.hienCon) });
-    }
-    if (data.cc_ngoaiTH !== undefined && data.cc_ngoaiTH !== '') gmhsItems.push({ key: 'cc_ngoaiTH', label: 'Mổ cấp cứu (Ngoại tổng hợp)', value: String(data.cc_ngoaiTH) });
-    if (data.cc_ctch !== undefined && data.cc_ctch !== '') gmhsItems.push({ key: 'cc_ctch', label: 'Mổ cấp cứu (CTCH)', value: String(data.cc_ctch) });
-    if (data.cc_san !== undefined && data.cc_san !== '') gmhsItems.push({ key: 'cc_san', label: 'Mổ cấp cứu (Sản khoa)', value: String(data.cc_san) });
-    if (data.ct_ngoaiTH !== undefined && data.ct_ngoaiTH !== '') gmhsItems.push({ key: 'ct_ngoaiTH', label: 'Mổ kế hoạch (Ngoại tổng hợp)', value: String(data.ct_ngoaiTH) });
-    if (data.ct_ctch !== undefined && data.ct_ctch !== '') gmhsItems.push({ key: 'ct_ctch', label: 'Mổ kế hoạch (CTCH)', value: String(data.ct_ctch) });
-    if (data.ct_san !== undefined && data.ct_san !== '') gmhsItems.push({ key: 'ct_san', label: 'Mổ kế hoạch (Sản khoa)', value: String(data.ct_san) });
-    if (data.moKhac !== undefined && data.moKhac !== '') gmhsItems.push({ key: 'moKhac', label: 'Mổ khác', value: String(data.moKhac) });
-    if (data.soCaGiamDau !== undefined && data.soCaGiamDau !== '') gmhsItems.push({ key: 'soCaGiamDau', label: 'Ca giảm đau', value: String(data.soCaGiamDau) });
+    const tableRows = [
+      { name: 'Ngoại Tổng Hợp', cc: data.cc_ngoaiTH || '0', ct: data.ct_ngoaiTH || '0', tong: String((Number(data.cc_ngoaiTH)||0) + (Number(data.ct_ngoaiTH)||0)) },
+      { name: 'Chấn Thương Chỉnh Hình (CTCH)', cc: data.cc_ctch || '0', ct: data.ct_ctch || '0', tong: String((Number(data.cc_ctch)||0) + (Number(data.ct_ctch)||0)) },
+      { name: 'Sản Khoa', cc: data.cc_san || '0', ct: data.ct_san || '0', tong: String((Number(data.cc_san)||0) + (Number(data.ct_san)||0)) },
+      { name: 'Mổ Khác / Giảm Đau Sau Mổ', cc: data.moKhac || '0', ct: data.soCaGiamDau || '0', tong: String((Number(data.moKhac)||0) + (Number(data.soCaGiamDau)||0)) },
+      { name: '⭐ TỔNG CA MỔ / HIỆN CÒN HỒI TỈNH', cc: '—', ct: '—', tong: data.tongSoCaMo || '0', isTotal: true }
+    ];
 
-    if (gmhsItems.length > 0) {
+    sections.push({
+      title: 'THỐNG KÊ CA PHẪU THUẬT & THEO DÕI HỒI TỈNH',
+      tableType: 'custom_table',
+      headers: ['CHUYÊN KHOA PHẪU THUẬT', 'MỔ CẤP CỨU', 'MỔ KẾ HOẠCH', 'TỔNG SỐ CA'],
+      rowKeys: ['name', 'cc', 'ct', 'tong'],
+      tableRows
+    });
+
+    if (data.hienCon) {
       sections.push({
-        title: 'THỐNG KÊ CA PHẪU THUẬT & HỒI TỈNH',
-        items: gmhsItems
+        type: 'note',
+        title: 'HIỆN CÒN THEO DÕI TẠI HỒI TỈNH',
+        value: String(data.hienCon) + ' ca'
       });
     }
 
     if (data.themGio) {
       sections.push({
         type: 'note',
-        title: 'GHI CHÚ THÊM GIỜ & DIỄN BIẾN MỔ',
+        title: 'THÊM GIỜ & GHI CHÚ',
         value: data.themGio
       });
     }
@@ -108,23 +103,21 @@ export const parseDepartmentSections = (reportData, deptCode = '') => {
 
   // ================= 2. XÉT NGHIỆM (XN) =================
   if (normalizedDept === 'xn' || (data.tongSo !== undefined && (data.baoHiem !== undefined || data.noiTru !== undefined) && !data.techniques)) {
-    const xnMetrics = [];
-    if (data.tongSo !== undefined && data.tongSo !== '') xnMetrics.push({ key: 'tongSo', label: 'Tổng số lượt xét nghiệm', value: String(data.tongSo) });
-    if (data.baoHiem !== undefined && data.baoHiem !== '') xnMetrics.push({ key: 'baoHiem', label: 'Bảo hiểm y tế (BHYT)', value: String(data.baoHiem) });
-    if (data.noiTru !== undefined && data.noiTru !== '') xnMetrics.push({ key: 'noiTru', label: 'Bệnh nhân Nội trú', value: String(data.noiTru) });
-    if (data.ngoaiTru !== undefined && data.ngoaiTru !== '') xnMetrics.push({ key: 'ngoaiTru', label: 'Bệnh nhân Ngoại trú', value: String(data.ngoaiTru) });
+    const tableRows = [
+      { name: 'Xét Nghiệm Tổng Quát (Sinh hóa, Huyết học, Vi sinh...)', tongSo: data.tongSo || '0', baoHiem: data.baoHiem || '0', noiTru: data.noiTru || '0', ngoaiTru: data.ngoaiTru || '0' }
+    ];
 
-    if (xnMetrics.length > 0) {
-      sections.push({
-        title: 'THỐNG KÊ XÉT NGHIỆM THỰC HIỆN',
-        items: xnMetrics
-      });
-    }
+    sections.push({
+      title: 'THỐNG KÊ XÉT NGHIỆM THỰC HIỆN',
+      tableType: 'techniques',
+      headers: ['LOẠI XÉT NGHIỆM', 'TỔNG SỐ LƯỢT', 'BẢO HIỂM (BHYT)', 'NỘI TRÚ', 'NGOẠI TRÚ'],
+      tableRows
+    });
 
     if (data.themGio) {
       sections.push({
         type: 'note',
-        title: 'GHI CHÚ THÊM GIỜ & CA TRỰC',
+        title: 'THÊM GIỜ & GHI CHÚ',
         value: data.themGio
       });
     }
@@ -134,21 +127,15 @@ export const parseDepartmentSections = (reportData, deptCode = '') => {
 
   // ================= 3. HỒI SỨC CẤP CỨU – THẬN NHÂN TẠO (HSCC_TNT) =================
   if (normalizedDept === 'hscc_tnt' || (data.hscc && data.tnt)) {
-    // 1. TỔNG SỐ KHÁM (Bóc tách riêng ra bên ngoài ở vị trí đầu tiên)
+    // 1. TỔNG SỐ KHÁM
     const tongKhamItems = [];
     const hsccKham = data.hscc?.tongSoKham || data.hscc?.tongSo || '';
     const tntKham = data.tnt?.tongSoKham || data.tnt?.tongSo || data.tnt?.tnt_ctdk || data.tnt?.ctdk || '';
     const pk21Kham = data.pk21?.pk21_tongSo || data.pk21?.pk21_tongSoKham || data.pk21?.tongSo || '';
 
-    if (hsccKham !== '') {
-      tongKhamItems.push({ key: 'tongSoKham_hscc', label: 'Khám Cấp cứu (HSCC)', value: String(hsccKham) });
-    }
-    if (tntKham !== '') {
-      tongKhamItems.push({ key: 'tongSoKham_tnt', label: 'Khám / Chạy thận (TNT)', value: String(tntKham) });
-    }
-    if (pk21Kham !== '') {
-      tongKhamItems.push({ key: 'tongSoKham_pk21', label: 'Khám Phòng Khám 21', value: String(pk21Kham) });
-    }
+    if (hsccKham !== '') tongKhamItems.push({ key: 'tongSoKham_hscc', label: 'Khám Cấp cứu (HSCC)', value: String(hsccKham) });
+    if (tntKham !== '') tongKhamItems.push({ key: 'tongSoKham_tnt', label: 'Khám / Chạy thận (TNT)', value: String(tntKham) });
+    if (pk21Kham !== '') tongKhamItems.push({ key: 'tongSoKham_pk21', label: 'Khám Phòng Khám 21', value: String(pk21Kham) });
 
     const validNums = [hsccKham, tntKham, pk21Kham].map(v => Number(v)).filter(n => !isNaN(n) && n > 0);
     if (validNums.length >= 2) {
@@ -279,7 +266,7 @@ export const parseDepartmentSections = (reportData, deptCode = '') => {
     if (data.themGio) {
       sections.push({
         type: 'note',
-        title: 'GHI CHÚ THÊM GIỜ & DIỄN BIẾN',
+        title: 'THÊM GIỜ & GHI CHÚ',
         value: data.themGio
       });
     }
@@ -301,6 +288,7 @@ export const parseDepartmentSections = (reportData, deptCode = '') => {
     if (data.benhCu !== undefined && data.benhCu !== '') nhiemMetrics.push({ key: 'benhCu', label: 'Bệnh cũ', value: String(data.benhCu) });
     if (data.benhMoi !== undefined && data.benhMoi !== '') nhiemMetrics.push({ key: 'benhMoi', label: 'Bệnh mới nhập viện', value: String(data.benhMoi) });
     if (data.hienCon !== undefined && data.hienCon !== '') nhiemMetrics.push({ key: 'hienCon', label: 'Hiện còn điều trị', value: String(data.hienCon) });
+    if (data.xuatVien !== undefined && data.xuatVien !== '') nhiemMetrics.push({ key: 'xuatVien', label: 'Xuất viện', value: String(data.xuatVien) });
     if (data.chuyenVien !== undefined && data.chuyenVien !== '') nhiemMetrics.push({ key: 'chuyenVien', label: 'Chuyển viện', value: String(data.chuyenVien) });
     if (data.xinXuatVien !== undefined && data.xinXuatVien !== '') nhiemMetrics.push({ key: 'xinXuatVien', label: 'Xin xuất viện', value: String(data.xinXuatVien) });
     if (data.chuyenKhoaSan !== undefined && data.chuyenKhoaSan !== '') nhiemMetrics.push({ key: 'chuyenKhoaSan', label: 'Chuyển khoa Sản', value: String(data.chuyenKhoaSan) });
@@ -315,7 +303,7 @@ export const parseDepartmentSections = (reportData, deptCode = '') => {
     if (data.themGio) {
       sections.push({
         type: 'note',
-        title: 'DIỄN BIẾN THÊM GIỜ',
+        title: 'THÊM GIỜ & GHI CHÚ',
         value: data.themGio
       });
     }
