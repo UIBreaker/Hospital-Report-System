@@ -681,37 +681,48 @@ const AdminDashboard = () => {
       fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
     }}>
       
-      {/* ================= 1. LEFT SIDEBAR (Dark Navy Gradient) ================= */}
+      {/* ================= 1. LEFT SIDEBAR (Collapsible Dark Navy Gradient) ================= */}
       <aside style={{
-        width: '240px',
-        minWidth: '240px',
+        width: isSidebarCollapsed ? '72px' : '240px',
+        minWidth: isSidebarCollapsed ? '72px' : '240px',
+        transition: 'width 0.25s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.25s cubic-bezier(0.4, 0, 0.2, 1), padding 0.25s ease',
         background: 'linear-gradient(180deg, #0A192F 0%, #0F2C59 55%, #0A2540 100%)',
         color: '#FFFFFF',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        padding: '1.25rem 0.85rem',
+        padding: isSidebarCollapsed ? '1.25rem 0.5rem' : '1.25rem 0.85rem',
         position: 'sticky',
         top: 0,
         height: '100vh',
         boxSizing: 'border-box',
         boxShadow: '4px 0 20px rgba(0, 0, 0, 0.12)',
         zIndex: 100,
-        overflowY: 'auto'
+        overflowY: 'auto',
+        overflowX: 'hidden'
       }}>
-        {/* Top: Hospital Logo */}
+        {/* Top: Hospital Logo & Collapse Toggle */}
         <div>
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: isSidebarCollapsed ? 'center' : 'space-between',
+            marginBottom: '1.5rem',
+            position: 'relative'
+          }}>
             <div style={{
-              width: '62px',
-              height: '62px',
+              width: isSidebarCollapsed ? '42px' : '58px',
+              height: isSidebarCollapsed ? '42px' : '58px',
               borderRadius: '50%',
               backgroundColor: '#FFFFFF',
-              padding: '9px',
-              boxShadow: '0 4px 15px rgba(255, 255, 255, 0.25), 0 0 0 2.5px rgba(255, 255, 255, 0.9)',
+              padding: isSidebarCollapsed ? '5px' : '8px',
+              boxShadow: '0 4px 15px rgba(255, 255, 255, 0.25), 0 0 0 2px rgba(255, 255, 255, 0.9)',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              margin: isSidebarCollapsed ? '0 auto' : '0',
+              transition: 'all 0.25s ease',
+              flexShrink: 0
             }}>
               <img 
                 src="/logo.png" 
@@ -719,7 +730,59 @@ const AdminDashboard = () => {
                 style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
               />
             </div>
+
+            {/* In-sidebar Collapse button */}
+            {!isSidebarCollapsed && (
+              <button
+                type="button"
+                onClick={toggleSidebar}
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  borderRadius: '8px',
+                  color: '#FFFFFF',
+                  width: '30px',
+                  height: '30px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  fontSize: '0.82rem',
+                  transition: 'all 0.15s ease'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.22)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.12)'}
+                title="Thu gọn menu điều hướng (Mở rộng dashboard)"
+              >
+                <FaChevronLeft />
+              </button>
+            )}
           </div>
+
+          {isSidebarCollapsed && (
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+              <button
+                type="button"
+                onClick={toggleSidebar}
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                  border: '1px solid rgba(255, 255, 255, 0.25)',
+                  borderRadius: '8px',
+                  color: '#FFFFFF',
+                  width: '32px',
+                  height: '32px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  fontSize: '0.85rem'
+                }}
+                title="Mở rộng menu điều hướng"
+              >
+                <FaChevronRight />
+              </button>
+            </div>
+          )}
 
           {/* Navigation Menu List */}
           <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
@@ -730,8 +793,8 @@ const AdminDashboard = () => {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '0.75rem 0.85rem',
+                justifyContent: isSidebarCollapsed ? 'center' : 'space-between',
+                padding: isSidebarCollapsed ? '0.75rem 0' : '0.75rem 0.85rem',
                 borderRadius: '10px',
                 border: 'none',
                 backgroundColor: activeTab === 'reports' ? '#2563EB' : 'transparent',
@@ -741,8 +804,10 @@ const AdminDashboard = () => {
                 fontSize: '0.86rem',
                 transition: 'all 0.15s ease',
                 textAlign: 'left',
-                boxShadow: activeTab === 'reports' ? '0 4px 12px rgba(37, 99, 235, 0.4)' : 'none'
+                boxShadow: activeTab === 'reports' ? '0 4px 12px rgba(37, 99, 235, 0.4)' : 'none',
+                position: 'relative'
               }}
+              title={isSidebarCollapsed ? `Báo Cáo Giao Ban (${submittedCount}/${statusList.length})` : undefined}
               onMouseEnter={(e) => {
                 if (activeTab !== 'reports') {
                   e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
@@ -757,10 +822,10 @@ const AdminDashboard = () => {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                <FaTable style={{ fontSize: '0.95rem' }} />
-                <span>Báo Cáo Giao Ban</span>
+                <FaTable style={{ fontSize: isSidebarCollapsed ? '1.15rem' : '0.95rem' }} />
+                {!isSidebarCollapsed && <span>Báo Cáo Giao Ban</span>}
               </div>
-              {statusList.length > 0 && (
+              {!isSidebarCollapsed && statusList.length > 0 && (
                 <span style={{
                   backgroundColor: activeTab === 'reports' ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.12)',
                   color: '#FFFFFF',
@@ -772,17 +837,29 @@ const AdminDashboard = () => {
                   {submittedCount}/{statusList.length}
                 </span>
               )}
+              {isSidebarCollapsed && statusList.length > 0 && (
+                <span style={{
+                  position: 'absolute',
+                  top: '6px',
+                  right: '6px',
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: submittedCount === statusList.length ? '#10B981' : '#F59E0B'
+                }} />
+              )}
             </button>
 
-                        {/* Item 2: Biểu Mẫu Tùy Chỉnh & Tracker */}
+            {/* Item 2: Biểu Mẫu Tùy Chỉnh & Tracker */}
             <button
               type="button"
               onClick={() => setActiveTab('custom_forms')}
               style={{
                 display: 'flex',
                 alignItems: 'center',
+                justifyContent: isSidebarCollapsed ? 'center' : 'flex-start',
                 gap: '0.65rem',
-                padding: '0.75rem 0.85rem',
+                padding: isSidebarCollapsed ? '0.75rem 0' : '0.75rem 0.85rem',
                 borderRadius: '10px',
                 border: 'none',
                 backgroundColor: activeTab === 'custom_forms' ? '#2563EB' : 'transparent',
@@ -794,6 +871,7 @@ const AdminDashboard = () => {
                 textAlign: 'left',
                 boxShadow: activeTab === 'custom_forms' ? '0 4px 12px rgba(37, 99, 235, 0.4)' : 'none'
               }}
+              title={isSidebarCollapsed ? 'Biểu Mẫu Tùy Chỉnh & Tracker' : undefined}
               onMouseEnter={(e) => {
                 if (activeTab !== 'custom_forms') {
                   e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
@@ -807,8 +885,8 @@ const AdminDashboard = () => {
                 }
               }}
             >
-              <FaWpforms style={{ fontSize: '0.95rem' }} />
-              <span>Biểu Mẫu Tùy Chỉnh</span>
+              <FaWpforms style={{ fontSize: isSidebarCollapsed ? '1.15rem' : '0.95rem' }} />
+              {!isSidebarCollapsed && <span>Biểu Mẫu Tùy Chỉnh</span>}
             </button>
 
             {/* Item 3: Quản Lý Nhân Sự */}
@@ -818,8 +896,9 @@ const AdminDashboard = () => {
               style={{
                 display: 'flex',
                 alignItems: 'center',
+                justifyContent: isSidebarCollapsed ? 'center' : 'flex-start',
                 gap: '0.65rem',
-                padding: '0.75rem 0.85rem',
+                padding: isSidebarCollapsed ? '0.75rem 0' : '0.75rem 0.85rem',
                 borderRadius: '10px',
                 border: 'none',
                 backgroundColor: activeTab === 'staff' ? '#2563EB' : 'transparent',
@@ -831,6 +910,7 @@ const AdminDashboard = () => {
                 textAlign: 'left',
                 boxShadow: activeTab === 'staff' ? '0 4px 12px rgba(37, 99, 235, 0.4)' : 'none'
               }}
+              title={isSidebarCollapsed ? 'Quản Lý Nhân Sự' : undefined}
               onMouseEnter={(e) => {
                 if (activeTab !== 'staff') {
                   e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
@@ -844,19 +924,20 @@ const AdminDashboard = () => {
                 }
               }}
             >
-              <FaUsers style={{ fontSize: '0.95rem' }} />
-              <span>Quản Lý Nhân Sự</span>
+              <FaUsers style={{ fontSize: isSidebarCollapsed ? '1.15rem' : '0.95rem' }} />
+              {!isSidebarCollapsed && <span>Quản Lý Nhân Sự</span>}
             </button>
 
-            {/* Item 3: Quản Trị CSDL & Logs */}
+            {/* Item 4: Quản Trị CSDL & Logs */}
             <button
               type="button"
               onClick={() => setActiveTab('database')}
               style={{
                 display: 'flex',
                 alignItems: 'center',
+                justifyContent: isSidebarCollapsed ? 'center' : 'flex-start',
                 gap: '0.65rem',
-                padding: '0.75rem 0.85rem',
+                padding: isSidebarCollapsed ? '0.75rem 0' : '0.75rem 0.85rem',
                 borderRadius: '10px',
                 border: 'none',
                 backgroundColor: activeTab === 'database' ? '#2563EB' : 'transparent',
@@ -868,6 +949,7 @@ const AdminDashboard = () => {
                 textAlign: 'left',
                 boxShadow: activeTab === 'database' ? '0 4px 12px rgba(37, 99, 235, 0.4)' : 'none'
               }}
+              title={isSidebarCollapsed ? 'Quản Trị CSDL & Logs' : undefined}
               onMouseEnter={(e) => {
                 if (activeTab !== 'database') {
                   e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
@@ -881,19 +963,20 @@ const AdminDashboard = () => {
                 }
               }}
             >
-              <FaDatabase style={{ fontSize: '0.95rem' }} />
-              <span>Quản Trị CSDL & Logs</span>
+              <FaDatabase style={{ fontSize: isSidebarCollapsed ? '1.15rem' : '0.95rem' }} />
+              {!isSidebarCollapsed && <span>Quản Trị CSDL & Logs</span>}
             </button>
 
-            {/* Item 4: Quản Lý Tài Khoản */}
+            {/* Item 5: Quản Lý Tài Khoản */}
             <button
               type="button"
               onClick={() => setActiveTab('accounts')}
               style={{
                 display: 'flex',
                 alignItems: 'center',
+                justifyContent: isSidebarCollapsed ? 'center' : 'flex-start',
                 gap: '0.65rem',
-                padding: '0.75rem 0.85rem',
+                padding: isSidebarCollapsed ? '0.75rem 0' : '0.75rem 0.85rem',
                 borderRadius: '10px',
                 border: 'none',
                 backgroundColor: activeTab === 'accounts' ? '#2563EB' : 'transparent',
@@ -905,6 +988,7 @@ const AdminDashboard = () => {
                 textAlign: 'left',
                 boxShadow: activeTab === 'accounts' ? '0 4px 12px rgba(37, 99, 235, 0.4)' : 'none'
               }}
+              title={isSidebarCollapsed ? 'Quản Lý Tài Khoản' : undefined}
               onMouseEnter={(e) => {
                 if (activeTab !== 'accounts') {
                   e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
@@ -918,22 +1002,27 @@ const AdminDashboard = () => {
                 }
               }}
             >
-              <FaUserShield style={{ fontSize: '0.95rem' }} />
-              <span>Quản Lý Tài Khoản</span>
+              <FaUserShield style={{ fontSize: isSidebarCollapsed ? '1.15rem' : '0.95rem' }} />
+              {!isSidebarCollapsed && <span>Quản Lý Tài Khoản</span>}
             </button>
           </nav>
         </div>
 
         {/* Bottom: User Profile Widget */}
-        <div style={{
-          padding: '0.75rem',
-          backgroundColor: 'rgba(255, 255, 255, 0.06)',
-          borderRadius: '12px',
-          border: '1px solid rgba(255, 255, 255, 0.12)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.65rem'
-        }}>
+        <div
+          style={{
+            padding: isSidebarCollapsed ? '0.6rem 0.2rem' : '0.75rem',
+            backgroundColor: 'rgba(255, 255, 255, 0.06)',
+            borderRadius: '12px',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: isSidebarCollapsed ? 'center' : 'flex-start',
+            gap: '0.65rem',
+            cursor: 'pointer'
+          }}
+          title={isSidebarCollapsed ? `Xin chào, ${user?.username || 'Admin'} (Quản trị hệ thống)` : undefined}
+        >
           <div style={{
             width: '34px',
             height: '34px',
@@ -948,13 +1037,15 @@ const AdminDashboard = () => {
           }}>
             <FaUserMd />
           </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: '0.7rem', color: '#93C5FD' }}>Xin chào,</div>
-            <div style={{ fontSize: '0.82rem', fontWeight: '800', color: '#FFFFFF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {user?.username || 'Admin'}
+          {!isSidebarCollapsed && (
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: '0.7rem', color: '#93C5FD' }}>Xin chào,</div>
+              <div style={{ fontSize: '0.82rem', fontWeight: '800', color: '#FFFFFF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {user?.username || 'Admin'}
+              </div>
+              <div style={{ fontSize: '0.68rem', color: '#94A3B8' }}>Quản trị hệ thống</div>
             </div>
-            <div style={{ fontSize: '0.68rem', color: '#94A3B8' }}>Quản trị hệ thống</div>
-          </div>
+          )}
         </div>
       </aside>
 
