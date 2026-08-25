@@ -2411,6 +2411,7 @@ const CustomFormBuilder = ({ initialForm, onCancel, onSaved }) => {
                 code: code || 'preview_code',
                 description: description || 'Mô tả xem trước giao diện thực tế.',
                 theme_color: themeColor,
+                form_type: formType,
                 schema_json: fields
               }}
               onBack={() => setShowPreviewModal(false)}

@@ -36,7 +36,9 @@ import {
   FaUserNurse,
   FaLock,
   FaEye,
-  FaClipboardList
+  FaClipboardList,
+  FaChartLine,
+  FaPrint
 } from 'react-icons/fa';
 import customFormService from '../../../services/customFormService';
 import staffService from '../../../services/staffService';
@@ -571,8 +573,22 @@ const DynamicFormRenderer = ({ formCode, initialMeta, onBack, readOnly = false }
     }
   }, [activeCode, initialMeta]);
 
+  // Check if form has any editable user-input fields (excluding sections, callouts, and data tracker widgets)
+  const hasInputFields = useMemo(() => {
+    if (!formMeta || !Array.isArray(formMeta.schema_json) || formMeta.schema_json.length === 0) return false;
+    return formMeta.schema_json.some(f => {
+      if (!f || !f.type) return false;
+      if (f.type === 'section' || f.type === 'callout') return false;
+      if (f.type.startsWith('tracker_')) return false;
+      return true;
+    });
+  }, [formMeta]);
+
+  // Is this purely a Data Tracker / Live Dashboard?
+  const isTrackerForm = formMeta?.form_type === 'tracker' || !hasInputFields;
+
   const handleFieldChange = (key, value) => {
-    if (isReadOnly) return;
+    if (isReadOnly || isTrackerForm) return;
     setFormData(prev => ({ ...prev, [key]: value }));
   };
 
@@ -756,9 +772,9 @@ const DynamicFormRenderer = ({ formCode, initialMeta, onBack, readOnly = false }
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
               <span style={{
-                backgroundColor: isReadOnly ? '#FEF3C7' : '#EFF6FF',
-                color: isReadOnly ? '#92400E' : '#1E40AF',
-                border: isReadOnly ? '1px solid #FDE68A' : '1px solid #BFDBFE',
+                backgroundColor: isTrackerForm ? '#EFF6FF' : (isReadOnly ? '#FEF3C7' : '#EFF6FF'),
+                color: isTrackerForm ? '#1D4ED8' : (isReadOnly ? '#92400E' : '#1E40AF'),
+                border: isTrackerForm ? '1px solid #BFDBFE' : (isReadOnly ? '1px solid #FDE68A' : '1px solid #BFDBFE'),
                 padding: '0.15rem 0.55rem',
                 borderRadius: '6px',
                 fontSize: '0.74rem',
@@ -767,7 +783,13 @@ const DynamicFormRenderer = ({ formCode, initialMeta, onBack, readOnly = false }
                 alignItems: 'center',
                 gap: '0.35rem'
               }}>
-                {isReadOnly ? <><FaLock /> CHẾ ĐỘ XEM BIỂU MẪU (CHỈ ĐỌC)</> : 'FORM NHẬP LIỆU'}
+                {isTrackerForm ? (
+                  <><FaChartLine /> BẢNG THEO DÕI DỮ LIỆU</>
+                ) : isReadOnly ? (
+                  <><FaLock /> CHẾ ĐỘ XEM BIỂU MẪU (CHỈ ĐỌC)</>
+                ) : (
+                  <><FaWpforms /> FORM NHẬP LIỆU</>
+                )}
               </span>
               <span style={{ fontSize: '0.75rem', fontFamily: 'monospace', color: '#64748B' }}>/{formMeta.code}</span>
             </div>
@@ -780,12 +802,39 @@ const DynamicFormRenderer = ({ formCode, initialMeta, onBack, readOnly = false }
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#EFF6FF', border: '1.5px solid #BFDBFE', padding: '0.45rem 0.95rem', borderRadius: '12px' }}>
           <FaCalendarAlt style={{ color: '#2563EB', fontSize: '0.9rem' }} />
           <span style={{ fontSize: '0.78rem', fontWeight: '800', color: '#1E40AF' }}>NGÀY BÁO CÁO:</span>
-          <input type="date" disabled={isReadOnly} value={submissionDate} onChange={(e) => setSubmissionDate(e.target.value)} style={{ border: 'none', background: 'transparent', fontWeight: '800', color: '#1E40AF', outline: 'none', fontSize: '0.88rem', cursor: isReadOnly ? 'default' : 'pointer' }} />
+          <input type="date" disabled={isReadOnly || isTrackerForm} value={submissionDate} onChange={(e) => setSubmissionDate(e.target.value)} style={{ border: 'none', background: 'transparent', fontWeight: '800', color: '#1E40AF', outline: 'none', fontSize: '0.88rem', cursor: isReadOnly || isTrackerForm ? 'default' : 'pointer' }} />
         </div>
       </div>
 
-      {/* READ-ONLY BANNER NOTICE */}
-      {isReadOnly && (
+      {/* BANNER NOTICES */}
+      {isTrackerForm ? (
+        <div style={{
+          backgroundColor: '#EFF6FF',
+          border: '1.5px solid #BFDBFE',
+          borderRadius: '16px',
+          padding: '0.9rem 1.4rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.85rem',
+          color: '#1E40AF',
+          fontSize: '0.88rem',
+          fontWeight: '700',
+          marginBottom: '1.5rem',
+          boxShadow: '0 2px 10px rgba(37, 99, 235, 0.05)'
+        }}>
+          <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#DBEAFE', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <FaChartLine style={{ fontSize: '1.15rem', color: '#2563EB' }} />
+          </div>
+          <div style={{ lineHeight: 1.45 }}>
+            <div style={{ fontWeight: '900', color: '#1D4ED8', fontSize: '0.92rem', marginBottom: '2px' }}>
+              Bảng Theo Dõi & Trực Quan Dữ Liệu
+            </div>
+            <div style={{ color: '#334155', fontWeight: '500', fontSize: '0.84rem' }}>
+              Trang này dùng để theo dõi và trích xuất dữ liệu tổng hợp trực tiếp từ các khoa phòng theo thời gian thực (Không yêu cầu nộp báo cáo).
+            </div>
+          </div>
+        </div>
+      ) : isReadOnly ? (
         <div style={{
           backgroundColor: '#EFF6FF',
           border: '1.5px solid #BFDBFE',
@@ -812,7 +861,7 @@ const DynamicFormRenderer = ({ formCode, initialMeta, onBack, readOnly = false }
             </div>
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* Error Banner */}
       {errorMsg && (
@@ -1303,8 +1352,78 @@ const DynamicFormRenderer = ({ formCode, initialMeta, onBack, readOnly = false }
           })}
         </div>
 
-        {/* Submit Action Bar */}
-        {isReadOnly ? (
+        {/* Action Bar */}
+        {isTrackerForm ? (
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: '1rem',
+            borderTop: '1.5px solid #F1F5F9',
+            paddingTop: '1.5rem',
+            marginTop: '0.5rem',
+            flexWrap: 'wrap'
+          }}>
+            <button
+              type="button"
+              onClick={onBack || (() => navigate(-1))}
+              style={{
+                backgroundColor: '#F1F5F9',
+                color: '#475569',
+                border: '1px solid #CBD5E1',
+                borderRadius: '12px',
+                padding: '0.75rem 1.4rem',
+                fontWeight: '700',
+                fontSize: '0.88rem',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.45rem'
+              }}
+            >
+              <FaArrowLeft /> Quay lại
+            </button>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+              <span style={{
+                backgroundColor: '#ECFDF5',
+                color: '#065F46',
+                border: '1px solid #A7F3D0',
+                padding: '0.55rem 1rem',
+                borderRadius: '10px',
+                fontSize: '0.82rem',
+                fontWeight: '800',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem'
+              }}>
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10B981', display: 'inline-block' }} />
+                Dữ liệu được cập nhật trực tiếp theo ca trực
+              </span>
+
+              <button
+                type="button"
+                onClick={() => window.print()}
+                style={{
+                  backgroundColor: '#0284C7',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  borderRadius: '10px',
+                  padding: '0.65rem 1.25rem',
+                  fontWeight: '800',
+                  fontSize: '0.86rem',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  boxShadow: '0 2px 8px rgba(2, 132, 199, 0.25)'
+                }}
+              >
+                <FaPrint /> In Báo Cáo
+              </button>
+            </div>
+          </div>
+        ) : isReadOnly ? (
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', borderTop: '1.5px solid #F1F5F9', paddingTop: '1.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
             <button type="button" onClick={onBack || (() => navigate(-1))} style={{ backgroundColor: '#F1F5F9', color: '#475569', border: '1px solid #CBD5E1', borderRadius: '12px', padding: '0.8rem 1.5rem', fontWeight: '700', fontSize: '0.9rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}>
               <FaArrowLeft /> Quay lại danh sách
