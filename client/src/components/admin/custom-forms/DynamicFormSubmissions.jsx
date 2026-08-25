@@ -700,11 +700,52 @@ const DynamicFormSubmissions = ({ formCode: propFormCode, onBack, readOnly = fal
         }}>
           <FaClipboardList style={{ fontSize: '3rem', color: '#CBD5E1', marginBottom: '0.75rem' }} />
           <h4 style={{ margin: '0 0 0.4rem 0', fontSize: '1.2rem', fontWeight: '800', color: '#0F2C59' }}>
-            {selectedDate ? `Chưa Có Bản Ghi Nào Trong Ngày ${formatDateVN(selectedDate)}` : 'Chưa Có Bản Ghi Nào Phù Hợp'}
+            {selectedDate ? `Chưa Có Bản Ghi Nào Trong Ngày ${formatDateVN(selectedDate)}` : 'Biểu Mẫu Này Hiện Chưa Có Bản Ghi Nào'}
           </h4>
-          <p style={{ margin: 0, fontSize: '0.88rem', color: '#64748B' }}>
-            {selectedDate ? 'Hãy thử chọn ngày khác hoặc bấm "Xem tất cả ngày".' : 'Các dữ liệu nộp từ thành viên hoặc khoa phòng sẽ được lưu trữ tự động tại đây.'}
+          <p style={{ margin: '0 0 1.25rem 0', fontSize: '0.88rem', color: '#64748B' }}>
+            {selectedDate ? 'Có thể bản ghi đã được nộp ở một ngày khác. Hãy bấm nút bên dưới để xem toàn bộ bản ghi của mọi ngày.' : 'Chưa có ai điền và nộp dữ liệu cho biểu mẫu này. Hãy bấm Nhập Form để điền bản ghi đầu tiên.'}
           </p>
+
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+            {selectedDate && (
+              <button
+                type="button"
+                onClick={() => setSelectedDate('')}
+                style={{
+                  backgroundColor: '#2563EB',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  borderRadius: '10px',
+                  padding: '0.65rem 1.25rem',
+                  fontWeight: '800',
+                  fontSize: '0.86rem',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)'
+                }}
+              >
+                📅 Xem Tất Cả Các Ngày (Bỏ lọc ngày)
+              </button>
+            )}
+            {!isReadOnly && (
+              <button
+                type="button"
+                onClick={() => navigate(`/custom-form/${formCode}`)}
+                style={{
+                  backgroundColor: '#10B981',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  borderRadius: '10px',
+                  padding: '0.65rem 1.25rem',
+                  fontWeight: '800',
+                  fontSize: '0.86rem',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(16, 185, 129, 0.25)'
+                }}
+              >
+                ➕ Điền Bản Ghi Mới Ngay
+              </button>
+            )}
+          </div>
         </div>
       ) : (
         <>
