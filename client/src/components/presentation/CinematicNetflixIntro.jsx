@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaForward, FaExpand, FaTv } from 'react-icons/fa';
+import { FaForward, FaExpand, FaTv, FaHospital, FaHeartbeat, FaCalendarAlt, FaShieldAlt } from 'react-icons/fa';
 
 // Helper: Format Vietnamese Date
 const formatVietnameseDate = (dateStr) => {
@@ -10,17 +10,17 @@ const formatVietnameseDate = (dateStr) => {
     const dateObj = new Date(`${y}-${m}-${d}T00:00:00`);
     const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
     const dayName = isNaN(dateObj.getTime()) ? '' : days[dateObj.getDay()];
-    return `${dayName ? dayName + ', ' : ''}Ngày ${d.padStart(2, '0')}/${m.padStart(2, '0')}/${y}`;
+    return `${dayName ? dayName + ', ' : ''}ngày ${d.padStart(2, '0')} tháng ${m.padStart(2, '0')} năm ${y}`;
   }
   return dateStr;
 };
 
-// Play a gentle, soothing, prestigious ambient chime using Web Audio API
+// Play a prestigious, majestic, and ambient orchestral chime using Web Audio API
 const playGentleCinematicChime = () => {
   try {
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContext) return;
-    const ctx = new AudioContext();
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    const ctx = new AudioContextClass();
 
     if (ctx.state === 'suspended') {
       ctx.resume().catch(() => {});
@@ -28,24 +28,24 @@ const playGentleCinematicChime = () => {
 
     const now = ctx.currentTime;
 
-    // 1. Soft Warm Ambient Sub Swell (65.4Hz - C2)
+    // 1. Deep Majestic Warm Ambient Sub Bass (65.4Hz - C2)
     const subOsc = ctx.createOscillator();
     const subGain = ctx.createGain();
     subOsc.type = 'sine';
     subOsc.frequency.setValueAtTime(65.41, now);
-    subOsc.frequency.exponentialRampToValueAtTime(55.0, now + 2.2);
+    subOsc.frequency.exponentialRampToValueAtTime(55.0, now + 2.5);
 
     subGain.gain.setValueAtTime(0.0001, now);
-    subGain.gain.linearRampToValueAtTime(0.18, now + 0.4);
-    subGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.4);
+    subGain.gain.linearRampToValueAtTime(0.22, now + 0.5);
+    subGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.8);
 
     subOsc.connect(subGain);
     subGain.connect(ctx.destination);
     subOsc.start(now);
-    subOsc.stop(now + 2.5);
+    subOsc.stop(now + 3.0);
 
-    // 2. Pure Warm Sine Pad Harmonics (C3 = 130.81Hz, E3 = 164.81Hz, G3 = 196.0Hz, C4 = 261.63Hz)
-    [130.81, 164.81, 196.0, 261.63, 329.63].forEach((freq, idx) => {
+    // 2. Pure Warm Sine Pad Harmonics (C3, E3, G3, B3, C4, E4)
+    [130.81, 164.81, 196.0, 246.94, 261.63, 329.63].forEach((freq, idx) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
@@ -53,35 +53,34 @@ const playGentleCinematicChime = () => {
       osc.frequency.setValueAtTime(freq, now);
 
       gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.linearRampToValueAtTime(0.06 / (idx + 1), now + 0.5);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 2.4);
+      gain.gain.linearRampToValueAtTime(0.07 / (idx + 1), now + 0.6);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 2.8);
 
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start(now);
-      osc.stop(now + 2.5);
+      osc.stop(now + 3.0);
     });
 
-    // 3. Gentle Crystal High Chime (523.25Hz - C5, 659.25Hz - E5, 1046.5Hz - C6)
-    [523.25, 659.25, 1046.5].forEach((freq, idx) => {
+    // 3. Gentle Crystal High Chimes & Arpeggio (523.25Hz, 659.25Hz, 783.99Hz, 1046.5Hz)
+    [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((freq, idx) => {
       const chimeOsc = ctx.createOscillator();
       const chimeGain = ctx.createGain();
 
       chimeOsc.type = 'sine';
-      chimeOsc.frequency.setValueAtTime(freq, now + 0.15 * idx);
+      chimeOsc.frequency.setValueAtTime(freq, now + 0.12 * idx);
 
-      chimeGain.gain.setValueAtTime(0.0001, now + 0.15 * idx);
-      chimeGain.gain.linearRampToValueAtTime(0.045, now + 0.15 * idx + 0.15);
-      chimeGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.3);
+      chimeGain.gain.setValueAtTime(0.0001, now + 0.12 * idx);
+      chimeGain.gain.linearRampToValueAtTime(0.05, now + 0.12 * idx + 0.15);
+      chimeGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.7);
 
       chimeOsc.connect(chimeGain);
       chimeGain.connect(ctx.destination);
-      chimeOsc.start(now + 0.15 * idx);
-      chimeOsc.stop(now + 2.4);
+      chimeOsc.start(now + 0.12 * idx);
+      chimeOsc.stop(now + 2.9);
     });
-  } catch (err) {
-    // Gracefully handle browser restrictions
-  }
+
+  } catch (err) {}
 };
 
 const CinematicNetflixIntro = ({ date = '', onComplete }) => {
@@ -104,10 +103,7 @@ const CinematicNetflixIntro = ({ date = '', onComplete }) => {
   };
 
   useEffect(() => {
-    // Auto-request fullscreen
     requestFullScreenMode();
-
-    // Play gentle soothing chime
     playGentleCinematicChime();
 
     // Soft Ambient Dust Particles Canvas (Ethereal & Smooth)
@@ -118,14 +114,14 @@ const CinematicNetflixIntro = ({ date = '', onComplete }) => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
 
-      const particles = Array.from({ length: 65 }, () => ({
+      const particles = Array.from({ length: 80 }, () => ({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        radius: Math.random() * 2.2 + 0.8,
-        vx: (Math.random() - 0.5) * 0.4,
-        vy: -Math.random() * 0.5 - 0.15,
-        alpha: Math.random() * 0.6 + 0.2,
-        color: ['#38BDF8', '#60A5FA', '#FDE047', '#A7F3D0', '#FFFFFF'][Math.floor(Math.random() * 5)]
+        radius: Math.random() * 2.5 + 0.8,
+        vx: (Math.random() - 0.5) * 0.45,
+        vy: -Math.random() * 0.55 - 0.2,
+        alpha: Math.random() * 0.65 + 0.25,
+        color: ['#38BDF8', '#60A5FA', '#FDE047', '#A7F3D0', '#FFFFFF', '#34D399'][Math.floor(Math.random() * 6)]
       }));
 
       const render = () => {
@@ -142,7 +138,7 @@ const CinematicNetflixIntro = ({ date = '', onComplete }) => {
           ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
           ctx.fillStyle = p.color;
           ctx.globalAlpha = p.alpha;
-          ctx.shadowBlur = 8;
+          ctx.shadowBlur = 10;
           ctx.shadowColor = p.color;
           ctx.fill();
           ctx.shadowBlur = 0;
@@ -154,7 +150,7 @@ const CinematicNetflixIntro = ({ date = '', onComplete }) => {
       render();
     }
 
-    // Smooth Timeline
+    // Cinematic Timeline Progression
     const t1 = setTimeout(() => {
       setPhase('bloom');
       requestFullScreenMode();
@@ -162,12 +158,12 @@ const CinematicNetflixIntro = ({ date = '', onComplete }) => {
 
     const t2 = setTimeout(() => {
       setPhase('zoom');
-    }, 2100);
+    }, 2400);
 
     const t3 = setTimeout(() => {
       setPhase('done');
       if (onComplete) onComplete();
-    }, 2650);
+    }, 2950);
 
     // Keyboard Shortcuts (Space, Enter, Escape, F)
     const handleKeyDown = (e) => {
@@ -213,7 +209,7 @@ const CinematicNetflixIntro = ({ date = '', onComplete }) => {
         cursor: 'pointer',
         userSelect: 'none',
         perspective: '1200px',
-        transition: 'opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+        transition: 'opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
         opacity: phase === 'done' ? 0 : 1
       }}
     >
@@ -223,14 +219,19 @@ const CinematicNetflixIntro = ({ date = '', onComplete }) => {
           100% { transform: rotate(360deg); }
         }
 
+        @keyframes softHaloSpinReverse {
+          0% { transform: rotate(360deg); }
+          100% { transform: rotate(0deg); }
+        }
+
         @keyframes softShockwave {
           0% {
             transform: scale(0.3);
-            opacity: 0.8;
+            opacity: 0.85;
             border-width: 3px;
           }
           100% {
-            transform: scale(2.8);
+            transform: scale(2.9);
             opacity: 0;
             border-width: 1px;
           }
@@ -238,7 +239,12 @@ const CinematicNetflixIntro = ({ date = '', onComplete }) => {
 
         @keyframes subtleGlowPulse {
           0%, 100% { opacity: 0.6; transform: scale(1); }
-          50% { opacity: 0.9; transform: scale(1.05); }
+          50% { opacity: 0.95; transform: scale(1.06); }
+        }
+
+        @keyframes ecgIntroFlow {
+          0% { stroke-dashoffset: 600; }
+          100% { stroke-dashoffset: 0; }
         }
       `}</style>
 
@@ -270,11 +276,11 @@ const CinematicNetflixIntro = ({ date = '', onComplete }) => {
       {/* 3. Soft Ambient Radial Light Blooms behind Center */}
       <div style={{
         position: 'absolute',
-        width: '700px',
-        height: '700px',
+        width: '750px',
+        height: '750px',
         borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(56, 189, 248, 0.22) 0%, rgba(37, 99, 235, 0.12) 50%, transparent 75%)',
-        filter: 'blur(50px)',
+        background: 'radial-gradient(circle, rgba(56, 189, 248, 0.25) 0%, rgba(16, 185, 129, 0.15) 45%, transparent 75%)',
+        filter: 'blur(55px)',
         zIndex: 3,
         animation: 'subtleGlowPulse 4s ease-in-out infinite',
         pointerEvents: 'none'
@@ -285,23 +291,23 @@ const CinematicNetflixIntro = ({ date = '', onComplete }) => {
         <>
           <div style={{
             position: 'absolute',
-            width: '320px',
-            height: '320px',
+            width: '340px',
+            height: '340px',
             borderRadius: '50%',
-            border: '2px solid rgba(56, 189, 248, 0.65)',
-            boxShadow: '0 0 40px rgba(56, 189, 248, 0.35)',
-            animation: 'softShockwave 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+            border: '2px solid rgba(56, 189, 248, 0.7)',
+            boxShadow: '0 0 45px rgba(56, 189, 248, 0.4)',
+            animation: 'softShockwave 2.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
             zIndex: 4,
             pointerEvents: 'none'
           }} />
           <div style={{
             position: 'absolute',
-            width: '320px',
-            height: '320px',
+            width: '340px',
+            height: '340px',
             borderRadius: '50%',
-            border: '2px solid rgba(245, 158, 11, 0.55)',
-            boxShadow: '0 0 45px rgba(245, 158, 11, 0.3)',
-            animation: 'softShockwave 2.2s 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+            border: '2px solid rgba(52, 211, 153, 0.6)',
+            boxShadow: '0 0 45px rgba(52, 211, 153, 0.35)',
+            animation: 'softShockwave 2.3s 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards',
             zIndex: 4,
             pointerEvents: 'none'
           }} />
@@ -317,73 +323,71 @@ const CinematicNetflixIntro = ({ date = '', onComplete }) => {
         justifyContent: 'center',
         zIndex: 10,
         transform: phase === 'zoom' 
-          ? 'scale(3.6) translateZ(350px)' 
+          ? 'scale(3.8) translateZ(400px)' 
           : (phase === 'bloom' ? 'scale(1.02)' : 'scale(0.5)'),
         opacity: phase === 'zoom' ? 0 : (phase === 'bloom' ? 1 : 0),
-        filter: phase === 'zoom' ? 'blur(14px) brightness(2.2)' : 'blur(0px)',
+        filter: phase === 'zoom' ? 'blur(16px) brightness(2.2)' : 'blur(0px)',
         transition: phase === 'zoom' 
           ? 'transform 0.55s cubic-bezier(0.7, 0, 0.2, 1), opacity 0.5s ease-out, filter 0.5s ease-out' 
-          : 'transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease-out',
+          : 'transform 0.85s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease-out',
         willChange: 'transform, opacity, filter'
       }}>
         
         {/* Soft Radial Backlight behind Logo */}
         <div style={{
           position: 'absolute',
-          width: '280px',
-          height: '280px',
+          width: '300px',
+          height: '300px',
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(56, 189, 248, 0.45) 0%, rgba(37, 99, 235, 0.25) 50%, transparent 75%)',
-          filter: 'blur(30px)',
+          background: 'radial-gradient(circle, rgba(56, 189, 248, 0.5) 0%, rgba(37, 99, 235, 0.3) 50%, transparent 75%)',
+          filter: 'blur(35px)',
           zIndex: -1
         }} />
 
         {/* Elegant Thin Spinning Luminous Rings */}
         <div style={{
           position: 'absolute',
-          width: '210px',
-          height: '210px',
+          width: '220px',
+          height: '220px',
           borderRadius: '50%',
-          border: '1.5px dashed rgba(56, 189, 248, 0.5)',
+          border: '1.5px dashed rgba(56, 189, 248, 0.6)',
           animation: 'softHaloSpin 18s linear infinite',
           zIndex: 0
         }} />
         <div style={{
           position: 'absolute',
-          width: '235px',
-          height: '235px',
+          width: '245px',
+          height: '245px',
           borderRadius: '50%',
-          border: '1px dotted rgba(245, 158, 11, 0.4)',
-          animation: 'softHaloSpin 24s linear infinite reverse',
+          border: '1.5px dotted rgba(52, 211, 153, 0.5)',
+          animation: 'softHaloSpinReverse 22s linear infinite',
           zIndex: 0
         }} />
 
-        {/* ========================================================================= */}
-        {/* THE FLAWLESS CIRCULAR LOGO EMBLEM (100% Rounded, Zero Square Box Artifact) */}
-        {/* ========================================================================= */}
+        {/* Circular Emblem with Pure White Glass Shell */}
         <div style={{
-          width: '155px',
-          height: '155px',
+          width: '160px',
+          height: '160px',
           borderRadius: '50%',
           backgroundColor: '#FFFFFF',
           padding: '8px',
-          boxShadow: '0 0 45px rgba(56, 189, 248, 0.65), 0 0 90px rgba(37, 99, 235, 0.35), 0 0 0 6px rgba(255, 255, 255, 0.95)',
+          boxShadow: '0 0 50px rgba(56, 189, 248, 0.7), 0 0 100px rgba(37, 99, 235, 0.4), 0 0 0 6px rgba(255, 255, 255, 0.95)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          overflow: 'hidden', // Ensures perfectly round clipping
+          overflow: 'hidden',
           position: 'relative',
           zIndex: 2,
           boxSizing: 'border-box'
         }}>
           <img
             src="/logo.png"
-            alt="Logo Bệnh Viện Bình Long"
+            alt="Logo TTYT Bình Long"
             style={{
               width: '100%',
               height: '100%',
               objectFit: 'contain',
-              borderRadius: '50%', // Ensures the image content is round
+              borderRadius: '50%',
               display: 'block'
             }}
           />
@@ -391,27 +395,30 @@ const CinematicNetflixIntro = ({ date = '', onComplete }) => {
 
         {/* Upper Agency Subtitle */}
         <div style={{
-          marginTop: '1.85rem',
-          fontSize: '0.9rem',
+          marginTop: '1.8rem',
+          fontSize: '0.92rem',
           fontWeight: '900',
           color: '#93C5FD',
           textTransform: 'uppercase',
           letterSpacing: '4px',
           opacity: phase !== 'start' ? 1 : 0,
           transition: 'opacity 0.6s ease-out 0.2s',
-          textShadow: '0 0 15px rgba(56, 189, 248, 0.8)'
+          textShadow: '0 0 15px rgba(56, 189, 248, 0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem'
         }}>
-          SỞ Y TẾ THÀNH PHỐ ĐỒNG NAI
+          <FaHospital style={{ color: '#38BDF8' }} /> SỞ Y TẾ THÀNH PHỐ ĐỒNG NAI
         </div>
 
-        {/* Main Hospital Name with Gentle Letter Expansion */}
+        {/* Main Hospital Name */}
         <h1 style={{
           margin: '0.35rem 0 0 0',
-          fontSize: '2rem',
+          fontSize: '2.1rem',
           fontWeight: '900',
           color: '#FFFFFF',
           textTransform: 'uppercase',
-          letterSpacing: phase !== 'start' ? '5.5px' : '1px',
+          letterSpacing: phase !== 'start' ? '5px' : '1px',
           transition: 'letter-spacing 1.2s cubic-bezier(0.16, 1, 0.3, 1)',
           textAlign: 'center',
           textShadow: '0 0 25px rgba(255, 255, 255, 0.6), 0 0 50px rgba(56, 189, 248, 0.4), 0 4px 12px rgba(0,0,0,0.7)',
@@ -423,92 +430,85 @@ const CinematicNetflixIntro = ({ date = '', onComplete }) => {
         {/* Presentation Topic Pill with Luminous Glow */}
         <div style={{
           marginTop: '1.15rem',
-          background: 'linear-gradient(90deg, rgba(37, 99, 235, 0.3), rgba(56, 189, 248, 0.45), rgba(37, 99, 235, 0.3))',
-          border: '1.5px solid rgba(56, 189, 248, 0.7)',
+          background: 'linear-gradient(90deg, rgba(37, 99, 235, 0.35), rgba(56, 189, 248, 0.5), rgba(16, 185, 129, 0.35))',
+          border: '1.5px solid rgba(56, 189, 248, 0.8)',
           borderRadius: '35px',
-          padding: '0.6rem 1.85rem',
+          padding: '0.65rem 1.95rem',
           color: '#FFFFFF',
           fontWeight: '900',
-          fontSize: '1rem',
+          fontSize: '1.02rem',
           letterSpacing: '2px',
           textTransform: 'uppercase',
-          boxShadow: '0 0 30px rgba(56, 189, 248, 0.4)',
+          boxShadow: '0 0 35px rgba(56, 189, 248, 0.45)',
           display: 'flex',
           alignItems: 'center',
           gap: '0.75rem',
-          backdropFilter: 'blur(8px)'
+          backdropFilter: 'blur(10px)'
         }}>
-          <FaTv style={{ color: '#FDE047', fontSize: '1.1rem' }} />
-          <span>PHIÊN HỌP GIAO BAN CHUYÊN MÔN TOÀN VIỆN</span>
+          <FaTv style={{ color: '#FDE047', fontSize: '1.15rem' }} />
+          <span>HỘI NGHỊ BÁO CÁO GIAO BAN CHUYÊN MÔN TOÀN VIỆN</span>
           {date && (
             <span style={{ color: '#FDE047', fontWeight: '900' }}>
               • {formatVietnameseDate(date)}
             </span>
           )}
         </div>
-      </div>
 
-      {/* 6. Bottom Status & Start Button Bar */}
-      <div style={{
-        position: 'absolute',
-        bottom: '2.25rem',
-        left: 0,
-        right: 0,
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '0 3rem',
-        zIndex: 20
-      }}>
-        {/* Fullscreen Notice Pill */}
+        {/* Live Pulse Indicator */}
         <div style={{
-          color: 'rgba(255, 255, 255, 0.75)',
-          fontSize: '0.82rem',
-          fontWeight: '600',
+          marginTop: '0.95rem',
           display: 'flex',
           alignItems: 'center',
-          gap: '0.45rem',
-          backgroundColor: 'rgba(0, 0, 0, 0.4)',
-          padding: '0.45rem 1rem',
-          borderRadius: '20px',
-          border: '1px solid rgba(255, 255, 255, 0.15)',
-          backdropFilter: 'blur(6px)'
+          gap: '0.5rem',
+          fontSize: '0.82rem',
+          color: '#34D399',
+          fontWeight: '800',
+          letterSpacing: '1px'
         }}>
-          <FaExpand style={{ color: '#38BDF8' }} /> Chế độ toàn màn hình tự động (Nhấn F hoặc Esc để thoát)
+          <FaHeartbeat style={{ color: '#10B981', fontSize: '1rem', animation: 'subtleGlowPulse 1.2s ease-in-out infinite' }} />
+          <span>HỆ THỐNG TRÌNH CHIẾU GIAO BAN Y KHOA ĐÃ SẴN SÀNG</span>
         </div>
-
-        {/* Start / Skip Button */}
-        <button
-          type="button"
-          onClick={handleSkip}
-          style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.12)',
-            border: '1.5px solid rgba(255, 255, 255, 0.35)',
-            color: '#FFFFFF',
-            borderRadius: '30px',
-            padding: '0.55rem 1.4rem',
-            fontSize: '0.88rem',
-            fontWeight: '800',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            backdropFilter: 'blur(10px)',
-            transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.25)';
-            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.7)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.12)';
-            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.35)';
-          }}
-        >
-          <span>Bắt đầu ngay</span> <FaForward style={{ fontSize: '0.82rem' }} />
-        </button>
       </div>
+
+      {/* 6. Skip / Enter Fast Hint Button */}
+      <button
+        onClick={handleSkip}
+        style={{
+          position: 'absolute',
+          bottom: '2rem',
+          right: '2.5rem',
+          zIndex: 20,
+          backgroundColor: 'rgba(255, 255, 255, 0.12)',
+          border: '1.5px solid rgba(255, 255, 255, 0.28)',
+          color: '#FFFFFF',
+          padding: '0.5rem 1.15rem',
+          borderRadius: '25px',
+          fontSize: '0.82rem',
+          fontWeight: '800',
+          letterSpacing: '1px',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.55rem',
+          backdropFilter: 'blur(8px)',
+          transition: 'all 0.2s ease',
+          boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = '#2563EB';
+          e.currentTarget.style.borderColor = '#60A5FA';
+          e.currentTarget.style.transform = 'scale(1.05)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.12)';
+          e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.28)';
+          e.currentTarget.style.transform = 'scale(1)';
+        }}
+      >
+        <span>Bỏ qua Intro (Phím Space / Click)</span>
+        <FaForward />
+      </button>
+
     </div>
   );
 };
