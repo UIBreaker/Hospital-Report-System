@@ -236,7 +236,6 @@ const LoginPage = () => {
       justifyContent: 'space-between',
       position: 'relative',
       overflow: 'hidden',
-      backgroundColor: '#051329',
       fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
       boxSizing: 'border-box'
     }}>
@@ -260,9 +259,9 @@ const LoginPage = () => {
           top: '1rem',
           right: '1.2rem',
           zIndex: 99,
-          backgroundColor: 'rgba(14, 165, 233, 0.18)',
-          border: '1.5px solid rgba(56, 189, 248, 0.45)',
-          color: '#38BDF8',
+          backgroundColor: 'rgba(255, 255, 255, 0.85)',
+          border: '1.5px solid #BAE6FD',
+          color: '#0284C7',
           padding: '0.42rem 0.85rem',
           borderRadius: '999px',
           display: 'flex',
@@ -271,17 +270,19 @@ const LoginPage = () => {
           fontSize: '0.78rem',
           fontWeight: '800',
           cursor: 'pointer',
-          boxShadow: '0 4px 15px rgba(0, 0, 0, 0.35)',
+          boxShadow: '0 4px 15px rgba(15, 44, 89, 0.08)',
           backdropFilter: 'blur(10px)',
           transition: 'all 0.22s ease'
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = 'rgba(14, 165, 233, 0.32)';
+          e.currentTarget.style.backgroundColor = '#FFFFFF';
           e.currentTarget.style.transform = 'scale(1.05)';
+          e.currentTarget.style.borderColor = '#0284C7';
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = 'rgba(14, 165, 233, 0.18)';
+          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.85)';
           e.currentTarget.style.transform = 'scale(1)';
+          e.currentTarget.style.borderColor = '#BAE6FD';
         }}
       >
         {isFullscreen ? <FaCompress /> : <FaExpand />}
@@ -324,8 +325,8 @@ const LoginPage = () => {
         }
 
         @keyframes pulseLogoGlow {
-          0%, 100% { transform: scale(1); box-shadow: 0 0 25px rgba(56, 189, 248, 0.45), 0 0 50px rgba(16, 185, 129, 0.25); }
-          50% { transform: scale(1.04); box-shadow: 0 0 35px rgba(56, 189, 248, 0.75), 0 0 70px rgba(52, 211, 153, 0.4); }
+          0%, 100% { transform: scale(1); box-shadow: 0 4px 20px rgba(2, 132, 199, 0.25), 0 0 0 3px rgba(255, 255, 255, 0.95); }
+          50% { transform: scale(1.04); box-shadow: 0 8px 30px rgba(2, 132, 199, 0.4), 0 0 0 4px rgba(56, 189, 248, 0.4); }
         }
 
         @keyframes errorSlideDown {
@@ -356,23 +357,23 @@ const LoginPage = () => {
         }
 
         .login-input-field:focus {
-          border-color: #38BDF8 !important;
-          background-color: rgba(10, 25, 52, 0.95) !important;
-          box-shadow: 0 0 18px rgba(56, 189, 248, 0.45), inset 0 0 10px rgba(56, 189, 248, 0.1) !important;
+          border-color: #0284C7 !important;
+          background-color: #FFFFFF !important;
+          box-shadow: 0 0 0 3.5px rgba(2, 132, 199, 0.15) !important;
         }
 
         .feature-pill-hover {
           transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .feature-pill-hover:hover {
-          transform: translateY(-2px) scale(1.015);
-          border-color: #38BDF8 !important;
-          box-shadow: 0 12px 30px rgba(56, 189, 248, 0.25) !important;
-          background: rgba(15, 36, 72, 0.88) !important;
+          transform: translateY(-2px) scale(1.012);
+          border-color: #BAE6FD !important;
+          box-shadow: 0 8px 25px rgba(2, 132, 199, 0.12) !important;
+          background: rgba(255, 255, 255, 0.96) !important;
         }
       `}</style>
 
-      {/* Synchronized Sacred Healing Twilight Background (ECG Canvas, Starlight Particles, Hospital View) */}
+      {/* Synchronized Daytime Hospital Garden & Emerald Medical Healing Background */}
       <MedicalAuthBackground />
 
       {/* Main Two-Column Content Grid */}
@@ -393,16 +394,16 @@ const LoginPage = () => {
         animation: 'loginBloomExpand 0.85s cubic-bezier(0.16, 1, 0.3, 1) both'
       }}>
 
-        {/* ================= LEFT COLUMN: BRAND HERO & HEALING FEATURE PILLS ================= */}
+        {/* ================= LEFT COLUMN: BRAND HERO & FROSTED GLASS FEATURE PILLS ================= */}
         <section className="login-brand-col" style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', maxWidth: '510px' }}>
           
-          {/* Logo with Laser Orbit Rings & Replay Intro Trigger */}
+          {/* Logo with Orbit Rings & Replay Intro Trigger */}
           <div style={{ position: 'relative', width: '82px', height: '82px', marginBottom: '0.1rem' }}>
             <div style={{
               position: 'absolute',
               inset: '-7px',
               borderRadius: '50%',
-              border: '1.5px dashed rgba(56, 189, 248, 0.55)',
+              border: '1.5px dashed rgba(2, 132, 199, 0.45)',
               animation: 'haloSpinSlow 16s linear infinite',
               pointerEvents: 'none'
             }} />
@@ -411,7 +412,7 @@ const LoginPage = () => {
               position: 'absolute',
               inset: '-2px',
               borderRadius: '50%',
-              border: '1.5px solid rgba(52, 211, 153, 0.45)',
+              border: '1.5px solid rgba(13, 148, 136, 0.4)',
               borderTopColor: 'transparent',
               borderBottomColor: 'transparent',
               animation: 'haloSpinReverse 9s linear infinite',
@@ -453,9 +454,9 @@ const LoginPage = () => {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '0.45rem',
-                backgroundColor: 'rgba(14, 165, 233, 0.15)',
-                border: '1px solid rgba(56, 189, 248, 0.4)',
-                color: '#38BDF8',
+                backgroundColor: '#EFF6FF',
+                border: '1.5px solid #BFDBFE',
+                color: '#1D4ED8',
                 padding: '0.24rem 0.85rem',
                 borderRadius: '999px',
                 fontSize: '0.75rem',
@@ -463,10 +464,10 @@ const LoginPage = () => {
                 letterSpacing: '0.8px',
                 textTransform: 'uppercase',
                 marginBottom: '0.45rem',
-                boxShadow: '0 0 15px rgba(56, 189, 248, 0.2)'
+                boxShadow: '0 2px 8px rgba(29, 78, 216, 0.08)'
               }}
             >
-              <FaHospital style={{ color: '#34D399' }} /> SỞ Y TẾ THÀNH PHỐ ĐỒNG NAI
+              <FaHospital style={{ color: '#0284C7' }} /> SỞ Y TẾ THÀNH PHỐ ĐỒNG NAI
             </div>
 
             {/* Main Hospital Name */}
@@ -475,12 +476,11 @@ const LoginPage = () => {
               style={{
                 fontSize: '2.05rem',
                 fontWeight: '900',
-                color: '#FFFFFF',
+                color: '#0F2C59',
                 margin: '0 0 0.1rem 0',
                 lineHeight: '1.15',
                 textTransform: 'uppercase',
-                letterSpacing: '0.8px',
-                textShadow: '0 2px 10px rgba(0, 0, 0, 0.5)'
+                letterSpacing: '0.8px'
               }}
             >
               TRUNG TÂM Y TẾ
@@ -494,13 +494,12 @@ const LoginPage = () => {
                 letterSpacing: '1.2px',
                 lineHeight: '1.15',
                 margin: '0 0 0.35rem 0',
-                backgroundImage: 'linear-gradient(135deg, #38BDF8 0%, #34D399 50%, #A7F3D0 100%)',
+                backgroundImage: 'linear-gradient(135deg, #0284C7 0%, #0D9488 60%, #059669 100%)',
                 WebkitBackgroundClip: 'text',
                 backgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 color: 'transparent',
-                display: 'inline-block',
-                filter: 'drop-shadow(0 2px 8px rgba(56, 189, 248, 0.3))'
+                display: 'inline-block'
               }}
             >
               KHU VỰC BÌNH LONG
@@ -510,14 +509,14 @@ const LoginPage = () => {
               style={{
                 fontSize: '0.98rem',
                 fontWeight: '800',
-                color: '#93C5FD',
+                color: '#1E3A8A',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.45rem',
                 marginBottom: '0.3rem'
               }}
             >
-              <FaHeartbeat style={{ color: '#34D399', fontSize: '1.1rem' }} />
+              <FaHeartbeat style={{ color: '#0284C7', fontSize: '1.1rem' }} />
               <span>Hệ Thống Báo Cáo Giao Ban Chuyên Môn Trực Tuyến</span>
             </div>
 
@@ -525,7 +524,7 @@ const LoginPage = () => {
               className="login-desc-text"
               style={{
                 fontSize: '0.84rem',
-                color: '#CBD5E1',
+                color: '#475569',
                 lineHeight: '1.45',
                 margin: 0,
                 maxWidth: '450px'
@@ -535,7 +534,7 @@ const LoginPage = () => {
             </p>
           </div>
 
-          {/* 3 Healing Frosted Glass Feature Cards */}
+          {/* 3 Frosted Glass Feature Cards (Phong cách Hình 1) */}
           <div className="login-feature-pills" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.15rem', maxWidth: '440px' }}>
             
             {/* Feature 1 */}
@@ -543,33 +542,32 @@ const LoginPage = () => {
               display: 'flex',
               alignItems: 'center',
               gap: '0.85rem',
-              backgroundColor: 'rgba(10, 26, 54, 0.76)',
+              backgroundColor: 'rgba(255, 255, 255, 0.88)',
               backdropFilter: 'blur(16px)',
               WebkitBackdropFilter: 'blur(16px)',
               padding: '0.55rem 0.95rem',
               borderRadius: '14px',
-              border: '1px solid rgba(56, 189, 248, 0.25)',
-              boxShadow: '0 6px 20px rgba(0, 0, 0, 0.35)'
+              border: '1.5px solid rgba(255, 255, 255, 0.95)',
+              boxShadow: '0 4px 14px rgba(15, 44, 89, 0.06)'
             }}>
               <div style={{
                 width: '36px',
                 height: '36px',
                 borderRadius: '10px',
-                background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.3) 0%, rgba(2, 132, 199, 0.5) 100%)',
-                border: '1px solid rgba(56, 189, 248, 0.45)',
-                color: '#38BDF8',
+                background: '#EFF6FF',
+                border: '1px solid #BFDBFE',
+                color: '#2563EB',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 flexShrink: 0,
-                fontSize: '0.95rem',
-                boxShadow: '0 0 12px rgba(56, 189, 248, 0.25)'
+                fontSize: '0.95rem'
               }}>
                 <FaShieldAlt />
               </div>
               <div>
-                <div style={{ fontWeight: '800', color: '#F8FAFC', fontSize: '0.85rem' }}>Bảo Mật & Chuẩn Hóa Y Tế</div>
-                <div style={{ color: '#94A3B8', fontSize: '0.74rem' }}>Mã hóa dữ liệu phân quyền khoa phòng theo tiêu chuẩn ngành</div>
+                <div style={{ fontWeight: '800', color: '#0F2C59', fontSize: '0.85rem' }}>Bảo Mật & Chuẩn Hóa Y Tế</div>
+                <div style={{ color: '#64748B', fontSize: '0.74rem' }}>Mã hóa dữ liệu phân quyền khoa phòng theo tiêu chuẩn ngành</div>
               </div>
             </div>
 
@@ -578,33 +576,32 @@ const LoginPage = () => {
               display: 'flex',
               alignItems: 'center',
               gap: '0.85rem',
-              backgroundColor: 'rgba(10, 26, 54, 0.76)',
+              backgroundColor: 'rgba(255, 255, 255, 0.88)',
               backdropFilter: 'blur(16px)',
               WebkitBackdropFilter: 'blur(16px)',
               padding: '0.55rem 0.95rem',
               borderRadius: '14px',
-              border: '1px solid rgba(52, 211, 153, 0.25)',
-              boxShadow: '0 6px 20px rgba(0, 0, 0, 0.35)'
+              border: '1.5px solid rgba(255, 255, 255, 0.95)',
+              boxShadow: '0 4px 14px rgba(15, 44, 89, 0.06)'
             }}>
               <div style={{
                 width: '36px',
                 height: '36px',
                 borderRadius: '10px',
-                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.3) 0%, rgba(5, 150, 105, 0.5) 100%)',
-                border: '1px solid rgba(52, 211, 153, 0.45)',
-                color: '#34D399',
+                background: '#F0FDF4',
+                border: '1px solid #BBF7D0',
+                color: '#059669',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 flexShrink: 0,
-                fontSize: '0.95rem',
-                boxShadow: '0 0 12px rgba(52, 211, 153, 0.25)'
+                fontSize: '0.95rem'
               }}>
                 <FaClock />
               </div>
               <div>
-                <div style={{ fontWeight: '800', color: '#F8FAFC', fontSize: '0.85rem' }}>Giao Ban Thời Gian Thực</div>
-                <div style={{ color: '#94A3B8', fontSize: '0.74rem' }}>Tổng hợp chỉ số toàn viện tức thì chỉ với một thao tác</div>
+                <div style={{ fontWeight: '800', color: '#0F2C59', fontSize: '0.85rem' }}>Giao Ban Thời Gian Thực</div>
+                <div style={{ color: '#64748B', fontSize: '0.74rem' }}>Tổng hợp chỉ số toàn viện tức thì chỉ với một thao tác</div>
               </div>
             </div>
 
@@ -613,61 +610,56 @@ const LoginPage = () => {
               display: 'flex',
               alignItems: 'center',
               gap: '0.85rem',
-              backgroundColor: 'rgba(10, 26, 54, 0.76)',
+              backgroundColor: 'rgba(255, 255, 255, 0.88)',
               backdropFilter: 'blur(16px)',
               WebkitBackdropFilter: 'blur(16px)',
               padding: '0.55rem 0.95rem',
               borderRadius: '14px',
-              border: '1px solid rgba(129, 140, 248, 0.25)',
-              boxShadow: '0 6px 20px rgba(0, 0, 0, 0.35)'
+              border: '1.5px solid rgba(255, 255, 255, 0.95)',
+              boxShadow: '0 4px 14px rgba(15, 44, 89, 0.06)'
             }}>
               <div style={{
                 width: '36px',
                 height: '36px',
                 borderRadius: '10px',
-                background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.3) 0%, rgba(79, 70, 229, 0.5) 100%)',
-                border: '1px solid rgba(129, 140, 248, 0.45)',
-                color: '#818CF8',
+                background: '#FAF5FF',
+                border: '1px solid #E9D5FF',
+                color: '#7C3AED',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 flexShrink: 0,
-                fontSize: '0.95rem',
-                boxShadow: '0 0 12px rgba(99, 102, 241, 0.25)'
+                fontSize: '0.95rem'
               }}>
                 <FaChartBar />
               </div>
               <div>
-                <div style={{ fontWeight: '800', color: '#F8FAFC', fontSize: '0.85rem' }}>Trình Chiếu & Xuất Báo Cáo</div>
-                <div style={{ color: '#94A3B8', fontSize: '0.74rem' }}>Chế độ Slide toàn màn hình và xuất PDF văn bản lưu trữ</div>
+                <div style={{ fontWeight: '800', color: '#0F2C59', fontSize: '0.85rem' }}>Trình Chiếu & Xuất Báo Cáo</div>
+                <div style={{ color: '#64748B', fontSize: '0.74rem' }}>Chế độ Slide toàn màn hình và xuất PDF văn bản lưu trữ</div>
               </div>
             </div>
 
           </div>
         </section>
 
-        {/* ================= RIGHT COLUMN: SACRED HEALING SAPPHIRE GLASS LOGIN CARD ================= */}
+        {/* ================= RIGHT COLUMN: PRISTINE WHITE GLASS LOGIN CARD (HÌNH 1) ================= */}
         <section className="login-card-container" style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
           <div 
             className="login-card-inner"
             style={{
               width: '100%',
               maxWidth: '475px',
-              backgroundColor: 'rgba(8, 22, 48, 0.88)',
-              backdropFilter: 'blur(30px)',
-              WebkitBackdropFilter: 'blur(30px)',
-              borderRadius: '22px',
+              backgroundColor: 'rgba(255, 255, 255, 0.93)',
+              backdropFilter: 'blur(28px)',
+              WebkitBackdropFilter: 'blur(28px)',
+              borderRadius: '24px',
               padding: '1.5rem 1.85rem',
               boxShadow: isSuccess
-                ? '0 20px 50px rgba(16, 185, 129, 0.35), 0 0 35px rgba(16, 185, 129, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.2)'
+                ? '0 20px 50px rgba(16, 185, 129, 0.25), 0 0 0 2px #34D399'
                 : error 
-                ? '0 20px 50px rgba(239, 68, 68, 0.3), 0 0 35px rgba(239, 68, 68, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.15)'
-                : '0 25px 65px rgba(0, 0, 0, 0.75), 0 0 35px rgba(14, 165, 233, 0.22), inset 0 1px 1px rgba(255, 255, 255, 0.18)',
-              border: isSuccess 
-                ? '1.5px solid #10B981' 
-                : error 
-                ? '1.5px solid #EF4444' 
-                : '1.5px solid rgba(56, 189, 248, 0.35)',
+                ? '0 20px 50px rgba(239, 68, 68, 0.2), 0 0 0 2px #F87171'
+                : '0 20px 60px rgba(15, 44, 89, 0.15), 0 0 0 1px rgba(2, 132, 199, 0.08), 0 2px 6px rgba(0, 0, 0, 0.03)',
+              border: isSuccess ? '1.5px solid #10B981' : error ? '1.5px solid #EF4444' : '1.5px solid rgba(255, 255, 255, 1)',
               boxSizing: 'border-box',
               animation: isShaking ? 'loginShake 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) both' : 'none',
               transition: 'box-shadow 0.3s ease, border 0.3s ease, transform 0.3s ease'
@@ -689,19 +681,19 @@ const LoginPage = () => {
                     position: 'absolute',
                     inset: '-12px',
                     borderRadius: '50%',
-                    background: 'radial-gradient(circle, rgba(16, 185, 129, 0.5) 0%, transparent 70%)',
+                    background: 'radial-gradient(circle, rgba(16, 185, 129, 0.4) 0%, transparent 70%)',
                     animation: 'successRingPulse 1.6s ease-out infinite'
                   }} />
                   <div style={{
                     width: '70px',
                     height: '70px',
                     borderRadius: '50%',
-                    backgroundColor: 'rgba(16, 185, 129, 0.2)',
-                    border: '2px solid #34D399',
+                    backgroundColor: '#ECFDF5',
+                    border: '2px solid #A7F3D0',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    boxShadow: '0 0 30px rgba(16, 185, 129, 0.6)',
+                    boxShadow: '0 0 25px rgba(16, 185, 129, 0.35)',
                     animation: 'successCheckBounce 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both'
                   }}>
                     <FaCheckCircle style={{ fontSize: '2.4rem', color: '#10B981' }} />
@@ -711,7 +703,7 @@ const LoginPage = () => {
                 <h3 style={{
                   fontSize: '1.4rem',
                   fontWeight: '900',
-                  color: '#34D399',
+                  color: '#065F46',
                   margin: '0 0 0.35rem 0',
                   textTransform: 'uppercase',
                   letterSpacing: '0.6px'
@@ -721,24 +713,24 @@ const LoginPage = () => {
 
                 <p style={{
                   fontSize: '0.92rem',
-                  color: '#F8FAFC',
+                  color: '#1E293B',
                   fontWeight: '700',
                   margin: '0 0 0.45rem 0'
                 }}>
-                  Chào mừng: <strong style={{ color: '#38BDF8' }}>{successUser?.full_name || successUser?.fullName || successUser?.username || username}</strong>
+                  Chào mừng: <strong style={{ color: '#0284C7' }}>{successUser?.full_name || successUser?.fullName || successUser?.username || username}</strong>
                 </p>
 
                 <div style={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '0.45rem',
-                  backgroundColor: 'rgba(16, 185, 129, 0.18)',
-                  border: '1px solid rgba(52, 211, 153, 0.45)',
+                  backgroundColor: '#F0FDF4',
+                  border: '1px solid #BBF7D0',
                   padding: '0.3rem 0.9rem',
                   borderRadius: '999px',
                   fontSize: '0.8rem',
                   fontWeight: '800',
-                  color: '#6EE7B7',
+                  color: '#15803D',
                   marginBottom: '1.2rem'
                 }}>
                   <FaShieldAlt />
@@ -748,20 +740,20 @@ const LoginPage = () => {
                 <div style={{
                   width: '100%',
                   height: '5px',
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  backgroundColor: '#E2E8F0',
                   borderRadius: '999px',
                   overflow: 'hidden',
                   position: 'relative'
                 }}>
                   <div style={{
                     height: '100%',
-                    background: 'linear-gradient(90deg, #10B981 0%, #38BDF8 100%)',
+                    background: 'linear-gradient(90deg, #10B981 0%, #0284C7 100%)',
                     borderRadius: '999px',
-                    boxShadow: '0 0 10px #38BDF8',
+                    boxShadow: '0 0 10px #10B981',
                     animation: 'successProgressLine 0.9s cubic-bezier(0.4, 0, 0.2, 1) both'
                   }} />
                 </div>
-                <span style={{ fontSize: '0.76rem', color: '#94A3B8', marginTop: '0.55rem', fontWeight: '600' }}>
+                <span style={{ fontSize: '0.76rem', color: '#64748B', marginTop: '0.55rem', fontWeight: '600' }}>
                   Đang mở cổng báo cáo giao ban chuyên môn...
                 </span>
               </div>
@@ -771,20 +763,20 @@ const LoginPage = () => {
                 <div 
                   className="login-shield-badge"
                   style={{
-                    width: '50px',
-                    height: '50px',
+                    width: '48px',
+                    height: '48px',
                     borderRadius: '50%',
-                    backgroundColor: error ? 'rgba(239, 68, 68, 0.18)' : 'rgba(14, 165, 233, 0.18)',
-                    border: error ? '1.5px solid rgba(239, 68, 68, 0.5)' : '1.5px solid rgba(56, 189, 248, 0.5)',
+                    backgroundColor: error ? '#FEF2F2' : '#EFF6FF',
+                    border: error ? '1.5px solid #FECACA' : '1.5px solid #DBEAFE',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     margin: '0 auto 0.65rem auto',
-                    boxShadow: error ? '0 0 20px rgba(239, 68, 68, 0.35)' : '0 0 20px rgba(56, 189, 248, 0.35)',
+                    boxShadow: error ? '0 4px 14px rgba(239, 68, 68, 0.15)' : '0 4px 14px rgba(2, 132, 199, 0.12)',
                     transition: 'all 0.3s ease'
                   }}
                 >
-                  <FaShieldAlt style={{ fontSize: '1.55rem', color: error ? '#F87171' : '#38BDF8' }} />
+                  <FaShieldAlt style={{ fontSize: '1.5rem', color: error ? '#DC2626' : '#0284C7' }} />
                 </div>
 
                 {/* Heading */}
@@ -793,7 +785,7 @@ const LoginPage = () => {
                   style={{
                     fontSize: '1.38rem',
                     fontWeight: '900',
-                    color: '#FFFFFF',
+                    color: '#0F2C59',
                     margin: '0 0 0.18rem 0',
                     textAlign: 'center',
                     letterSpacing: '0.4px',
@@ -807,7 +799,7 @@ const LoginPage = () => {
                   className="login-card-subtitle"
                   style={{
                     fontSize: '0.8rem',
-                    color: '#93C5FD',
+                    color: '#64748B',
                     margin: '0 0 0.95rem 0',
                     textAlign: 'center'
                   }}
@@ -818,28 +810,28 @@ const LoginPage = () => {
                 {/* Error Alert */}
                 {error && (
                   <div style={{
-                    backgroundColor: 'rgba(220, 38, 38, 0.18)',
-                    border: '1.5px solid rgba(248, 113, 113, 0.55)',
+                    backgroundColor: '#FEF2F2',
+                    border: '1.5px solid #F87171',
                     borderRadius: '10px',
                     padding: '0.65rem 0.85rem',
-                    color: '#FECACA',
+                    color: '#991B1B',
                     fontSize: '0.82rem',
                     marginBottom: '0.95rem',
                     display: 'flex',
                     alignItems: 'flex-start',
                     gap: '0.55rem',
                     lineHeight: '1.35',
-                    boxShadow: '0 3px 15px rgba(239, 68, 68, 0.25)',
+                    boxShadow: '0 3px 12px rgba(239, 68, 68, 0.12)',
                     animation: 'errorSlideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1) both'
                   }}>
-                    <div style={{ color: '#F87171', fontSize: '1.05rem', marginTop: '1px' }}>
+                    <div style={{ color: '#DC2626', fontSize: '1.05rem', marginTop: '1px' }}>
                       <FaExclamationTriangle />
                     </div>
                     <div>
-                      <div style={{ fontWeight: '800', color: '#FCA5A5', marginBottom: '1px', fontSize: '0.82rem' }}>
+                      <div style={{ fontWeight: '800', color: '#991B1B', marginBottom: '1px', fontSize: '0.82rem' }}>
                         Đăng Nhập Không Thành Công
                       </div>
-                      <div style={{ color: '#FECACA', fontWeight: '600' }}>
+                      <div style={{ color: '#B91C1C', fontWeight: '600' }}>
                         {typeof error === 'string' ? error : (error?.message || 'Lỗi đăng nhập')}
                       </div>
                     </div>
@@ -854,7 +846,7 @@ const LoginPage = () => {
                     <label style={{
                       fontSize: '0.78rem',
                       fontWeight: '800',
-                      color: '#E2E8F0',
+                      color: '#334155',
                       display: 'block',
                       marginBottom: '0.3rem',
                       letterSpacing: '0.2px'
@@ -867,7 +859,7 @@ const LoginPage = () => {
                         top: '50%',
                         left: '0.95rem',
                         transform: 'translateY(-50%)',
-                        color: error ? '#F87171' : '#38BDF8',
+                        color: error ? '#EF4444' : '#0284C7',
                         fontSize: '0.88rem',
                         transition: 'color 0.2s ease'
                       }} />
@@ -883,12 +875,12 @@ const LoginPage = () => {
                         style={{
                           width: '100%',
                           padding: '0.65rem 0.85rem 0.65rem 2.55rem',
-                          border: error ? '1.5px solid #EF4444' : '1.5px solid rgba(56, 189, 248, 0.3)',
+                          border: error ? '1.5px solid #F87171' : '1.5px solid #CBD5E1',
                           borderRadius: '10px',
                           fontSize: '0.88rem',
                           outline: 'none',
-                          backgroundColor: 'rgba(5, 14, 28, 0.85)',
-                          color: '#FFFFFF',
+                          backgroundColor: '#F8FAFC',
+                          color: '#0F2C59',
                           fontWeight: '600',
                           boxSizing: 'border-box',
                           transition: 'all 0.2s ease'
@@ -902,7 +894,7 @@ const LoginPage = () => {
                     <label style={{
                       fontSize: '0.78rem',
                       fontWeight: '800',
-                      color: '#E2E8F0',
+                      color: '#334155',
                       display: 'block',
                       marginBottom: '0.3rem',
                       letterSpacing: '0.2px'
@@ -915,7 +907,7 @@ const LoginPage = () => {
                         top: '50%',
                         left: '0.95rem',
                         transform: 'translateY(-50%)',
-                        color: error ? '#F87171' : '#38BDF8',
+                        color: error ? '#EF4444' : '#0284C7',
                         fontSize: '0.88rem',
                         transition: 'color 0.2s ease'
                       }} />
@@ -931,12 +923,12 @@ const LoginPage = () => {
                         style={{
                           width: '100%',
                           padding: '0.65rem 2.55rem 0.65rem 2.55rem',
-                          border: error ? '1.5px solid #EF4444' : '1.5px solid rgba(56, 189, 248, 0.3)',
+                          border: error ? '1.5px solid #F87171' : '1.5px solid #CBD5E1',
                           borderRadius: '10px',
                           fontSize: '0.88rem',
                           outline: 'none',
-                          backgroundColor: 'rgba(5, 14, 28, 0.85)',
-                          color: '#FFFFFF',
+                          backgroundColor: '#F8FAFC',
+                          color: '#0F2C59',
                           fontWeight: '600',
                           boxSizing: 'border-box',
                           transition: 'all 0.2s ease'
@@ -952,7 +944,7 @@ const LoginPage = () => {
                           transform: 'translateY(-50%)',
                           background: 'none',
                           border: 'none',
-                          color: '#94A3B8',
+                          color: '#64748B',
                           cursor: 'pointer',
                           fontSize: '0.9rem',
                           padding: '4px',
@@ -978,9 +970,9 @@ const LoginPage = () => {
                       display: 'flex',
                       alignItems: 'center',
                       gap: '0.45rem',
-                      color: '#CBD5E1',
+                      color: '#475569',
                       cursor: 'pointer',
-                      fontWeight: '600'
+                      fontWeight: '700'
                     }}>
                       <input
                         type="checkbox"
@@ -989,7 +981,7 @@ const LoginPage = () => {
                         style={{
                           width: '15px',
                           height: '15px',
-                          accentColor: '#38BDF8',
+                          accentColor: '#0284C7',
                           cursor: 'pointer'
                         }}
                       />
@@ -1002,7 +994,7 @@ const LoginPage = () => {
                       style={{
                         background: 'none',
                         border: 'none',
-                        color: '#38BDF8',
+                        color: '#0284C7',
                         fontWeight: '800',
                         fontSize: '0.78rem',
                         cursor: 'pointer',
@@ -1022,7 +1014,7 @@ const LoginPage = () => {
                       padding: '0.75rem 1rem',
                       background: 'linear-gradient(135deg, #0284C7 0%, #0EA5E9 40%, #10B981 100%)',
                       color: '#FFFFFF',
-                      border: '1.5px solid rgba(255, 255, 255, 0.35)',
+                      border: 'none',
                       borderRadius: '10px',
                       fontWeight: '900',
                       fontSize: '0.96rem',
@@ -1031,7 +1023,7 @@ const LoginPage = () => {
                       justifyContent: 'center',
                       gap: '0.55rem',
                       cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                      boxShadow: '0 6px 25px rgba(14, 165, 233, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.3)',
+                      boxShadow: '0 6px 20px rgba(2, 132, 199, 0.35)',
                       transition: 'all 0.22s ease',
                       marginTop: '0.3rem',
                       letterSpacing: '0.3px'
@@ -1039,12 +1031,12 @@ const LoginPage = () => {
                     onMouseOver={(e) => {
                       if (!isSubmitting) {
                         e.currentTarget.style.transform = 'translateY(-1px)';
-                        e.currentTarget.style.boxShadow = '0 10px 30px rgba(14, 165, 233, 0.7)';
+                        e.currentTarget.style.boxShadow = '0 8px 24px rgba(2, 132, 199, 0.45)';
                       }
                     }}
                     onMouseOut={(e) => {
                       e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 6px 25px rgba(14, 165, 233, 0.5)';
+                      e.currentTarget.style.boxShadow = '0 6px 20px rgba(2, 132, 199, 0.35)';
                     }}
                   >
                     {isSubmitting ? (
@@ -1059,9 +1051,9 @@ const LoginPage = () => {
                   </button>
 
                   {/* Register Link */}
-                  <div style={{ marginTop: '0.55rem', textAlign: 'center', fontSize: '0.8rem', color: '#94A3B8' }}>
+                  <div style={{ marginTop: '0.55rem', textAlign: 'center', fontSize: '0.8rem', color: '#64748B' }}>
                     Chưa có tài khoản nhân viên?{' '}
-                    <Link to="/register" style={{ color: '#38BDF8', fontWeight: '800', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
+                    <Link to="/register" style={{ color: '#0284C7', fontWeight: '800', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
                       Đăng ký ngay <FaArrowRight style={{ fontSize: '0.72rem' }} />
                     </Link>
                   </div>
@@ -1075,18 +1067,18 @@ const LoginPage = () => {
               display: 'flex',
               alignItems: 'center',
               margin: '0.9rem 0 0.65rem 0',
-              color: '#64748B',
+              color: '#94A3B8',
               fontSize: '0.68rem',
               fontWeight: '800',
               textTransform: 'uppercase',
               letterSpacing: '0.6px'
             }}>
-              <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(56, 189, 248, 0.2)' }} />
-              <span style={{ padding: '0 0.65rem', color: '#93C5FD' }}>THÔNG TIN HỆ THỐNG</span>
-              <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(56, 189, 248, 0.2)' }} />
+              <div style={{ flex: 1, height: '1px', backgroundColor: '#E2E8F0' }} />
+              <span style={{ padding: '0 0.65rem', color: '#64748B' }}>THÔNG TIN HỆ THỐNG</span>
+              <div style={{ flex: 1, height: '1px', backgroundColor: '#E2E8F0' }} />
             </div>
 
-            {/* 4 Crystal Sapphire System Badges Grid */}
+            {/* 4 Clean System Badges Grid */}
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(4, 1fr)',
@@ -1094,8 +1086,8 @@ const LoginPage = () => {
             }}>
               {/* Badge 1: Version */}
               <div style={{
-                backgroundColor: 'rgba(5, 14, 28, 0.75)',
-                border: '1px solid rgba(56, 189, 248, 0.2)',
+                backgroundColor: '#F8FAFC',
+                border: '1px solid #E2E8F0',
                 borderRadius: '8px',
                 padding: '0.35rem 0.2rem',
                 textAlign: 'center',
@@ -1104,18 +1096,18 @@ const LoginPage = () => {
                 alignItems: 'center',
                 gap: '0.1rem'
               }}>
-                <div style={{ fontSize: '0.62rem', color: '#94A3B8', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.18rem' }}>
-                  <FaCodeBranch style={{ color: '#38BDF8', fontSize: '0.62rem' }} /> Phiên bản
+                <div style={{ fontSize: '0.62rem', color: '#64748B', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.18rem' }}>
+                  <FaCodeBranch style={{ color: '#0284C7', fontSize: '0.62rem' }} /> Phiên bản
                 </div>
-                <div style={{ fontSize: '0.72rem', fontWeight: '900', color: '#38BDF8' }}>
+                <div style={{ fontSize: '0.72rem', fontWeight: '900', color: '#0F2C59' }}>
                   v{APP_VERSION}
                 </div>
               </div>
 
               {/* Badge 2: Database */}
               <div style={{
-                backgroundColor: 'rgba(5, 14, 28, 0.75)',
-                border: '1px solid rgba(56, 189, 248, 0.2)',
+                backgroundColor: '#F8FAFC',
+                border: '1px solid #E2E8F0',
                 borderRadius: '8px',
                 padding: '0.35rem 0.2rem',
                 textAlign: 'center',
@@ -1124,18 +1116,18 @@ const LoginPage = () => {
                 alignItems: 'center',
                 gap: '0.1rem'
               }}>
-                <div style={{ fontSize: '0.62rem', color: '#94A3B8', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.18rem' }}>
-                  <FaDatabase style={{ color: '#34D399', fontSize: '0.62rem' }} /> CSDL
+                <div style={{ fontSize: '0.62rem', color: '#64748B', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.18rem' }}>
+                  <FaDatabase style={{ color: '#059669', fontSize: '0.62rem' }} /> CSDL
                 </div>
-                <div style={{ fontSize: '0.68rem', fontWeight: '800', color: '#34D399', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: '0.68rem', fontWeight: '800', color: '#059669', whiteSpace: 'nowrap' }}>
                   Aiven SSL
                 </div>
               </div>
 
               {/* Badge 3: Author */}
               <div style={{
-                backgroundColor: 'rgba(5, 14, 28, 0.75)',
-                border: '1px solid rgba(56, 189, 248, 0.2)',
+                backgroundColor: '#F8FAFC',
+                border: '1px solid #E2E8F0',
                 borderRadius: '8px',
                 padding: '0.35rem 0.2rem',
                 textAlign: 'center',
@@ -1144,10 +1136,10 @@ const LoginPage = () => {
                 alignItems: 'center',
                 gap: '0.1rem'
               }}>
-                <div style={{ fontSize: '0.62rem', color: '#94A3B8', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.18rem' }}>
-                  <FaUser style={{ color: '#818CF8', fontSize: '0.62rem' }} /> Tác giả
+                <div style={{ fontSize: '0.62rem', color: '#64748B', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.18rem' }}>
+                  <FaUser style={{ color: '#2563EB', fontSize: '0.62rem' }} /> Tác giả
                 </div>
-                <div style={{ fontSize: '0.66rem', fontWeight: '800', color: '#F1F5F9', lineHeight: '1.15' }}>
+                <div style={{ fontSize: '0.66rem', fontWeight: '800', color: '#0F2C59', lineHeight: '1.15' }}>
                   Nhật Nam
                 </div>
               </div>
@@ -1158,8 +1150,8 @@ const LoginPage = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
-                  backgroundColor: 'rgba(14, 165, 233, 0.15)',
-                  border: '1px solid rgba(56, 189, 248, 0.35)',
+                  backgroundColor: '#F0F9FF',
+                  border: '1px solid #BAE6FD',
                   borderRadius: '8px',
                   padding: '0.35rem 0.2rem',
                   textAlign: 'center',
@@ -1170,10 +1162,10 @@ const LoginPage = () => {
                   textDecoration: 'none'
                 }}
               >
-                <div style={{ fontSize: '0.62rem', color: '#38BDF8', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.18rem' }}>
-                  <FaPhoneAlt style={{ color: '#38BDF8', fontSize: '0.62rem' }} /> Hỗ trợ
+                <div style={{ fontSize: '0.62rem', color: '#0284C7', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.18rem' }}>
+                  <FaPhoneAlt style={{ color: '#0284C7', fontSize: '0.62rem' }} /> Hỗ trợ
                 </div>
-                <div style={{ fontSize: '0.68rem', fontWeight: '900', color: '#FFFFFF', display: 'flex', alignItems: 'center', gap: '0.18rem' }}>
+                <div style={{ fontSize: '0.68rem', fontWeight: '900', color: '#0284C7', display: 'flex', alignItems: 'center', gap: '0.18rem' }}>
                   <span style={{ backgroundColor: '#0284C7', color: '#FFF', fontSize: '0.52rem', padding: '0.04rem 0.22rem', borderRadius: '3px', fontWeight: '900' }}>Zalo</span> 0916...
                 </div>
               </a>
@@ -1185,20 +1177,20 @@ const LoginPage = () => {
 
       </main>
 
-      {/* Sleek Sacred Twilight Medical Footer */}
+      {/* Sleek Light Medical Footer */}
       <footer style={{
         padding: '0.45rem 1.5rem',
         textAlign: 'center',
         fontSize: '0.78rem',
-        color: '#94A3B8',
-        borderTop: '1px solid rgba(56, 189, 248, 0.15)',
-        backgroundColor: 'rgba(5, 19, 41, 0.75)',
+        color: '#475569',
+        borderTop: '1px solid rgba(226, 232, 240, 0.8)',
+        backgroundColor: 'rgba(255, 255, 255, 0.65)',
         backdropFilter: 'blur(8px)',
         position: 'relative',
         zIndex: 10,
         flexShrink: 0
       }}>
-        © 2026 <strong style={{ color: '#E2E8F0' }}>Trung Tâm Y Tế Khu Vực Bình Long</strong> — Sở Y Tế Thành Phố Đồng Nai.
+        © 2026 <strong style={{ color: '#0F2C59' }}>Trung Tâm Y Tế Khu Vực Bình Long</strong> — Sở Y Tế Thành Phố Đồng Nai.
       </footer>
 
       {/* Floating AI Assistant */}
