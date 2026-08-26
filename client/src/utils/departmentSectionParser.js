@@ -104,13 +104,20 @@ export const parseDepartmentSections = (reportData, deptCode = '') => {
   // ================= 2. XÉT NGHIỆM (XN) =================
   if (normalizedDept === 'xn' || (data.tongSo !== undefined && (data.baoHiem !== undefined || data.noiTru !== undefined) && !data.techniques)) {
     const tableRows = [
-      { name: 'Xét Nghiệm Tổng Quát (Sinh hóa, Huyết học, Vi sinh...)', tongSo: data.tongSo || '0', baoHiem: data.baoHiem || '0', noiTru: data.noiTru || '0', ngoaiTru: data.ngoaiTru || '0' }
+      {
+        name: 'Xét Nghiệm Tổng Quát (Sinh hóa, Huyết học, Vi sinh...)',
+        tongSo: data.tongSo !== undefined && data.tongSo !== '' ? String(data.tongSo) : '0',
+        baoHiem: data.baoHiem !== undefined && data.baoHiem !== '' ? String(data.baoHiem) : '0',
+        noiTru: data.noiTru !== undefined && data.noiTru !== '' ? String(data.noiTru) : '0',
+        ngoaiTru: data.ngoaiTru !== undefined && data.ngoaiTru !== '' ? String(data.ngoaiTru) : '0'
+      }
     ];
 
     sections.push({
       title: 'THỐNG KÊ XÉT NGHIỆM THỰC HIỆN',
       tableType: 'techniques',
       headers: ['LOẠI XÉT NGHIỆM', 'TỔNG SỐ LƯỢT', 'BẢO HIỂM (BHYT)', 'NỘI TRÚ', 'NGOẠI TRÚ'],
+      rowKeys: ['name', 'tongSo', 'baoHiem', 'noiTru', 'ngoaiTru'],
       tableRows
     });
 
@@ -125,7 +132,69 @@ export const parseDepartmentSections = (reportData, deptCode = '') => {
     return sections;
   }
 
-  // ================= 3. HỒI SỨC CẤP CỨU – THẬN NHÂN TẠO (HSCC_TNT) =================
+  // ================= 3. CHẨN ĐOÁN HÌNH ẢNH (CDHA) =================
+  if (normalizedDept === 'cdha' || (data.techniques && Array.isArray(data.techniques))) {
+    const docItems = [];
+    if (data.bsSieuAm) docItems.push({ key: 'bsSieuAm', label: 'BS trực Siêu âm', value: String(data.bsSieuAm) });
+    if (data.bsXquangCT) docItems.push({ key: 'bsXquangCT', label: 'BS trực Xquang – CT Scan', value: String(data.bsXquangCT) });
+    if (docItems.length > 0) {
+      sections.push({
+        type: 'personnel',
+        title: 'PHÂN CÔNG BÁC SĨ TRỰC CHUYÊN KHOA',
+        value: docItems.map(d => `${d.label}: ${d.value}`).join(' | ')
+      });
+    }
+
+    const defaultTechNames = ['CT Scan', 'Xquang', 'Siêu âm', 'Nội soi', 'ECG', 'HHK'];
+    const rawTechs = Array.isArray(data.techniques) ? data.techniques : [];
+    
+    // Normalize technique rows
+    const tableRows = defaultTechNames.map(name => {
+      const match = rawTechs.find(t => t && t.name && t.name.toLowerCase().trim() === name.toLowerCase().trim());
+      return {
+        name,
+        tongSo: match?.tongSo !== undefined && match.tongSo !== '' ? String(match.tongSo) : '0',
+        baoHiem: match?.baoHiem !== undefined && match.baoHiem !== '' ? String(match.baoHiem) : '0',
+        noiTru: match?.noiTru !== undefined && match.noiTru !== '' ? String(match.noiTru) : '0',
+        ngoaiTru: match?.ngoaiTru !== undefined && match.ngoaiTru !== '' ? String(match.ngoaiTru) : '0'
+      };
+    });
+
+    // Add total row
+    const sumTongSo = tableRows.reduce((sum, r) => sum + (Number(r.tongSo) || 0), 0);
+    const sumBHYT = tableRows.reduce((sum, r) => sum + (Number(r.baoHiem) || 0), 0);
+    const sumNoiTru = tableRows.reduce((sum, r) => sum + (Number(r.noiTru) || 0), 0);
+    const sumNgoaiTru = tableRows.reduce((sum, r) => sum + (Number(r.ngoaiTru) || 0), 0);
+
+    tableRows.push({
+      name: '⭐ TỔNG CỘNG CÁC KỸ THUẬT CDHA',
+      tongSo: String(sumTongSo),
+      baoHiem: String(sumBHYT),
+      noiTru: String(sumNoiTru),
+      ngoaiTru: String(sumNgoaiTru),
+      isTotal: true
+    });
+
+    sections.push({
+      title: 'THỐNG KÊ KỸ THUẬT CHẨN ĐOÁN HÌNH ẢNH',
+      tableType: 'techniques',
+      headers: ['KỸ THUẬT', 'TỔNG SỐ', 'BẢO HIỂM (BHYT)', 'NỘI TRÚ', 'NGOẠI TRÚ'],
+      rowKeys: ['name', 'tongSo', 'baoHiem', 'noiTru', 'ngoaiTru'],
+      tableRows
+    });
+
+    if (data.themGio) {
+      sections.push({
+        type: 'note',
+        title: 'THÊM GIỜ & GHI CHÚ',
+        value: data.themGio
+      });
+    }
+
+    return sections;
+  }
+
+  // ================= 4. HỒI SỨC CẤP CỨU – THẬN NHÂN TẠO (HSCC_TNT) =================
   if (normalizedDept === 'hscc_tnt' || (data.hscc && data.tnt)) {
     // 1. TỔNG SỐ KHÁM
     const tongKhamItems = [];
@@ -274,7 +343,7 @@ export const parseDepartmentSections = (reportData, deptCode = '') => {
     return sections;
   }
 
-  // ================= 4. KHOA NHIỄM (NHIEM) =================
+  // ================= 5. KHOA NHIỄM (NHIEM) =================
   if (normalizedDept === 'nhiem' || data.chuyenKhoaSan !== undefined || data.xinXuatVien !== undefined) {
     if (data.dieuDuongTruc) {
       sections.push({
@@ -313,39 +382,6 @@ export const parseDepartmentSections = (reportData, deptCode = '') => {
         type: 'note',
         title: 'TÌNH HÌNH CHUNG CA TRỰC',
         value: data.tinhHinhChung
-      });
-    }
-
-    return sections;
-  }
-
-  // ================= 5. CHẨN ĐOÁN HÌNH ẢNH (CDHA) =================
-  if (data.techniques && Array.isArray(data.techniques)) {
-    const docItems = [];
-    if (data.bsSieuAm) docItems.push({ key: 'bsSieuAm', label: 'BS trực Siêu âm', value: String(data.bsSieuAm) });
-    if (data.bsXquangCT) docItems.push({ key: 'bsXquangCT', label: 'BS trực Xquang – CT Scan', value: String(data.bsXquangCT) });
-    if (docItems.length > 0) {
-      sections.push({
-        type: 'personnel',
-        title: 'PHÂN CÔNG BÁC SĨ TRỰC CHUYÊN KHOA',
-        value: docItems.map(d => `${d.label}: ${d.value}`).join(' | ')
-      });
-    }
-
-    const validRows = data.techniques.filter(t => t && (t.tongSo || t.baoHiem || t.noiTru || t.ngoaiTru || t.name));
-    if (validRows.length > 0) {
-      sections.push({
-        title: 'THỐNG KÊ KỸ THUẬT CHẨN ĐOÁN HÌNH ẢNH',
-        tableType: 'techniques',
-        tableRows: validRows
-      });
-    }
-
-    if (data.themGio) {
-      sections.push({
-        type: 'note',
-        title: 'THÊM GIỜ & GHI CHÚ',
-        value: data.themGio
       });
     }
 

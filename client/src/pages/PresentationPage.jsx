@@ -112,11 +112,11 @@ const PresentationPage = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [slideDirection, setSlideDirection] = useState('next');
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showSidebar, setShowSidebar] = useState(false); // Default full screen without sidebar
+  const [showSidebar, setShowSidebar] = useState(false);
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showIntro, setShowIntro] = useState(true);
-  const [fontScale, setFontScale] = useState(1); // 1 = 100% default scale
+  const [fontScale, setFontScale] = useState(1);
   const [exportingPptx, setExportingPptx] = useState(false);
 
   // Lightbox Modal State
@@ -174,7 +174,7 @@ const PresentationPage = () => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [currentSlide]);
 
-  // Build slides with official department order, intro slides, and specialized case slides
+  // Build slides with official department order & specialized case slides
   const slides = useMemo(() => {
     const s = [{ type: 'title', title: 'BÁO CÁO GIAO BAN' }];
 
@@ -298,11 +298,11 @@ const PresentationPage = () => {
       totalChuyenVien += transferCases.length || parseMetricNum(rawData.chuyenVien || rawData.hscc?.chuyenVien || rawData.tnt?.tnt_chuyenVien || 0);
       totalPhauThuat += surgeryCases.length || parseMetricNum(rawData.tongSoCaMo || rawData.phauThuat || 0);
       totalTuVong += deathCases.length || parseMetricNum(rawData.tuVong || rawData.hscc?.tuVong || 0);
-      totalBenhNang += criticalCases.length; // ONLY count clinical critical cases entered for that day
+      totalBenhNang += criticalCases.length;
       totalHienCon += parseMetricNum(rawData.hienCon || rawData.hienCo || rawData.hscc?.hienCon || rawData.tnt?.tnt_hienCon || 0);
 
       // =========================================================================
-      // 1. DEPARTMENT INTRO / TITLE SLIDE (Mở đầu trang trọng cho mỗi khoa)
+      // 1. DEPARTMENT INTRO SLIDE (Mở đầu trang trọng, tinh gọn cho mỗi khoa)
       // =========================================================================
       s.push({
         type: 'dept_intro',
@@ -326,7 +326,7 @@ const PresentationPage = () => {
 
       // =========================================================================
       // 2. DEPARTMENT DATA SLIDES
-      // Tách riêng các khối HSCC, TNT, PK21 thành từng slide to rõ nếu là khoa HSCC-TNT
+      // Tách riêng 3 slide to rõ nếu là khoa HSCC-TNT
       // =========================================================================
       const isHsccTnt = (r.department_code || '').toLowerCase() === 'hscc_tnt' || (rawData.hscc && rawData.tnt);
 
@@ -461,7 +461,7 @@ const PresentationPage = () => {
       }
 
       // =========================================================================
-      // 3. CLINICAL CASES OVERVIEW SLIDE (TỔNG QUAN CÁC CA BỆNH LÂM SÀNG TẠI KHOA)
+      // 3. CLINICAL CASES OVERVIEW SLIDE (CHỈ XUẤT HIỆN KHI KHOA CÓ CA LÂM SÀNG)
       // =========================================================================
       const hasClinicalCases = transferCases.length > 0 || surgeryCases.length > 0 || criticalCases.length > 0 || deathCases.length > 0;
       if (hasClinicalCases) {
@@ -708,7 +708,6 @@ const PresentationPage = () => {
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Avoid hotkeys when lightbox or other modals are open
       if (lightboxOpen) return;
 
       if (e.code === 'ArrowRight' || e.code === 'Space' || e.code === 'PageDown') {
@@ -779,8 +778,8 @@ const PresentationPage = () => {
       style={{
         width: '100vw',
         height: '100vh',
-        backgroundColor: '#0A192F',
-        color: '#FFFFFF',
+        backgroundColor: '#FFFFFF',
+        color: '#0F172A',
         fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
         display: 'flex',
         overflow: 'hidden',
@@ -799,18 +798,18 @@ const PresentationPage = () => {
       {/* Global Presentation Animation Styles */}
       <style>{`
         @keyframes slideNextIn {
-          0% { opacity: 0; transform: translateX(20px) scale(0.98); }
+          0% { opacity: 0; transform: translateX(15px) scale(0.99); }
           100% { opacity: 1; transform: translateX(0) scale(1); }
         }
         @keyframes slidePrevIn {
-          0% { opacity: 0; transform: translateX(-20px) scale(0.98); }
+          0% { opacity: 0; transform: translateX(-15px) scale(0.99); }
           100% { opacity: 1; transform: translateX(0) scale(1); }
         }
         .presentation-slide-next {
-          animation: slideNextIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+          animation: slideNextIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
         .presentation-slide-prev {
-          animation: slidePrevIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+          animation: slidePrevIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
       `}</style>
 
@@ -836,7 +835,7 @@ const PresentationPage = () => {
           {/* Drawer Sidebar */}
           <aside style={{
             position: 'relative',
-            width: '320px',
+            width: '340px',
             maxWidth: '85vw',
             height: '100%',
             backgroundColor: '#0F2C59',
@@ -844,21 +843,21 @@ const PresentationPage = () => {
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
-            padding: '1rem',
+            padding: '1.2rem',
             boxSizing: 'border-box',
             zIndex: 10,
             boxShadow: '8px 0 30px rgba(0, 0, 0, 0.5)'
           }}>
-            {/* Top: Header */}
+            {/* Top: Header & Return to Admin Button */}
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
                   <img src="/logo.png" alt="Logo" style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
                   <div>
-                    <div style={{ fontSize: '0.85rem', fontWeight: '900', color: '#FFFFFF', letterSpacing: '0.5px' }}>
+                    <div style={{ fontSize: '0.88rem', fontWeight: '900', color: '#FFFFFF', letterSpacing: '0.5px' }}>
                       DANH SÁCH SLIDE
                     </div>
-                    <div style={{ fontSize: '0.68rem', color: '#93C5FD' }}>
+                    <div style={{ fontSize: '0.7rem', color: '#93C5FD' }}>
                       Tổng số: {slides.length} slide
                     </div>
                   </div>
@@ -870,8 +869,8 @@ const PresentationPage = () => {
                     border: 'none',
                     color: '#FFFFFF',
                     borderRadius: '50%',
-                    width: '30px',
-                    height: '30px',
+                    width: '32px',
+                    height: '32px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -882,9 +881,36 @@ const PresentationPage = () => {
                 </button>
               </div>
 
+              {/* SAFE EXIT BUTTON (Inside Drawer) */}
+              <button
+                onClick={() => navigate('/admin')}
+                style={{
+                  width: '100%',
+                  backgroundColor: '#1E3A8A',
+                  border: '1.5px solid #3B82F6',
+                  color: '#FFFFFF',
+                  borderRadius: '10px',
+                  padding: '0.65rem 1rem',
+                  fontSize: '0.85rem',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  marginBottom: '1rem',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.25)',
+                  transition: 'all 0.18s ease'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2563EB'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1E3A8A'}
+              >
+                <FaArrowLeft /> QUAY LẠI BẢNG ĐIỀU KHIỂN
+              </button>
+
               {/* Scrollable Slide Thumbnails List */}
               <div style={{
-                maxHeight: 'calc(100vh - 160px)',
+                maxHeight: 'calc(100vh - 210px)',
                 overflowY: 'auto',
                 display: 'flex',
                 flexDirection: 'column',
@@ -894,7 +920,6 @@ const PresentationPage = () => {
                 {slides.map((s, idx) => {
                   const isActive = idx === currentSlide;
                   
-                  // Icon picker based on slide type
                   let slideIcon = <FaFileAlt />;
                   if (s.type === 'title') slideIcon = <FaHospital style={{ color: '#38BDF8' }} />;
                   else if (s.type === 'dept_intro') slideIcon = <FaHospital style={{ color: '#FDE047' }} />;
@@ -978,19 +1003,19 @@ const PresentationPage = () => {
         </div>
       )}
 
-      {/* ===================== MAIN PRESENTATION STAGE ===================== */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100vh', overflow: 'hidden', width: '100%' }}>
+      {/* ===================== TRUE EDGE-TO-EDGE FULL BLEED PRESENTATION STAGE ===================== */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100vh', overflow: 'hidden', width: '100%', backgroundColor: '#FFFFFF' }}>
         
-        {/* Slide Viewport Canvas Container */}
+        {/* Full Bleed Slide Viewport Container (ZERO PADDING MARGIN!) */}
         <div style={{
           flex: 1,
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '0.65rem 0.95rem',
+          width: '100%',
+          height: 'calc(100vh - 54px)',
           overflow: 'hidden',
           minHeight: 0,
-          position: 'relative'
+          position: 'relative',
+          padding: 0
         }}>
           {/* Floating Slide List Drawer Toggle Button */}
           <button
@@ -998,14 +1023,14 @@ const PresentationPage = () => {
             onClick={() => setShowSidebar(prev => !prev)}
             style={{
               position: 'absolute',
-              top: '1.15rem',
-              left: '1.5rem',
+              top: '1rem',
+              left: '1.25rem',
               zIndex: 10,
               backgroundColor: 'rgba(15, 44, 89, 0.88)',
               color: '#FFFFFF',
               border: '1px solid rgba(255, 255, 255, 0.25)',
               borderRadius: '20px',
-              padding: '0.38rem 0.85rem',
+              padding: '0.35rem 0.85rem',
               fontSize: '0.78rem',
               fontWeight: '800',
               cursor: 'pointer',
@@ -1013,7 +1038,7 @@ const PresentationPage = () => {
               alignItems: 'center',
               gap: '0.45rem',
               backdropFilter: 'blur(8px)',
-              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.15)',
+              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.12)',
               transition: 'all 0.15s ease'
             }}
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2563EB'}
@@ -1024,16 +1049,16 @@ const PresentationPage = () => {
             <span>Danh sách ({slides.length})</span>
           </button>
 
+          {/* 100% Edge-to-Edge Slide Inner Container */}
           <div style={{
             width: '100%',
             height: '100%',
-            maxWidth: '100%',
             backgroundColor: '#FFFFFF',
             color: '#0F172A',
-            borderRadius: '20px',
-            border: '1px solid #E2E8F0',
-            boxShadow: '0 8px 30px rgba(15, 44, 89, 0.08)',
-            padding: '1.1rem 1.6rem',
+            borderRadius: '0px',
+            border: 'none',
+            boxShadow: 'none',
+            padding: isFullscreen ? '1.2rem 2.2rem' : '1rem 1.6rem',
             boxSizing: 'border-box',
             display: 'flex',
             flexDirection: 'column',
@@ -1122,10 +1147,10 @@ const PresentationPage = () => {
           </div>
         </div>
 
-        {/* ===================== CONTROL BAR ===================== */}
+        {/* ===================== SLEEK DOCKED CONTROL BAR ===================== */}
         <div style={{
           padding: '0 1.5rem',
-          height: '60px',
+          height: '54px',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -1140,28 +1165,8 @@ const PresentationPage = () => {
             <div style={{ height: '100%', backgroundColor: '#2563EB', width: `${progressPct}%`, transition: 'width 0.2s ease' }} />
           </div>
 
-          {/* Left: Previous button */}
+          {/* Left: Previous button (No accidental exit button!) */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-            <button
-              onClick={() => navigate('/admin')}
-              style={{
-                backgroundColor: '#F1F5F9',
-                border: '1px solid #CBD5E1',
-                color: '#475569',
-                borderRadius: '8px',
-                padding: '0.42rem 0.85rem',
-                fontSize: '0.82rem',
-                fontWeight: '700',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.4rem'
-              }}
-              title="Quay lại Bảng điều khiển Quản trị"
-            >
-              <FaArrowLeft /> Bảng Điều Khiển
-            </button>
-
             <button
               onClick={handlePrevSlide}
               disabled={currentSlide === 0}
@@ -1170,8 +1175,8 @@ const PresentationPage = () => {
                 border: 'none',
                 color: currentSlide === 0 ? '#94A3B8' : '#FFFFFF',
                 borderRadius: '8px',
-                padding: '0.42rem 1.1rem',
-                fontSize: '0.85rem',
+                padding: '0.45rem 1.25rem',
+                fontSize: '0.88rem',
                 fontWeight: '800',
                 cursor: currentSlide === 0 ? 'not-allowed' : 'pointer',
                 display: 'flex',
@@ -1190,10 +1195,10 @@ const PresentationPage = () => {
               backgroundColor: '#EFF6FF',
               border: '1.5px solid #BFDBFE',
               borderRadius: '20px',
-              padding: '0.3rem 0.95rem',
+              padding: '0.3rem 1rem',
               color: '#1E40AF',
               fontWeight: '900',
-              fontSize: '0.88rem'
+              fontSize: '0.9rem'
             }}>
               Slide {currentSlide + 1} / {slides.length}
             </div>
@@ -1207,7 +1212,7 @@ const PresentationPage = () => {
               >
                 <FaSearchMinus />
               </button>
-              <span style={{ fontSize: '0.74rem', fontWeight: '800', color: '#0F2C59', minWidth: '38px', textAlign: 'center' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: '800', color: '#0F2C59', minWidth: '38px', textAlign: 'center' }}>
                 {Math.round(fontScale * 100)}%
               </span>
               <button
@@ -1230,8 +1235,8 @@ const PresentationPage = () => {
                 border: 'none',
                 color: '#FFFFFF',
                 borderRadius: '8px',
-                padding: '0.42rem 0.9rem',
-                fontSize: '0.82rem',
+                padding: '0.42rem 0.95rem',
+                fontSize: '0.84rem',
                 fontWeight: '800',
                 cursor: exportingPptx ? 'not-allowed' : 'pointer',
                 display: 'flex',
@@ -1248,16 +1253,16 @@ const PresentationPage = () => {
               onClick={toggleFullscreen}
               style={{
                 backgroundColor: '#F1F5F9',
-                border: '1px solid #CBD5E1',
+                border: '1.5px solid #CBD5E1',
                 color: '#1E293B',
                 borderRadius: '8px',
-                padding: '0.42rem 0.75rem',
-                fontSize: '0.82rem',
-                fontWeight: '700',
+                padding: '0.42rem 0.85rem',
+                fontSize: '0.84rem',
+                fontWeight: '800',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.35rem'
+                gap: '0.4rem'
               }}
               title="Toàn màn hình (F11 hoặc F)"
             >
@@ -1273,8 +1278,8 @@ const PresentationPage = () => {
                 border: 'none',
                 color: currentSlide === slides.length - 1 ? '#94A3B8' : '#FFFFFF',
                 borderRadius: '8px',
-                padding: '0.42rem 1.15rem',
-                fontSize: '0.85rem',
+                padding: '0.45rem 1.35rem',
+                fontSize: '0.88rem',
                 fontWeight: '900',
                 cursor: currentSlide === slides.length - 1 ? 'not-allowed' : 'pointer',
                 display: 'flex',
