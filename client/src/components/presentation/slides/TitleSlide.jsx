@@ -1,9 +1,65 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { formatDate } from '../../../utils/medicalFormatters';
 import {
   FaHospital, FaAmbulance, FaProcedures, FaHeartbeat,
-  FaSkullCrossbones, FaCalendarAlt, FaUsers
+  FaSkullCrossbones, FaCalendarAlt, FaUsers, FaArrowRight
 } from 'react-icons/fa';
+
+// Digital Slot Machine / Rolling Number Component
+const RollingNumberCounter = ({ value, duration = 1500 }) => {
+  const [displayValue, setDisplayValue] = useState(0);
+  const [isDone, setIsDone] = useState(false);
+
+  useEffect(() => {
+    const target = Number(value) || 0;
+    if (target === 0) {
+      setDisplayValue(0);
+      setIsDone(true);
+      return;
+    }
+
+    let startTime = null;
+    let animId;
+
+    const animate = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      if (progress < 0.72) {
+        // High-speed scramble phase
+        const maxRand = Math.max(target * 1.5, 99);
+        const rand = Math.floor(Math.random() * maxRand);
+        setDisplayValue(rand);
+      } else if (progress < 1) {
+        // Smooth decelerating interpolation phase
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        const interpolated = Math.round(easeOut * target);
+        setDisplayValue(interpolated);
+      } else {
+        setDisplayValue(target);
+        setIsDone(true);
+        return;
+      }
+
+      animId = requestAnimationFrame(animate);
+    };
+
+    animId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animId);
+  }, [value, duration]);
+
+  return (
+    <span style={{
+      fontVariantNumeric: 'tabular-nums',
+      display: 'inline-block',
+      transition: isDone ? 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)' : 'none',
+      transform: isDone ? 'scale(1)' : 'scale(1.05)'
+    }}>
+      {displayValue}
+    </span>
+  );
+};
 
 const TitleSlide = ({ selectedDate, reportsCount = 12, summary = {}, isFullscreen }) => {
   const tongSoKham = summary.tongSoKham || 0;
@@ -70,10 +126,10 @@ const TitleSlide = ({ selectedDate, reportsCount = 12, summary = {}, isFullscree
       textAlign: 'center',
       position: 'relative',
       overflow: 'hidden',
-      borderRadius: '20px',
-      padding: isFullscreen ? '2rem 2.5rem' : '1.25rem 1.75rem',
+      padding: isFullscreen ? '2rem 3rem' : '1.25rem 1.85rem',
       backgroundColor: '#FFFFFF',
       height: '100%',
+      width: '100%',
       boxSizing: 'border-box'
     }}>
       
@@ -111,8 +167,8 @@ const TitleSlide = ({ selectedDate, reportsCount = 12, summary = {}, isFullscree
             border: '1.5px solid #DBEAFE',
             color: '#1E40AF',
             fontWeight: '900',
-            fontSize: isFullscreen ? '1.05rem' : '0.88rem',
-            marginBottom: isFullscreen ? '0.95rem' : '0.65rem',
+            fontSize: isFullscreen ? '1.02rem' : '0.86rem',
+            marginBottom: isFullscreen ? '0.85rem' : '0.55rem',
             letterSpacing: '0.5px',
             textTransform: 'uppercase',
             boxShadow: '0 2px 10px rgba(37, 99, 235, 0.08)'
@@ -126,12 +182,12 @@ const TitleSlide = ({ selectedDate, reportsCount = 12, summary = {}, isFullscree
         <h1 
           className="anim-info-pop anim-delay-1"
           style={{
-            fontSize: isFullscreen ? '2.95rem' : '2.2rem',
+            fontSize: isFullscreen ? '3.1rem' : '2.3rem',
             fontWeight: '900',
             color: '#0F2C59',
             letterSpacing: '-0.5px',
             lineHeight: '1.15',
-            margin: '0 0 0.45rem 0',
+            margin: '0 0 0.35rem 0',
             textTransform: 'uppercase'
           }}
         >
@@ -165,7 +221,7 @@ const TitleSlide = ({ selectedDate, reportsCount = 12, summary = {}, isFullscree
             color: '#D97706',
             fontWeight: '800',
             textTransform: 'capitalize',
-            marginBottom: isFullscreen ? '1rem' : '0.65rem'
+            marginBottom: isFullscreen ? '0.85rem' : '0.55rem'
           }}
         >
           <FaCalendarAlt style={{ fontSize: '1rem' }} />
@@ -173,7 +229,7 @@ const TitleSlide = ({ selectedDate, reportsCount = 12, summary = {}, isFullscree
         </div>
       </div>
 
-      {/* 3. 5 Executive Summary Cards Grid (Toàn Bộ Số Liệu Trọng Yếu Trong Ngày) */}
+      {/* 3. 5 Executive Summary Cards Grid with Rolling Numbers */}
       <div style={{
         position: 'relative',
         zIndex: 1,
@@ -198,101 +254,77 @@ const TitleSlide = ({ selectedDate, reportsCount = 12, summary = {}, isFullscree
               alignItems: 'center',
               justifyContent: 'space-between',
               boxShadow: '0 6px 20px rgba(15, 44, 89, 0.04)',
-              minHeight: isFullscreen ? '175px' : '135px',
-              boxSizing: 'border-box'
+              minHeight: isFullscreen ? '160px' : '125px',
+              transition: 'transform 0.2s ease, box-shadow 0.2s ease'
             }}
           >
-            {/* Top: Icon + Label */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem' }}>
+            <div style={{
+              fontSize: isFullscreen ? '1.5rem' : '1.2rem',
+              color: card.color,
+              marginBottom: '0.2rem'
+            }}>
+              {card.icon}
+            </div>
+
+            {/* Rolling Number Counter */}
+            <div style={{
+              fontSize: isFullscreen ? '2.8rem' : '2.1rem',
+              fontWeight: '900',
+              color: card.color,
+              fontFamily: "'Roboto Mono', monospace",
+              lineHeight: 1,
+              margin: '0.25rem 0'
+            }}>
+              <RollingNumberCounter value={card.val} duration={1200 + idx * 150} />
+            </div>
+
+            <div>
               <div style={{
-                width: isFullscreen ? '44px' : '36px',
-                height: isFullscreen ? '44px' : '36px',
-                borderRadius: '50%',
-                backgroundColor: '#FFFFFF',
-                color: card.color,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: isFullscreen ? '1.25rem' : '1.05rem',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-                flexShrink: 0
-              }}>
-                {card.icon}
-              </div>
-              <div style={{
-                fontSize: isFullscreen ? '0.86rem' : '0.74rem',
+                fontSize: isFullscreen ? '0.82rem' : '0.72rem',
                 fontWeight: '900',
-                color: card.color,
+                color: '#0F2C59',
                 textTransform: 'uppercase',
                 letterSpacing: '0.3px',
                 lineHeight: 1.2
               }}>
                 {card.label}
               </div>
-            </div>
-
-            {/* Middle: Big Metric Number Badge */}
-            <div style={{ margin: '0.45rem 0' }}>
-              <span 
-                className="anim-metric-pop"
-                style={{
-                  backgroundColor: '#FFFFFF',
-                  color: card.color,
-                  border: `2px solid ${card.border}`,
-                  padding: isFullscreen ? '0.3rem 1.15rem' : '0.2rem 0.85rem',
-                  borderRadius: '12px',
-                  fontSize: isFullscreen ? '2.4rem' : '1.85rem',
-                  fontWeight: '900',
-                  fontFamily: "'Roboto Mono', monospace",
-                  display: 'inline-block',
-                  minWidth: isFullscreen ? '80px' : '64px',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
-                }}
-              >
-                {card.val}
-              </span>
-            </div>
-
-            {/* Bottom: Subtitle */}
-            <div style={{
-              fontSize: isFullscreen ? '0.78rem' : '0.68rem',
-              fontWeight: '700',
-              color: '#64748B',
-              lineHeight: 1.15
-            }}>
-              {card.sub}
+              <div style={{
+                fontSize: isFullscreen ? '0.74rem' : '0.65rem',
+                color: '#64748B',
+                fontWeight: '600',
+                marginTop: '2px'
+              }}>
+                {card.sub}
+              </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* 4. Bottom Footer Info Pill */}
+      {/* 4. Bottom Attendance & Guidance Bar */}
       <div 
-        className="anim-info-pop anim-delay-7"
+        className="anim-info-pop anim-delay-5"
         style={{
           position: 'relative',
           zIndex: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '1.5rem',
-          padding: isFullscreen ? '0.65rem 1.75rem' : '0.45rem 1.25rem',
-          backgroundColor: '#F8FAFC',
-          border: '1.5px solid #E2E8F0',
-          borderRadius: '12px',
           width: '100%',
-          maxWidth: '750px',
-          marginTop: isFullscreen ? '0.85rem' : '0.5rem'
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          borderTop: '1.5px solid #E2E8F0',
+          paddingTop: '0.75rem',
+          fontSize: isFullscreen ? '0.98rem' : '0.85rem'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: isFullscreen ? '0.92rem' : '0.8rem', fontWeight: '800', color: '#1E40AF' }}>
-          <FaHospital style={{ color: '#2563EB' }} />
-          <span>Báo Cáo: <strong>{reportsCount}/12 Khoa Phòng</strong></span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#1E40AF', fontWeight: '800' }}>
+          <FaUsers />
+          <span>Tổng số 12 khoa phòng • Đã nộp báo cáo: <strong style={{ color: '#10B981' }}>{reportsCount}/12 khoa</strong></span>
         </div>
-        <div style={{ width: '1px', height: '18px', backgroundColor: '#CBD5E1' }} />
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: isFullscreen ? '0.92rem' : '0.8rem', fontWeight: '800', color: '#065F46' }}>
-          <FaUsers style={{ color: '#10B981' }} />
-          <span>Chủ Trì: <strong>Hội Đồng Giao Ban & Ban Giám Đốc</strong></span>
+
+        <div style={{ color: '#0284C7', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <span>Nhấn phím ➔ hoặc Space để bắt đầu báo cáo từng khoa</span>
+          <FaArrowRight />
         </div>
       </div>
 

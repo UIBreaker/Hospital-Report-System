@@ -5,7 +5,7 @@ import {
   FaFilePowerpoint, FaSpinner, FaSearchPlus, FaSearchMinus,
   FaArrowLeft, FaFileAlt, FaUserMd, FaListUl, FaTimes, FaBars,
   FaHospital, FaAmbulance, FaProcedures, FaHeartbeat, FaSkullCrossbones,
-  FaClipboardList, FaDoorOpen
+  FaClipboardList, FaDoorOpen, FaHandHoldingHeart
 } from 'react-icons/fa';
 import reportService from '../services/reportService';
 import { exportPresentationToPowerPoint } from '../services/powerpointExportService';
@@ -28,6 +28,7 @@ import DeathSlide from '../components/presentation/slides/DeathSlide';
 import CriticalSlide from '../components/presentation/slides/CriticalSlide';
 import FullScreenImageSlide from '../components/presentation/slides/FullScreenImageSlide';
 import SummarySlide from '../components/presentation/slides/SummarySlide';
+import ClosingSlide from '../components/presentation/slides/ClosingSlide';
 import CinematicNetflixIntro from '../components/presentation/CinematicNetflixIntro';
 
 const parseMetricNum = (val) => {
@@ -174,7 +175,7 @@ const PresentationPage = () => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [currentSlide]);
 
-  // Build slides with official department order & specialized case slides
+  // Build slides with official department order, intro, clinical cases, summary, and closing slides
   const slides = useMemo(() => {
     const s = [{ type: 'title', title: 'BÁO CÁO GIAO BAN' }];
 
@@ -673,7 +674,7 @@ const PresentationPage = () => {
       s[0].reportsCount = sortedReports.length;
     }
 
-    // Hospital-Wide Summary Slide at the End
+    // 5. Hospital-Wide Summary Slide
     if (sortedReports.length > 0) {
       s.push({
         type: 'summary',
@@ -684,6 +685,13 @@ const PresentationPage = () => {
         reports: sortedReports
       });
     }
+
+    // 6. Final Farewell & Thank You Slide at the very end
+    s.push({
+      type: 'closing',
+      title: 'BẾ MẠC & CẢM ƠN',
+      selectedDate: date
+    });
 
     return s;
   }, [reports, date]);
@@ -798,18 +806,18 @@ const PresentationPage = () => {
       {/* Global Presentation Animation Styles */}
       <style>{`
         @keyframes slideNextIn {
-          0% { opacity: 0; transform: translateX(15px) scale(0.99); }
+          0% { opacity: 0; transform: translateX(18px) scale(0.99); }
           100% { opacity: 1; transform: translateX(0) scale(1); }
         }
         @keyframes slidePrevIn {
-          0% { opacity: 0; transform: translateX(-15px) scale(0.99); }
+          0% { opacity: 0; transform: translateX(-18px) scale(0.99); }
           100% { opacity: 1; transform: translateX(0) scale(1); }
         }
         .presentation-slide-next {
-          animation: slideNextIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+          animation: slideNextIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
         .presentation-slide-prev {
-          animation: slidePrevIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+          animation: slidePrevIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
       `}</style>
 
@@ -928,6 +936,7 @@ const PresentationPage = () => {
                   else if (s.type?.includes('surgery')) slideIcon = <FaProcedures style={{ color: '#38BDF8' }} />;
                   else if (s.type?.includes('critical')) slideIcon = <FaHeartbeat style={{ color: '#A855F7' }} />;
                   else if (s.type?.includes('death')) slideIcon = <FaSkullCrossbones style={{ color: '#EF4444' }} />;
+                  else if (s.type === 'closing') slideIcon = <FaHandHoldingHeart style={{ color: '#F43F5E' }} />;
 
                   return (
                     <button
@@ -1006,7 +1015,7 @@ const PresentationPage = () => {
       {/* ===================== TRUE EDGE-TO-EDGE FULL BLEED PRESENTATION STAGE ===================== */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100vh', overflow: 'hidden', width: '100%', backgroundColor: '#FFFFFF' }}>
         
-        {/* Full Bleed Slide Viewport Container (ZERO PADDING MARGIN!) */}
+        {/* Full Bleed Slide Viewport Container */}
         <div style={{
           flex: 1,
           display: 'flex',
@@ -1143,6 +1152,18 @@ const PresentationPage = () => {
                   onOpenLightbox={imgUrl => handleOpenLightbox([imgUrl], 0, slide.title)}
                 />
               )}
+
+              {/* 11. Final Closing & Thank You Slide */}
+              {slide.type === 'closing' && (
+                <ClosingSlide
+                  selectedDate={date}
+                  onRestart={() => {
+                    setSlideDirection('prev');
+                    setCurrentSlide(0);
+                  }}
+                  isFullscreen={true}
+                />
+              )}
             </div>
           </div>
         </div>
@@ -1165,7 +1186,7 @@ const PresentationPage = () => {
             <div style={{ height: '100%', backgroundColor: '#2563EB', width: `${progressPct}%`, transition: 'width 0.2s ease' }} />
           </div>
 
-          {/* Left: Previous button (No accidental exit button!) */}
+          {/* Left: Previous button */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
             <button
               onClick={handlePrevSlide}

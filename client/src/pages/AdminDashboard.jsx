@@ -32,6 +32,7 @@ import Footer from '../components/common/Footer';
 import AdminReportDetailModal from '../components/admin/modals/AdminReportDetailModal';
 import SecurityLockModal from '../components/admin/modals/SecurityLockModal';
 import MedicalLoader from '../components/common/MedicalLoader';
+import { normalizeImages } from '../utils/medicalFormatters';
 
 // Lazy-loaded Tab components for performance and code splitting
 const ReportsTab = lazy(() => import('../components/admin/tabs/ReportsTab'));
@@ -215,7 +216,7 @@ const AdminDashboard = () => {
     initial_treatment: c.initialTreatment || c.initial_treatment || '',
     progressNotes: c.progressNotes || c.progress_notes || '',
     progress_notes: c.progressNotes || c.progress_notes || '',
-    images: Array.isArray(c.images) ? c.images : (typeof c.images === 'string' ? (() => { try { return JSON.parse(c.images); } catch { return []; } })() : [])
+    images: normalizeImages(c.images || c.image_url || c.imageUrl || c.image)
   });
 
   const normalizeSurgeryCase = (sc) => ({
@@ -241,7 +242,7 @@ const AdminDashboard = () => {
     postoperative_diagnosis: sc.postoperativeDiagnosis || sc.postoperative_diagnosis || '',
     currentStatus: sc.currentStatus || sc.current_status || '',
     current_status: sc.currentStatus || sc.current_status || '',
-    images: Array.isArray(sc.images) ? sc.images : (typeof sc.images === 'string' ? (() => { try { return JSON.parse(sc.images); } catch { return []; } })() : [])
+    images: normalizeImages(sc.images || sc.image_url || sc.imageUrl || sc.image)
   });
 
   const normalizeDeathCase = (dc) => ({
@@ -267,7 +268,7 @@ const AdminDashboard = () => {
     emergency_treatment: dc.emergencyTreatment || dc.emergency_treatment || '',
     finalOutcome: dc.finalOutcome || dc.final_outcome || '',
     final_outcome: dc.finalOutcome || dc.final_outcome || '',
-    images: Array.isArray(dc.images) ? dc.images : (typeof dc.images === 'string' ? (() => { try { return JSON.parse(dc.images); } catch { return []; } })() : [])
+    images: normalizeImages(dc.images || dc.image_url || dc.imageUrl || dc.image)
   });
 
   const normalizeCriticalCase = (cc) => ({
@@ -290,7 +291,7 @@ const AdminDashboard = () => {
     condition_summary: cc.conditionSummary || cc.condition_summary || '',
     treatment: cc.treatment || '',
     notes: cc.notes || '',
-    images: Array.isArray(cc.images) ? cc.images : (typeof cc.images === 'string' ? (() => { try { return JSON.parse(cc.images); } catch { return []; } })() : [])
+    images: normalizeImages(cc.images || cc.image_url || cc.imageUrl || cc.image)
   });
 
   // Open Detail Modal for Department Report
