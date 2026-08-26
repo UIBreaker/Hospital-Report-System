@@ -105,6 +105,7 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const [successUser, setSuccessUser] = useState(null);
   const [isShaking, setIsShaking] = useState(false);
   const [showForgotModal, setShowForgotModal] = useState(false);
@@ -129,11 +130,12 @@ const LoginPage = () => {
     }
   }, []);
 
+  // Only auto-redirect if already logged in on initial landing and NOT currently showing login success animation
   useEffect(() => {
-    if (user) {
+    if (user && !isSuccess && !isTransitioning) {
       navigate(isAdmin ? '/admin' : '/report', { replace: true });
     }
-  }, [user, isAdmin, navigate]);
+  }, [user, isAdmin, navigate, isSuccess, isTransitioning]);
 
   // Fullscreen Change Listener
   useEffect(() => {
@@ -157,7 +159,8 @@ const LoginPage = () => {
     } catch (e) {}
   };
 
-  if (user) {
+  // Prevent blank screen if user is already logged in on cold load
+  if (user && !isSuccess && !isTransitioning) {
     return null;
   }
 
@@ -199,14 +202,20 @@ const LoginPage = () => {
         return;
       }
 
-      // Success State
+      // Success State Activation
       setIsSuccess(true);
       setSuccessUser(loggedInUser);
       playLoginSuccessSound();
 
+      // Trigger seamless Full-Screen Portal Curtain Transition at 720ms
+      setTimeout(() => {
+        setIsTransitioning(true);
+      }, 720);
+
+      // Perform final smooth navigation into destination workspace at 1150ms
       setTimeout(() => {
         navigate(loggedInUser?.role === 'admin' ? '/admin' : '/report');
-      }, 950);
+      }, 1150);
 
     } catch (err) {
       const rawMsg = err.response?.data?.error || err.response?.data?.message || err.message;
@@ -248,6 +257,78 @@ const LoginPage = () => {
             setShowIntro(false);
           }}
         />
+      )}
+
+      {/* Full-Screen Seamless Medical Portal Curtain Transition Overlay */}
+      {isTransitioning && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 99999,
+          background: 'radial-gradient(circle at 50% 50%, rgba(240, 253, 244, 0.96) 0%, rgba(224, 242, 254, 0.98) 65%, #F8FAFC 100%)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          animation: 'portalCurtainExpand 0.55s cubic-bezier(0.16, 1, 0.3, 1) both',
+          pointerEvents: 'all'
+        }}>
+          <div style={{
+            position: 'relative',
+            width: '90px',
+            height: '90px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '1.2rem'
+          }}>
+            <div style={{
+              position: 'absolute',
+              inset: '-15px',
+              borderRadius: '50%',
+              border: '2px solid rgba(16, 185, 129, 0.5)',
+              animation: 'portalRipplePulse 1.5s cubic-bezier(0.1, 0.8, 0.3, 1) infinite'
+            }} />
+            <div style={{
+              width: '80px',
+              height: '80px',
+              borderRadius: '50%',
+              backgroundColor: '#FFFFFF',
+              boxShadow: '0 8px 30px rgba(16, 185, 129, 0.35), 0 0 0 3px rgba(255, 255, 255, 0.95)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '10px',
+              boxSizing: 'border-box'
+            }}>
+              <img src="/logo.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            </div>
+          </div>
+          <div style={{
+            fontSize: '1.25rem',
+            fontWeight: '900',
+            color: '#0F2C59',
+            textTransform: 'uppercase',
+            letterSpacing: '0.6px',
+            marginBottom: '0.35rem',
+            textAlign: 'center'
+          }}>
+            KẾT NỐI CỔNG GIAO BAN THÀNH CÔNG
+          </div>
+          <div style={{
+            fontSize: '0.9rem',
+            fontWeight: '700',
+            color: '#0284C7',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.4rem'
+          }}>
+            <FaHeartbeat style={{ color: '#10B981', animation: 'heartbeatPulse 0.8s ease-in-out infinite' }} />
+            <span>Đang mở không gian làm việc chuyên môn...</span>
+          </div>
+        </div>
       )}
 
       {/* Floating Fullscreen F11 Quick Toggle */}
@@ -302,6 +383,21 @@ const LoginPage = () => {
         @keyframes loginBloomExpand {
           0% { opacity: 0; transform: scale(0.97); filter: blur(8px); }
           100% { opacity: 1; transform: scale(1); filter: blur(0px); }
+        }
+
+        @keyframes portalCurtainExpand {
+          0% { opacity: 0; transform: scale(0.96); filter: blur(10px); }
+          100% { opacity: 1; transform: scale(1); filter: blur(0px); }
+        }
+
+        @keyframes portalRipplePulse {
+          0% { transform: scale(0.85); opacity: 0.8; }
+          100% { transform: scale(1.6); opacity: 0; }
+        }
+
+        @keyframes heartbeatPulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.25); }
         }
 
         @keyframes loginShake {
