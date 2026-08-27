@@ -34,6 +34,10 @@ const customFormService = {
     const response = await api.delete(`/custom-forms/${code}/submissions/${submissionId}`);
     return response.data;
   },
+  updateFormSubmission: async (code, submissionId, payload) => {
+    const response = await api.put(`/custom-forms/${code}/submissions/${submissionId}`, payload);
+    return response.data;
+  },
   getTrackerData: async (code, params = {}) => {
     const query = new URLSearchParams(params).toString();
     const response = await api.get(`/custom-forms/${code}/tracker${query ? `?${query}` : ''}`);

@@ -509,22 +509,58 @@ const StaffSelectorField = ({ field, value, onChange, currentUserDept, themeColo
   );
 };
 
-const DynamicFormRenderer = ({ formCode, initialMeta, onBack, readOnly = false }) => {
+const DynamicFormRenderer = ({ 
+  formCode, 
+  initialMeta, 
+  initialSubmission = null, 
+  onSubmissionUpdated = null, 
+  onBack, 
+  readOnly = false 
+}) => {
   const { code: paramCode } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useContext(AuthContext) || {};
   const activeCode = formCode || paramCode;
+  const isEditMode = !!initialSubmission;
   const isReadOnly = readOnly || searchParams.get('mode') === 'view' || searchParams.get('readOnly') === 'true';
 
   const [formMeta, setFormMeta] = useState(initialMeta || null);
   const [formData, setFormData] = useState({});
-  const [submissionDate, setSubmissionDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [submissionDate, setSubmissionDate] = useState(() => {
+    if (initialSubmission?.submission_date) {
+      const d = initialSubmission.submission_date;
+      return typeof d === 'string' && d.includes('T') ? d.split('T')[0] : d;
+    }
+    return new Date().toISOString().split('T')[0];
+  });
   const [loading, setLoading] = useState(!initialMeta);
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [submittedDataSummary, setSubmittedDataSummary] = useState(null);
+
+  // Template and Rapid Entry state
+  const defaultStorageKey = useMemo(() => {
+    const userTag = user?.username || 'user';
+    return `custom_form_default_${activeCode}_${userTag}`;
+  }, [activeCode, user]);
+
+  const [hasSavedDefault, setHasSavedDefault] = useState(false);
+  const [toastMessage, setToastMessage] = useState(null);
+  const [rapidSubmittedCount, setRapidSubmittedCount] = useState(0);
+
+  const showToast = (msg, type = 'success') => {
+    setToastMessage({ msg, type });
+    setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(defaultStorageKey);
+      setHasSavedDefault(!!saved);
+    } catch (e) {}
+  }, [defaultStorageKey]);
 
   const fetchMeta = async () => {
     if (initialMeta) {
@@ -561,7 +597,12 @@ const DynamicFormRenderer = ({ formCode, initialMeta, onBack, readOnly = false }
       else if (f.type === 'rating') initVals[f.key] = 0;
       else initVals[f.key] = f.defaultValue || '';
     });
-    setFormData(initVals);
+
+    if (initialSubmission && initialSubmission.submission_data) {
+      setFormData({ ...initVals, ...initialSubmission.submission_data });
+    } else {
+      setFormData(initVals);
+    }
   };
 
   useEffect(() => {
@@ -572,7 +613,43 @@ const DynamicFormRenderer = ({ formCode, initialMeta, onBack, readOnly = false }
     } else if (activeCode) {
       fetchMeta();
     }
-  }, [activeCode, initialMeta]);
+  }, [activeCode, initialMeta, initialSubmission]);
+
+  // Save current form state as default template
+  const handleSaveDefault = () => {
+    try {
+      localStorage.setItem(defaultStorageKey, JSON.stringify(formData));
+      setHasSavedDefault(true);
+      showToast('⭐ Đã lưu toàn bộ giá trị hiện tại làm mẫu mặc định!', 'success');
+    } catch (e) {
+      showToast('Không thể lưu mẫu mặc định vào bộ nhớ trình duyệt.', 'error');
+    }
+  };
+
+  // Load default template into form
+  const handleLoadDefault = () => {
+    try {
+      const saved = localStorage.getItem(defaultStorageKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setFormData(prev => ({ ...prev, ...parsed }));
+        showToast('⚡ Đã nạp thành công các giá trị từ mẫu mặc định!', 'info');
+      } else {
+        showToast('Chưa có mẫu mặc định nào được lưu.', 'warning');
+      }
+    } catch (e) {
+      showToast('Lỗi khi nạp mẫu mặc định.', 'error');
+    }
+  };
+
+  // Clear default template
+  const handleClearDefault = () => {
+    try {
+      localStorage.removeItem(defaultStorageKey);
+      setHasSavedDefault(false);
+      showToast('Đã xóa mẫu mặc định.', 'info');
+    } catch (e) {}
+  };
 
   // Check if form has any editable user-input fields (excluding sections, callouts, and data tracker widgets)
   const hasInputFields = useMemo(() => {
@@ -643,11 +720,11 @@ const DynamicFormRenderer = ({ formCode, initialMeta, onBack, readOnly = false }
 
   // Submit Handler
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     setErrorMsg('');
 
-    // If initialMeta (Preview Mode) -> simulate success
-    if (initialMeta) {
+    // If initialMeta (Preview Mode without activeCode) -> simulate success
+    if (initialMeta && !activeCode) {
       setSubmittedDataSummary({
         submissionDate,
         formData: { ...formData },
@@ -671,6 +748,33 @@ const DynamicFormRenderer = ({ formCode, initialMeta, onBack, readOnly = false }
     }
 
     setSubmitting(true);
+
+    // Edit Mode submission
+    if (isEditMode) {
+      try {
+        const res = await customFormService.updateFormSubmission(activeCode, initialSubmission.id, {
+          submission_date: submissionDate,
+          submission_data: formData
+        });
+
+        if (res && res.success) {
+          showToast('✓ Cập nhật bản ghi thành công!', 'success');
+          if (onSubmissionUpdated) {
+            onSubmissionUpdated(res.data || { ...initialSubmission, submission_date: submissionDate, submission_data: formData });
+          }
+          if (onBack) {
+            setTimeout(() => onBack(), 600);
+          }
+        }
+      } catch (err) {
+        setErrorMsg(err.response?.data?.error || err.message || 'Không thể cập nhật bản ghi.');
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    }
+
+    // New submission
     try {
       const res = await customFormService.submitFormData(activeCode, {
         submission_date: submissionDate,
@@ -685,6 +789,60 @@ const DynamicFormRenderer = ({ formCode, initialMeta, onBack, readOnly = false }
         });
         setSubmitted(true);
         window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    } catch (err) {
+      setErrorMsg(err.response?.data?.error || err.message || 'Không thể nộp báo cáo.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Rapid continuous submission handler (Nộp & Nhập Tiếp)
+  const handleRapidSubmit = async (e) => {
+    if (e) e.preventDefault();
+    setErrorMsg('');
+
+    const missingRequired = [];
+    (formMeta?.schema_json || []).forEach(f => {
+      if (f.required && (formData[f.key] === undefined || formData[f.key] === null || formData[f.key] === '')) {
+        missingRequired.push(f.label);
+      }
+    });
+
+    if (missingRequired.length > 0) {
+      setErrorMsg('Vui lòng điền các trường bắt buộc: ' + missingRequired.join(', '));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const res = await customFormService.submitFormData(activeCode, {
+        submission_date: submissionDate,
+        submission_data: formData
+      });
+
+      if (res && res.success) {
+        const newCount = rapidSubmittedCount + 1;
+        setRapidSubmittedCount(newCount);
+        showToast(`🎉 Đã nộp thành công bản ghi #${newCount}! Tiếp tục nhập người sau.`, 'success');
+
+        // Reset transient personal fields while keeping default template / selected doctors
+        const saved = localStorage.getItem(defaultStorageKey);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          setFormData(prev => ({ ...prev, ...parsed }));
+        } else {
+          setFormData(prev => {
+            const next = { ...prev };
+            (formMeta?.schema_json || []).forEach(f => {
+              if (['text', 'number', 'textarea', 'icd10', 'signature'].includes(f.type)) {
+                next[f.key] = '';
+              }
+            });
+            return next;
+          });
+        }
       }
     } catch (err) {
       setErrorMsg(err.response?.data?.error || err.message || 'Không thể nộp báo cáo.');
@@ -866,10 +1024,33 @@ const DynamicFormRenderer = ({ formCode, initialMeta, onBack, readOnly = false }
   // MAIN FORM FILL VIEW (28 PRO FIELD TYPES)
   // ==========================================
   return (
-    <div style={{ maxWidth: '960px', margin: '0 auto', paddingBottom: '3rem', fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}>
+    <div style={{ maxWidth: '960px', margin: '0 auto', paddingBottom: '3rem', fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif", position: 'relative' }}>
       
+      {/* Floating Toast Notification */}
+      {toastMessage && (
+        <div style={{
+          position: 'fixed',
+          top: '24px',
+          right: '24px',
+          backgroundColor: toastMessage.type === 'error' ? '#EF4444' : (toastMessage.type === 'info' ? '#0284C7' : (toastMessage.type === 'warning' ? '#F59E0B' : '#10B981')),
+          color: '#FFFFFF',
+          padding: '0.85rem 1.4rem',
+          borderRadius: '14px',
+          fontWeight: '800',
+          fontSize: '0.9rem',
+          boxShadow: '0 12px 30px rgba(0,0,0,0.25)',
+          zIndex: 9999999,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.6rem',
+          border: '1px solid rgba(255,255,255,0.3)'
+        }}>
+          <FaCheckCircle /> {toastMessage.msg}
+        </div>
+      )}
+
       {/* Header Bar */}
-      <div style={{ backgroundColor: '#FFFFFF', borderRadius: '20px', border: '1px solid #E2E8F0', borderLeft: '6px solid ' + themeColor, padding: '1.4rem 1.8rem', marginBottom: '1.5rem', boxShadow: '0 4px 20px rgba(15, 44, 89, 0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+      <div style={{ backgroundColor: '#FFFFFF', borderRadius: '20px', border: '1px solid #E2E8F0', borderLeft: '6px solid ' + themeColor, padding: '1.4rem 1.8rem', marginBottom: '1.25rem', boxShadow: '0 4px 20px rgba(15, 44, 89, 0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
           <button type="button" onClick={onBack || (() => navigate(-1))} style={{ backgroundColor: '#F1F5F9', border: '1px solid #CBD5E1', borderRadius: '10px', padding: '0.5rem 0.85rem', cursor: 'pointer', fontWeight: '700', fontSize: '0.84rem', display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#334155' }}>
             <FaArrowLeft /> Quay lại
@@ -877,9 +1058,9 @@ const DynamicFormRenderer = ({ formCode, initialMeta, onBack, readOnly = false }
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
               <span style={{
-                backgroundColor: isTrackerForm ? '#EFF6FF' : (isReadOnly ? '#FEF3C7' : '#EFF6FF'),
-                color: isTrackerForm ? '#1D4ED8' : (isReadOnly ? '#92400E' : '#1E40AF'),
-                border: isTrackerForm ? '1px solid #BFDBFE' : (isReadOnly ? '1px solid #FDE68A' : '1px solid #BFDBFE'),
+                backgroundColor: isEditMode ? '#FEF3C7' : (isTrackerForm ? '#EFF6FF' : (isReadOnly ? '#FEF3C7' : '#EFF6FF')),
+                color: isEditMode ? '#92400E' : (isTrackerForm ? '#1D4ED8' : (isReadOnly ? '#92400E' : '#1E40AF')),
+                border: isEditMode ? '1px solid #FDE68A' : (isTrackerForm ? '1px solid #BFDBFE' : (isReadOnly ? '1px solid #FDE68A' : '1px solid #BFDBFE')),
                 padding: '0.15rem 0.55rem',
                 borderRadius: '6px',
                 fontSize: '0.74rem',
@@ -888,7 +1069,9 @@ const DynamicFormRenderer = ({ formCode, initialMeta, onBack, readOnly = false }
                 alignItems: 'center',
                 gap: '0.35rem'
               }}>
-                {isTrackerForm ? (
+                {isEditMode ? (
+                  <><FaSave /> CHẾ ĐỘ CHỈNH SỬA BẢN GHI #{initialSubmission?.id}</>
+                ) : isTrackerForm ? (
                   <><FaChartLine /> BẢNG THEO DÕI DỮ LIỆU</>
                 ) : isReadOnly ? (
                   <><FaLock /> CHẾ ĐỘ XEM BIỂU MẪU (CHỈ ĐỌC)</>
@@ -910,6 +1093,130 @@ const DynamicFormRenderer = ({ formCode, initialMeta, onBack, readOnly = false }
           <input type="date" disabled={isReadOnly || isTrackerForm} value={submissionDate} onChange={(e) => setSubmissionDate(e.target.value)} style={{ border: 'none', background: 'transparent', fontWeight: '800', color: '#1E40AF', outline: 'none', fontSize: '0.88rem', cursor: isReadOnly || isTrackerForm ? 'default' : 'pointer' }} />
         </div>
       </div>
+
+      {/* QUICK SMART ENTRY TOOLBAR (LƯU & LẤY MẶC ĐỊNH) */}
+      {!isReadOnly && !isTrackerForm && !isEditMode && (
+        <div style={{
+          backgroundColor: '#FFFFFF',
+          borderRadius: '16px',
+          border: '1.5px solid #E2E8F0',
+          padding: '0.75rem 1.25rem',
+          marginBottom: '1.25rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '0.75rem',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+            <span style={{
+              backgroundColor: '#EFF6FF',
+              color: '#1E40AF',
+              border: '1px solid #BFDBFE',
+              borderRadius: '8px',
+              padding: '0.25rem 0.65rem',
+              fontSize: '0.76rem',
+              fontWeight: '800',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem'
+            }}>
+              ⚡ NHẬP LIỆU THÔNG MINH
+            </span>
+            <span style={{ fontSize: '0.82rem', color: '#64748B', fontWeight: '600' }}>
+              {hasSavedDefault ? '✓ Đã lưu sẵn 1 mẫu mặc định' : 'Chưa có mẫu mặc định'}
+            </span>
+            {rapidSubmittedCount > 0 && (
+              <span style={{
+                backgroundColor: '#ECFDF5',
+                color: '#065F46',
+                border: '1px solid #A7F3D0',
+                borderRadius: '8px',
+                padding: '0.2rem 0.6rem',
+                fontSize: '0.75rem',
+                fontWeight: '800'
+              }}>
+                🔥 Đã nộp nhanh: {rapidSubmittedCount} bản ghi
+              </span>
+            )}
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+            {/* Lấy Mặc Định */}
+            <button
+              type="button"
+              onClick={handleLoadDefault}
+              disabled={!hasSavedDefault}
+              style={{
+                backgroundColor: hasSavedDefault ? '#10B981' : '#F1F5F9',
+                color: hasSavedDefault ? '#FFFFFF' : '#94A3B8',
+                border: 'none',
+                borderRadius: '10px',
+                padding: '0.45rem 0.95rem',
+                fontSize: '0.82rem',
+                fontWeight: '800',
+                cursor: hasSavedDefault ? 'pointer' : 'not-allowed',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                boxShadow: hasSavedDefault ? '0 2px 8px rgba(16, 185, 129, 0.25)' : 'none',
+                transition: 'all 0.15s ease'
+              }}
+              title="Điền nhanh các giá trị từ mẫu mặc định đã lưu"
+            >
+              <FaCheck /> Lấy Mặc Định
+            </button>
+
+            {/* Lưu Mặc Định */}
+            <button
+              type="button"
+              onClick={handleSaveDefault}
+              style={{
+                backgroundColor: '#0284C7',
+                color: '#FFFFFF',
+                border: 'none',
+                borderRadius: '10px',
+                padding: '0.45rem 0.95rem',
+                fontSize: '0.82rem',
+                fontWeight: '800',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                boxShadow: '0 2px 8px rgba(2, 132, 199, 0.25)',
+                transition: 'all 0.15s ease'
+              }}
+              title="Lưu các thông tin hiện tại (Bác sĩ, khoa phòng, ca trực...) làm mẫu mặc định"
+            >
+              <FaStar /> Lưu Mặc Định
+            </button>
+
+            {hasSavedDefault && (
+              <button
+                type="button"
+                onClick={handleClearDefault}
+                style={{
+                  backgroundColor: '#FFF1F2',
+                  color: '#E11D48',
+                  border: '1px solid #FECDD3',
+                  borderRadius: '10px',
+                  padding: '0.45rem 0.65rem',
+                  fontSize: '0.82rem',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.3rem'
+                }}
+                title="Xóa mẫu mặc định đã lưu"
+              >
+                <FaTrash size={11} />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* BANNER NOTICES */}
       {isTrackerForm ? (
@@ -1550,18 +1857,97 @@ const DynamicFormRenderer = ({ formCode, initialMeta, onBack, readOnly = false }
             </div>
           </div>
         ) : (
-          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '1rem', borderTop: '1.5px solid #F1F5F9', paddingTop: '1.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', borderTop: '1.5px solid #F1F5F9', paddingTop: '1.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
             <button type="button" onClick={onBack || (() => navigate(-1))} style={{ backgroundColor: '#F1F5F9', color: '#475569', border: '1px solid #CBD5E1', borderRadius: '12px', padding: '0.8rem 1.5rem', fontWeight: '700', fontSize: '0.9rem', cursor: 'pointer' }}>
               Hủy bỏ
             </button>
 
-            <SubmitReportButton
-              onClick={handleSubmit}
-              isSubmitting={submitting}
-              text="NỘP & GHI NHẬN BÁO CÁO"
-              submittingText="Đang lưu trữ dữ liệu..."
-              size="normal"
-            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+              {/* Quick Save Default Button at bottom */}
+              {!isEditMode && (
+                <button
+                  type="button"
+                  onClick={handleSaveDefault}
+                  style={{
+                    backgroundColor: '#FFFFFF',
+                    color: '#0284C7',
+                    border: '1.5px solid #BAE6FD',
+                    borderRadius: '12px',
+                    padding: '0.8rem 1.3rem',
+                    fontWeight: '800',
+                    fontSize: '0.9rem',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.45rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                  title="Lưu các thông tin đã điền làm mẫu mặc định"
+                >
+                  <FaStar /> Lưu Mặc Định
+                </button>
+              )}
+
+              {/* Rapid Submit & Continue Button */}
+              {!isEditMode && (
+                <button
+                  type="button"
+                  disabled={submitting}
+                  onClick={handleRapidSubmit}
+                  style={{
+                    background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    borderRadius: '12px',
+                    padding: '0.8rem 1.6rem',
+                    fontWeight: '900',
+                    fontSize: '0.94rem',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    cursor: submitting ? 'not-allowed' : 'pointer',
+                    boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
+                    transition: 'all 0.15s ease'
+                  }}
+                  title="Nộp bản ghi này và tự động giữ lại thông tin chung (bác sĩ, ngày...) để nhập tiếp người sau"
+                >
+                  <FaPlus /> Nộp & Nhập Tiếp Người Sau
+                </button>
+              )}
+
+              {/* Edit Mode Save Button */}
+              {isEditMode ? (
+                <button
+                  type="button"
+                  disabled={submitting}
+                  onClick={handleSubmit}
+                  style={{
+                    background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    borderRadius: '12px',
+                    padding: '0.8rem 2.2rem',
+                    fontWeight: '900',
+                    fontSize: '0.96rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.55rem',
+                    cursor: submitting ? 'not-allowed' : 'pointer',
+                    boxShadow: '0 6px 18px rgba(37, 99, 235, 0.35)'
+                  }}
+                >
+                  {submitting ? <><FaPaperPlane className="spinner" /> Đang cập nhật...</> : <><FaSave /> LƯU THAY ĐỔI BẢN GHI</>}
+                </button>
+              ) : (
+                <SubmitReportButton
+                  onClick={handleSubmit}
+                  isSubmitting={submitting}
+                  text="NỘP & GHI NHẬN BÁO CÁO"
+                  submittingText="Đang lưu trữ dữ liệu..."
+                  size="normal"
+                />
+              )}
+            </div>
           </div>
         )}
 

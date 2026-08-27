@@ -412,11 +412,13 @@ const deleteFormSubmission = async (req, res, next) => {
     } else if (submission.submitted_by_user === user.username) {
       canDelete = true;
     } else {
-      const perms = safeParse(form.permissions, [{ target_type: 'all', target_value: 'all', permission: 'edit' }]);
+      const [permissions] = await pool.execute('SELECT * FROM custom_form_permissions WHERE form_id = ?', [form.id]);
+      const perms = permissions.length > 0 ? permissions : [{ target_type: 'all', target_value: 'all', permission: 'edit' }];
       const hasEditPerm = perms.some(p => {
         if (p.permission !== 'edit') return false;
         if (p.target_type === 'all') return true;
         if (p.target_type === 'user' && (p.target_value === user.username || p.target_value === user.departmentCode)) return true;
+        if (p.target_type === 'dept' && p.target_value === user.departmentCode) return true;
         return false;
       });
       if (hasEditPerm) {
@@ -433,6 +435,88 @@ const deleteFormSubmission = async (req, res, next) => {
     res.json({
       success: true,
       message: 'Đã xóa bản ghi thành công.'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 7.2 Sửa / Cập nhật bản ghi đã nộp
+const updateFormSubmission = async (req, res, next) => {
+  try {
+    const { code, submissionId } = req.params;
+    const { submission_date, submission_data } = req.body;
+    const user = req.user;
+
+    const [forms] = await pool.execute('SELECT * FROM custom_forms WHERE code = ?', [code]);
+    if (forms.length === 0) {
+      return res.status(404).json({ success: false, error: 'Không tìm thấy biểu mẫu.' });
+    }
+
+    const form = forms[0];
+    const [submissions] = await pool.execute(
+      'SELECT * FROM custom_form_submissions WHERE id = ? AND form_id = ?',
+      [submissionId, form.id]
+    );
+
+    if (submissions.length === 0) {
+      return res.status(404).json({ success: false, error: 'Không tìm thấy bản ghi cần chỉnh sửa.' });
+    }
+
+    const submission = submissions[0];
+
+    // Check permission to edit
+    let canEdit = false;
+    if (user.role === 'admin') {
+      canEdit = true;
+    } else if (submission.submitted_by_user === user.username) {
+      canEdit = true;
+    } else {
+      const [permissions] = await pool.execute('SELECT * FROM custom_form_permissions WHERE form_id = ?', [form.id]);
+      const perms = permissions.length > 0 ? permissions : [{ target_type: 'all', target_value: 'all', permission: 'edit' }];
+      const hasEditPerm = perms.some(p => {
+        if (p.permission !== 'edit') return false;
+        if (p.target_type === 'all') return true;
+        if (p.target_type === 'user' && (p.target_value === user.username || p.target_value === user.departmentCode)) return true;
+        if (p.target_type === 'dept' && p.target_value === user.departmentCode) return true;
+        return false;
+      });
+      if (hasEditPerm) {
+        canEdit = true;
+      }
+    }
+
+    if (!canEdit) {
+      return res.status(403).json({ success: false, error: 'Bạn không có quyền chỉnh sửa bản ghi này.' });
+    }
+
+    const existingData = safeParse(submission.submission_data, {});
+    const updatedData = {
+      ...existingData,
+      ...(submission_data || {})
+    };
+
+    let subDate = submission_date || submission.submission_date;
+    if (subDate instanceof Date) {
+      const y = subDate.getFullYear();
+      const m = String(subDate.getMonth() + 1).padStart(2, '0');
+      const d = String(subDate.getDate()).padStart(2, '0');
+      subDate = `${y}-${m}-${d}`;
+    }
+
+    await pool.execute(
+      'UPDATE custom_form_submissions SET submission_date = ?, submission_data = ? WHERE id = ?',
+      [subDate, JSON.stringify(updatedData), submissionId]
+    );
+
+    res.json({
+      success: true,
+      message: 'Cập nhật bản ghi báo cáo thành công!',
+      data: {
+        id: Number(submissionId),
+        submission_date: subDate,
+        submission_data: updatedData
+      }
     });
   } catch (error) {
     next(error);
@@ -916,6 +1000,7 @@ module.exports = {
   submitFormData,
   getFormSubmissions,
   deleteFormSubmission,
+  updateFormSubmission,
   getTrackerData,
   getUniversalTrackerFeed
 };
