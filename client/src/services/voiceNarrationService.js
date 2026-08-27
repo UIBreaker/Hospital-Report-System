@@ -6,7 +6,7 @@ class VoiceNarrationService {
     this.synth = typeof window !== 'undefined' ? window.speechSynthesis : null;
     this.voices = [];
     this.selectedVoiceIndex = 0;
-    this.rate = 1.0;
+    this.rate = 1.5;
     this.pitch = 1.0;
     this.volume = 1.0;
     this.currentUtterance = null;
@@ -64,7 +64,7 @@ class VoiceNarrationService {
   }
 
   setRate(rate) {
-    this.rate = Math.max(0.7, Math.min(1.5, Number(rate) || 1.0));
+    this.rate = Math.max(0.7, Math.min(2.0, Number(rate) || 1.5));
     this.notifyStateChange();
   }
 

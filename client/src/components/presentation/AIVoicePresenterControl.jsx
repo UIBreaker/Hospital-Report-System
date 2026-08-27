@@ -19,6 +19,7 @@ import voiceNarrationService from '../../services/voiceNarrationService';
 const AIVoicePresenterControl = ({
   isActive,
   onToggleActive,
+  showControls = true,
   currentSlideIndex,
   totalSlides,
   currentSlideTitle,
@@ -35,11 +36,11 @@ const AIVoicePresenterControl = ({
     isPaused: false,
     voices: [],
     selectedVoiceIndex: 0,
-    rate: 1.0
+    rate: 1.5
   });
 
   const [showSettings, setShowSettings] = useState(false);
-  const [showSubtitles, setShowSubtitles] = useState(true);
+  const [showSubtitles, setShowSubtitles] = useState(false);
   const [currentSpokenCharIndex, setCurrentSpokenCharIndex] = useState(0);
 
   useEffect(() => {
@@ -146,7 +147,10 @@ const AIVoicePresenterControl = ({
           position: 'fixed',
           bottom: '24px',
           left: '50%',
-          transform: 'translateX(-50%)',
+          transform: showControls ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(20px)',
+          opacity: showControls ? 1 : 0,
+          pointerEvents: showControls ? 'auto' : 'none',
+          transition: 'opacity 0.25s ease, transform 0.25s ease',
           zIndex: 999999,
           backgroundColor: 'rgba(15, 30, 60, 0.94)',
           backdropFilter: 'blur(12px)',
@@ -407,7 +411,7 @@ const AIVoicePresenterControl = ({
                   <span style={{ color: '#38BDF8', fontWeight: '900' }}>{voiceState.rate}x</span>
                 </div>
                 <div style={{ display: 'flex', gap: '0.35rem' }}>
-                  {[0.9, 1.0, 1.15, 1.25].map(r => (
+                  {[1.0, 1.25, 1.5, 1.75, 2.0].map(r => (
                     <button
                       key={r}
                       type="button"

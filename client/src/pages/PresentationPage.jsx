@@ -134,9 +134,41 @@ const PresentationPage = () => {
   // AI Voice Narrator & Auto-Slide State
   const [aiVoiceActive, setAiVoiceActive] = useState(false);
   const [autoAdvanceEnabled, setAutoAdvanceEnabled] = useState(true);
-  const [transitionDelay, setTransitionDelay] = useState(1800);
+  const [transitionDelay, setTransitionDelay] = useState(1500);
   const [currentScript, setCurrentScript] = useState('');
   const voiceTimeoutRef = useRef(null);
+
+  // Dynamic Controls Visibility State (Auto-hide after 2s of inactivity when in AI voice mode)
+  const [showControls, setShowControls] = useState(true);
+  const controlsIdleTimerRef = useRef(null);
+
+  const registerUserActivity = () => {
+    setShowControls(true);
+    if (controlsIdleTimerRef.current) {
+      clearTimeout(controlsIdleTimerRef.current);
+    }
+    if (aiVoiceActive) {
+      controlsIdleTimerRef.current = setTimeout(() => {
+        setShowControls(false);
+      }, 2000);
+    }
+  };
+
+  useEffect(() => {
+    if (aiVoiceActive) {
+      registerUserActivity();
+      const events = ['mousemove', 'mousedown', 'click', 'touchstart', 'keydown'];
+      const onActivity = () => registerUserActivity();
+      events.forEach(ev => window.addEventListener(ev, onActivity));
+      return () => {
+        events.forEach(ev => window.removeEventListener(ev, onActivity));
+        if (controlsIdleTimerRef.current) clearTimeout(controlsIdleTimerRef.current);
+      };
+    } else {
+      setShowControls(true);
+      if (controlsIdleTimerRef.current) clearTimeout(controlsIdleTimerRef.current);
+    }
+  }, [aiVoiceActive]);
 
   const handleOpenLightbox = (images, index = 0, title = 'Hình ảnh y khoa') => {
     const norm = normalizeImages(images);
@@ -1215,11 +1247,12 @@ const PresentationPage = () => {
           flex: 1,
           display: 'flex',
           width: '100%',
-          height: 'calc(100vh - 54px)',
+          height: (aiVoiceActive && !showControls) ? '100vh' : 'calc(100vh - 54px)',
           overflow: 'hidden',
           minHeight: 0,
           position: 'relative',
-          padding: 0
+          padding: 0,
+          transition: 'height 0.25s ease'
         }}>
           {/* Floating Action Controls (Slide List & AI Voice Narrator) */}
           <div style={{
@@ -1229,7 +1262,11 @@ const PresentationPage = () => {
             zIndex: 10,
             display: 'flex',
             alignItems: 'center',
-            gap: '0.65rem'
+            gap: '0.65rem',
+            opacity: (aiVoiceActive && !showControls) ? 0 : 1,
+            pointerEvents: (aiVoiceActive && !showControls) ? 'none' : 'auto',
+            transform: (aiVoiceActive && !showControls) ? 'translateY(-12px)' : 'translateY(0)',
+            transition: 'opacity 0.25s ease, transform 0.25s ease'
           }}>
             <button
               type="button"
@@ -1262,6 +1299,7 @@ const PresentationPage = () => {
             <AIVoicePresenterControl
               isActive={aiVoiceActive}
               onToggleActive={setAiVoiceActive}
+              showControls={showControls}
               currentSlideIndex={currentSlide}
               totalSlides={slides.length}
               currentSlideTitle={slide.title}
@@ -1387,16 +1425,22 @@ const PresentationPage = () => {
 
         {/* ===================== SLEEK DOCKED CONTROL BAR ===================== */}
         <div style={{
-          padding: '0 1.5rem',
-          height: '54px',
+          padding: (aiVoiceActive && !showControls) ? '0' : '0 1.5rem',
+          height: (aiVoiceActive && !showControls) ? '0px' : '54px',
+          minHeight: (aiVoiceActive && !showControls) ? '0px' : '54px',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           backgroundColor: '#FFFFFF',
-          borderTop: '1px solid #E2E8F0',
+          borderTop: (aiVoiceActive && !showControls) ? 'none' : '1px solid #E2E8F0',
           position: 'relative',
           flexShrink: 0,
-          boxShadow: '0 -2px 10px rgba(15, 44, 89, 0.04)'
+          boxShadow: (aiVoiceActive && !showControls) ? 'none' : '0 -2px 10px rgba(15, 44, 89, 0.04)',
+          opacity: (aiVoiceActive && !showControls) ? 0 : 1,
+          pointerEvents: (aiVoiceActive && !showControls) ? 'none' : 'auto',
+          transform: (aiVoiceActive && !showControls) ? 'translateY(24px)' : 'translateY(0)',
+          overflow: 'hidden',
+          transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
         }}>
           {/* Top Progress bar */}
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', backgroundColor: '#E2E8F0' }}>
