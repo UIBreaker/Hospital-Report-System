@@ -31,6 +31,11 @@ import SummarySlide from '../components/presentation/slides/SummarySlide';
 import ClosingSlide from '../components/presentation/slides/ClosingSlide';
 import CinematicNetflixIntro from '../components/presentation/CinematicNetflixIntro';
 
+// AI Voice Narrator & Synchronizer
+import AIVoicePresenterControl from '../components/presentation/AIVoicePresenterControl';
+import voiceNarrationService from '../services/voiceNarrationService';
+import generateSlideNarrationScript from '../services/slideScriptGenerator';
+
 const parseMetricNum = (val) => {
   if (val === null || val === undefined || val === '') return 0;
   if (typeof val === 'number') return isNaN(val) ? 0 : val;
@@ -125,6 +130,13 @@ const PresentationPage = () => {
   const [lightboxImages, setLightboxImages] = useState([]);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [lightboxTitle, setLightboxTitle] = useState('');
+
+  // AI Voice Narrator & Auto-Slide State
+  const [aiVoiceActive, setAiVoiceActive] = useState(false);
+  const [autoAdvanceEnabled, setAutoAdvanceEnabled] = useState(true);
+  const [transitionDelay, setTransitionDelay] = useState(1800);
+  const [currentScript, setCurrentScript] = useState('');
+  const voiceTimeoutRef = useRef(null);
 
   const handleOpenLightbox = (images, index = 0, title = 'Hình ảnh y khoa') => {
     const norm = normalizeImages(images);
@@ -813,19 +825,88 @@ const PresentationPage = () => {
     }
   };
 
-  const handleNextSlide = () => {
-    if (currentSlide < slides.length - 1) {
-      setSlideDirection('next');
-      setCurrentSlide(prev => prev + 1);
+  // Speak current slide when in AI Voice Mode
+  const speakCurrentSlide = () => {
+    if (!aiVoiceActive || slides.length === 0) return;
+    const currentSlideObj = slides[currentSlide];
+    if (!currentSlideObj) return;
+
+    const script = generateSlideNarrationScript(currentSlideObj, {
+      dateStr: date,
+      slideIndex: currentSlide,
+      totalSlides: slides.length
+    });
+    setCurrentScript(script);
+
+    if (voiceTimeoutRef.current) {
+      clearTimeout(voiceTimeoutRef.current);
     }
+
+    voiceNarrationService.speak(script, {
+      onEnd: () => {
+        if (autoAdvanceEnabled && currentSlide < slides.length - 1) {
+          voiceTimeoutRef.current = setTimeout(() => {
+            setSlideDirection('next');
+            setCurrentSlide(prev => prev + 1);
+          }, transitionDelay);
+        }
+      }
+    });
   };
 
-  // Keyboard navigation
+  // Trigger narration on slide change or when AI voice mode is toggled
+  useEffect(() => {
+    if (aiVoiceActive) {
+      speakCurrentSlide();
+    } else {
+      voiceNarrationService.stop();
+      if (voiceTimeoutRef.current) {
+        clearTimeout(voiceTimeoutRef.current);
+      }
+    }
+    return () => {
+      if (voiceTimeoutRef.current) {
+        clearTimeout(voiceTimeoutRef.current);
+      }
+    };
+  }, [currentSlide, aiVoiceActive, autoAdvanceEnabled, transitionDelay]);
+
+  // Clean up speech synthesis on component unmount
+  useEffect(() => {
+    return () => {
+      voiceNarrationService.stop();
+      if (voiceTimeoutRef.current) {
+        clearTimeout(voiceTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Keyboard navigation & AI Voice Hotkeys
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (lightboxOpen) return;
 
-      if (e.code === 'ArrowRight' || e.code === 'Space' || e.code === 'PageDown') {
+      // Space / P for Play/Pause in AI Voice Mode
+      if (aiVoiceActive && (e.code === 'Space' || e.code === 'KeyP')) {
+        e.preventDefault();
+        if (voiceNarrationService.isPlaying && !voiceNarrationService.isPaused) {
+          voiceNarrationService.pause();
+        } else if (voiceNarrationService.isPaused) {
+          voiceNarrationService.resume();
+        } else {
+          speakCurrentSlide();
+        }
+        return;
+      }
+
+      // R key to replay current slide narration
+      if (aiVoiceActive && e.code === 'KeyR') {
+        e.preventDefault();
+        speakCurrentSlide();
+        return;
+      }
+
+      if (e.code === 'ArrowRight' || (!aiVoiceActive && e.code === 'Space') || e.code === 'PageDown') {
         e.preventDefault();
         handleNextSlide();
       } else if (e.code === 'ArrowLeft' || e.code === 'PageUp') {
@@ -850,7 +931,7 @@ const PresentationPage = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentSlide, slides.length, lightboxOpen]);
+  }, [currentSlide, slides.length, lightboxOpen, aiVoiceActive]);
 
   const toggleFullscreen = () => {
     try {
@@ -1133,37 +1214,59 @@ const PresentationPage = () => {
           position: 'relative',
           padding: 0
         }}>
-          {/* Floating Slide List Drawer Toggle Button */}
-          <button
-            type="button"
-            onClick={() => setShowSidebar(prev => !prev)}
-            style={{
-              position: 'absolute',
-              top: '1rem',
-              left: '1.25rem',
-              zIndex: 10,
-              backgroundColor: 'rgba(15, 44, 89, 0.88)',
-              color: '#FFFFFF',
-              border: '1px solid rgba(255, 255, 255, 0.25)',
-              borderRadius: '20px',
-              padding: '0.35rem 0.85rem',
-              fontSize: '0.78rem',
-              fontWeight: '800',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.45rem',
-              backdropFilter: 'blur(8px)',
-              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.12)',
-              transition: 'all 0.15s ease'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2563EB'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(15, 44, 89, 0.88)'}
-            title="Mở danh sách slide (Phím M hoặc S)"
-          >
-            <FaListUl style={{ fontSize: '0.78rem' }} />
-            <span>Danh sách ({slides.length})</span>
-          </button>
+          {/* Floating Action Controls (Slide List & AI Voice Narrator) */}
+          <div style={{
+            position: 'absolute',
+            top: '1rem',
+            left: '1.25rem',
+            zIndex: 10,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.65rem'
+          }}>
+            <button
+              type="button"
+              onClick={() => setShowSidebar(prev => !prev)}
+              style={{
+                backgroundColor: 'rgba(15, 44, 89, 0.88)',
+                color: '#FFFFFF',
+                border: '1px solid rgba(255, 255, 255, 0.25)',
+                borderRadius: '20px',
+                padding: '0.35rem 0.85rem',
+                fontSize: '0.78rem',
+                fontWeight: '800',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                backdropFilter: 'blur(8px)',
+                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.12)',
+                transition: 'all 0.15s ease'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2563EB'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(15, 44, 89, 0.88)'}
+              title="Mở danh sách slide (Phím M hoặc S)"
+            >
+              <FaListUl style={{ fontSize: '0.78rem' }} />
+              <span>Danh sách ({slides.length})</span>
+            </button>
+
+            {/* AI Voice Presenter Control */}
+            <AIVoicePresenterControl
+              isActive={aiVoiceActive}
+              onToggleActive={setAiVoiceActive}
+              currentSlideIndex={currentSlide}
+              totalSlides={slides.length}
+              currentSlideTitle={slide.title}
+              currentScript={currentScript}
+              onNextSlide={handleNextSlide}
+              onReplaySlide={speakCurrentSlide}
+              autoAdvanceEnabled={autoAdvanceEnabled}
+              onToggleAutoAdvance={setAutoAdvanceEnabled}
+              transitionDelay={transitionDelay}
+              onChangeTransitionDelay={setTransitionDelay}
+            />
+          </div>
 
           {/* 100% Edge-to-Edge Slide Inner Container */}
           <div style={{
