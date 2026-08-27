@@ -32,6 +32,7 @@ import ForgotPasswordModal from '../components/auth/ForgotPasswordModal';
 import ChangePasswordModal from '../components/auth/ChangePasswordModal';
 import HospitalPortalIntro from '../components/auth/HospitalPortalIntro';
 import MedicalAuthBackground from '../components/common/MedicalAuthBackground';
+import VersionChangelogModal from '../components/common/VersionChangelogModal';
 
 // Web Audio API Sound Synthesizers for Login State Feedback
 const playLoginSuccessSound = () => {
@@ -109,6 +110,7 @@ const LoginPage = () => {
   const [successUser, setSuccessUser] = useState(null);
   const [isShaking, setIsShaking] = useState(false);
   const [showForgotModal, setShowForgotModal] = useState(false);
+  const [showVersionModal, setShowVersionModal] = useState(false);
   const [mustChangePasswordData, setMustChangePasswordData] = useState({ isOpen: false, username: '', fullName: '' });
   const [isFullscreen, setIsFullscreen] = useState(Boolean(document.fullscreenElement));
   
@@ -1162,108 +1164,194 @@ const LoginPage = () => {
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              margin: '0.9rem 0 0.65rem 0',
-              color: '#94A3B8',
-              fontSize: '0.68rem',
-              fontWeight: '800',
+              margin: '1rem 0 0.75rem 0',
+              color: '#64748B',
+              fontSize: '0.72rem',
+              fontWeight: '900',
               textTransform: 'uppercase',
-              letterSpacing: '0.6px'
+              letterSpacing: '0.8px'
             }}>
-              <div style={{ flex: 1, height: '1px', backgroundColor: '#E2E8F0' }} />
-              <span style={{ padding: '0 0.65rem', color: '#64748B' }}>THÔNG TIN HỆ THỐNG</span>
-              <div style={{ flex: 1, height: '1px', backgroundColor: '#E2E8F0' }} />
+              <div style={{ flex: 1, height: '1.5px', background: 'linear-gradient(90deg, transparent, #CBD5E1)' }} />
+              <div style={{
+                padding: '0.2rem 0.85rem',
+                backgroundColor: '#F1F5F9',
+                borderRadius: '999px',
+                border: '1px solid #E2E8F0',
+                color: '#0F2C59',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
+              }}>
+                <FaShieldAlt style={{ color: '#0284C7', fontSize: '0.75rem' }} />
+                <span>THÔNG TIN HỆ THỐNG</span>
+              </div>
+              <div style={{ flex: 1, height: '1.5px', background: 'linear-gradient(90deg, #CBD5E1, transparent)' }} />
             </div>
 
-            {/* 4 Clean System Badges Grid */}
+            {/* 4 Prominent High-Contrast System Badges Grid */}
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(4, 1fr)',
-              gap: '0.35rem'
+              gap: '0.45rem'
             }}>
-              {/* Badge 1: Version */}
-              <div style={{
-                backgroundColor: '#F8FAFC',
-                border: '1px solid #E2E8F0',
-                borderRadius: '8px',
-                padding: '0.35rem 0.2rem',
-                textAlign: 'center',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '0.1rem'
-              }}>
-                <div style={{ fontSize: '0.62rem', color: '#64748B', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.18rem' }}>
-                  <FaCodeBranch style={{ color: '#0284C7', fontSize: '0.62rem' }} /> Phiên bản
+              {/* Badge 1: Version (Interactive & Highlighted) */}
+              <div 
+                onClick={() => setShowVersionModal(true)}
+                title="Nhấp để xem chi tiết tính năng mới của phiên bản v2.0.0"
+                style={{
+                  background: 'linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%)',
+                  border: '1.5px solid #93C5FD',
+                  borderRadius: '10px',
+                  padding: '0.45rem 0.25rem',
+                  textAlign: 'center',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '0.15rem',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(2, 132, 199, 0.12)',
+                  transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                  position: 'relative'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
+                  e.currentTarget.style.boxShadow = '0 6px 16px rgba(2, 132, 199, 0.25)';
+                  e.currentTarget.style.borderColor = '#0284C7';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(2, 132, 199, 0.12)';
+                  e.currentTarget.style.borderColor = '#93C5FD';
+                }}
+              >
+                <div style={{ fontSize: '0.64rem', color: '#1E40AF', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                  <FaCodeBranch style={{ color: '#0284C7', fontSize: '0.68rem' }} /> Phiên bản
                 </div>
-                <div style={{ fontSize: '0.72rem', fontWeight: '900', color: '#0F2C59' }}>
+                <div style={{ fontSize: '0.78rem', fontWeight: '900', color: '#0F2C59', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                   v{APP_VERSION}
+                  <span style={{
+                    backgroundColor: '#0284C7',
+                    color: '#FFFFFF',
+                    fontSize: '0.52rem',
+                    padding: '1px 4px',
+                    borderRadius: '4px',
+                    fontWeight: '900',
+                    letterSpacing: '0.3px'
+                  }}>
+                    NEW
+                  </span>
                 </div>
+                <span style={{ fontSize: '0.56rem', color: '#0284C7', fontWeight: '800', textDecoration: 'underline' }}>
+                  ✨ Xem có gì mới?
+                </span>
               </div>
 
               {/* Badge 2: Database */}
               <div style={{
-                backgroundColor: '#F8FAFC',
-                border: '1px solid #E2E8F0',
-                borderRadius: '8px',
-                padding: '0.35rem 0.2rem',
+                background: 'linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%)',
+                border: '1.5px solid #86EFAC',
+                borderRadius: '10px',
+                padding: '0.45rem 0.25rem',
                 textAlign: 'center',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '0.1rem'
-              }}>
-                <div style={{ fontSize: '0.62rem', color: '#64748B', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.18rem' }}>
-                  <FaDatabase style={{ color: '#059669', fontSize: '0.62rem' }} /> CSDL
+                gap: '0.15rem',
+                boxShadow: '0 2px 8px rgba(5, 150, 105, 0.08)',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 6px 14px rgba(5, 150, 105, 0.18)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(5, 150, 105, 0.08)';
+              }}
+              >
+                <div style={{ fontSize: '0.64rem', color: '#15803D', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                  <FaDatabase style={{ color: '#059669', fontSize: '0.68rem' }} /> CSDL Cloud
                 </div>
-                <div style={{ fontSize: '0.68rem', fontWeight: '800', color: '#059669', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: '0.74rem', fontWeight: '900', color: '#065F46', whiteSpace: 'nowrap' }}>
                   Aiven SSL
                 </div>
+                <span style={{ fontSize: '0.58rem', color: '#059669', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                  <span style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: '#10B981', display: 'inline-block' }} /> 256-bit Online
+                </span>
               </div>
 
               {/* Badge 3: Author */}
               <div style={{
-                backgroundColor: '#F8FAFC',
-                border: '1px solid #E2E8F0',
-                borderRadius: '8px',
-                padding: '0.35rem 0.2rem',
+                background: 'linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 100%)',
+                border: '1.5px solid #C7D2FE',
+                borderRadius: '10px',
+                padding: '0.45rem 0.25rem',
                 textAlign: 'center',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '0.1rem'
-              }}>
-                <div style={{ fontSize: '0.62rem', color: '#64748B', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.18rem' }}>
-                  <FaUser style={{ color: '#2563EB', fontSize: '0.62rem' }} /> Tác giả
+                gap: '0.15rem',
+                boxShadow: '0 2px 8px rgba(79, 70, 229, 0.08)',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 6px 14px rgba(79, 70, 229, 0.18)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(79, 70, 229, 0.08)';
+              }}
+              >
+                <div style={{ fontSize: '0.64rem', color: '#4338CA', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                  <FaUser style={{ color: '#4F46E5', fontSize: '0.68rem' }} /> Tác giả
                 </div>
-                <div style={{ fontSize: '0.66rem', fontWeight: '800', color: '#0F2C59', lineHeight: '1.15' }}>
+                <div style={{ fontSize: '0.74rem', fontWeight: '900', color: '#1E1B4B', lineHeight: '1.15' }}>
                   Nhật Nam
                 </div>
+                <span style={{ fontSize: '0.58rem', color: '#4F46E5', fontWeight: '800' }}>
+                  Phòng KHNV
+                </span>
               </div>
 
-              {/* Badge 4: Contact */}
+              {/* Badge 4: Contact Support */}
               <a
                 href="https://zalo.me/0916337266"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
-                  backgroundColor: '#F0F9FF',
-                  border: '1px solid #BAE6FD',
-                  borderRadius: '8px',
-                  padding: '0.35rem 0.2rem',
+                  background: 'linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%)',
+                  border: '1.5px solid #7DD3FC',
+                  borderRadius: '10px',
+                  padding: '0.45rem 0.25rem',
                   textAlign: 'center',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  gap: '0.1rem',
-                  textDecoration: 'none'
+                  gap: '0.15rem',
+                  textDecoration: 'none',
+                  boxShadow: '0 2px 8px rgba(2, 132, 199, 0.08)',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 6px 14px rgba(2, 132, 199, 0.2)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(2, 132, 199, 0.08)';
                 }}
               >
-                <div style={{ fontSize: '0.62rem', color: '#0284C7', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.18rem' }}>
-                  <FaPhoneAlt style={{ color: '#0284C7', fontSize: '0.62rem' }} /> Hỗ trợ
+                <div style={{ fontSize: '0.64rem', color: '#0369A1', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                  <FaPhoneAlt style={{ color: '#0284C7', fontSize: '0.68rem' }} /> Kỹ thuật 24/7
                 </div>
-                <div style={{ fontSize: '0.68rem', fontWeight: '900', color: '#0284C7', display: 'flex', alignItems: 'center', gap: '0.18rem' }}>
-                  <span style={{ backgroundColor: '#0284C7', color: '#FFF', fontSize: '0.52rem', padding: '0.04rem 0.22rem', borderRadius: '3px', fontWeight: '900' }}>Zalo</span> 0916...
+                <div style={{ fontSize: '0.72rem', fontWeight: '900', color: '#0284C7', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                  <span style={{ backgroundColor: '#0284C7', color: '#FFF', fontSize: '0.52rem', padding: '0.05rem 0.25rem', borderRadius: '3px', fontWeight: '900' }}>Zalo</span> 0916...
                 </div>
+                <span style={{ fontSize: '0.58rem', color: '#0284C7', fontWeight: '800' }}>
+                  Chat trực tiếp ➔
+                </span>
               </a>
 
             </div>
@@ -1291,6 +1379,12 @@ const LoginPage = () => {
 
       {/* Floating AI Assistant */}
       <AIAssistant onAutoFillLogin={handleAutoFillLogin} />
+
+      {/* Version 2.0.0 Changelog Details Modal */}
+      <VersionChangelogModal
+        isOpen={showVersionModal}
+        onClose={() => setShowVersionModal(false)}
+      />
 
       {/* New Admin-Assisted Forgot Password Modal */}
       <ForgotPasswordModal
