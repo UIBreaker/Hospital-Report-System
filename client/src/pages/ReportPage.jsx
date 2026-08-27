@@ -51,6 +51,8 @@ import CriticalCaseForm from '../components/forms/CriticalCaseForm';
 import StaffSelectCombobox from '../components/common/StaffSelectCombobox';
 import PersonalCustomFormsPortal from '../components/portal/PersonalCustomFormsPortal';
 import DepartmentPrintView from '../components/common/DepartmentPrintView';
+import SubmitReportButton from '../components/common/SubmitReportButton';
+import ReportSuccessHub from '../components/common/ReportSuccessHub';
 import Footer from '../components/common/Footer';
 import MedicalLoader from '../components/common/MedicalLoader';
 
@@ -526,217 +528,45 @@ const ReportPage = () => {
   const FormComponent = DEPARTMENT_FORMS[user?.departmentCode];
 
   // ==========================================
-  // SUCCESS SCREEN (NỘP BÁO CÁO THÀNH CÔNG)
+  // SUCCESS SCREEN (NỘP BÁO CÁO THÀNH CÔNG - HỘI TỤ DỮ LIỆU ĐẨY LÊN CỔNG GIAO BAN)
   // ==========================================
   if (submitted) {
     return (
-      <div style={{ padding: '2.5rem 1rem 4rem', maxWidth: '900px', margin: '0 auto', minHeight: '90vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-        <ConfettiCanvas />
-
-        <div className="animate-fade-in" style={{
-          width: '100%',
-          textAlign: 'center',
-          padding: '3rem 2.5rem',
-          borderRadius: '24px',
-          boxShadow: '0 20px 60px rgba(15, 44, 89, 0.12)',
-          backgroundColor: '#FFFFFF',
-          border: '1px solid #E2E8F0',
-          position: 'relative',
-          overflow: 'hidden'
-        }}>
-          {/* Top Decorative Gradient Bar */}
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '8px',
-            background: 'linear-gradient(90deg, #10B981, #06B6D4, #3B82F6, #10B981)'
-          }} />
-
-          {/* Animated SVG Checkmark Icon */}
-          <div style={{
-            width: '100px',
-            height: '100px',
-            borderRadius: '50%',
-            backgroundColor: '#DCFCE7',
-            color: '#16A34A',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '3.2rem',
-            margin: '0 auto 1.5rem',
-            boxShadow: '0 8px 30px rgba(22, 163, 74, 0.25)',
-            border: '3px solid #86EFAC',
-            animation: 'pulse 2s infinite'
-          }}>
-            <FaCheck />
-          </div>
-
-          <span style={{
-            backgroundColor: '#DCFCE7',
-            color: '#15803D',
-            padding: '0.35rem 1.1rem',
-            borderRadius: '30px',
-            fontWeight: '800',
-            fontSize: '0.85rem',
-            letterSpacing: '0.5px',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.4rem',
-            marginBottom: '0.75rem'
-          }}>
-            <FaCheckCircle /> ĐÃ LƯU TRỮ VÀO HỆ THỐNG GIAO BAN TOÀN VIỆN
-          </span>
-
-          <h1 style={{
-            margin: '0 0 0.5rem 0',
-            color: '#0F2C59',
-            fontSize: '2rem',
-            fontWeight: '900',
-            letterSpacing: '-0.5px'
-          }}>
-            Nộp Báo Cáo Ca Trực Thành Công!
-          </h1>
-          <p style={{ color: '#64748B', marginBottom: '2rem', fontSize: '1.05rem', lineHeight: '1.6' }}>
-            Số liệu chuyên môn ca trực của khoa <strong style={{ color: '#1E40AF' }}>{user?.departmentName}</strong> đã được đồng bộ vào hệ thống cơ sở dữ liệu và sẵn sàng trình chiếu phục vụ Ban Giám Đốc.
-          </p>
-
-          {/* Digital Receipt Card (Biên nhận điện tử) */}
-          <div style={{
-            backgroundColor: '#F8FAFC',
-            borderRadius: '16px',
-            border: '1.5px solid #E2E8F0',
-            padding: '1.5rem',
-            marginBottom: '2.5rem',
-            textAlign: 'left'
-          }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              borderBottom: '1px solid #E2E8F0',
-              paddingBottom: '0.85rem',
-              marginBottom: '1rem'
-            }}>
-              <div style={{ fontWeight: '800', color: '#0F2C59', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <FaShieldAlt style={{ color: '#2563EB' }} /> BIÊN NHẬN BÁO CÁO ĐIỆN TỬ
-              </div>
-              <div style={{ fontSize: '0.8rem', color: '#64748B' }}>
-                ⏰ {submissionTimestamp || 'Vừa xong'}
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem', fontSize: '0.9rem' }}>
-              <div>
-                <span style={{ color: '#64748B', display: 'block', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: '700' }}>Khoa / Phòng:</span>
-                <strong style={{ color: '#0F2C59', fontSize: '0.95rem' }}>{user?.departmentName}</strong>
-              </div>
-              <div>
-                <span style={{ color: '#64748B', display: 'block', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: '700' }}>Ngày Trực Giao Ban:</span>
-                <strong style={{ color: '#2563EB', fontSize: '0.95rem' }}>{formatDateDDMMYYYY(headerData.reportDate)}</strong>
-              </div>
-              <div>
-                <span style={{ color: '#64748B', display: 'block', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: '700' }}>Bác Sĩ Trực Ca:</span>
-                <strong style={{ color: '#1E40AF' }}>{finalDoctorNameStr || cleanDoctorName || '—'}</strong>
-              </div>
-              <div>
-                <span style={{ color: '#64748B', display: 'block', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: '700' }}>Điều Dưỡng Trực:</span>
-                <strong style={{ color: '#065F46' }}>{finalNurseNameStr || '—'}</strong>
-              </div>
-            </div>
-
-            <div style={{ marginTop: '1rem', paddingTop: '0.85rem', borderTop: '1px dashed #CBD5E1', display: 'flex', gap: '1.25rem', flexWrap: 'wrap', fontSize: '0.86rem' }}>
-              <span style={{ color: '#92400E', fontWeight: '700' }}>🚑 Chuyển viện: <strong>{transferCases.length}</strong> ca</span>
-              <span style={{ color: '#0369A1', fontWeight: '700' }}>🔬 Phẫu thuật: <strong>{surgeryCases.length}</strong> ca</span>
-              <span style={{ color: '#991B1B', fontWeight: '700' }}>🏥 Tử vong: <strong>{deathCases.length}</strong> ca</span>
-              <span style={{ color: '#5B21B6', fontWeight: '700' }}>🩺 Nặng theo dõi: <strong>{criticalCases.length}</strong> ca</span>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button 
-              type="button"
-              onClick={() => setShowPdfModal(true)}
-              style={{
-                backgroundColor: '#0284C7',
-                color: '#FFFFFF',
-                border: 'none',
-                padding: '0.85rem 1.65rem',
-                fontSize: '1rem',
-                fontWeight: '800',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.6rem',
-                borderRadius: '12px',
-                cursor: 'pointer',
-                boxShadow: '0 4px 16px rgba(2, 132, 199, 0.35)',
-                transition: 'all 0.2s'
-              }}
-            >
-              <FaFilePdf style={{ fontSize: '1.2rem' }} /> XUẤT FILE PDF BÁO CÁO
-            </button>
-            <button 
-              type="button"
-              onClick={() => { 
-                setSubmitted(false); 
-                setStep(1); 
-                setFormData({}); 
-                setTransferCases([]); 
-                setSurgeryCases([]);
-                setDeathCases([]);
-                setCriticalCases([]);
-                setHeaderData({
-                  ...headerData, 
-                  selectedDoctors: [''],
-                  selectedDoctor: '', 
-                  selectedNurses: [''], 
-                  overtimeStaff: [], 
-                  room: '', 
-                  shiftTime: ''
-                }); 
-              }}
-              style={{
-                backgroundColor: '#2563EB',
-                color: '#FFFFFF',
-                border: 'none',
-                padding: '0.85rem 1.65rem',
-                fontSize: '1rem',
-                fontWeight: '800',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.6rem',
-                borderRadius: '12px',
-                cursor: 'pointer',
-                boxShadow: '0 4px 16px rgba(37, 99, 235, 0.3)',
-                transition: 'all 0.2s'
-              }}
-            >
-              <FaPlus /> TẠO BÁO CÁO MỚI
-            </button>
-            <button 
-              type="button"
-              onClick={logout} 
-              style={{
-                backgroundColor: '#FFFFFF',
-                color: '#DC2626',
-                border: '1.5px solid #FECACA',
-                padding: '0.85rem 1.5rem',
-                fontSize: '1rem',
-                fontWeight: '800',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                borderRadius: '12px',
-                cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}
-            >
-              <FaSignOutAlt /> Đăng xuất
-            </button>
-          </div>
-        </div>
+      <div style={{ width: '100%' }}>
+        <ReportSuccessHub
+          departmentName={user?.departmentName || ''}
+          departmentCode={user?.departmentCode || ''}
+          reportDate={headerData.reportDate}
+          doctorName={finalDoctorNameStr || cleanDoctorName}
+          nurseName={finalNurseNameStr}
+          overtimeStaff={headerData.overtimeStaff || []}
+          submissionTimestamp={submissionTimestamp}
+          transferCases={transferCases}
+          surgeryCases={surgeryCases}
+          deathCases={deathCases}
+          criticalCases={criticalCases}
+          formData={formData}
+          onExportPdf={() => setShowPdfModal(true)}
+          onCreateNew={() => { 
+            setSubmitted(false); 
+            setStep(1); 
+            setFormData({}); 
+            setTransferCases([]); 
+            setSurgeryCases([]);
+            setDeathCases([]);
+            setCriticalCases([]);
+            setHeaderData({
+              ...headerData, 
+              selectedDoctors: [''],
+              selectedDoctor: '', 
+              selectedNurses: [''], 
+              overtimeStaff: [], 
+              room: '', 
+              shiftTime: ''
+            }); 
+          }}
+          onLogout={logout}
+        />
 
         {/* Modal Xem & Xuất File PDF Chuyên Môn */}
         {showPdfModal && (
@@ -1800,50 +1630,14 @@ const ReportPage = () => {
               <FaFilePdf style={{ fontSize: '1.15rem' }} /> Xem Trước & Xuất PDF
             </button>
 
-            {/* Main Submit Button */}
-            {isLocked ? (
-              <button 
-                type="button"
-                disabled
-                style={{
-                  backgroundColor: '#94A3B8',
-                  color: '#FFFFFF',
-                  padding: '0.95rem 2.5rem',
-                  fontSize: '1.05rem',
-                  fontWeight: '900',
-                  borderRadius: '12px',
-                  cursor: 'not-allowed',
-                  border: 'none',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.55rem'
-                }}
-              >
-                🔒 Báo Cáo Đã Khóa Sổ (Chỉ Đọc)
-              </button>
-            ) : (
-              <button 
-                type="button"
-                onClick={() => setShowConfirm(true)}
-                style={{
-                  background: 'linear-gradient(135deg, #16A34A, #15803D)',
-                  color: '#FFFFFF',
-                  padding: '0.95rem 2.85rem',
-                  fontSize: '1.1rem',
-                  fontWeight: '900',
-                  borderRadius: '12px',
-                  cursor: 'pointer',
-                  border: 'none',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.65rem',
-                  boxShadow: '0 8px 24px rgba(22, 163, 74, 0.4)',
-                  transition: 'all 0.2s'
-                }}
-              >
-                <FaCheckCircle style={{ fontSize: '1.25rem' }} /> NỘP BÁO CÁO GIAO BAN NGAY
-              </button>
-            )}
+            {/* Main Submit Button with Aerodynamic Paper Plane Flight Physics */}
+            <SubmitReportButton
+              onClick={() => setShowConfirm(true)}
+              isLocked={isLocked}
+              isSubmitting={submitting}
+              text="NỘP BÁO CÁO GIAO BAN NGAY"
+              size="large"
+            />
           </div>
 
           {/* Confirm Submission Modal */}

@@ -44,6 +44,7 @@ import customFormService from '../../../services/customFormService';
 import staffService from '../../../services/staffService';
 import { AuthContext } from '../../../contexts/AuthContext';
 import MedicalLoader from '../../common/MedicalLoader';
+import SubmitReportButton from '../../common/SubmitReportButton';
 import EmbeddedTrackerField from './EmbeddedTrackerField';
 
 // Standard Hospital ICD-10 List
@@ -725,31 +726,135 @@ const DynamicFormRenderer = ({ formCode, initialMeta, onBack, readOnly = false }
   }
 
   // ==========================================
-  // CELEBRATORY SUCCESS SCREEN
+  // CELEBRATORY SUCCESS SCREEN (TELEMETRY SYNC)
   // ==========================================
   if (submitted) {
     return (
-      <div style={{ maxWidth: '840px', margin: '1rem auto 4rem auto', padding: '1rem' }}>
+      <div style={{ maxWidth: '840px', margin: '1.5rem auto 4rem auto', padding: '1rem' }}>
         <ConfettiCanvas />
-        <div style={{ backgroundColor: '#FFFFFF', borderRadius: '24px', border: '1px solid #E2E8F0', boxShadow: '0 25px 60px rgba(15, 44, 89, 0.12)', padding: '3rem 2.5rem', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '8px', background: 'linear-gradient(90deg, ' + themeColor + ', #10B981, #06B6D4, ' + themeColor + ')' }} />
-          <div style={{ width: '90px', height: '90px', borderRadius: '50%', backgroundColor: '#DCFCE7', color: '#16A34A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem', margin: '0 auto 1.25rem auto', boxShadow: '0 8px 30px rgba(22, 163, 74, 0.25)', border: '3px solid #86EFAC' }}>
+        <div style={{
+          backgroundColor: '#FFFFFF',
+          borderRadius: '24px',
+          border: '1.5px solid rgba(186, 230, 253, 0.9)',
+          boxShadow: '0 25px 60px rgba(15, 44, 89, 0.12)',
+          padding: '2.5rem 2rem',
+          textAlign: 'center',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '6px', background: 'linear-gradient(90deg, ' + themeColor + ', #10B981, #06B6D4, ' + themeColor + ')' }} />
+          
+          {/* Holographic Uplink Sphere */}
+          <div style={{
+            width: '88px',
+            height: '88px',
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, #059669 0%, #10B981 50%, #0284C7 100%)',
+            color: '#FFFFFF',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '2.4rem',
+            margin: '0 auto 1.25rem auto',
+            boxShadow: '0 10px 30px rgba(16, 185, 129, 0.35)',
+            border: '3px solid #FFFFFF'
+          }}>
             <FaCheck />
           </div>
-          <span style={{ backgroundColor: '#DCFCE7', color: '#15803D', padding: '0.35rem 1.1rem', borderRadius: '30px', fontWeight: '800', fontSize: '0.82rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            ✓ Ghi Nhận Thành Công
-          </span>
-          <h2 style={{ fontSize: '1.8rem', fontWeight: '900', color: '#0F2C59', margin: '0.85rem 0 0.35rem 0' }}>Đã Nộp Báo Cáo Biểu Mẫu!</h2>
-          <p style={{ fontSize: '0.92rem', color: '#64748B', margin: '0 0 1.75rem 0', maxWidth: '520px', marginLeft: 'auto', marginRight: 'auto' }}>
-            Bản ghi báo cáo <strong>{formMeta.title}</strong> cho ngày <strong>{submittedDataSummary?.submissionDate}</strong> đã được lưu trữ an toàn trên CSDL y tế.
+
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.4rem',
+            backgroundColor: '#F0FDF4',
+            border: '1.5px solid #86EFAC',
+            borderRadius: '999px',
+            padding: '0.35rem 1.15rem',
+            color: '#15803D',
+            fontSize: '0.82rem',
+            fontWeight: '900',
+            letterSpacing: '0.4px',
+            marginBottom: '0.75rem'
+          }}>
+            <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#16A34A', display: 'inline-block' }} />
+            <span>ĐÃ LƯU TRỮ VÀO CƠ SỞ DỮ LIỆU BỆNH VIỆN</span>
+          </div>
+
+          <h2 style={{ fontSize: '1.85rem', fontWeight: '900', color: '#0F2C59', margin: '0 0 0.4rem 0' }}>
+            Đã Nộp Bản Ghi Thành Công!
+          </h2>
+          <p style={{ fontSize: '0.94rem', color: '#64748B', margin: '0 auto 1.8rem auto', maxWidth: '560px', lineHeight: 1.55 }}>
+            Bản ghi báo cáo <strong>{formMeta.title}</strong> cho ngày <strong style={{ color: '#0284C7' }}>{submittedDataSummary?.submissionDate}</strong> đã được đồng bộ an toàn và lưu vết kiểm toán trên hệ thống.
           </p>
 
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-            <button type="button" onClick={handleResetForNew} style={{ backgroundColor: '#F1F5F9', color: '#334155', border: '1.5px solid #CBD5E1', borderRadius: '12px', padding: '0.75rem 1.4rem', fontWeight: '800', fontSize: '0.9rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+          {/* Dossier info badge */}
+          <div style={{
+            backgroundColor: '#F8FAFC',
+            border: '1.5px solid #E2E8F0',
+            borderRadius: '16px',
+            padding: '1.1rem 1.4rem',
+            marginBottom: '2rem',
+            textAlign: 'left',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '0.85rem',
+            fontSize: '0.84rem'
+          }}>
+            <div>
+              <span style={{ color: '#64748B', fontSize: '0.72rem', fontWeight: '800', textTransform: 'uppercase', display: 'block' }}>Mã biểu mẫu:</span>
+              <strong style={{ color: '#0F2C59' }}>{formMeta.code}</strong>
+            </div>
+            <div>
+              <span style={{ color: '#64748B', fontSize: '0.72rem', fontWeight: '800', textTransform: 'uppercase', display: 'block' }}>Người nộp:</span>
+              <strong style={{ color: '#1E40AF' }}>{user?.full_name || user?.username || 'Nhân viên'}</strong>
+            </div>
+            <div>
+              <span style={{ color: '#64748B', fontSize: '0.72rem', fontWeight: '800', textTransform: 'uppercase', display: 'block' }}>Thời gian xác nhận:</span>
+              <strong style={{ color: '#059669' }}>{submittedDataSummary?.timestamp}</strong>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={handleResetForNew}
+              style={{
+                backgroundColor: '#FFFFFF',
+                color: '#0F2C59',
+                border: '1.5px solid #CBD5E1',
+                borderRadius: '12px',
+                padding: '0.75rem 1.4rem',
+                fontWeight: '800',
+                fontSize: '0.9rem',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                transition: 'all 0.2s'
+              }}
+            >
               <FaPlus /> Nộp Thêm Bản Ghi Mới
             </button>
-            <button type="button" onClick={onBack || (() => navigate(-1))} style={{ background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)', color: '#FFFFFF', border: 'none', borderRadius: '12px', padding: '0.75rem 1.6rem', fontWeight: '800', fontSize: '0.9rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)' }}>
-              <FaArrowLeft /> Quay Lại Cổng Biểu Mẫu
+            <button
+              type="button"
+              onClick={onBack || (() => navigate(-1))}
+              style={{
+                background: 'linear-gradient(135deg, #0284C7 0%, #0D9488 100%)',
+                color: '#FFFFFF',
+                border: 'none',
+                borderRadius: '12px',
+                padding: '0.75rem 1.6rem',
+                fontWeight: '800',
+                fontSize: '0.9rem',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                boxShadow: '0 4px 14px rgba(2, 132, 199, 0.35)',
+                transition: 'all 0.2s'
+              }}
+            >
+              <FaArrowLeft /> Quay Lại Danh Sách
             </button>
           </div>
         </div>
@@ -1450,26 +1555,13 @@ const DynamicFormRenderer = ({ formCode, initialMeta, onBack, readOnly = false }
               Hủy bỏ
             </button>
 
-            <button
-              type="submit"
-              disabled={submitting}
-              style={{
-                background: 'linear-gradient(135deg, ' + themeColor + ' 0%, #10B981 100%)',
-                color: '#FFFFFF',
-                border: 'none',
-                borderRadius: '12px',
-                padding: '0.8rem 2.2rem',
-                fontWeight: '900',
-                fontSize: '0.96rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.55rem',
-                cursor: submitting ? 'not-allowed' : 'pointer',
-                boxShadow: '0 6px 18px ' + themeColor + '40'
-              }}
-            >
-              {submitting ? <><FaPaperPlane className="spinner" /> Đang lưu trữ dữ liệu...</> : <><FaCheck /> Nộp & Ghi Nhận Báo Cáo <FaArrowRight /></>}
-            </button>
+            <SubmitReportButton
+              onClick={handleSubmit}
+              isSubmitting={submitting}
+              text="NỘP & GHI NHẬN BÁO CÁO"
+              submittingText="Đang lưu trữ dữ liệu..."
+              size="normal"
+            />
           </div>
         )}
 
