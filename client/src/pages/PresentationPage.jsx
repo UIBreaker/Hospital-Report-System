@@ -825,6 +825,13 @@ const PresentationPage = () => {
     }
   };
 
+  const handleNextSlide = () => {
+    if (currentSlide < slides.length - 1) {
+      setSlideDirection('next');
+      setCurrentSlide(prev => prev + 1);
+    }
+  };
+
   // Speak current slide when in AI Voice Mode
   const speakCurrentSlide = () => {
     if (!aiVoiceActive || slides.length === 0) return;
