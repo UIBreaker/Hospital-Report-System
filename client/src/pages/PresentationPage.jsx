@@ -327,9 +327,10 @@ const PresentationPage = () => {
 
       // =========================================================================
       // 2. DEPARTMENT DATA SLIDES
-      // Tách riêng 3 slide to rõ nếu là khoa HSCC-TNT
+      // Tách riêng các slide to rõ cho HSCC-TNT và YHCT-PHCN
       // =========================================================================
       const isHsccTnt = (r.department_code || '').toLowerCase() === 'hscc_tnt' || (rawData.hscc && rawData.tnt);
+      const isYhctPhcn = (r.department_code || '').toLowerCase() === 'yhct_phcn' || (rawData.noiTru && rawData.ngoaiTru && rawData.keToa);
 
       if (isHsccTnt) {
         const hsccSections = parseDepartmentSections(rawData, r.department_code);
@@ -414,6 +415,112 @@ const PresentationPage = () => {
           !sec.title?.includes('TỔNG SỐ KHÁM') &&
           !sec.title?.includes('HỒI SỨC CẤP CỨU') &&
           !sec.title?.includes('THẬN NHÂN TẠO')
+        );
+        if (otherSections.length > 0) {
+          s.push({
+            type: 'department',
+            title: `${deptName} – GHI CHÚ & THÊM GIỜ`,
+            subTitle: 'GHI CHÚ & THÊM GIỜ CA TRỰC',
+            deptCode: r.department_code,
+            deptName,
+            theme,
+            report: r,
+            sections: otherSections,
+            doctorName: r.doctor_name,
+            nurseName: r.nurse_name,
+            overtimeStaff: r.overtime_staff,
+            room: r.room,
+            shiftTime: r.shift_time,
+            formData: rawData,
+            transferCases,
+            surgeryCases,
+            deathCases,
+            criticalCases
+          });
+        }
+      } else if (isYhctPhcn) {
+        const yhctSections = parseDepartmentSections(rawData, r.department_code);
+
+        // Slide 2.1: Điều Trị Nội Trú
+        const secNoiTru = yhctSections.find(sec => sec.title?.includes('NỘI TRÚ'));
+        if (secNoiTru) {
+          s.push({
+            type: 'department',
+            title: `${deptName} – ĐIỀU TRỊ NỘI TRÚ`,
+            subTitle: 'KHỐI ĐIỀU TRỊ NỘI TRÚ',
+            deptCode: r.department_code,
+            deptName,
+            theme,
+            report: r,
+            sections: [secNoiTru],
+            doctorName: r.doctor_name,
+            nurseName: r.nurse_name,
+            overtimeStaff: r.overtime_staff,
+            room: r.room,
+            shiftTime: r.shift_time,
+            formData: rawData,
+            transferCases,
+            surgeryCases,
+            deathCases,
+            criticalCases
+          });
+        }
+
+        // Slide 2.2: Điều Trị Ngoại Trú
+        const secNgoaiTru = yhctSections.find(sec => sec.title?.includes('NGOẠI TRÚ'));
+        if (secNgoaiTru) {
+          s.push({
+            type: 'department',
+            title: `${deptName} – ĐIỀU TRỊ NGOẠI TRÚ`,
+            subTitle: 'KHỐI ĐIỀU TRỊ NGOẠI TRÚ',
+            deptCode: r.department_code,
+            deptName,
+            theme,
+            report: r,
+            sections: [secNgoaiTru],
+            doctorName: r.doctor_name,
+            nurseName: r.nurse_name,
+            overtimeStaff: r.overtime_staff,
+            room: r.room,
+            shiftTime: r.shift_time,
+            formData: rawData,
+            transferCases,
+            surgeryCases,
+            deathCases,
+            criticalCases
+          });
+        }
+
+        // Slide 2.3: Kê Toa & BHYT
+        const secKeToa = yhctSections.find(sec => sec.title?.includes('KÊ TOA'));
+        if (secKeToa) {
+          s.push({
+            type: 'department',
+            title: `${deptName} – KÊ TOA & BHYT`,
+            subTitle: 'KÊ TOA & BẢO HIỂM Y TẾ (BHYT)',
+            deptCode: r.department_code,
+            deptName,
+            theme,
+            report: r,
+            sections: [secKeToa],
+            doctorName: r.doctor_name,
+            nurseName: r.nurse_name,
+            overtimeStaff: r.overtime_staff,
+            room: r.room,
+            shiftTime: r.shift_time,
+            formData: rawData,
+            transferCases,
+            surgeryCases,
+            deathCases,
+            criticalCases
+          });
+        }
+
+        // Slide 2.4: Ghi chú / Thêm giờ (nếu có)
+        const otherSections = yhctSections.filter(sec => 
+          !sec.title?.includes('NỘI TRÚ') &&
+          !sec.title?.includes('NGOẠI TRÚ') &&
+          !sec.title?.includes('KÊ TOA')
         );
         if (otherSections.length > 0) {
           s.push({

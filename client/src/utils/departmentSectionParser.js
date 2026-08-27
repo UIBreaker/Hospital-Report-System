@@ -19,23 +19,25 @@ export const parseDepartmentSections = (reportData, deptCode = '') => {
 
   // ================= 0. KHOA LIÊN CHUYÊN KHOA (LCK) =================
   if (normalizedDept === 'lck' || data.tmh_tongSo !== undefined || data.tong4ck_tongSo !== undefined) {
+    const sumTongSo = data.tong4ck_tongSo || String((Number(data.tmh_tongSo)||0) + (Number(data.mat_tongSo)||0) + (Number(data.rhm_noi_tongSo)||0) + (Number(data.daLieu_tongSo)||0));
+    const sumThuThuat = data.tong4ck_thuThuat || String((Number(data.tmh_thuThuat)||0) + (Number(data.mat_thuThuat)||0) + (Number(data.rhm_noi_thuThuat)||0));
+    const sumNhapVien = data.nhapVien_tongSo || '0';
+    const sumChuyenVien = data.chuyenVien_tongSo || '0';
+
     const tableRows = [
+      {
+        name: '⭐ TỔNG 4 CHUYÊN KHOA',
+        tongSo: sumTongSo,
+        thuThuat: sumThuThuat,
+        nhapVien: sumNhapVien,
+        chuyenVien: sumChuyenVien,
+        isTotal: true
+      },
       { name: 'Tai Mũi Họng (TMH)', tongSo: data.tmh_tongSo || '0', thuThuat: data.tmh_thuThuat || '0', nhapVien: data.nhapVien_tongSo || '0', chuyenVien: data.chuyenVien_tongSo || '0' },
       { name: 'Mắt', tongSo: data.mat_tongSo || '0', thuThuat: data.mat_thuThuat || '0', nhapVien: '0', chuyenVien: '0' },
       { name: 'Răng Hàm Mặt (RHM)', tongSo: data.rhm_noi_tongSo || '0', thuThuat: data.rhm_noi_thuThuat || '0', nhapVien: data.rhm_noiTru || '0', chuyenVien: data.rhm_ngoaiTru || '0' },
-      { name: 'Da Liễu', tongSo: data.daLieu_tongSo || '0', thuThuat: '0', nhapVien: '0', chuyenVien: '0' },
+      { name: 'Da Liễu', tongSo: data.daLieu_tongSo || '0', thuThuat: '0', nhapVien: '0', chuyenVien: '0' }
     ];
-
-    if (data.tong4ck_tongSo || data.tong4ck_thuThuat) {
-      tableRows.push({
-        name: '⭐ TỔNG 4 CHUYÊN KHOA',
-        tongSo: data.tong4ck_tongSo || '0',
-        thuThuat: data.tong4ck_thuThuat || '0',
-        nhapVien: data.nhapVien_tongSo || '0',
-        chuyenVien: data.chuyenVien_tongSo || '0',
-        isTotal: true
-      });
-    }
 
     sections.push({
       title: 'THỐNG KÊ HOẠT ĐỘNG 4 CHUYÊN KHOA (TMH - MẮT - RHM - DA LIỄU)',
@@ -67,11 +69,11 @@ export const parseDepartmentSections = (reportData, deptCode = '') => {
     }
 
     const tableRows = [
+      { name: '⭐ TỔNG CA MỔ / HIỆN CÒN HỒI TỈNH', cc: '—', ct: '—', tong: data.tongSoCaMo || '0', isTotal: true },
       { name: 'Ngoại Tổng Hợp', cc: data.cc_ngoaiTH || '0', ct: data.ct_ngoaiTH || '0', tong: String((Number(data.cc_ngoaiTH)||0) + (Number(data.ct_ngoaiTH)||0)) },
       { name: 'Chấn Thương Chỉnh Hình (CTCH)', cc: data.cc_ctch || '0', ct: data.ct_ctch || '0', tong: String((Number(data.cc_ctch)||0) + (Number(data.ct_ctch)||0)) },
       { name: 'Sản Khoa', cc: data.cc_san || '0', ct: data.ct_san || '0', tong: String((Number(data.cc_san)||0) + (Number(data.ct_san)||0)) },
-      { name: 'Mổ Khác / Giảm Đau Sau Mổ', cc: data.moKhac || '0', ct: data.soCaGiamDau || '0', tong: String((Number(data.moKhac)||0) + (Number(data.soCaGiamDau)||0)) },
-      { name: '⭐ TỔNG CA MỔ / HIỆN CÒN HỒI TỈNH', cc: '—', ct: '—', tong: data.tongSoCaMo || '0', isTotal: true }
+      { name: 'Mổ Khác / Giảm Đau Sau Mổ', cc: data.moKhac || '0', ct: data.soCaGiamDau || '0', tong: String((Number(data.moKhac)||0) + (Number(data.soCaGiamDau)||0)) }
     ];
 
     sections.push({
@@ -160,13 +162,13 @@ export const parseDepartmentSections = (reportData, deptCode = '') => {
       };
     });
 
-    // Add total row
+    // Add total row at the VERY TOP (index 0)
     const sumTongSo = tableRows.reduce((sum, r) => sum + (Number(r.tongSo) || 0), 0);
     const sumBHYT = tableRows.reduce((sum, r) => sum + (Number(r.baoHiem) || 0), 0);
     const sumNoiTru = tableRows.reduce((sum, r) => sum + (Number(r.noiTru) || 0), 0);
     const sumNgoaiTru = tableRows.reduce((sum, r) => sum + (Number(r.ngoaiTru) || 0), 0);
 
-    tableRows.push({
+    tableRows.unshift({
       name: '⭐ TỔNG CỘNG CÁC KỸ THUẬT CDHA',
       tongSo: String(sumTongSo),
       baoHiem: String(sumBHYT),
@@ -382,6 +384,69 @@ export const parseDepartmentSections = (reportData, deptCode = '') => {
         type: 'note',
         title: 'TÌNH HÌNH CHUNG CA TRỰC',
         value: data.tinhHinhChung
+      });
+    }
+
+    return sections;
+  }
+
+  // ================= 5.5. Y HỌC CỔ TRUYỀN – PHỤC HỒI CHỨC NĂNG (YHCT_PHCN) =================
+  if (normalizedDept === 'yhct_phcn' || (data.noiTru && data.ngoaiTru && data.keToa)) {
+    // 1. Khối Điều Trị Nội Trú
+    if (data.noiTru && typeof data.noiTru === 'object') {
+      const noiTruItems = [];
+      if (data.noiTru.benhCu !== undefined && data.noiTru.benhCu !== '') noiTruItems.push({ key: 'benhCu', label: 'Bệnh cũ điều trị', value: String(data.noiTru.benhCu) });
+      if (data.noiTru.benhMoi !== undefined && data.noiTru.benhMoi !== '') noiTruItems.push({ key: 'benhMoi', label: 'Bệnh mới nhập viện', value: String(data.noiTru.benhMoi) });
+      if ((data.noiTru.xuat || data.noiTru.xuatVien) !== undefined && (data.noiTru.xuat || data.noiTru.xuatVien) !== '') noiTruItems.push({ key: 'xuatVien', label: 'Xuất viện', value: String(data.noiTru.xuat || data.noiTru.xuatVien) });
+      if (data.noiTru.hienCon !== undefined && data.noiTru.hienCon !== '') noiTruItems.push({ key: 'hienCon', label: 'Hiện còn nội trú', value: String(data.noiTru.hienCon) });
+      if (data.noiTru.chuyenVien !== undefined && data.noiTru.chuyenVien !== '') noiTruItems.push({ key: 'chuyenVien', label: 'Chuyển viện', value: String(data.noiTru.chuyenVien) });
+      if (data.noiTru.tuVong !== undefined && data.noiTru.tuVong !== '') noiTruItems.push({ key: 'tuVong', label: 'Tử vong', value: String(data.noiTru.tuVong) });
+
+      if (noiTruItems.length > 0) {
+        sections.push({
+          title: 'KHỐI ĐIỀU TRỊ NỘI TRÚ',
+          items: noiTruItems
+        });
+      }
+    }
+
+    // 2. Khối Điều Trị Ngoại Trú
+    if (data.ngoaiTru && typeof data.ngoaiTru === 'object') {
+      const ngoaiTruItems = [];
+      if (data.ngoaiTru.benhCu !== undefined && data.ngoaiTru.benhCu !== '') ngoaiTruItems.push({ key: 'benhCu', label: 'Bệnh cũ điều trị', value: String(data.ngoaiTru.benhCu) });
+      if (data.ngoaiTru.benhMoi !== undefined && data.ngoaiTru.benhMoi !== '') ngoaiTruItems.push({ key: 'benhMoi', label: 'Bệnh mới tiếp nhận', value: String(data.ngoaiTru.benhMoi) });
+      if ((data.ngoaiTru.xuat || data.ngoaiTru.xuatVien) !== undefined && (data.ngoaiTru.xuat || data.ngoaiTru.xuatVien) !== '') ngoaiTruItems.push({ key: 'xuatVien', label: 'Hoàn thành điều trị', value: String(data.ngoaiTru.xuat || data.ngoaiTru.xuatVien) });
+      if (data.ngoaiTru.hienCon !== undefined && data.ngoaiTru.hienCon !== '') ngoaiTruItems.push({ key: 'hienCon', label: 'Hiện còn ngoại trú', value: String(data.ngoaiTru.hienCon) });
+      if (data.ngoaiTru.chuyenVien !== undefined && data.ngoaiTru.chuyenVien !== '') ngoaiTruItems.push({ key: 'chuyenVien', label: 'Chuyển viện', value: String(data.ngoaiTru.chuyenVien) });
+
+      if (ngoaiTruItems.length > 0) {
+        sections.push({
+          title: 'KHỐI ĐIỀU TRỊ NGOẠI TRÚ',
+          items: ngoaiTruItems
+        });
+      }
+    }
+
+    // 3. Khối Kê Toa & BHYT
+    if (data.keToa && typeof data.keToa === 'object') {
+      const keToaItems = [];
+      if (data.keToa.tongSo !== undefined && data.keToa.tongSo !== '') keToaItems.push({ key: 'tongSo', label: 'Tổng số lượt kê toa (TS)', value: String(data.keToa.tongSo) });
+      if (data.keToa.bhyt !== undefined && data.keToa.bhyt !== '') keToaItems.push({ key: 'bhyt', label: 'Kê toa Bảo hiểm y tế (BHYT)', value: String(data.keToa.bhyt) });
+      if (data.keToa.dichVu !== undefined && data.keToa.dichVu !== '') keToaItems.push({ key: 'dichVu', label: 'Kê toa Dịch vụ / Viện phí', value: String(data.keToa.dichVu) });
+
+      if (keToaItems.length > 0) {
+        sections.push({
+          title: 'KÊ TOA & BẢO HIỂM Y TẾ',
+          items: keToaItems
+        });
+      }
+    }
+
+    if (data.themGio) {
+      sections.push({
+        type: 'note',
+        title: 'THÊM GIỜ & GHI CHÚ',
+        value: data.themGio
       });
     }
 

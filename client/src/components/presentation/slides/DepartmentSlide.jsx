@@ -97,13 +97,20 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
     : (typeof overtimeStaff === 'string' ? (() => { try { return JSON.parse(overtimeStaff); } catch { return []; } })() : []);
 
   // Large-scale auto font scaling for high impact
+  let maxRowCount = 0;
+  finalSections.forEach(sec => {
+    if (sec.tableRows) maxRowCount = Math.max(maxRowCount, sec.tableRows.length);
+    else if (sec.items) maxRowCount = Math.max(maxRowCount, Math.ceil(sec.items.length / 2));
+  });
+
+  const isDenseTable = maxRowCount >= 6;
   const isSingleSection = finalSections.length === 1;
-  const FONT_SECTION_HEADER = isFullscreen ? (isSingleSection ? '1.25rem' : '1.12rem') : '0.98rem';
-  const FONT_TH = isFullscreen ? (isSingleSection ? '1.15rem' : '1.02rem') : '0.88rem';
-  const FONT_TD_LABEL = isFullscreen ? (isSingleSection ? '1.22rem' : '1.1rem') : '0.92rem';
-  const FONT_BADGE = isFullscreen ? (isSingleSection ? '1.5rem' : '1.3rem') : '1.12rem';
-  const PAD_TH = isFullscreen ? (isSingleSection ? '0.85rem 1.15rem' : '0.7rem 0.95rem') : '0.5rem 0.75rem';
-  const PAD_TD = isFullscreen ? (isSingleSection ? '0.75rem 1.15rem' : '0.6rem 0.95rem') : '0.45rem 0.7rem';
+  const FONT_SECTION_HEADER = isFullscreen ? (isDenseTable ? '1.05rem' : '1.22rem') : (isDenseTable ? '0.88rem' : '0.98rem');
+  const FONT_TH = isFullscreen ? (isDenseTable ? '0.95rem' : '1.12rem') : (isDenseTable ? '0.8rem' : '0.88rem');
+  const FONT_TD_LABEL = isFullscreen ? (isDenseTable ? '1.05rem' : '1.22rem') : (isDenseTable ? '0.86rem' : '0.92rem');
+  const FONT_BADGE = isFullscreen ? (isDenseTable ? '1.25rem' : '1.5rem') : (isDenseTable ? '1.02rem' : '1.12rem');
+  const PAD_TH = isFullscreen ? (isDenseTable ? '0.5rem 0.85rem' : '0.8rem 1.15rem') : (isDenseTable ? '0.35rem 0.65rem' : '0.5rem 0.75rem');
+  const PAD_TD = isFullscreen ? (isDenseTable ? '0.42rem 0.85rem' : '0.7rem 1.15rem') : (isDenseTable ? '0.3rem 0.65rem' : '0.45rem 0.7rem');
 
   // Render a Universal Medical Table for any list of items
   const renderItemTable = (section, sIdx) => {
@@ -499,22 +506,23 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
                                 <td key={kIdx} style={{
                                   padding: PAD_TD,
                                   textAlign: isFirst ? 'left' : 'center',
-                                  fontWeight: (isFirst || isTotal) ? '800' : '700',
-                                  color: isTotal ? '#1E40AF' : '#0F2C59',
+                                  fontWeight: isTotal ? '900' : (isFirst ? '800' : '700'),
+                                  color: isTotal ? '#1E3A8A' : '#0F2C59',
                                   fontSize: FONT_TD_LABEL
                                 }}>
                                   {!isFirst && val !== '—' ? (
                                     <span style={{
-                                      backgroundColor: isTotal ? '#DBEAFE' : '#EFF6FF',
-                                      color: '#1E40AF',
-                                      border: '1.5px solid #BFDBFE',
-                                      padding: '0.2rem 0.85rem',
+                                      backgroundColor: isTotal ? '#1E40AF' : '#EFF6FF',
+                                      color: isTotal ? '#FFFFFF' : '#1E40AF',
+                                      border: isTotal ? '1.5px solid #1D4ED8' : '1.5px solid #BFDBFE',
+                                      padding: isFullscreen ? '0.22rem 0.95rem' : '0.15rem 0.75rem',
                                       borderRadius: '8px',
                                       fontWeight: '900',
                                       fontSize: FONT_BADGE,
                                       fontFamily: "'Roboto Mono', monospace",
                                       display: 'inline-block',
-                                      minWidth: '42px'
+                                      minWidth: '42px',
+                                      boxShadow: isTotal ? '0 2px 8px rgba(30, 64, 175, 0.25)' : 'none'
                                     }}>
                                       {formatValueBadge(val)}
                                     </span>
