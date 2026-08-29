@@ -1232,77 +1232,31 @@ const AdminDashboard = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
             {activeTab === 'reports' && (
               <>
-                {/* Date Picker Pill + Quick Shortcuts */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.45rem',
-                    backgroundColor: '#F8FAFC',
-                    padding: '0.42rem 0.75rem',
-                    borderRadius: '8px',
-                    border: '1.5px solid #CBD5E1'
-                  }}>
-                    <FaCalendarAlt style={{ color: '#0284C7', fontSize: '0.85rem' }} />
-                    <input
-                      type="date"
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
-                      style={{
-                        border: 'none',
-                        background: 'transparent',
-                        outline: 'none',
-                        fontWeight: '700',
-                        fontSize: '0.85rem',
-                        color: '#0F2C59',
-                        cursor: 'pointer'
-                      }}
-                    />
-                  </div>
-
-                  {/* 1-Click Quick Date Shortcuts */}
-                  <div style={{ display: 'flex', gap: '0.25rem' }}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const yesterday = new Date();
-                        yesterday.setDate(yesterday.getDate() - 1);
-                        setDate(yesterday.toISOString().slice(0, 10));
-                      }}
-                      style={{
-                        backgroundColor: '#F1F5F9',
-                        border: '1px solid #CBD5E1',
-                        color: '#475569',
-                        padding: '0.38rem 0.6rem',
-                        borderRadius: '6px',
-                        fontSize: '0.74rem',
-                        fontWeight: '800',
-                        cursor: 'pointer',
-                        transition: 'all 0.15s ease'
-                      }}
-                      title="Chuyển nhanh sang ngày Hôm Qua"
-                    >
-                      Hôm Qua
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setDate(new Date().toISOString().slice(0, 10))}
-                      style={{
-                        backgroundColor: '#EFF6FF',
-                        border: '1px solid #BFDBFE',
-                        color: '#0284C7',
-                        padding: '0.38rem 0.6rem',
-                        borderRadius: '6px',
-                        fontSize: '0.74rem',
-                        fontWeight: '800',
-                        cursor: 'pointer',
-                        transition: 'all 0.15s ease'
-                      }}
-                      title="Chuyển nhanh sang ngày Hôm Nay"
-                    >
-                      Hôm Nay
-                    </button>
-                  </div>
+                {/* Date Picker Pill */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.45rem',
+                  backgroundColor: '#F8FAFC',
+                  padding: '0.42rem 0.75rem',
+                  borderRadius: '8px',
+                  border: '1.5px solid #CBD5E1'
+                }}>
+                  <FaCalendarAlt style={{ color: '#0284C7', fontSize: '0.85rem' }} />
+                  <input
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    style={{
+                      border: 'none',
+                      background: 'transparent',
+                      outline: 'none',
+                      fontWeight: '700',
+                      fontSize: '0.85rem',
+                      color: '#0F2C59',
+                      cursor: 'pointer'
+                    }}
+                  />
                 </div>
 
                 {/* Toggle Lock All Reports */}
