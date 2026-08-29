@@ -749,29 +749,107 @@ const DataArchiveTab = ({ onOpenPresentation, onOpenPrintView, onOpenReportDetai
                 )}
               </div>
 
-              {/* Category 4: Ca bệnh đặc biệt */}
+              {/* Category 4: Ca bệnh đặc biệt với đầy đủ Lâm Sàng & Cận Lâm Sàng */}
               <div style={{ backgroundColor: '#FFFFFF', borderRadius: '16px', border: '1.5px solid #CBD5E1', padding: '1.2rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
-                <h3 style={{ margin: '0 0 0.85rem 0', fontSize: '0.95rem', fontWeight: '900', color: '#0F2C59', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                  <FaAmbulance style={{ color: '#D97706' }} /> 4. CÁC CA DIỄN BIẾN LÂM SÀNG ĐẶC BIỆT
+                <h3 style={{ margin: '0 0 1rem 0', fontSize: '0.95rem', fontWeight: '900', color: '#0F2C59', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                  <FaAmbulance style={{ color: '#D97706' }} /> 4. CÁC CA DIỄN BIẾN LÂM SÀNG ĐẶC BIỆT (Đầy đủ Lâm Sàng & Cận Lâm Sàng)
                 </h3>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
-                  <div style={{ padding: '0.85rem', backgroundColor: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '10px' }}>
+                {/* Summary Count Bar */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem', marginBottom: '1.2rem' }}>
+                  <div style={{ padding: '0.75rem', backgroundColor: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '10px' }}>
                     <div style={{ fontSize: '0.74rem', color: '#1E40AF', fontWeight: '800' }}>CA PHẪU THUẬT</div>
                     <div style={{ fontSize: '1.3rem', fontWeight: '900', color: '#0F2C59', marginTop: '2px' }}>{dayDetails?.surgeryCases?.length || 0}</div>
                   </div>
-                  <div style={{ padding: '0.85rem', backgroundColor: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '10px' }}>
+                  <div style={{ padding: '0.75rem', backgroundColor: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: '10px' }}>
                     <div style={{ fontSize: '0.74rem', color: '#92400E', fontWeight: '800' }}>CA CHUYỂN VIỆN</div>
                     <div style={{ fontSize: '1.3rem', fontWeight: '900', color: '#D97706', marginTop: '2px' }}>{dayDetails?.transferCases?.length || 0}</div>
                   </div>
-                  <div style={{ padding: '0.85rem', backgroundColor: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '10px' }}>
+                  <div style={{ padding: '0.75rem', backgroundColor: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '10px' }}>
                     <div style={{ fontSize: '0.74rem', color: '#991B1B', fontWeight: '800' }}>CA TỬ VONG</div>
                     <div style={{ fontSize: '1.3rem', fontWeight: '900', color: '#DC2626', marginTop: '2px' }}>{dayDetails?.deathCases?.length || 0}</div>
                   </div>
-                  <div style={{ padding: '0.85rem', backgroundColor: '#FAF5FF', border: '1px solid #DDD6FE', borderRadius: '10px' }}>
+                  <div style={{ padding: '0.75rem', backgroundColor: '#FAF5FF', border: '1px solid #DDD6FE', borderRadius: '10px' }}>
                     <div style={{ fontSize: '0.74rem', color: '#6B21A8', fontWeight: '800' }}>BỆNH NHÂN NẶNG</div>
                     <div style={{ fontSize: '1.3rem', fontWeight: '900', color: '#7C3AED', marginTop: '2px' }}>{dayDetails?.criticalCases?.length || 0}</div>
                   </div>
+                </div>
+
+                {/* Detailed Patient Case Cards */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                  {/* Surgery Cases */}
+                  {(dayDetails?.surgeryCases || []).map((sc, sIdx) => (
+                    <div key={`sc_${sIdx}`} style={{ border: '1.5px solid #BFDBFE', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#F8FAFC' }}>
+                      <div style={{ backgroundColor: '#DBEAFE', padding: '0.55rem 0.9rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontWeight: '900', color: '#1E40AF', fontSize: '0.86rem' }}>
+                          🔪 Ca Mổ #{sIdx + 1}: {sc.patient_name || sc.patientName} ({sc.birth_year || sc.age} tuổi) — {sc.department_name || sc.department_code}
+                        </span>
+                        <span style={{ fontSize: '0.74rem', color: '#1E3A8A' }}>Vào: <strong>{sc.admission_time || sc.admissionTime}</strong></span>
+                      </div>
+                      <div style={{ padding: '0.75rem 0.9rem', display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.82rem' }}>
+                        <div><strong style={{ color: '#0284C7' }}>🩺 Lâm sàng:</strong> {sc.clinical_symptoms || sc.clinicalSymptoms || '—'}</div>
+                        <div><strong style={{ color: '#7C3AED' }}>🔬 Cận lâm sàng:</strong> {sc.clinical_tests || sc.clinicalTests || '—'}</div>
+                        <div><strong style={{ color: '#D97706' }}>🏥 Chẩn đoán trước mổ:</strong> {sc.preoperative_diagnosis || sc.pre_diagnosis || '—'} ➔ <strong>Sau mổ:</strong> {sc.postoperative_diagnosis || sc.post_diagnosis || '—'}</div>
+                        <div><strong style={{ color: '#059669' }}>🔪 Lệnh mổ & PTV:</strong> {sc.consultation_order || sc.surgery_method || '—'} | PTV: {sc.main_surgeon || '—'} | Gây mê: {sc.anesthesiologist || '—'}</div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Transfer Cases */}
+                  {(dayDetails?.transferCases || []).map((tc, tIdx) => (
+                    <div key={`tc_${tIdx}`} style={{ border: '1.5px solid #FDE68A', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#FFFDF5' }}>
+                      <div style={{ backgroundColor: '#FEF3C7', padding: '0.55rem 0.9rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontWeight: '900', color: '#92400E', fontSize: '0.86rem' }}>
+                          🚑 Ca Chuyển Viện #{tIdx + 1}: {tc.patient_name || tc.patientName} ({tc.age} tuổi) — {tc.department_name || tc.department_code}
+                        </span>
+                        <span style={{ fontSize: '0.74rem', color: '#78350F' }}>Vào: <strong>{tc.admission_time || tc.admissionTime}</strong></span>
+                      </div>
+                      <div style={{ padding: '0.75rem 0.9rem', display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.82rem' }}>
+                        <div><strong style={{ color: '#0284C7' }}>🩺 Lâm sàng:</strong> {tc.clinical_symptoms || tc.clinicalSymptoms || '—'}</div>
+                        <div><strong style={{ color: '#7C3AED' }}>🔬 Cận lâm sàng:</strong> {tc.clinical_tests || tc.clinicalTests || '—'}</div>
+                        <div><strong style={{ color: '#D97706' }}>🏥 Chẩn đoán:</strong> {tc.diagnosis || '—'}</div>
+                        <div><strong style={{ color: '#059669' }}>💊 Xử trí ban đầu:</strong> {tc.initial_treatment || tc.initialTreatment || '—'}</div>
+                        <div><strong style={{ color: '#B45309' }}>🚑 Diễn biến chuyển:</strong> {tc.progress_notes || tc.progressNotes || '—'}</div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Critical Cases */}
+                  {(dayDetails?.criticalCases || []).map((cc, cIdx) => (
+                    <div key={`cc_${cIdx}`} style={{ border: '1.5px solid #DDD6FE', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#FAF5FF' }}>
+                      <div style={{ backgroundColor: '#EDE9FE', padding: '0.55rem 0.9rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontWeight: '900', color: '#5B21B6', fontSize: '0.86rem' }}>
+                          🏥 Bệnh Nhân Nặng #{cIdx + 1}: {cc.patient_name || cc.patientName} ({cc.age} tuổi) — {cc.department_name || cc.department_code}
+                        </span>
+                        <span style={{ fontSize: '0.74rem', color: '#4C1D95' }}>Vào: <strong>{cc.admission_time || cc.admissionTime}</strong></span>
+                      </div>
+                      <div style={{ padding: '0.75rem 0.9rem', display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.82rem' }}>
+                        <div><strong style={{ color: '#0284C7' }}>🩺 Lâm sàng:</strong> {cc.clinical_symptoms || cc.clinicalSymptoms || '—'}</div>
+                        <div><strong style={{ color: '#7C3AED' }}>🔬 Cận lâm sàng:</strong> {cc.clinical_tests || cc.clinicalTests || '—'}</div>
+                        <div><strong style={{ color: '#D97706' }}>🏥 Chẩn đoán:</strong> {cc.diagnosis || '—'}</div>
+                        <div><strong style={{ color: '#059669' }}>💊 Xử trí & Bàn giao:</strong> {cc.treatment || '—'} {cc.notes ? `(${cc.notes})` : ''}</div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Death Cases */}
+                  {(dayDetails?.deathCases || []).map((dc, dIdx) => (
+                    <div key={`dc_${dIdx}`} style={{ border: '1.5px solid #FECACA', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#FFF5F5' }}>
+                      <div style={{ backgroundColor: '#FEE2E2', padding: '0.55rem 0.9rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontWeight: '900', color: '#991B1B', fontSize: '0.86rem' }}>
+                          ⚠️ Ca Tử Vong #{dIdx + 1}: {dc.patient_name || dc.patientName} ({dc.age} tuổi) — {dc.department_name || dc.department_code}
+                        </span>
+                        <span style={{ fontSize: '0.74rem', color: '#7F1D1D' }}>Vào: {dc.admission_time} ➔ Tử vong: <strong>{dc.death_time}</strong></span>
+                      </div>
+                      <div style={{ padding: '0.75rem 0.9rem', display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.82rem' }}>
+                        <div><strong style={{ color: '#0284C7' }}>🩺 Lâm sàng & Sinh hiệu:</strong> {dc.clinical_symptoms || '—'}</div>
+                        <div><strong style={{ color: '#7C3AED' }}>🔬 Cận lâm sàng / ECG:</strong> {dc.clinical_tests || '—'}</div>
+                        <div><strong style={{ color: '#991B1B' }}>🏥 Chẩn đoán tử vong:</strong> {dc.diagnosis || '—'}</div>
+                        <div><strong style={{ color: '#059669' }}>⚡ Xử trí cấp cứu:</strong> {dc.emergency_treatment || '—'}</div>
+                        <div><strong style={{ color: '#B91C1C' }}>📌 Kết luận:</strong> {dc.final_outcome || dc.cause_of_death || '—'}</div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 

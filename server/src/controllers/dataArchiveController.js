@@ -188,10 +188,34 @@ exports.getArchiveDayDetails = async (req, res) => {
       [criticalRows],
       [customSubmissions]
     ] = await Promise.all([
-      pool.query(`SELECT * FROM transfer_cases WHERE report_id IN (${placeholders})`, reportIds),
-      pool.query(`SELECT * FROM surgery_cases WHERE report_id IN (${placeholders})`, reportIds),
-      pool.query(`SELECT * FROM death_cases WHERE report_id IN (${placeholders})`, reportIds),
-      pool.query(`SELECT * FROM critical_cases WHERE report_id IN (${placeholders})`, reportIds),
+      pool.query(`
+        SELECT tc.*, r.department_code, u.department_name 
+        FROM transfer_cases tc
+        JOIN reports r ON tc.report_id = r.id
+        LEFT JOIN users u ON r.department_code = u.department_code
+        WHERE tc.report_id IN (${placeholders})
+      `, reportIds),
+      pool.query(`
+        SELECT sc.*, r.department_code, u.department_name 
+        FROM surgery_cases sc
+        JOIN reports r ON sc.report_id = r.id
+        LEFT JOIN users u ON r.department_code = u.department_code
+        WHERE sc.report_id IN (${placeholders})
+      `, reportIds),
+      pool.query(`
+        SELECT dc.*, r.department_code, u.department_name 
+        FROM death_cases dc
+        JOIN reports r ON dc.report_id = r.id
+        LEFT JOIN users u ON r.department_code = u.department_code
+        WHERE dc.report_id IN (${placeholders})
+      `, reportIds),
+      pool.query(`
+        SELECT cc.*, r.department_code, u.department_name 
+        FROM critical_cases cc
+        JOIN reports r ON cc.report_id = r.id
+        LEFT JOIN users u ON r.department_code = u.department_code
+        WHERE cc.report_id IN (${placeholders})
+      `, reportIds),
       pool.query(`SELECT * FROM custom_form_submissions WHERE DATE(created_at) = ?`, [date]).catch(() => [[]])
     ]);
 
