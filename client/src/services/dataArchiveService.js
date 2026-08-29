@@ -114,6 +114,13 @@ export const dataArchiveService = {
     const reports = dayData.reports || [];
     const dateFormatted = date.split('-').reverse().join('/');
 
+    const extractFormData = (r) => {
+      if (!r) return {};
+      const raw = r.report_data || r.form_data || r.formData || r.reportData || {};
+      if (typeof raw === 'object' && raw !== null) return raw;
+      try { return JSON.parse(raw); } catch (e) { return {}; }
+    };
+
     return `<!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -130,9 +137,11 @@ export const dataArchiveService = {
     .dept-header { background: #0F2C59; color: #FFFFFF; padding: 6px 12px; font-weight: bold; font-size: 10.5pt; display: flex; justify-content: space-between; }
     .metrics-table { width: 100%; border-collapse: collapse; font-size: 9pt; }
     .metrics-table th, .metrics-table td { border: 1px solid #E2E8F0; padding: 5px 8px; }
+    .metrics-table th { background-color: #E2E8F0; color: #0F2C59; text-align: center; font-weight: bold; }
     .metrics-table td.lbl { width: 35%; background: #F8FAFC; font-weight: bold; color: #334155; }
     .metrics-table td.val { width: 15%; text-align: center; font-weight: bold; color: #0F2C59; }
-    .sec-sub-header { background-color: #EFF6FF; color: #1E40AF; font-weight: bold; padding: 4px 8px; font-size: 9pt; }
+    .sec-sub-header { background-color: #EFF6FF; color: #1E40AF; font-weight: bold; padding: 4px 8px; font-size: 9pt; border-top: 1px solid #BFDBFE; }
+    .badge-num { background: #DBEAFE; color: #1E40AF; padding: 2px 8px; border-radius: 6px; font-weight: bold; }
     .btn-print { background-color: #0284C7; color: #FFFFFF; border: none; padding: 8px 16px; font-weight: bold; border-radius: 6px; cursor: pointer; font-family: Arial, sans-serif; margin-bottom: 15px; }
   </style>
 </head>
@@ -148,9 +157,9 @@ export const dataArchiveService = {
     </div>
 
     ${reports.map((r, i) => {
-      let rawForm = {};
-      try { rawForm = typeof r.form_data === 'string' ? JSON.parse(r.form_data) : (r.form_data || {}); } catch(e) {}
-      
+      const rawForm = extractFormData(r);
+      const is4CK = r.department_code === '4ck' || r.department_code === 'lien_chuyen_khoa' || rawForm.tmh_tongSo !== undefined || rawForm.tong4ck_tongSo !== undefined;
+
       const metricsList = [];
       const subSections = [];
       const notesList = [];
@@ -170,7 +179,7 @@ export const dataArchiveService = {
           });
           if (subItems.length > 0) subSections.push({ title: translateFieldKey(k), items: subItems });
         } else if (Array.isArray(v)) {
-          // List
+          // Array
         } else {
           metricsList.push({ label: translateFieldKey(k), value: String(v) });
         }
@@ -182,22 +191,81 @@ export const dataArchiveService = {
             <span>${i + 1}. ${escapeHtml(r.department_name || r.department_code)}</span>
             <span style="font-size: 8.5pt; font-weight: normal; opacity: 0.9;">BS: <strong>${escapeHtml(r.doctor_name || '—')}</strong> | ĐD: <strong>${escapeHtml(r.nurse_name || '—')}</strong></span>
           </div>
-          
-          <table class="metrics-table">
-            <tbody>
-              ${Array.from({ length: Math.ceil(metricsList.length / 2) }).map((_, rIdx) => {
-                const left = metricsList[rIdx * 2];
-                const right = metricsList[rIdx * 2 + 1];
-                return `
-                  <tr>
-                    <td class="lbl">${escapeHtml(left?.label || '')}:</td>
-                    <td class="val">${escapeHtml(left?.value || '')}</td>
-                    ${right ? `<td class="lbl">${escapeHtml(right.label)}:</td><td class="val">${escapeHtml(right.value)}</td>` : '<td class="lbl"></td><td class="val"></td>'}
-                  </tr>
-                `;
-              }).join('')}
-            </tbody>
-          </table>
+
+          ${is4CK ? `
+            <!-- BẢNG ĐẶC BIỆT DÀNH RIÊNG CHO 4 CHUYÊN KHOA -->
+            <table class="metrics-table">
+              <thead>
+                <tr>
+                  <th style="width: 6%;">STT</th>
+                  <th style="width: 34%; text-align: left; padding-left: 8px;">Chuyên Khoa</th>
+                  <th style="width: 15%;">Tổng Số Khám</th>
+                  <th style="width: 15%;">Thủ Thuật</th>
+                  <th style="width: 15%;">Nhập Viện</th>
+                  <th style="width: 15%;">Chuyển Viện</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="background-color: #EFF6FF; font-weight: bold;">
+                  <td style="text-align: center;">1</td>
+                  <td style="color: #1E40AF; padding-left: 8px;">⭐ TỔNG 4 CHUYÊN KHOA</td>
+                  <td style="text-align: center; color: #1E40AF;"><span class="badge-num">${rawForm.tong4ck_tongSo ?? (Number(rawForm.tmh_tongSo || 0) + Number(rawForm.mat_tongSo || 0) + Number(rawForm.rhm_noi_tongSo || 0) + Number(rawForm.daLieu_tongSo || 0))}</span></td>
+                  <td style="text-align: center; color: #1E40AF;"><span class="badge-num">${rawForm.tong4ck_thuThuat ?? (Number(rawForm.tmh_thuThuat || 0) + Number(rawForm.mat_thuThuat || 0) + Number(rawForm.rhm_noi_thuThuat || 0))}</span></td>
+                  <td style="text-align: center; color: #1E40AF;">${rawForm.nhapVien_tongSo ?? '00'}</td>
+                  <td style="text-align: center; color: #1E40AF;">${rawForm.chuyenVien_tongSo ?? '00'}</td>
+                </tr>
+                <tr>
+                  <td style="text-align: center;">2</td>
+                  <td style="padding-left: 8px; font-weight: bold;">Tai Mũi Họng (TMH)</td>
+                  <td style="text-align: center; font-weight: bold; color: #0F2C59;">${rawForm.tmh_tongSo ?? 0}</td>
+                  <td style="text-align: center; font-weight: bold; color: #0F2C59;">${rawForm.tmh_thuThuat ?? 0}</td>
+                  <td style="text-align: center; color: #64748B;">—</td>
+                  <td style="text-align: center; color: #64748B;">—</td>
+                </tr>
+                <tr style="background-color: #F8FAFC;">
+                  <td style="text-align: center;">3</td>
+                  <td style="padding-left: 8px; font-weight: bold;">Mắt</td>
+                  <td style="text-align: center; font-weight: bold; color: #0F2C59;">${rawForm.mat_tongSo ?? 0}</td>
+                  <td style="text-align: center; font-weight: bold; color: #0F2C59;">${rawForm.mat_thuThuat ?? 0}</td>
+                  <td style="text-align: center; color: #64748B;">—</td>
+                  <td style="text-align: center; color: #64748B;">—</td>
+                </tr>
+                <tr>
+                  <td style="text-align: center;">4</td>
+                  <td style="padding-left: 8px; font-weight: bold;">Răng Hàm Mặt (RHM)</td>
+                  <td style="text-align: center; font-weight: bold; color: #0F2C59;">${rawForm.rhm_noi_tongSo ?? 0}</td>
+                  <td style="text-align: center; font-weight: bold; color: #0F2C59;">${rawForm.rhm_noi_thuThuat ?? 0}</td>
+                  <td style="text-align: center; color: #0F2C59;">NT: <strong>${rawForm.rhm_noiTru ?? 0}</strong></td>
+                  <td style="text-align: center; color: #0F2C59;">NgT: <strong>${rawForm.rhm_ngoaiTru ?? 0}</strong></td>
+                </tr>
+                <tr style="background-color: #F8FAFC;">
+                  <td style="text-align: center;">5</td>
+                  <td style="padding-left: 8px; font-weight: bold;">Da Liễu</td>
+                  <td style="text-align: center; font-weight: bold; color: #0F2C59;">${rawForm.daLieu_tongSo ?? 0}</td>
+                  <td style="text-align: center; color: #64748B;">00</td>
+                  <td style="text-align: center; color: #64748B;">00</td>
+                  <td style="text-align: center; color: #64748B;">00</td>
+                </tr>
+              </tbody>
+            </table>
+          ` : `
+            <table class="metrics-table">
+              <tbody>
+                ${metricsList.length === 0 ? '<tr><td colspan="4" style="text-align:center; color:#64748B; font-style:italic; padding: 10px;">Không có chỉ số số liệu.</td></tr>' : ''}
+                ${Array.from({ length: Math.ceil(metricsList.length / 2) }).map((_, rIdx) => {
+                  const left = metricsList[rIdx * 2];
+                  const right = metricsList[rIdx * 2 + 1];
+                  return `
+                    <tr>
+                      <td class="lbl">${escapeHtml(left?.label || '')}:</td>
+                      <td class="val">${escapeHtml(left?.value || '')}</td>
+                      ${right ? `<td class="lbl">${escapeHtml(right.label)}:</td><td class="val">${escapeHtml(right.value)}</td>` : '<td class="lbl"></td><td class="val"></td>'}
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          `}
 
           ${subSections.map(sec => `
             <div class="sec-sub-header">❖ ${escapeHtml(sec.title)}</div>

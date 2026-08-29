@@ -317,9 +317,9 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
             width: '56px',
             height: '56px',
             borderRadius: '16px',
-            backgroundColor: 'rgba(255, 255, 255, 0.12)',
+            backgroundColor: 'rgba(255, 255, 255, 0.15)',
             backdropFilter: 'blur(10px)',
-            border: '1.5px solid rgba(255, 255, 255, 0.25)',
+            border: '1.5px solid rgba(255, 255, 255, 0.35)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -330,10 +330,10 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
             <FaDatabase />
           </div>
           <div>
-            <h1 style={{ margin: 0, fontSize: '1.45rem', fontWeight: '900', letterSpacing: '-0.3px', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <h1 style={{ margin: 0, fontSize: '1.45rem', fontWeight: '900', letterSpacing: '0.2px', display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#FFFFFF', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
               TỔNG HỢP DỮ LIỆU DỰ ÁN & KHO LƯU TRỮ SỐ HÓA
             </h1>
-            <p style={{ margin: '4px 0 0 0', fontSize: '0.86rem', opacity: 0.9, color: '#BAE6FD' }}>
+            <p style={{ margin: '4px 0 0 0', fontSize: '0.88rem', fontWeight: '600', color: '#BAE6FD', textShadow: '0 1px 4px rgba(0,0,0,0.4)' }}>
               Kho dữ liệu 3D phân cấp theo Năm ➔ Tháng ➔ Ngày, đóng gói 5 File riêng biệt, bảo tồn hồ sơ giao ban
             </p>
           </div>
@@ -345,8 +345,8 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
             disabled={loadingTree}
             style={{
               padding: '0.55rem 1.1rem',
-              backgroundColor: 'rgba(255, 255, 255, 0.15)',
-              border: '1.5px solid rgba(255, 255, 255, 0.3)',
+              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              border: '1.5px solid rgba(255, 255, 255, 0.4)',
               borderRadius: '10px',
               color: '#FFFFFF',
               fontWeight: '800',
@@ -356,7 +356,8 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
               alignItems: 'center',
               gap: '0.45rem',
               backdropFilter: 'blur(6px)',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.2s ease',
+              boxShadow: '0 4px 10px rgba(0,0,0,0.15)'
             }}
           >
             <FaSync className={loadingTree ? 'spinner' : ''} /> Làm Mới Kho
@@ -376,7 +377,7 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
           </div>
           <div>
             <div style={{ fontSize: '0.74rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase' }}>Năm Lưu Trữ</div>
-            <div style={{ fontSize: '1.35rem', fontWeight: '900', color: '#0F2C59' }}><CountUpNumber end={totalYears} /> năm</div>
+            <div style={{ fontSize: '1.35rem', fontWeight: '900', color: '#0F2C59' }}><CountUpNumber value={totalYears} /> năm</div>
           </div>
         </div>
 
@@ -386,7 +387,7 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
           </div>
           <div>
             <div style={{ fontSize: '0.74rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase' }}>Ca Trực Đã Lưu</div>
-            <div style={{ fontSize: '1.35rem', fontWeight: '900', color: '#059669' }}><CountUpNumber end={totalDaysAcrossYears} /> ngày</div>
+            <div style={{ fontSize: '1.35rem', fontWeight: '900', color: '#059669' }}><CountUpNumber value={totalDaysAcrossYears} /> ngày</div>
           </div>
         </div>
 
@@ -396,7 +397,7 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
           </div>
           <div>
             <div style={{ fontSize: '0.74rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase' }}>Báo Cáo Khoa Phòng</div>
-            <div style={{ fontSize: '1.35rem', fontWeight: '900', color: '#7C3AED' }}><CountUpNumber end={totalReportsAcrossYears} /> phiếu</div>
+            <div style={{ fontSize: '1.35rem', fontWeight: '900', color: '#7C3AED' }}><CountUpNumber value={totalReportsAcrossYears} /> phiếu</div>
           </div>
         </div>
 
@@ -406,7 +407,7 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
           </div>
           <div>
             <div style={{ fontSize: '0.74rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase' }}>Ca Bệnh Đặc Biệt</div>
-            <div style={{ fontSize: '1.35rem', fontWeight: '900', color: '#D97706' }}><CountUpNumber end={totalCasesAcrossYears} /> ca</div>
+            <div style={{ fontSize: '1.35rem', fontWeight: '900', color: '#D97706' }}><CountUpNumber value={totalCasesAcrossYears} /> ca</div>
           </div>
         </div>
       </div>
@@ -872,23 +873,55 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '0.85rem' }}>
                     {(dayDetails?.reports || []).map((r, rIdx) => {
-                      let rawForm = {};
-                      try { rawForm = typeof r.form_data === 'string' ? JSON.parse(r.form_data) : (r.form_data || {}); } catch(e) {}
+                      const rawForm = (() => {
+                        const raw = r.report_data || r.form_data || r.formData || r.reportData || {};
+                        if (typeof raw === 'object' && raw !== null) return raw;
+                        try { return JSON.parse(raw); } catch (e) { return {}; }
+                      })();
+                      const is4CK = r.department_code === '4ck' || r.department_code === 'lien_chuyen_khoa' || rawForm.tmh_tongSo !== undefined || rawForm.tong4ck_tongSo !== undefined;
                       const fields = Object.entries(rawForm).filter(([k, v]) => v !== null && v !== undefined && v !== '' && typeof v !== 'object' && k !== '_id');
 
                       return (
-                        <div key={rIdx} style={{ border: '1px solid #CBD5E1', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#F8FAFC' }}>
-                          <div style={{ backgroundColor: '#0F2C59', color: '#FFFFFF', padding: '0.5rem 0.8rem', fontWeight: '800', fontSize: '0.84rem' }}>
-                            {r.department_name || r.department_code}
+                        <div key={rIdx} style={{ border: '1.5px solid #CBD5E1', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#F8FAFC' }}>
+                          <div style={{ backgroundColor: '#0F2C59', color: '#FFFFFF', padding: '0.55rem 0.85rem', fontWeight: '800', fontSize: '0.86rem', display: 'flex', justifyContent: 'space-between' }}>
+                            <span>{r.department_name || r.department_code}</span>
+                            <span style={{ fontSize: '0.74rem', fontWeight: 'normal', opacity: 0.9 }}>BS: {r.doctor_name || '—'}</span>
                           </div>
-                          <div style={{ padding: '0.65rem 0.8rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.35rem', fontSize: '0.76rem' }}>
-                            {fields.slice(0, 8).map(([k, v], fIdx) => (
-                              <div key={fIdx} style={{ display: 'flex', justifyContent: 'space-between', background: '#FFFFFF', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}>
-                                <span style={{ color: '#64748B' }}>{translateFieldKey(k)}:</span>
-                                <strong style={{ color: '#0F2C59' }}>{String(v)}</strong>
+
+                          {is4CK ? (
+                            <div style={{ padding: '0.65rem 0.8rem', display: 'flex', flexDirection: 'column', gap: '0.35rem', fontSize: '0.76rem' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', background: '#EFF6FF', padding: '4px 8px', borderRadius: '6px', fontWeight: 'bold', color: '#1E40AF' }}>
+                                <span>⭐ TỔNG 4CK (Khám/Thủ thuật):</span>
+                                <span>{rawForm.tong4ck_tongSo ?? (Number(rawForm.tmh_tongSo || 0) + Number(rawForm.mat_tongSo || 0) + Number(rawForm.rhm_noi_tongSo || 0) + Number(rawForm.daLieu_tongSo || 0))} / {rawForm.tong4ck_thuThuat ?? (Number(rawForm.tmh_thuThuat || 0) + Number(rawForm.mat_thuThuat || 0) + Number(rawForm.rhm_noi_thuThuat || 0))}</span>
                               </div>
-                            ))}
-                          </div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', background: '#FFFFFF', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}>
+                                <span>Tai Mũi Họng (TMH):</span>
+                                <strong style={{ color: '#0F2C59' }}>{rawForm.tmh_tongSo ?? 0} (TT: {rawForm.tmh_thuThuat ?? 0})</strong>
+                              </div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', background: '#FFFFFF', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}>
+                                <span>Mắt:</span>
+                                <strong style={{ color: '#0F2C59' }}>{rawForm.mat_tongSo ?? 0} (TT: {rawForm.mat_thuThuat ?? 0})</strong>
+                              </div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', background: '#FFFFFF', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}>
+                                <span>Răng Hàm Mặt (RHM):</span>
+                                <strong style={{ color: '#0F2C59' }}>{rawForm.rhm_noi_tongSo ?? 0} (TT: {rawForm.rhm_noi_thuThuat ?? 0})</strong>
+                              </div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', background: '#FFFFFF', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}>
+                                <span>Da Liễu:</span>
+                                <strong style={{ color: '#0F2C59' }}>{rawForm.daLieu_tongSo ?? 0}</strong>
+                              </div>
+                            </div>
+                          ) : (
+                            <div style={{ padding: '0.65rem 0.8rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.35rem', fontSize: '0.76rem' }}>
+                              {fields.length === 0 ? <div style={{ color: '#94A3B8', fontStyle: 'italic', gridColumn: 'span 2' }}>Không có chỉ số chuyên môn.</div> : null}
+                              {fields.slice(0, 10).map(([k, v], fIdx) => (
+                                <div key={fIdx} style={{ display: 'flex', justifyContent: 'space-between', background: '#FFFFFF', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}>
+                                  <span style={{ color: '#64748B' }}>{translateFieldKey(k)}:</span>
+                                  <strong style={{ color: '#0F2C59' }}>{String(v)}</strong>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       );
                     })}

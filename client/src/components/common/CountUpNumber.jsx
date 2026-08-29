@@ -5,7 +5,8 @@ import React, { useState, useEffect, useRef } from 'react';
  * Uses requestAnimationFrame with cubic-bezier easing and explosive visual pop
  */
 const CountUpNumber = ({
-  value = 0,
+  value,
+  end,
   duration = 1000,
   decimals = 0,
   prefix = '',
@@ -14,13 +15,8 @@ const CountUpNumber = ({
   style = {},
   enableExplosion = true
 }) => {
-  const [displayValue, setDisplayValue] = useState(0);
-  const [isPopping, setIsPopping] = useState(false);
-  const startValueRef = useRef(0);
-  const startTimeRef = useRef(null);
-  const animationFrameRef = useRef(null);
-
-  const target = typeof value === 'number' ? value : (Number(value) || 0);
+  const rawTarget = end !== undefined ? end : (value !== undefined ? value : 0);
+  const target = typeof rawTarget === 'number' ? rawTarget : (Number(rawTarget) || 0);
 
   useEffect(() => {
     const startVal = startValueRef.current;
