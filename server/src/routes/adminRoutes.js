@@ -57,4 +57,9 @@ router.delete('/system-users/:id', auth, requireAdmin, deleteSystemUser);
 router.put('/reports/:departmentCode/:date/toggle-lock', auth, requireAdmin, toggleReportLock);
 router.put('/reports/toggle-lock-all/:date', auth, requireAdmin, toggleLockAllReports);
 
+// Version Changelog Management
+const { getChangelogHistory, publishChangelog } = require('../controllers/changelogController');
+router.get('/changelog/history', auth, requireAdmin, getChangelogHistory);
+router.post('/changelog', auth, requireAdmin, publishChangelog);
+
 module.exports = router;

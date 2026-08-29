@@ -33,6 +33,7 @@ import ChangePasswordModal from '../components/auth/ChangePasswordModal';
 import HospitalPortalIntro from '../components/auth/HospitalPortalIntro';
 import MedicalAuthBackground from '../components/common/MedicalAuthBackground';
 import VersionChangelogModal from '../components/common/VersionChangelogModal';
+import changelogService, { DEFAULT_V2_CHANGELOG } from '../services/changelogService';
 
 // Web Audio API Sound Synthesizers for Login State Feedback
 const playLoginSuccessSound = () => {
@@ -113,6 +114,17 @@ const LoginPage = () => {
   const [showVersionModal, setShowVersionModal] = useState(false);
   const [mustChangePasswordData, setMustChangePasswordData] = useState({ isOpen: false, username: '', fullName: '' });
   const [isFullscreen, setIsFullscreen] = useState(Boolean(document.fullscreenElement));
+  const [latestChangelog, setLatestChangelog] = useState(DEFAULT_V2_CHANGELOG);
+
+  useEffect(() => {
+    let isMounted = true;
+    changelogService.getLatestChangelog().then(data => {
+      if (isMounted && data) {
+        setLatestChangelog(data);
+      }
+    });
+    return () => { isMounted = false; };
+  }, []);
   
   // Only show intro if it's the very first visit of this browser session or right after logout
   const [showIntro, setShowIntro] = useState(() => {
@@ -1211,11 +1223,11 @@ const LoginPage = () => {
               gridTemplateColumns: 'repeat(4, 1fr)',
               gap: '0.45rem'
             }}>
-              {/* Badge 1: Version (Ultra Eye-Catching Glowing Card) */}
+              {/* Badge 1: Version (Dynamic: Glowing when Major, Elegant Flat when Patch) */}
               <div 
                 onClick={() => setShowVersionModal(true)}
-                title="✨ Nhấp để khám phá toàn bộ tính năng đột phá của phiên bản v2.0.0!"
-                style={{
+                title={`Nhấp để xem chi tiết tính năng của phiên bản v${latestChangelog.version || APP_VERSION}`}
+                style={latestChangelog.is_major ? {
                   background: 'linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 45%, #E0F2FE 100%)',
                   border: '2px solid #38BDF8',
                   borderRadius: '12px',
@@ -1231,52 +1243,97 @@ const LoginPage = () => {
                   position: 'relative',
                   overflow: 'hidden',
                   animation: 'versionCardGlow 2.5s infinite ease-in-out'
+                } : {
+                  background: 'linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%)',
+                  border: '1.5px solid #CBD5E1',
+                  borderRadius: '10px',
+                  padding: '0.45rem 0.25rem',
+                  textAlign: 'center',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '0.15rem',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+                  transition: 'all 0.2s ease',
+                  position: 'relative'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-3px) scale(1.04)';
-                  e.currentTarget.style.boxShadow = '0 0 22px rgba(14, 165, 233, 0.7), 0 8px 20px rgba(2, 132, 199, 0.35)';
-                  e.currentTarget.style.borderColor = '#0284C7';
+                  if (latestChangelog.is_major) {
+                    e.currentTarget.style.transform = 'translateY(-3px) scale(1.04)';
+                    e.currentTarget.style.boxShadow = '0 0 22px rgba(14, 165, 233, 0.7), 0 8px 20px rgba(2, 132, 199, 0.35)';
+                    e.currentTarget.style.borderColor = '#0284C7';
+                  } else {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+                    e.currentTarget.style.borderColor = '#94A3B8';
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                  e.currentTarget.style.boxShadow = '0 0 12px rgba(2, 132, 199, 0.35), 0 3px 10px rgba(2, 132, 199, 0.18)';
-                  e.currentTarget.style.borderColor = '#38BDF8';
+                  if (latestChangelog.is_major) {
+                    e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                    e.currentTarget.style.boxShadow = '0 0 12px rgba(2, 132, 199, 0.35), 0 3px 10px rgba(2, 132, 199, 0.18)';
+                    e.currentTarget.style.borderColor = '#38BDF8';
+                  } else {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.04)';
+                    e.currentTarget.style.borderColor = '#CBD5E1';
+                  }
                 }}
               >
-                <div style={{ fontSize: '0.64rem', color: '#1E40AF', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                  <FaCodeBranch style={{ color: '#0284C7', fontSize: '0.7rem' }} /> Phiên bản
+                <div style={{ fontSize: '0.64rem', color: latestChangelog.is_major ? '#1E40AF' : '#475569', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                  <FaCodeBranch style={{ color: latestChangelog.is_major ? '#0284C7' : '#64748B', fontSize: '0.7rem' }} /> Phiên bản
                 </div>
-                <div style={{ fontSize: '0.8rem', fontWeight: '900', color: '#0F2C59', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                  v{APP_VERSION}
-                  <span style={{
-                    background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)',
-                    color: '#FFFFFF',
-                    fontSize: '0.52rem',
-                    padding: '1px 5px',
-                    borderRadius: '999px',
+                <div style={{ fontSize: '0.8rem', fontWeight: '900', color: latestChangelog.is_major ? '#0F2C59' : '#334155', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                  v{latestChangelog.version || APP_VERSION}
+                  {latestChangelog.is_major ? (
+                    <span style={{
+                      background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)',
+                      color: '#FFFFFF',
+                      fontSize: '0.52rem',
+                      padding: '1px 5px',
+                      borderRadius: '999px',
+                      fontWeight: '900',
+                      letterSpacing: '0.4px',
+                      boxShadow: '0 2px 6px rgba(220, 38, 38, 0.35)',
+                      animation: 'sparkleBounce 1.8s infinite ease-in-out'
+                    }}>
+                      🚀 MỚI
+                    </span>
+                  ) : (
+                    <span style={{
+                      backgroundColor: '#E2E8F0',
+                      color: '#475569',
+                      fontSize: '0.52rem',
+                      padding: '1px 4px',
+                      borderRadius: '4px',
+                      fontWeight: '800'
+                    }}>
+                      Bản vá
+                    </span>
+                  )}
+                </div>
+                {latestChangelog.is_major ? (
+                  <div style={{
+                    fontSize: '0.58rem',
+                    color: '#0284C7',
                     fontWeight: '900',
-                    letterSpacing: '0.4px',
-                    boxShadow: '0 2px 6px rgba(220, 38, 38, 0.35)',
-                    animation: 'sparkleBounce 1.8s infinite ease-in-out'
+                    background: 'rgba(255, 255, 255, 0.85)',
+                    padding: '2px 6px',
+                    borderRadius: '6px',
+                    border: '1px solid #BAE6FD',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '2px',
+                    marginTop: '1px'
                   }}>
-                    🚀 MỚI
+                    ✨ Xem có gì mới? 👉
+                  </div>
+                ) : (
+                  <span style={{ fontSize: '0.56rem', color: '#64748B', fontWeight: '700', textDecoration: 'underline' }}>
+                    Xem chi tiết ➔
                   </span>
-                </div>
-                <div style={{
-                  fontSize: '0.58rem',
-                  color: '#0284C7',
-                  fontWeight: '900',
-                  background: 'rgba(255, 255, 255, 0.8)',
-                  padding: '2px 6px',
-                  borderRadius: '6px',
-                  border: '1px solid #BAE6FD',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '2px',
-                  marginTop: '1px'
-                }}>
-                  ✨ Xem có gì mới? 👉
-                </div>
+                )}
               </div>
 
               {/* Badge 2: Database */}

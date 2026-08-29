@@ -39,6 +39,11 @@ app.get('/api', (req, res) => {
   });
 });
 
+const { getLatestChangelog } = require('./controllers/changelogController');
+
+// Public System Changelog API
+app.get('/api/system/changelog/latest', getLatestChangelog);
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/reports', reportRoutes);

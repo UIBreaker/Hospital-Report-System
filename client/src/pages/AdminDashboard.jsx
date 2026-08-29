@@ -23,7 +23,8 @@ import {
   FaUserShield,
   FaUserMd,
   FaChartLine,
-  FaHistory
+  FaHistory,
+  FaRocket
 } from 'react-icons/fa';
 import reportService from '../services/reportService';
 import { generateAndDownloadHospitalExcel } from '../services/excelExportService';
@@ -31,6 +32,7 @@ import MedicalPrintView from '../components/common/MedicalPrintView';
 import Footer from '../components/common/Footer';
 import AdminReportDetailModal from '../components/admin/modals/AdminReportDetailModal';
 import SecurityLockModal from '../components/admin/modals/SecurityLockModal';
+import VersionManageModal from '../components/admin/modals/VersionManageModal';
 import MedicalLoader from '../components/common/MedicalLoader';
 import { normalizeImages } from '../utils/medicalFormatters';
 
@@ -135,6 +137,7 @@ const AdminDashboard = () => {
   const [saveSuccess, setSaveSuccess] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [showVersionManageModal, setShowVersionManageModal] = useState(false);
 
   // Form State inside Modal
   const [editHeader, setEditHeader] = useState({
@@ -1383,6 +1386,29 @@ const AdminDashboard = () => {
               </>
             )}
 
+            {/* Version Changelog Manager */}
+            <button
+              type="button"
+              onClick={() => setShowVersionManageModal(true)}
+              style={{
+                backgroundColor: '#EFF6FF',
+                color: '#1E40AF',
+                border: '1.5px solid #BFDBFE',
+                borderRadius: '8px',
+                fontWeight: '800',
+                fontSize: '0.82rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                padding: '0.45rem 0.85rem',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+              title="Soạn thảo thông tin phiên bản mới và kiểm soát chế độ nổi bật ngoài trang đăng nhập"
+            >
+              <FaRocket style={{ color: '#0284C7' }} /> Quản Lý Phiên Bản
+            </button>
+
             {/* Logout Button */}
             <button
               type="button"
@@ -1513,6 +1539,12 @@ const AdminDashboard = () => {
           onClose={() => setShowPrintModal(false)}
         />
       )}
+
+      {/* Dynamic Version Changelog Manager Modal */}
+      <VersionManageModal
+        isOpen={showVersionManageModal}
+        onClose={() => setShowVersionManageModal(false)}
+      />
     </div>
   );
 };
