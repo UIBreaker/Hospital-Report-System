@@ -158,15 +158,21 @@ export const dataArchiveService = {
 
     ${reports.map((r, i) => {
       const rawForm = extractFormData(r);
-      const deptCode = (r.department_code || '').toLowerCase();
-      const deptName = (r.department_name || '').toLowerCase();
+      const normalizeStr = (str) => (str || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd');
 
-      const isXN = deptCode === 'xn' || deptCode === 'xet_nghiem' || deptName.includes('xét nghiệm') || deptName.includes('xet nghiem');
-      const isCDHA = !isXN && (deptCode === 'cdha' || deptCode === 'chuan_doan_hinh_anh' || deptName.includes('hình ảnh') || Array.isArray(rawForm.techniques));
-      const is4CK = !isXN && (deptCode === '4ck' || deptCode === 'lck' || deptCode === 'lien_chuyen_khoa' || deptName.includes('chuyên khoa') || rawForm.tmh_tongSo !== undefined || rawForm.tong4ck_tongSo !== undefined);
-      const isHSCC = !isXN && (deptCode === 'hscc_tnt' || deptCode === 'hscc' || deptCode === 'hoi_suc_cap_cuu' || deptName.includes('hồi sức') || deptName.includes('thận nhân tạo') || (rawForm.hscc && typeof rawForm.hscc === 'object') || (rawForm.tnt && typeof rawForm.tnt === 'object') || (rawForm.pk21 && typeof rawForm.pk21 === 'object'));
-      const isYHCT = !isXN && (deptCode === 'yhct_phcn' || deptCode === 'yhct' || deptCode === 'y_hoc_co_truyen' || deptName.includes('cổ truyền') || deptName.includes('phục hồi') || (typeof rawForm.noiTru === 'object' && typeof rawForm.ngoaiTru === 'object' && typeof rawForm.keToa === 'object'));
-      const isGMHS = !isXN && (deptCode === 'gmhs' || deptCode === 'gay_me_hoi_suc' || deptName.includes('gây mê') || rawForm.cc_ctch !== undefined || rawForm.tongSoCaMo !== undefined);
+      const normCode = normalizeStr(r.department_code);
+      const normName = normalizeStr(r.department_name);
+
+      const isXN = normCode.includes('xn') || normCode.includes('xet') || normName.includes('xet nghiem');
+      const isCDHA = !isXN && (normCode.includes('cdha') || normName.includes('hinh anh') || normName.includes('chan doan') || Array.isArray(rawForm.techniques));
+      const is4CK = !isXN && (normCode.includes('4ck') || normCode.includes('lck') || normName.includes('chuyen khoa') || rawForm.tmh_tongSo !== undefined || rawForm.tong4ck_tongSo !== undefined);
+      const isHSCC = !isXN && (normCode.includes('hscc') || normName.includes('hoi suc cap cuu') || normName.includes('than nhan tao') || (rawForm.hscc && typeof rawForm.hscc === 'object') || (rawForm.tnt && typeof rawForm.tnt === 'object') || (rawForm.pk21 && typeof rawForm.pk21 === 'object'));
+      const isYHCT = !isXN && (normCode.includes('yhct') || normName.includes('co truyen') || normName.includes('phuc hoi') || (rawForm.noiTru && typeof rawForm.noiTru === 'object'));
+      const isGMHS = !isXN && (normCode.includes('gmhs') || normCode.includes('gay_me') || normCode.includes('gm') || normName.includes('gay me') || rawForm.cc_ctch !== undefined || rawForm.tongSoCaMo !== undefined);
 
       const metricsList = [];
       const subSections = [];

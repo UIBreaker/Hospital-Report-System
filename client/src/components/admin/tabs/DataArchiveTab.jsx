@@ -878,15 +878,22 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
                         if (typeof raw === 'object' && raw !== null) return raw;
                         try { return JSON.parse(raw); } catch (e) { return {}; }
                       })();
-                      const deptCode = (r.department_code || '').toLowerCase();
-                      const deptName = (r.department_name || '').toLowerCase();
 
-                      const isXN = deptCode === 'xn' || deptCode === 'xet_nghiem' || deptName.includes('xét nghiệm') || deptName.includes('xet nghiem');
-                      const isCDHA = !isXN && (deptCode === 'cdha' || deptCode === 'chuan_doan_hinh_anh' || deptName.includes('hình ảnh') || Array.isArray(rawForm.techniques));
-                      const is4CK = !isXN && (deptCode === '4ck' || deptCode === 'lck' || deptCode === 'lien_chuyen_khoa' || deptName.includes('chuyên khoa') || rawForm.tmh_tongSo !== undefined || rawForm.tong4ck_tongSo !== undefined);
-                      const isHSCC = !isXN && (deptCode === 'hscc_tnt' || deptCode === 'hscc' || deptCode === 'hoi_suc_cap_cuu' || deptName.includes('hồi sức') || deptName.includes('thận nhân tạo') || (rawForm.hscc && typeof rawForm.hscc === 'object') || (rawForm.tnt && typeof rawForm.tnt === 'object') || (rawForm.pk21 && typeof rawForm.pk21 === 'object'));
-                      const isYHCT = !isXN && (deptCode === 'yhct_phcn' || deptCode === 'yhct' || deptCode === 'y_hoc_co_truyen' || deptName.includes('cổ truyền') || deptName.includes('phục hồi') || (typeof rawForm.noiTru === 'object' && typeof rawForm.ngoaiTru === 'object' && typeof rawForm.keToa === 'object'));
-                      const isGMHS = !isXN && (deptCode === 'gmhs' || deptCode === 'gay_me_hoi_suc' || deptName.includes('gây mê') || rawForm.cc_ctch !== undefined || rawForm.tongSoCaMo !== undefined);
+                      const normalizeStr = (str) => (str || '')
+                        .toLowerCase()
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '')
+                        .replace(/đ/g, 'd');
+
+                      const normCode = normalizeStr(r.department_code);
+                      const normName = normalizeStr(r.department_name);
+
+                      const isXN = normCode.includes('xn') || normCode.includes('xet') || normName.includes('xet nghiem');
+                      const isCDHA = !isXN && (normCode.includes('cdha') || normName.includes('hinh anh') || normName.includes('chan doan') || Array.isArray(rawForm.techniques));
+                      const is4CK = !isXN && (normCode.includes('4ck') || normCode.includes('lck') || normName.includes('chuyen khoa') || rawForm.tmh_tongSo !== undefined || rawForm.tong4ck_tongSo !== undefined);
+                      const isHSCC = !isXN && (normCode.includes('hscc') || normName.includes('hoi suc cap cuu') || normName.includes('than nhan tao') || (rawForm.hscc && typeof rawForm.hscc === 'object') || (rawForm.tnt && typeof rawForm.tnt === 'object') || (rawForm.pk21 && typeof rawForm.pk21 === 'object'));
+                      const isYHCT = !isXN && (normCode.includes('yhct') || normName.includes('co truyen') || normName.includes('phuc hoi') || (rawForm.noiTru && typeof rawForm.noiTru === 'object'));
+                      const isGMHS = !isXN && (normCode.includes('gmhs') || normCode.includes('gay_me') || normCode.includes('gm') || normName.includes('gay me') || rawForm.cc_ctch !== undefined || rawForm.tongSoCaMo !== undefined);
 
                       // Flatten all fields and sub-objects
                       const flatFields = [];
@@ -964,7 +971,7 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
                                 </div>
                               </div>
                             ) : isCDHA ? (
-                              /* 3. KHOA CHẨN ĐOÁN HÌNH ẢNH */
+                              /* 3. KHOA CHẨN ĐOÁN HÌNH ẢNH (ĐẦY ĐỦ TỔNG, BHYT, NỘI TRÚ, NGOẠI TRÚ) */
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.78rem' }}>
                                 {(rawForm.bsSieuAm || rawForm.bsXquangCT) && (
                                   <div style={{ fontSize: '0.74rem', background: '#EEF2FF', padding: '4px 8px', borderRadius: '6px', color: '#3730A3' }}>
@@ -972,13 +979,17 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
                                     {rawForm.bsXquangCT ? <div><strong>BS Xquang-CT:</strong> {rawForm.bsXquangCT}</div> : null}
                                   </div>
                                 )}
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '0.4rem' }}>
-                                  {(Array.isArray(rawForm.techniques) ? rawForm.techniques : []).filter(t => t && (t.tongSo || t.name)).map((t, tIdx) => (
-                                    <div key={tIdx} style={{ background: '#F8FAFC', padding: '4px 6px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
-                                      <div style={{ fontWeight: '800', color: '#1E40AF', fontSize: '0.76rem' }}>{t.name}</div>
-                                      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2px', fontSize: '0.72rem' }}>
-                                        <span>Tổng: <strong style={{ color: '#0F2C59' }}>{t.tongSo || 0}</strong></span>
-                                        <span style={{ color: '#059669' }}>BHYT: {t.baoHiem || 0}</span>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '0.4rem' }}>
+                                  {(Array.isArray(rawForm.techniques) ? rawForm.techniques : []).filter(t => t && (t.name || t.tongSo)).map((t, tIdx) => (
+                                    <div key={tIdx} style={{ background: '#F8FAFC', padding: '5px 7px', borderRadius: '6px', border: '1px solid #CBD5E1' }}>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #E2E8F0', paddingBottom: '2px', marginBottom: '3px' }}>
+                                        <strong style={{ color: '#1E40AF', fontSize: '0.78rem' }}>{t.name}</strong>
+                                        <span style={{ background: '#DBEAFE', color: '#1E40AF', padding: '1px 6px', borderRadius: '4px', fontWeight: 'bold', fontSize: '0.74rem' }}>Tổng: {t.tongSo || 0}</span>
+                                      </div>
+                                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px', fontSize: '0.71rem', color: '#334155' }}>
+                                        <div>BHYT: <strong style={{ color: '#059669' }}>{t.baoHiem || 0}</strong></div>
+                                        <div>Nội trú: <strong style={{ color: '#0F2C59' }}>{t.noiTru || 0}</strong></div>
+                                        <div style={{ gridColumn: 'span 2' }}>Ngoại trú: <strong style={{ color: '#0F2C59' }}>{t.ngoaiTru || 0}</strong></div>
                                       </div>
                                     </div>
                                   ))}
@@ -1054,14 +1065,14 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
                             ) : isGMHS ? (
                               /* 6. GÂY MÊ HỒI SỨC */
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.76rem' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', background: '#EFF6FF', padding: '4px 8px', borderRadius: '6px', fontWeight: 'bold', color: '#1E40AF' }}>
-                                  <span>🔪 Tổng số ca mổ:</span>
-                                  <span style={{ background: '#DBEAFE', padding: '1px 8px', borderRadius: '4px' }}>{rawForm.tongSoCaMo ?? (Number(rawForm.cc_ctch || 0) + Number(rawForm.cc_ngoaiTH || 0) + Number(rawForm.cc_san || 0) + Number(rawForm.ct_ctch || 0) + Number(rawForm.ct_ngoaiTH || 0) + Number(rawForm.ct_san || 0))} ca</span>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', background: '#EFF6FF', padding: '5px 8px', borderRadius: '6px', fontWeight: 'bold', color: '#1E40AF', border: '1px solid #BFDBFE' }}>
+                                  <span>🔪 TỔNG SỐ CA PHẪU THUẬT:</span>
+                                  <span style={{ background: '#DBEAFE', padding: '2px 8px', borderRadius: '4px' }}>{rawForm.tongSoCaMo ?? (Number(rawForm.cc_ctch || 0) + Number(rawForm.cc_ngoaiTH || 0) + Number(rawForm.cc_san || 0) + Number(rawForm.ct_ctch || 0) + Number(rawForm.ct_ngoaiTH || 0) + Number(rawForm.ct_san || 0))} ca</span>
                                 </div>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.3rem' }}>
-                                  <div style={{ display: 'flex', justifyContent: 'space-between', background: '#FEF2F2', padding: '3px 6px', borderRadius: '4px' }}><span>Mổ CC CTCH:</span><strong>{rawForm.cc_ctch || 0}</strong></div>
-                                  <div style={{ display: 'flex', justifyContent: 'space-between', background: '#FEF2F2', padding: '3px 6px', borderRadius: '4px' }}><span>Mổ CC Ngoại:</span><strong>{rawForm.cc_ngoaiTH || 0}</strong></div>
-                                  <div style={{ display: 'flex', justifyContent: 'space-between', background: '#FEF2F2', padding: '3px 6px', borderRadius: '4px' }}><span>Mổ CC Sản:</span><strong>{rawForm.cc_san || 0}</strong></div>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', background: '#FEF2F2', padding: '3px 6px', borderRadius: '4px', border: '1px solid #FCA5A5' }}><span style={{ color: '#DC2626' }}>Mổ CC CTCH:</span><strong>{rawForm.cc_ctch || 0}</strong></div>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', background: '#FEF2F2', padding: '3px 6px', borderRadius: '4px', border: '1px solid #FCA5A5' }}><span style={{ color: '#DC2626' }}>Mổ CC Ngoại:</span><strong>{rawForm.cc_ngoaiTH || 0}</strong></div>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', background: '#FEF2F2', padding: '3px 6px', borderRadius: '4px', border: '1px solid #FCA5A5' }}><span style={{ color: '#DC2626' }}>Mổ CC Sản:</span><strong>{rawForm.cc_san || 0}</strong></div>
                                   <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}><span>Mổ KH CTCH:</span><strong>{rawForm.ct_ctch || 0}</strong></div>
                                   <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}><span>Mổ KH Ngoại:</span><strong>{rawForm.ct_ngoaiTH || 0}</strong></div>
                                   <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}><span>Mổ KH Sản:</span><strong>{rawForm.ct_san || 0}</strong></div>
