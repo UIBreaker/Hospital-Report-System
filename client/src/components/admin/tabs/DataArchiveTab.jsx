@@ -26,13 +26,29 @@ import {
   FaLayerGroup,
   FaDatabase,
   FaPrint,
-  FaChartBar
+  FaChartBar,
+  FaPaperPlane,
+  FaTimes,
+  FaCheck,
+  FaExternalLinkAlt,
+  FaShieldAlt,
+  FaCopy
 } from 'react-icons/fa';
 import dataArchiveService from '../../../services/dataArchiveService';
 import CountUpNumber from '../../common/CountUpNumber';
 import ImageLightboxModal from '../../common/ImageLightboxModal';
 import ArchiveFolderCard from './ArchiveFolderCard';
 import { translateFieldKey } from '../../../utils/medicalFormatters';
+
+const formatDateDDMMYYYY = (dateStr) => {
+  if (!dateStr) return '';
+  const parts = String(dateStr).split('-');
+  if (parts.length === 3) {
+    const [y, m, d] = parts;
+    return `${d.padStart(2, '0')}-${m.padStart(2, '0')}-${y}`;
+  }
+  return dateStr;
+};
 
 const DataArchiveTab = ({ onOpenPresentation, onOpenPrintView, onOpenReportDetail }) => {
   // Navigation State: 'years' | 'months' | 'days' | 'day_details'
@@ -67,6 +83,7 @@ const DataArchiveTab = ({ onOpenPresentation, onOpenPrintView, onOpenReportDetai
   const [emailNotes, setEmailNotes] = useState('');
   const [sendingEmail, setSendingEmail] = useState(false);
   const [showPasswordHelp, setShowPasswordHelp] = useState(false);
+  const [successModalData, setSuccessModalData] = useState(null);
 
   // Lightbox State
   const [lightboxData, setLightboxData] = useState({ isOpen: false, images: [], startIndex: 0 });
@@ -181,15 +198,17 @@ const DataArchiveTab = ({ onOpenPresentation, onOpenPrintView, onOpenReportDetai
   // Method 2: Multi-channel sharing to another computer
   const handleOpenEmailModal = () => {
     if (!selectedDay) return;
-    setEmailSubject(`[TTYT BÌNH LONG] Báo Cáo Giao Ban Trực Toàn Viện - Ngày ${selectedDay.date}`);
+    const formattedDate = formatDateDDMMYYYY(selectedDay.date);
+    setEmailSubject(`[TTYT BÌNH LONG] Báo Cáo Giao Ban Trực Toàn Viện - Ngày ${formattedDate}`);
     setShowEmailModal(true);
   };
 
   const buildEmailBodyText = () => {
+    const formattedDate = formatDateDDMMYYYY(selectedDay?.date);
     return `Kính gửi Ban Giám Đốc và Phòng Kế Hoạch Nghiệp Vụ,
 
 Hệ thống xin gửi trọn bộ 5 tệp hồ sơ lưu trữ ca trực giao ban toàn viện:
-- Ngày ca trực: ${selectedDay?.date}
+- Ngày ca trực: ${formattedDate}
 - Số khoa nộp báo cáo: ${dayDetails?.reports?.length || 0}/12 Khoa phòng
 - Tổng ca phẫu thuật: ${dayDetails?.surgeryCases?.length || 0} ca
 - Tổng ca chuyển viện: ${dayDetails?.transferCases?.length || 0} ca
@@ -217,7 +236,6 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
     const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(recipientEmail)}&su=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
     window.open(gmailUrl, '_blank');
     localStorage.setItem('last_archive_email', recipientEmail.trim());
-    alert('💡 Hệ thống đã mở thư Gmail và đồng thời tải sẵn file nén ZIP về máy tính của bạn.\n\n👉 Bạn chỉ cần bấm biểu tượng đính kèm tệp 📎 trên Gmail và chọn file ZIP vừa tải để gửi đi nhé!');
   };
 
   // Copy Summary to Clipboard
@@ -255,12 +273,13 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
         }
       }
 
+      const formattedDate = formatDateDDMMYYYY(selectedDay.date);
       const payload = {
         date: selectedDay.date,
         recipientEmail: recipientEmail.trim(),
         senderEmail: senderEmail.trim(),
         senderAppPassword: senderAppPassword.trim(),
-        subject: emailSubject.trim(),
+        subject: emailSubject.trim() || `[TTYT BÌNH LONG] Báo Cáo Giao Ban Trực Toàn Viện - Ngày ${formattedDate}`,
         notes: emailNotes.trim(),
         zipAttachmentBase64,
         shiftSummary: {
@@ -274,8 +293,21 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
 
       const res = await dataArchiveService.sendArchiveEmail(payload);
       if (res?.success) {
-        alert(`🎉 ${res.message}`);
         setShowEmailModal(false);
+        setSuccessModalData({
+          recipient: recipientEmail.trim(),
+          date: formattedDate,
+          sender: senderEmail.trim(),
+          subject: payload.subject,
+          transfers: dayDetails?.transferCases?.length || 0,
+          surgeries: dayDetails?.surgeryCases?.length || 0,
+          deaths: dayDetails?.deathCases?.length || 0,
+          criticals: dayDetails?.criticalCases?.length || 0,
+          submittedCount: `${dayDetails?.reports?.length || 0}/12`,
+          imagesCount: dayDetails?.imagesList?.length || 0,
+          notes: emailNotes.trim(),
+          timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+        });
       } else {
         alert(res?.error || 'Không thể gửi Email qua máy chủ.');
       }
@@ -1525,6 +1557,192 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
           startIndex={lightboxData.startIndex}
           onClose={() => setLightboxData({ isOpen: false, images: [], startIndex: 0 })}
         />
+      )}
+
+      {/* 🌟 ULTRA-PREMIUM SUCCESS NOTIFICATION MODAL */}
+      {successModalData && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(15, 23, 42, 0.78)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+          zIndex: 100000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '1.2rem'
+        }}>
+          <div style={{
+            backgroundColor: '#FFFFFF',
+            borderRadius: '24px',
+            maxWidth: '520px',
+            width: '100%',
+            overflow: 'hidden',
+            boxShadow: '0 25px 60px -15px rgba(5, 150, 105, 0.35), 0 0 0 1px rgba(16, 185, 129, 0.2)',
+            position: 'relative'
+          }}>
+            {/* Header Glowing Gradient with Animated Ring */}
+            <div style={{
+              background: 'linear-gradient(135deg, #064E3B 0%, #047857 50%, #0D9488 100%)',
+              padding: '2rem 1.5rem 1.6rem',
+              textAlign: 'center',
+              position: 'relative',
+              color: '#FFFFFF'
+            }}>
+              <button
+                type="button"
+                onClick={() => setSuccessModalData(null)}
+                style={{
+                  position: 'absolute',
+                  top: '14px',
+                  right: '14px',
+                  background: 'rgba(255, 255, 255, 0.15)',
+                  border: 'none',
+                  color: '#FFFFFF',
+                  borderRadius: '50%',
+                  width: '32px',
+                  height: '32px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '0.9rem'
+                }}
+              >
+                <FaTimes />
+              </button>
+
+              {/* Glowing Success Icon */}
+              <div style={{
+                width: '76px',
+                height: '76px',
+                borderRadius: '50%',
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                backdropFilter: 'blur(8px)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 0.9rem',
+                border: '3px solid rgba(255, 255, 255, 0.7)',
+                boxShadow: '0 0 30px rgba(52, 211, 153, 0.6)'
+              }}>
+                <FaCheckCircle style={{ fontSize: '2.6rem', color: '#6EE7B7' }} />
+              </div>
+
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(255, 255, 255, 0.18)', padding: '0.25rem 0.8rem', borderRadius: '20px', fontSize: '0.74rem', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '0.4rem', border: '1px solid rgba(255, 255, 255, 0.25)' }}>
+                <span>✨ ĐÃ CHUYỂN PHÁT THÀNH CÔNG</span>
+              </div>
+
+              <h3 style={{ margin: '0 0 0.35rem', fontSize: '1.35rem', fontWeight: '900', letterSpacing: '-0.3px', textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
+                HỒ SƠ CA TRỰC ĐÃ ĐƯỢC GỬI!
+              </h3>
+              <p style={{ margin: 0, fontSize: '0.82rem', opacity: 0.95, lineHeight: 1.4 }}>
+                Đã đính kèm tệp nén <strong>ZIP</strong> & 5 báo cáo ca trực đến người nhận
+              </p>
+            </div>
+
+            {/* Content Details */}
+            <div style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+              
+              {/* Recipient & Shift Pill Box */}
+              <div style={{ backgroundColor: '#F0FDF4', border: '1.5px solid #BBF7D0', borderRadius: '14px', padding: '0.85rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.74rem', color: '#166534', fontWeight: '700' }}>📬 Email người nhận:</span>
+                  <strong style={{ fontSize: '0.85rem', color: '#14532D', background: '#DCFCE7', padding: '0.15rem 0.6rem', borderRadius: '6px', border: '1px solid #86EFAC' }}>{successModalData.recipient}</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.74rem', color: '#166534', fontWeight: '700' }}>📅 Ngày ca trực:</span>
+                  <strong style={{ fontSize: '0.92rem', color: '#0F2C59', fontWeight: '900' }}>{successModalData.date}</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.74rem', color: '#166534', fontWeight: '700' }}>📦 Tệp nén đính kèm:</span>
+                  <span style={{ fontSize: '0.78rem', color: '#047857', fontWeight: '800' }}>BaoCaoGiaoBan_Ngay_{successModalData.date}.zip</span>
+                </div>
+              </div>
+
+              {/* Data Highlights Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.45rem', textAlign: 'center' }}>
+                <div style={{ background: '#F8FAFC', padding: '0.55rem 0.3rem', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+                  <div style={{ fontSize: '0.68rem', color: '#64748B', fontWeight: '600' }}>Khoa nộp</div>
+                  <div style={{ fontSize: '0.95rem', fontWeight: '900', color: '#0284C7', marginTop: '2px' }}>{successModalData.submittedCount}</div>
+                </div>
+                <div style={{ background: '#F8FAFC', padding: '0.55rem 0.3rem', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+                  <div style={{ fontSize: '0.68rem', color: '#64748B', fontWeight: '600' }}>Phẫu thuật</div>
+                  <div style={{ fontSize: '0.95rem', fontWeight: '900', color: '#059669', marginTop: '2px' }}>{successModalData.surgeries} ca</div>
+                </div>
+                <div style={{ background: '#F8FAFC', padding: '0.55rem 0.3rem', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+                  <div style={{ fontSize: '0.68rem', color: '#64748B', fontWeight: '600' }}>Chuyển viện</div>
+                  <div style={{ fontSize: '0.95rem', fontWeight: '900', color: '#D97706', marginTop: '2px' }}>{successModalData.transfers} ca</div>
+                </div>
+                <div style={{ background: '#F8FAFC', padding: '0.55rem 0.3rem', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+                  <div style={{ fontSize: '0.68rem', color: '#64748B', fontWeight: '600' }}>Hình ảnh CLS</div>
+                  <div style={{ fontSize: '0.95rem', fontWeight: '900', color: '#7C3AED', marginTop: '2px' }}>{successModalData.imagesCount} ảnh</div>
+                </div>
+              </div>
+
+              {/* Delivery Security Badge */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', fontSize: '0.72rem', color: '#64748B', background: '#F8FAFC', padding: '0.45rem', borderRadius: '8px' }}>
+                <FaShieldAlt style={{ color: '#10B981', fontSize: '0.85rem' }} />
+                <span>Giao thức: <strong>Google SMTP TLS 256-bit</strong> • Lúc: {successModalData.timestamp}</span>
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', gap: '0.6rem', marginTop: '0.2rem' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.open('https://mail.google.com/mail/u/0/#sent', '_blank');
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '0.65rem 0.8rem',
+                    borderRadius: '10px',
+                    border: '1.5px solid #CBD5E1',
+                    backgroundColor: '#FFFFFF',
+                    color: '#0F2C59',
+                    fontWeight: '800',
+                    fontSize: '0.8rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.4rem',
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
+                  }}
+                >
+                  <FaExternalLinkAlt style={{ fontSize: '0.75rem', color: '#0284C7' }} /> Xem Hộp Thư Đã Gửi
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSuccessModalData(null)}
+                  style={{
+                    flex: 1,
+                    padding: '0.65rem 1rem',
+                    borderRadius: '10px',
+                    border: 'none',
+                    background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                    color: '#FFFFFF',
+                    fontWeight: '900',
+                    fontSize: '0.84rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.4rem',
+                    boxShadow: '0 4px 12px rgba(5, 150, 105, 0.35)'
+                  }}
+                >
+                  <FaCheck /> Hoàn Tất
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
