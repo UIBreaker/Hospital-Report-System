@@ -29,6 +29,7 @@ import {
 } from 'react-icons/fa';
 import submissionHistoryService from '../../../services/submissionHistoryService';
 import MedicalLoader from '../../common/MedicalLoader';
+import CountUpNumber from '../../common/CountUpNumber';
 
 const parseUtcDate = (val) => {
   if (!val) return null;
@@ -485,48 +486,62 @@ const SubmissionHistoryTab = ({ onViewReportDetail, onPrintReport }) => {
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   <span style={{ backgroundColor: '#DCFCE7', color: '#15803D', padding: '0.3rem 0.8rem', borderRadius: '12px', fontWeight: '900', fontSize: '0.8rem' }}>
-                    🟢 Đã nộp: {shiftData.summary?.totalSubmitted || 0}/12
+                    🟢 Đã nộp: <CountUpNumber value={shiftData.summary?.totalSubmitted || 0} duration={800} />/12
                   </span>
                   <span style={{ backgroundColor: shiftData.summary?.totalPending > 0 ? '#FEE2E2' : '#F1F5F9', color: shiftData.summary?.totalPending > 0 ? '#DC2626' : '#64748B', padding: '0.3rem 0.8rem', borderRadius: '12px', fontWeight: '900', fontSize: '0.8rem' }}>
-                    🔴 Chưa nộp: {shiftData.summary?.totalPending || 0}
+                    🔴 Chưa nộp: <CountUpNumber value={shiftData.summary?.totalPending || 0} duration={800} />
                   </span>
                 </div>
               </div>
 
               {/* 12 Badges Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '0.75rem' }}>
-                {shiftData.matrix12Depts.map(dept => (
-                  <div
-                    key={dept.departmentCode}
-                    style={{
-                      backgroundColor: dept.isSubmitted ? '#F0FDF4' : '#FFF1F2',
-                      border: `1.5px solid ${dept.isSubmitted ? '#86EFAC' : '#FECDD3'}`,
-                      borderRadius: '14px',
-                      padding: '0.75rem 0.95rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '0.5rem'
-                    }}
-                  >
-                    <div>
-                      <div style={{ fontSize: '0.84rem', fontWeight: '900', color: dept.isSubmitted ? '#166534' : '#9F1239' }}>
-                        {dept.departmentName}
-                      </div>
-                      <div style={{ fontSize: '0.74rem', color: dept.isSubmitted ? '#15803D' : '#BE123C', marginTop: '2px' }}>
-                        {dept.isSubmitted ? (
-                          <>🕒 {formatTimeVN(dept.submittedAt).split('—')[0]} • {dept.doctorName || 'Đã nộp'}</>
-                        ) : (
-                          '⚠️ Chưa có báo cáo'
-                        )}
-                      </div>
+              {loading ? (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '0.75rem' }}>
+                  {Array.from({ length: 12 }).map((_, i) => (
+                    <div key={i} style={{ backgroundColor: '#F8FAFC', borderRadius: '14px', padding: '0.75rem 0.95rem', border: '1.5px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <div className="analytics-shimmer" style={{ width: '60%', height: '14px', borderRadius: '4px' }} />
+                      <div className="analytics-shimmer" style={{ width: '40%', height: '10px', borderRadius: '4px' }} />
                     </div>
-                    {dept.isSubmitted && dept.isLocked && (
-                      <span title="Đã khóa sổ" style={{ color: '#D97706', fontSize: '0.85rem' }}><FaLock /></span>
-                    )}
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '0.75rem' }}>
+                  {shiftData.matrix12Depts.map(dept => (
+                    <div
+                      key={dept.departmentCode}
+                      style={{
+                        backgroundColor: dept.isSubmitted ? '#F0FDF4' : '#FFF1F2',
+                        border: `1.5px solid ${dept.isSubmitted ? '#86EFAC' : '#FECDD3'}`,
+                        borderRadius: '14px',
+                        padding: '0.75rem 0.95rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '0.5rem',
+                        transition: 'transform 0.15s ease'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                      onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                    >
+                      <div>
+                        <div style={{ fontSize: '0.84rem', fontWeight: '900', color: dept.isSubmitted ? '#166534' : '#9F1239' }}>
+                          {dept.departmentName}
+                        </div>
+                        <div style={{ fontSize: '0.74rem', color: dept.isSubmitted ? '#15803D' : '#BE123C', marginTop: '2px' }}>
+                          {dept.isSubmitted ? (
+                            <>🕒 {formatTimeVN(dept.submittedAt).split('—')[0]} • {dept.doctorName || 'Đã nộp'}</>
+                          ) : (
+                            '⚠️ Chưa có báo cáo'
+                          )}
+                        </div>
+                      </div>
+                      {dept.isSubmitted && dept.isLocked && (
+                        <span title="Đã khóa sổ" style={{ color: '#D97706', fontSize: '0.85rem' }}><FaLock /></span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -540,7 +555,7 @@ const SubmissionHistoryTab = ({ onViewReportDetail, onPrintReport }) => {
           }}>
             <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F8FAFC' }}>
               <div style={{ fontSize: '0.95rem', fontWeight: '900', color: '#0F2C59' }}>
-                DANH SÁCH LỊCH SỬ NỘP BÁO CÁO GIAO BAN ({shiftData.history?.length || 0} bản ghi)
+                DANH SÁCH LỊCH SỬ NỘP BÁO CÁO GIAO BAN (<CountUpNumber value={shiftData.history?.length || 0} duration={800} /> bản ghi)
               </div>
               <span style={{ fontSize: '0.78rem', color: '#64748B', fontWeight: '700' }}>
                 Mỗi khoa nộp 1 báo cáo chuyên môn cho mỗi ngày trực
@@ -548,7 +563,16 @@ const SubmissionHistoryTab = ({ onViewReportDetail, onPrintReport }) => {
             </div>
 
             {loading ? (
-              <MedicalLoader text="Đang tải lịch sử giao ban..." minHeight="240px" />
+              <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', borderBottom: '1px solid #F1F5F9' }}>
+                    <div className="analytics-shimmer" style={{ width: '20%', height: '14px', borderRadius: '4px' }} />
+                    <div className="analytics-shimmer" style={{ width: '25%', height: '14px', borderRadius: '4px' }} />
+                    <div className="analytics-shimmer" style={{ width: '15%', height: '14px', borderRadius: '4px' }} />
+                    <div className="analytics-shimmer" style={{ width: '15%', height: '14px', borderRadius: '4px' }} />
+                  </div>
+                ))}
+              </div>
             ) : shiftData.history?.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#94A3B8' }}>
                 <FaHospital style={{ fontSize: '2.5rem', marginBottom: '0.5rem', opacity: 0.5 }} />

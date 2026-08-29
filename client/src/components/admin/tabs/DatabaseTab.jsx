@@ -14,6 +14,7 @@ import {
 } from 'react-icons/fa';
 import reportService from '../../../services/reportService';
 import MedicalLoader from '../../common/MedicalLoader';
+import CountUpNumber from '../../common/CountUpNumber';
 
 const DatabaseTab = ({ date }) => {
   const [loadingDb, setLoadingDb] = useState(false);
@@ -207,10 +208,13 @@ const DatabaseTab = ({ date }) => {
               <FaHdd />
             </div>
             <div>
-              <div style={{ fontSize: '1.85rem', fontWeight: '900', color: '#0F2C59', lineHeight: '1.1' }}>
-                {dbStats.physicalStorage?.usedMb !== undefined
-                  ? `${dbStats.physicalStorage.usedMb} MB`
-                  : (dbStats.totalDataSizeMb !== undefined ? `${dbStats.totalDataSizeMb} MB` : '0.44 MB')}
+              <div style={{ fontSize: '1.85rem', fontWeight: '900', color: '#0F2C59', lineHeight: '1.1', fontFamily: "'Roboto Mono', monospace" }}>
+                <CountUpNumber
+                  value={Number(dbStats.physicalStorage?.usedMb !== undefined ? dbStats.physicalStorage.usedMb : (dbStats.totalDataSizeMb !== undefined ? dbStats.totalDataSizeMb : 0.44))}
+                  decimals={2}
+                  suffix=" MB"
+                  duration={800}
+                />
               </div>
               <div style={{ fontSize: '0.82rem', fontWeight: '800', color: '#0F2C59', textTransform: 'uppercase', letterSpacing: '0.4px', marginTop: '0.2rem' }}>
                 DUNG LƯỢNG SỬ DỤNG
@@ -248,8 +252,11 @@ const DatabaseTab = ({ date }) => {
               <FaFileAlt />
             </div>
             <div>
-              <div style={{ fontSize: '1.85rem', fontWeight: '900', color: '#6D28D9', lineHeight: '1.1' }}>
-                {dbStats.tables?.find(t => t.tableName === 'reports')?.rowsCount ?? dbStats.totalRows ?? 0}
+              <div style={{ fontSize: '1.85rem', fontWeight: '900', color: '#6D28D9', lineHeight: '1.1', fontFamily: "'Roboto Mono', monospace" }}>
+                <CountUpNumber
+                  value={dbStats.tables?.find(t => t.tableName === 'reports')?.rowsCount ?? dbStats.totalRows ?? 0}
+                  duration={900}
+                />
               </div>
               <div style={{ fontSize: '0.82rem', fontWeight: '800', color: '#6D28D9', textTransform: 'uppercase', letterSpacing: '0.4px', marginTop: '0.2rem' }}>
                 BẢN GHI BÁO CÁO

@@ -22,6 +22,7 @@ import {
 } from 'react-icons/fa';
 import api from '../../../services/api';
 import systemUserService from '../../../services/systemUserService';
+import CountUpNumber from '../../common/CountUpNumber';
 
 const AccountsTab = () => {
   // Sub-tab: 'core' | 'system'
@@ -302,6 +303,49 @@ const AccountsTab = () => {
       {/* ================= SUB-TAB 1: SYSTEM USERS ================= */}
       {subTab === 'system' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {/* Summary KPI Cards */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: '1rem'
+          }}>
+            <div style={{ backgroundColor: '#FFFFFF', borderRadius: '14px', border: '1px solid #E2E8F0', borderLeft: '5px solid #2563EB', padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div>
+                <div style={{ fontSize: '1.8rem', fontWeight: '900', color: '#1E40AF', lineHeight: 1, fontFamily: "'Roboto Mono', monospace" }}>
+                  <CountUpNumber value={systemUsers.length} duration={800} />
+                </div>
+                <div style={{ fontSize: '0.78rem', fontWeight: '800', color: '#0F2C59', marginTop: '4px' }}>TỔNG TÀI KHOẢN</div>
+              </div>
+            </div>
+
+            <div style={{ backgroundColor: '#FFFFFF', borderRadius: '14px', border: '1px solid #E2E8F0', borderLeft: '5px solid #10B981', padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div>
+                <div style={{ fontSize: '1.8rem', fontWeight: '900', color: '#16A34A', lineHeight: 1, fontFamily: "'Roboto Mono', monospace" }}>
+                  <CountUpNumber value={systemUsers.filter(u => u.status === 'active').length} duration={800} />
+                </div>
+                <div style={{ fontSize: '0.78rem', fontWeight: '800', color: '#065F46', marginTop: '4px' }}>ĐANG HOẠT ĐỘNG</div>
+              </div>
+            </div>
+
+            <div style={{ backgroundColor: '#FFFFFF', borderRadius: '14px', border: '1px solid #E2E8F0', borderLeft: '5px solid #D97706', padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div>
+                <div style={{ fontSize: '1.8rem', fontWeight: '900', color: '#D97706', lineHeight: 1, fontFamily: "'Roboto Mono', monospace" }}>
+                  <CountUpNumber value={pendingCount} duration={800} />
+                </div>
+                <div style={{ fontSize: '0.78rem', fontWeight: '800', color: '#92400E', marginTop: '4px' }}>CHỜ PHÊ DUYỆT</div>
+              </div>
+            </div>
+
+            <div style={{ backgroundColor: '#FFFFFF', borderRadius: '14px', border: '1px solid #E2E8F0', borderLeft: '5px solid #DC2626', padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div>
+                <div style={{ fontSize: '1.8rem', fontWeight: '900', color: '#DC2626', lineHeight: 1, fontFamily: "'Roboto Mono', monospace" }}>
+                  <CountUpNumber value={resetCount} duration={800} />
+                </div>
+                <div style={{ fontSize: '0.78rem', fontWeight: '800', color: '#991B1B', marginTop: '4px' }}>YÊU CẦU CẤP LẠI MK</div>
+              </div>
+            </div>
+          </div>
+
           {/* Status Filter Bar */}
           <div style={{
             backgroundColor: '#FFFFFF',
@@ -372,9 +416,15 @@ const AccountsTab = () => {
             boxShadow: '0 2px 8px rgba(15, 44, 89, 0.04)'
           }}>
             {loadingSystem ? (
-              <div style={{ textAlign: 'center', padding: '3.5rem 1rem', color: '#64748B' }}>
-                <FaSpinner className="spinner" style={{ fontSize: '2rem', color: '#2563EB', marginBottom: '0.65rem' }} />
-                <div>Đang nạp danh sách tài khoản nhân viên...</div>
+              <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', borderBottom: '1px solid #F1F5F9' }}>
+                    <div className="analytics-shimmer" style={{ width: '25%', height: '14px', borderRadius: '4px' }} />
+                    <div className="analytics-shimmer" style={{ width: '20%', height: '14px', borderRadius: '4px' }} />
+                    <div className="analytics-shimmer" style={{ width: '15%', height: '14px', borderRadius: '4px' }} />
+                    <div className="analytics-shimmer" style={{ width: '10%', height: '14px', borderRadius: '4px' }} />
+                  </div>
+                ))}
               </div>
             ) : filteredSystemUsers.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '3.5rem 1rem', color: '#64748B' }}>

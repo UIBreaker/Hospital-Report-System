@@ -14,6 +14,7 @@ import {
   FaFileAlt
 } from 'react-icons/fa';
 import customFormService from '../../../services/customFormService';
+import CountUpNumber from '../../common/CountUpNumber';
 
 const THEME_COLORS = {
   '#2563EB': 'Xanh Dương Y Tế',
@@ -70,6 +71,11 @@ const CustomFormList = ({
       alert('Không thể xóa biểu mẫu: ' + (err.response?.data?.error || err.message));
     }
   };
+
+  const totalForms = forms.length;
+  const activeForms = forms.filter(f => f.is_active).length;
+  const trackerForms = forms.filter(f => f.form_type === 'tracker' || (Array.isArray(f.schema_json) && f.schema_json.some(field => field?.type === 'tracker'))).length;
+  const totalSubmissions = forms.reduce((sum, f) => sum + (Number(f.total_submissions) || 0), 0);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -155,6 +161,49 @@ const CustomFormList = ({
         </div>
       </div>
 
+      {/* Summary Stats Cards */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+        gap: '1rem'
+      }}>
+        <div style={{ backgroundColor: '#FFFFFF', borderRadius: '14px', border: '1px solid #E2E8F0', borderLeft: '5px solid #2563EB', padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div>
+            <div style={{ fontSize: '1.8rem', fontWeight: '900', color: '#1E40AF', lineHeight: 1, fontFamily: "'Roboto Mono', monospace" }}>
+              <CountUpNumber value={totalForms} duration={800} />
+            </div>
+            <div style={{ fontSize: '0.78rem', fontWeight: '800', color: '#0F2C59', marginTop: '4px' }}>TỔNG SỐ BIỂU MẪU</div>
+          </div>
+        </div>
+
+        <div style={{ backgroundColor: '#FFFFFF', borderRadius: '14px', border: '1px solid #E2E8F0', borderLeft: '5px solid #10B981', padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div>
+            <div style={{ fontSize: '1.8rem', fontWeight: '900', color: '#16A34A', lineHeight: 1, fontFamily: "'Roboto Mono', monospace" }}>
+              <CountUpNumber value={activeForms} duration={800} />
+            </div>
+            <div style={{ fontSize: '0.78rem', fontWeight: '800', color: '#065F46', marginTop: '4px' }}>ĐANG HOẠT ĐỘNG</div>
+          </div>
+        </div>
+
+        <div style={{ backgroundColor: '#FFFFFF', borderRadius: '14px', border: '1px solid #E2E8F0', borderLeft: '5px solid #D97706', padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div>
+            <div style={{ fontSize: '1.8rem', fontWeight: '900', color: '#D97706', lineHeight: 1, fontFamily: "'Roboto Mono', monospace" }}>
+              <CountUpNumber value={trackerForms} duration={800} />
+            </div>
+            <div style={{ fontSize: '0.78rem', fontWeight: '800', color: '#92400E', marginTop: '4px' }}>BIỂU MẪU TRACKER</div>
+          </div>
+        </div>
+
+        <div style={{ backgroundColor: '#FFFFFF', borderRadius: '14px', border: '1px solid #E2E8F0', borderLeft: '5px solid #7C3AED', padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div>
+            <div style={{ fontSize: '1.8rem', fontWeight: '900', color: '#7C3AED', lineHeight: 1, fontFamily: "'Roboto Mono', monospace" }}>
+              <CountUpNumber value={totalSubmissions} duration={900} />
+            </div>
+            <div style={{ fontSize: '0.78rem', fontWeight: '800', color: '#5B21B6', marginTop: '4px' }}>TỔNG LƯỢT NỘP</div>
+          </div>
+        </div>
+      </div>
+
       {Boolean(error) && (
         <div style={{ padding: '0.75rem 1rem', backgroundColor: '#FEF2F2', color: '#DC2626', borderRadius: '10px', fontSize: '0.86rem', fontWeight: '600' }}>
           ⚠️ {typeof error === 'string' ? error : (error?.message || 'Lỗi khi tải danh sách')}
@@ -162,9 +211,22 @@ const CustomFormList = ({
       )}
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '3.5rem 1rem', color: '#64748B' }}>
-          <FaSpinner className="spinner" style={{ fontSize: '2rem', color: '#2563EB', marginBottom: '0.65rem' }} />
-          <div>Đang tải danh sách biểu mẫu...</div>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+          gap: '1.25rem'
+        }}>
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} style={{ backgroundColor: '#FFFFFF', borderRadius: '18px', border: '1.5px solid #E2E8F0', padding: '1.35rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <div className="analytics-shimmer" style={{ width: '40%', height: '18px', borderRadius: '6px' }} />
+                <div className="analytics-shimmer" style={{ width: '25%', height: '18px', borderRadius: '999px' }} />
+              </div>
+              <div className="analytics-shimmer" style={{ width: '80%', height: '22px', borderRadius: '6px' }} />
+              <div className="analytics-shimmer" style={{ width: '100%', height: '40px', borderRadius: '8px' }} />
+              <div className="analytics-shimmer" style={{ width: '100%', height: '36px', borderRadius: '8px' }} />
+            </div>
+          ))}
         </div>
       ) : forms.length === 0 ? (
         <div style={{

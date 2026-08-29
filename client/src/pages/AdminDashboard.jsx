@@ -719,7 +719,7 @@ const AdminDashboard = () => {
       <aside className={`admin-sidebar-drawer ${mobileDrawerOpen ? 'open' : ''}`} style={{
         width: isSidebarCollapsed ? '72px' : '240px',
         minWidth: isSidebarCollapsed ? '72px' : '240px',
-        transition: 'width 0.25s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.25s cubic-bezier(0.4, 0, 0.2, 1), padding 0.25s ease',
+        transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
         background: 'linear-gradient(180deg, #0A192F 0%, #0F2C59 55%, #0A2540 100%)',
         color: '#FFFFFF',
         display: 'flex',
@@ -731,7 +731,7 @@ const AdminDashboard = () => {
         left: 0,
         height: '100vh',
         boxSizing: 'border-box',
-        boxShadow: '4px 0 20px rgba(0, 0, 0, 0.12)',
+        boxShadow: '4px 0 24px rgba(0, 0, 0, 0.15)',
         zIndex: 100,
         overflowY: 'auto',
         overflowX: 'hidden'
@@ -1175,7 +1175,7 @@ const AdminDashboard = () => {
       </aside>
 
       {/* ================= 2. MAIN CONTENT WRAPPER ================= */}
-      <div className="admin-main-wrapper" style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflowX: 'hidden', marginLeft: isSidebarCollapsed ? '72px' : '240px', transition: 'margin-left 0.25s ease' }}>
+      <div className="admin-main-wrapper" style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflowX: 'hidden', marginLeft: isSidebarCollapsed ? '72px' : '240px', transition: 'margin-left 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}>
         
         {/* Top Header Bar */}
         <header style={{

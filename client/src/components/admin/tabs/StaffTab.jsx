@@ -17,6 +17,7 @@ import {
 import staffService from '../../../services/staffService';
 import StaffFormModal from '../modals/StaffFormModal';
 import MedicalLoader from '../../common/MedicalLoader';
+import CountUpNumber from '../../common/CountUpNumber';
 
 const DEPARTMENT_MAP = {
   lck: 'Khoa Liên Chuyên Khoa',
@@ -164,8 +165,8 @@ const StaffTab = () => {
             <FaUsers />
           </div>
           <div>
-            <div style={{ fontSize: '2rem', fontWeight: '900', color: '#0F2C59', lineHeight: '1.1' }}>
-              {totalStaffCount}
+            <div style={{ fontSize: '2rem', fontWeight: '900', color: '#0F2C59', lineHeight: '1.1', fontFamily: "'Roboto Mono', monospace" }}>
+              <CountUpNumber value={totalStaffCount} duration={800} />
             </div>
             <div style={{ fontSize: '0.82rem', fontWeight: '800', color: '#0F2C59', textTransform: 'uppercase', letterSpacing: '0.4px', marginTop: '0.2rem' }}>
               TỔNG SỐ NHÂN SỰ
@@ -203,8 +204,8 @@ const StaffTab = () => {
             <FaUserMd />
           </div>
           <div>
-            <div style={{ fontSize: '2rem', fontWeight: '900', color: '#10B981', lineHeight: '1.1' }}>
-              {doctorCount}
+            <div style={{ fontSize: '2rem', fontWeight: '900', color: '#10B981', lineHeight: '1.1', fontFamily: "'Roboto Mono', monospace" }}>
+              <CountUpNumber value={doctorCount} duration={800} />
             </div>
             <div style={{ fontSize: '0.82rem', fontWeight: '800', color: '#065F46', textTransform: 'uppercase', letterSpacing: '0.4px', marginTop: '0.2rem' }}>
               BÁC SĨ ĐIỀU TRỊ
@@ -242,8 +243,8 @@ const StaffTab = () => {
             <FaUserNurse />
           </div>
           <div>
-            <div style={{ fontSize: '2rem', fontWeight: '900', color: '#D97706', lineHeight: '1.1' }}>
-              {nurseCount}
+            <div style={{ fontSize: '2rem', fontWeight: '900', color: '#D97706', lineHeight: '1.1', fontFamily: "'Roboto Mono', monospace" }}>
+              <CountUpNumber value={nurseCount} duration={800} />
             </div>
             <div style={{ fontSize: '0.82rem', fontWeight: '800', color: '#92400E', textTransform: 'uppercase', letterSpacing: '0.4px', marginTop: '0.2rem' }}>
               ĐIỀU DƯỠNG / KTV / KHÁC
@@ -433,11 +434,16 @@ const StaffTab = () => {
         overflow: 'hidden'
       }}>
         {loadingStaff ? (
-          <MedicalLoader
-            text="Đang tải danh bạ nhân sự khoa phòng..."
-            subtext="Hệ thống đang tải danh sách bác sĩ, điều dưỡng từ cơ sở dữ liệu"
-            minHeight="320px"
-          />
+          <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', borderBottom: '1px solid #F1F5F9' }}>
+                <div className="analytics-shimmer" style={{ width: '25%', height: '14px', borderRadius: '4px' }} />
+                <div className="analytics-shimmer" style={{ width: '20%', height: '14px', borderRadius: '4px' }} />
+                <div className="analytics-shimmer" style={{ width: '15%', height: '14px', borderRadius: '4px' }} />
+                <div className="analytics-shimmer" style={{ width: '10%', height: '14px', borderRadius: '4px' }} />
+              </div>
+            ))}
+          </div>
         ) : staffList.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '3.5rem 1rem' }}>
             <FaUsers style={{ fontSize: '3rem', color: '#CBD5E1', marginBottom: '0.75rem' }} />
