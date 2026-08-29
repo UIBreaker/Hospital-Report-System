@@ -1,0 +1,420 @@
+/* ==========================================================================
+   ARCHIVE 3D FOLDER CARDS - HOSPITAL REPORT ENTERPRISE VAULT
+   ========================================================================== */
+
+.archive-folder-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 1.5rem 1rem;
+  background: #FFFFFF;
+  border-radius: 20px;
+  border: 1.5px solid #E2E8F0;
+  box-shadow: 0 10px 25px -5px rgba(15, 44, 89, 0.05), 0 8px 10px -6px rgba(15, 44, 89, 0.01);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: visible;
+}
+
+.archive-folder-wrapper:hover {
+  transform: translateY(-5px);
+  border-color: #38BDF8;
+  box-shadow: 0 20px 35px -10px rgba(2, 132, 199, 0.18), 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.folder-card {
+  width: 190px;
+  height: 140px;
+  perspective: 1200px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.folder-toggle {
+  display: none;
+}
+
+/* Hint Arrow & Text */
+.hint-wrapper {
+  position: absolute;
+  top: -38px;
+  right: -45px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+  z-index: 100;
+  animation: floatHint 2.5s ease-in-out infinite;
+}
+
+.hint-text {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #0284C7;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  position: relative;
+  right: -20px;
+  top: 8px;
+  transform: rotate(35deg);
+  background: rgba(224, 242, 254, 0.85);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #BAE6FD;
+}
+
+.hint-arrow {
+  height: 32px;
+  width: 32px;
+}
+
+@keyframes floatHint {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(5px); }
+}
+
+.folder-toggle:checked ~ .hint-wrapper,
+.folder-card:hover .hint-wrapper {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+/* 3D Folder Container */
+.folder-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+.folder-toggle:checked ~ .folder-container,
+.folder-card:hover .folder-container {
+  transform: rotateX(12deg) rotateY(-6deg);
+}
+
+.folder-back {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 10px 18px rgba(15, 44, 89, 0.25));
+}
+
+.folder-front-wrapper {
+  position: absolute;
+  bottom: -6px;
+  width: 100%;
+  z-index: 90;
+  transform-origin: bottom;
+  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.folder-front {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 -4px 10px rgba(0, 0, 0, 0.1));
+}
+
+.folder-label {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 34px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 10px;
+}
+
+/* Counter Badge */
+.counter {
+  position: absolute;
+  top: -85px;
+  right: -55px;
+  background: linear-gradient(135deg, #0F2C59 0%, #1E40AF 100%);
+  padding: 4px 10px;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 10px 20px rgba(15, 44, 89, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transform: scale(0) translateY(15px);
+  opacity: 0;
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 100;
+  pointer-events: auto;
+}
+
+.folder-toggle:checked ~ .folder-container .counter,
+.folder-card:hover .folder-container .counter {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+  transition-delay: 0.15s;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  background: #10B981;
+  border-radius: 50%;
+  position: relative;
+  box-shadow: 0 0 8px #10B981;
+}
+
+.status-dot::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #10B981;
+  border-radius: 50%;
+  animation: pulseDot 2s infinite;
+}
+
+@keyframes pulseDot {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(3); opacity: 0; }
+}
+
+.counter-label {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 8.5px;
+  font-weight: 800;
+  color: #93C5FD;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.counter-number {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 12px;
+  font-weight: 900;
+  color: #FFFFFF;
+}
+
+/* Popping Files Inside */
+.file {
+  position: absolute;
+  bottom: 8px;
+  left: 10%;
+  width: 80%;
+  height: 95px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 4px 14px rgba(0, 0, 0, 0.25);
+  transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  z-index: 0;
+}
+
+/* File Themes */
+.file-1 { background: linear-gradient(135deg, #1E40AF 0%, #0284C7 100%); z-index: 25; transition-delay: 0.15s; }
+.file-2 { background: linear-gradient(135deg, #059669 0%, #10B981 100%); z-index: 24; transition-delay: 0.1s; }
+.file-3 { background: linear-gradient(135deg, #D97706 0%, #F59E0B 100%); z-index: 23; transition-delay: 0.06s; }
+.file-4 { background: linear-gradient(135deg, #7C3AED 0%, #A855F7 100%); z-index: 22; transition-delay: 0.03s; }
+.file-5 { background: linear-gradient(135deg, #DC2626 0%, #EF4444 100%); z-index: 21; transition-delay: 0s; }
+
+.shine {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+  transform: skewX(-20deg);
+  transition: none;
+}
+
+.folder-toggle:checked ~ .folder-container .shine,
+.folder-card:hover .folder-container .shine {
+  left: 150%;
+  transition: left 0.8s ease-in-out;
+  transition-delay: 0.25s;
+}
+
+.file-text {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 9.5px;
+  color: white;
+  padding: 10px 12px;
+  font-weight: 800;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: all 0.3s ease 0.35s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.folder-toggle:checked ~ .folder-container .file-text,
+.folder-card:hover .folder-container .file-text {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Active / Open Transformations */
+.folder-toggle:checked ~ .folder-container .folder-front-wrapper,
+.folder-card:hover .folder-container .folder-front-wrapper {
+  transform: rotateX(-52deg);
+}
+
+.folder-toggle:checked ~ .folder-container .file-1,
+.folder-card:hover .folder-container .file-1 {
+  transform: translateY(-75px) rotate(-10deg) translateX(-16px) translateZ(25px);
+}
+
+.folder-toggle:checked ~ .folder-container .file-2,
+.folder-card:hover .folder-container .file-2 {
+  transform: translateY(-60px) rotate(8deg) translateX(18px) translateZ(15px);
+}
+
+.folder-toggle:checked ~ .folder-container .file-3,
+.folder-card:hover .folder-container .file-3 {
+  transform: translateY(-44px) rotate(-14deg) translateX(-9px);
+}
+
+.folder-toggle:checked ~ .folder-container .file-4,
+.folder-card:hover .folder-container .file-4 {
+  transform: translateY(-28px) rotate(11deg) translateX(14px);
+}
+
+.folder-toggle:checked ~ .folder-container .file-5,
+.folder-card:hover .folder-container .file-5 {
+  transform: translateY(-12px) rotate(-5deg);
+}
+
+/* Individual File Hover inside Open Folder */
+.folder-toggle:checked ~ .folder-container .file:hover,
+.folder-card:hover .folder-container .file:hover {
+  cursor: pointer;
+  filter: brightness(1.15);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+}
+
+.folder-toggle:checked ~ .folder-container .file-1:hover,
+.folder-card:hover .folder-container .file-1:hover {
+  transform: translateY(-86px) rotate(-10deg) translateX(-16px) translateZ(30px);
+}
+
+.folder-toggle:checked ~ .folder-container .file-2:hover,
+.folder-card:hover .folder-container .file-2:hover {
+  transform: translateY(-72px) rotate(8deg) translateX(18px) translateZ(20px);
+}
+
+.folder-toggle:checked ~ .folder-container .file-3:hover,
+.folder-card:hover .folder-container .file-3:hover {
+  transform: translateY(-54px) rotate(-14deg) translateX(-9px);
+}
+
+.file-icon {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  width: 15px;
+  height: 15px;
+  color: rgba(255, 255, 255, 0.6);
+  transition: color 0.3s ease;
+}
+
+.file-tag {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  color: rgba(255, 255, 255, 0.95);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 7.5px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  opacity: 0;
+  transform: translateX(8px);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+}
+
+.folder-toggle:checked ~ .folder-container .file:hover .file-tag,
+.folder-card:hover .folder-container .file:hover .file-tag {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Metadata Bar below Folder */
+.folder-meta {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  border-top: 1px solid #F1F5F9;
+  padding-top: 0.75rem;
+}
+
+.folder-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.folder-main-title {
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: #0F2C59;
+  letter-spacing: -0.2px;
+}
+
+.folder-sub-label {
+  font-size: 0.76rem;
+  color: #64748B;
+  font-weight: 600;
+}
+
+.folder-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+  background: #F8FAFC;
+  padding: 0.55rem 0.75rem;
+  border-radius: 10px;
+  font-size: 0.76rem;
+  border: 1px solid #E2E8F0;
+}
+
+.folder-btn-open {
+  width: 100%;
+  padding: 0.5rem 0.8rem;
+  background: linear-gradient(135deg, #0F2C59 0%, #0284C7 100%);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 0.82rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 3px 8px rgba(2, 132, 199, 0.25);
+}
+
+.folder-btn-open:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 15px rgba(2, 132, 199, 0.35);
+}

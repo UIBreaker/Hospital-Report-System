@@ -20,11 +20,16 @@ import {
   FaChevronRight,
   FaFileAlt,
   FaShareAlt,
-  FaSync
+  FaSync,
+  FaFilePdf,
+  FaFileExcel,
+  FaLayerGroup,
+  FaDatabase
 } from 'react-icons/fa';
 import dataArchiveService from '../../../services/dataArchiveService';
 import CountUpNumber from '../../common/CountUpNumber';
 import ImageLightboxModal from '../../common/ImageLightboxModal';
+import ArchiveFolderCard from './ArchiveFolderCard';
 
 const DataArchiveTab = ({ onOpenPresentation, onOpenPrintView, onOpenReportDetail }) => {
   // Navigation State: 'years' | 'months' | 'days' | 'day_details'
@@ -139,6 +144,7 @@ const DataArchiveTab = ({ onOpenPresentation, onOpenPrintView, onOpenReportDetai
     } finally {
       setTimeout(() => {
         setIsZipping(false);
+        setZipProgressText('');
         setZipProgressPct(0);
       }, 800);
     }
@@ -169,7 +175,6 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
 
   // 1-Click Open Gmail Webmail
   const handleOpenGmailWeb = async () => {
-    // Also trigger ZIP download so user can easily attach it with 1-click in Gmail
     if (dayDetails && selectedDay) {
       dataArchiveService.generateAndDownloadShiftZip(selectedDay.date, dayDetails);
     }
@@ -178,16 +183,6 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
     window.open(gmailUrl, '_blank');
     localStorage.setItem('last_archive_email', recipientEmail.trim());
     alert('💡 Hệ thống đã mở thư Gmail và đồng thời tải sẵn file nén ZIP về máy tính của bạn.\n\n👉 Bạn chỉ cần bấm biểu tượng đính kèm tệp 📎 trên Gmail và chọn file ZIP vừa tải để gửi đi nhé!');
-  };
-
-  // 1-Click Open Native Mail Client (mailto)
-  const handleOpenNativeMail = () => {
-    if (dayDetails && selectedDay) {
-      dataArchiveService.generateAndDownloadShiftZip(selectedDay.date, dayDetails);
-    }
-    const body = buildEmailBodyText();
-    window.location.href = `mailto:${encodeURIComponent(recipientEmail)}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
-    localStorage.setItem('last_archive_email', recipientEmail.trim());
   };
 
   // Copy Summary to Clipboard
@@ -259,117 +254,179 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
     }
   };
 
+  // Compute Total Metrics for Header
+  const totalYears = treeData.length;
+  const totalDaysAcrossYears = treeData.reduce((acc, y) => acc + (y.totalDays || 0), 0);
+  const totalReportsAcrossYears = treeData.reduce((acc, y) => acc + (y.totalReports || 0), 0);
+  const totalCasesAcrossYears = treeData.reduce((acc, y) => acc + (y.totalCases || 0), 0);
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.4rem', fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}>
       
-      {/* Top Header Card */}
+      {/* 🌟 HERO VAULT HEADER */}
       <div style={{
-        background: 'linear-gradient(135deg, #0F2C59 0%, #1E40AF 100%)',
+        background: 'linear-gradient(135deg, #0A192F 0%, #0F2C59 60%, #0284C7 100%)',
         color: '#FFFFFF',
-        borderRadius: '16px',
-        padding: '1.3rem 1.6rem',
-        boxShadow: '0 8px 25px rgba(15, 44, 89, 0.25)',
+        borderRadius: '20px',
+        padding: '1.6rem 2rem',
+        boxShadow: '0 12px 30px rgba(15, 44, 89, 0.25)',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         flexWrap: 'wrap',
-        gap: '1rem'
+        gap: '1.2rem',
+        position: 'relative',
+        overflow: 'hidden'
       }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <div style={{
-              width: '42px',
-              height: '42px',
-              borderRadius: '12px',
-              backgroundColor: 'rgba(255, 255, 255, 0.18)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '1.3rem',
-              color: '#38BDF8'
-            }}>
-              <FaFolderOpen />
-            </div>
-            <div>
-              <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900', letterSpacing: '0.4px' }}>
-                TỔNG HỢP DỮ LIỆU DỰ ÁN & HỒ SƠ LƯU TRỮ
-              </h2>
-              <p style={{ margin: '3px 0 0 0', fontSize: '0.8rem', color: '#93C5FD' }}>
-                Quản lý kho lưu trữ báo cáo giao ban theo cây thư mục Năm ➔ Tháng ➔ Ngày, đóng gói ZIP và gửi lưu trữ
-              </p>
-            </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem', zIndex: 1 }}>
+          <div style={{
+            width: '56px',
+            height: '56px',
+            borderRadius: '16px',
+            backgroundColor: 'rgba(255, 255, 255, 0.12)',
+            backdropFilter: 'blur(10px)',
+            border: '1.5px solid rgba(255, 255, 255, 0.25)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '1.8rem',
+            color: '#38BDF8',
+            boxShadow: '0 8px 16px rgba(0,0,0,0.2)'
+          }}>
+            <FaDatabase />
+          </div>
+          <div>
+            <h1 style={{ margin: 0, fontSize: '1.45rem', fontWeight: '900', letterSpacing: '-0.3px', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              TỔNG HỢP DỮ LIỆU DỰ ÁN & KHO LƯU TRỮ SỐ HÓA
+            </h1>
+            <p style={{ margin: '4px 0 0 0', fontSize: '0.86rem', opacity: 0.9, color: '#BAE6FD' }}>
+              Kho dữ liệu 3D phân cấp theo Năm ➔ Tháng ➔ Ngày, đóng gói ZIP tự động, bảo tồn hồ sơ giao ban
+            </p>
           </div>
         </div>
 
-        <button
-          onClick={loadTree}
-          style={{
-            backgroundColor: 'rgba(255,255,255,0.15)',
-            border: '1px solid rgba(255,255,255,0.3)',
-            color: '#FFFFFF',
-            borderRadius: '9px',
-            padding: '0.45rem 0.9rem',
-            fontWeight: '800',
-            fontSize: '0.8rem',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.4rem'
-          }}
-        >
-          <FaSync className={loadingTree ? 'spinner' : ''} /> Làm Mới Kho
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', zIndex: 1 }}>
+          <button
+            onClick={loadTree}
+            disabled={loadingTree}
+            style={{
+              padding: '0.55rem 1.1rem',
+              backgroundColor: 'rgba(255, 255, 255, 0.15)',
+              border: '1.5px solid rgba(255, 255, 255, 0.3)',
+              borderRadius: '10px',
+              color: '#FFFFFF',
+              fontWeight: '800',
+              fontSize: '0.84rem',
+              cursor: loadingTree ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              backdropFilter: 'blur(6px)',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <FaSync className={loadingTree ? 'spinner' : ''} /> Làm Mới Kho
+          </button>
+        </div>
       </div>
 
-      {/* Breadcrumb Navigation Bar */}
+      {/* 📊 STORAGE METRICS BAR */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gap: '1rem'
+      }}>
+        <div style={{ background: '#FFFFFF', padding: '1rem 1.2rem', borderRadius: '16px', border: '1.5px solid #E2E8F0', boxShadow: '0 4px 12px rgba(0,0,0,0.03)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: '#EFF6FF', color: '#1E40AF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem' }}>
+            <FaLayerGroup />
+          </div>
+          <div>
+            <div style={{ fontSize: '0.74rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase' }}>Năm Lưu Trữ</div>
+            <div style={{ fontSize: '1.35rem', fontWeight: '900', color: '#0F2C59' }}><CountUpNumber end={totalYears} /> năm</div>
+          </div>
+        </div>
+
+        <div style={{ background: '#FFFFFF', padding: '1rem 1.2rem', borderRadius: '16px', border: '1.5px solid #E2E8F0', boxShadow: '0 4px 12px rgba(0,0,0,0.03)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: '#F0FDF4', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem' }}>
+            <FaCalendarAlt />
+          </div>
+          <div>
+            <div style={{ fontSize: '0.74rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase' }}>Ca Trực Đã Lưu</div>
+            <div style={{ fontSize: '1.35rem', fontWeight: '900', color: '#059669' }}><CountUpNumber end={totalDaysAcrossYears} /> ngày</div>
+          </div>
+        </div>
+
+        <div style={{ background: '#FFFFFF', padding: '1rem 1.2rem', borderRadius: '16px', border: '1.5px solid #E2E8F0', boxShadow: '0 4px 12px rgba(0,0,0,0.03)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: '#FAF5FF', color: '#7C3AED', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem' }}>
+            <FaFileAlt />
+          </div>
+          <div>
+            <div style={{ fontSize: '0.74rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase' }}>Báo Cáo Khoa Phòng</div>
+            <div style={{ fontSize: '1.35rem', fontWeight: '900', color: '#7C3AED' }}><CountUpNumber end={totalReportsAcrossYears} /> phiếu</div>
+          </div>
+        </div>
+
+        <div style={{ background: '#FFFFFF', padding: '1rem 1.2rem', borderRadius: '16px', border: '1.5px solid #E2E8F0', boxShadow: '0 4px 12px rgba(0,0,0,0.03)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: '#FFFBEB', color: '#D97706', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem' }}>
+            <FaAmbulance />
+          </div>
+          <div>
+            <div style={{ fontSize: '0.74rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase' }}>Ca Bệnh Đặc Biệt</div>
+            <div style={{ fontSize: '1.35rem', fontWeight: '900', color: '#D97706' }}><CountUpNumber end={totalCasesAcrossYears} /> ca</div>
+          </div>
+        </div>
+      </div>
+
+      {/* 🧭 INTERACTIVE BREADCRUMB & FAST SEARCH BAR */}
       <div style={{
         backgroundColor: '#FFFFFF',
-        border: '1.5px solid #CBD5E1',
-        borderRadius: '12px',
-        padding: '0.65rem 1.1rem',
+        borderRadius: '16px',
+        padding: '0.85rem 1.4rem',
+        border: '1.5px solid #E2E8F0',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.02)',
         display: 'flex',
-        alignItems: 'center',
         justifyContent: 'space-between',
+        alignItems: 'center',
         flexWrap: 'wrap',
-        gap: '0.6rem',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
+        gap: '0.85rem'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.86rem', fontWeight: '800', color: '#0F2C59' }}>
+        {/* Breadcrumb Links */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', fontSize: '0.86rem' }}>
           {currentLevel !== 'years' && (
             <button
               onClick={handleGoBack}
               style={{
-                backgroundColor: '#EFF6FF',
-                border: '1px solid #BFDBFE',
-                color: '#1E40AF',
-                borderRadius: '7px',
-                padding: '0.3rem 0.65rem',
-                fontSize: '0.78rem',
+                padding: '0.35rem 0.75rem',
+                backgroundColor: '#F1F5F9',
+                border: '1px solid #CBD5E1',
+                borderRadius: '8px',
+                color: '#0F2C59',
                 fontWeight: '800',
+                fontSize: '0.78rem',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.3rem',
+                gap: '0.35rem',
                 marginRight: '0.4rem'
               }}
             >
-              <FaArrowLeft /> Quay Lại
+              <FaArrowLeft /> Quay lại
             </button>
           )}
 
-          <span 
-            onClick={() => { setCurrentLevel('years'); setSelectedYear(null); setSelectedMonth(null); setSelectedDay(null); }}
-            style={{ cursor: 'pointer', color: currentLevel === 'years' ? '#0F2C59' : '#0284C7', textDecoration: currentLevel === 'years' ? 'none' : 'underline' }}
+          <span
+            onClick={() => { setCurrentLevel('years'); setSelectedYear(null); setSelectedMonth(null); setSelectedDay(null); setDayDetails(null); }}
+            style={{ fontWeight: currentLevel === 'years' ? '900' : '700', color: currentLevel === 'years' ? '#0284C7' : '#64748B', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
           >
-            📁 Kho Lưu Trữ
+            <FaDatabase style={{ color: '#0284C7' }} /> Kho Lưu Trữ
           </span>
 
           {selectedYear && (
             <>
               <FaChevronRight style={{ fontSize: '0.7rem', color: '#94A3B8' }} />
               <span
-                onClick={() => { setCurrentLevel('months'); setSelectedMonth(null); setSelectedDay(null); }}
-                style={{ cursor: 'pointer', color: currentLevel === 'months' ? '#0F2C59' : '#0284C7', textDecoration: currentLevel === 'months' ? 'none' : 'underline' }}
+                onClick={() => { setCurrentLevel('months'); setSelectedMonth(null); setSelectedDay(null); setDayDetails(null); }}
+                style={{ fontWeight: currentLevel === 'months' ? '900' : '700', color: currentLevel === 'months' ? '#0284C7' : '#64748B', cursor: 'pointer' }}
               >
                 {selectedYear.label}
               </span>
@@ -380,8 +437,8 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
             <>
               <FaChevronRight style={{ fontSize: '0.7rem', color: '#94A3B8' }} />
               <span
-                onClick={() => { setCurrentLevel('days'); setSelectedDay(null); }}
-                style={{ cursor: 'pointer', color: currentLevel === 'days' ? '#0F2C59' : '#0284C7', textDecoration: currentLevel === 'days' ? 'none' : 'underline' }}
+                onClick={() => { setCurrentLevel('days'); setSelectedDay(null); setDayDetails(null); }}
+                style={{ fontWeight: currentLevel === 'days' ? '900' : '700', color: currentLevel === 'days' ? '#0284C7' : '#64748B', cursor: 'pointer' }}
               >
                 {selectedMonth.label}
               </span>
@@ -391,372 +448,202 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
           {selectedDay && (
             <>
               <FaChevronRight style={{ fontSize: '0.7rem', color: '#94A3B8' }} />
-              <span style={{ color: '#0F2C59', fontWeight: '900' }}>
+              <span style={{ fontWeight: '900', color: '#0284C7' }}>
                 {selectedDay.label}
               </span>
             </>
           )}
         </div>
 
-        {/* Global Search in Month or Day */}
-        <div style={{ position: 'relative', width: '240px' }}>
-          <FaSearch style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8', fontSize: '0.8rem' }} />
+        {/* Search Bar */}
+        <div style={{ position: 'relative', width: '260px' }}>
+          <FaSearch style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8', fontSize: '0.85rem' }} />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Tìm ngày, ca bệnh, khoa..."
+            placeholder="Tìm kiếm năm, tháng, ngày..."
             style={{
               width: '100%',
-              padding: '0.38rem 0.75rem 0.38rem 2rem',
-              borderRadius: '8px',
-              border: '1px solid #CBD5E1',
-              fontSize: '0.8rem',
-              boxSizing: 'border-box'
+              padding: '0.45rem 0.85rem 0.45rem 2.2rem',
+              borderRadius: '10px',
+              border: '1.5px solid #CBD5E1',
+              fontSize: '0.82rem',
+              boxSizing: 'border-box',
+              outline: 'none',
+              backgroundColor: '#F8FAFC'
             }}
           />
         </div>
       </div>
 
-      {/* LEVEL 1: YEARS GRID */}
-      {currentLevel === 'years' && (
-        <div>
-          {loadingTree ? (
-            <div style={{ padding: '3rem', textAlign: 'center', color: '#64748B' }}>
-              <FaSpinner className="spinner" style={{ fontSize: '1.8rem', color: '#0284C7', marginBottom: '0.5rem' }} />
-              <div>Đang tải cây thư mục lưu trữ bệnh viện...</div>
-            </div>
-          ) : treeData.length === 0 ? (
-            <div style={{ padding: '3rem', textAlign: 'center', backgroundColor: '#FFFFFF', borderRadius: '16px', border: '1.5px solid #CBD5E1', color: '#94A3B8' }}>
-              <FaFolderOpen style={{ fontSize: '2.5rem', color: '#CBD5E1', marginBottom: '0.5rem' }} />
-              <div>Chưa có dữ liệu báo cáo nào được ghi nhận trong kho lưu trữ.</div>
-            </div>
-          ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
-              {treeData.map(y => (
-                <div
-                  key={y.year}
-                  onClick={() => handleSelectYear(y)}
-                  style={{
-                    backgroundColor: '#FFFFFF',
-                    border: '2px solid #E2E8F0',
-                    borderRadius: '16px',
-                    padding: '1.2rem',
-                    cursor: 'pointer',
-                    transition: 'all 0.22s cubic-bezier(0.16, 1, 0.3, 1)',
-                    boxShadow: '0 4px 15px rgba(0,0,0,0.03)',
-                    position: 'relative'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-3px)';
-                    e.currentTarget.style.borderColor = '#0284C7';
-                    e.currentTarget.style.boxShadow = '0 10px 25px rgba(2, 132, 199, 0.15)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.borderColor = '#E2E8F0';
-                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.03)';
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                    <div style={{
-                      width: '46px',
-                      height: '46px',
-                      borderRadius: '12px',
-                      backgroundColor: '#EFF6FF',
-                      border: '1.5px solid #BFDBFE',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '1.4rem',
-                      color: '#0284C7'
-                    }}>
-                      📁
-                    </div>
-                    <div>
-                      <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: '900', color: '#0F2C59' }}>
-                        Năm {y.year}
-                      </h3>
-                      <div style={{ fontSize: '0.76rem', color: '#64748B', marginTop: '2px' }}>
-                        {y.months?.length || 0} tháng có báo cáo giao ban
-                      </div>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', backgroundColor: '#F8FAFC', padding: '0.65rem 0.85rem', borderRadius: '10px', fontSize: '0.78rem' }}>
-                    <div>
-                      <span style={{ color: '#64748B' }}>Số ca trực:</span>
-                      <strong style={{ display: 'block', color: '#0F2C59', fontSize: '0.95rem' }}><CountUpNumber end={y.totalDays} /> ngày</strong>
-                    </div>
-                    <div>
-                      <span style={{ color: '#64748B' }}>Tổng ca bệnh:</span>
-                      <strong style={{ display: 'block', color: '#0284C7', fontSize: '0.95rem' }}><CountUpNumber end={y.totalCases} /> ca</strong>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+      {/* 🔄 LOADING SPINNER */}
+      {loadingTree && (
+        <div style={{ padding: '3.5rem', textAlign: 'center', backgroundColor: '#FFFFFF', borderRadius: '18px', border: '1.5px solid #E2E8F0' }}>
+          <FaSpinner className="spinner" style={{ fontSize: '2.5rem', color: '#0284C7', marginBottom: '1rem' }} />
+          <div style={{ fontSize: '1.05rem', fontWeight: '800', color: '#0F2C59' }}>Đang nạp cấu trúc kho lưu trữ số hóa...</div>
         </div>
       )}
 
-      {/* LEVEL 2: MONTHS GRID */}
+      {/* 📁 LEVEL 1: YEARS GRID (3D FOLDERS) */}
+      {!loadingTree && currentLevel === 'years' && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
+          {treeData.filter(y => !searchTerm || y.year.includes(searchTerm) || y.label.toLowerCase().includes(searchTerm.toLowerCase())).map(y => (
+            <ArchiveFolderCard
+              key={y.year}
+              id={`year_${y.year}`}
+              type="year"
+              title={y.label}
+              subTitle={`${y.months?.length || 0} tháng có dữ liệu`}
+              counterNumber={String(y.totalDays).padStart(2, '0')}
+              counterLabel="NGÀY TRỰC"
+              colorTheme="blue"
+              stats={{
+                days: y.totalDays,
+                cases: y.totalCases
+              }}
+              onOpen={() => handleSelectYear(y)}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* 📁 LEVEL 2: MONTHS GRID (3D FOLDERS) */}
       {currentLevel === 'months' && selectedYear && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1rem' }}>
-          {selectedYear.months?.map(m => (
-            <div
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
+          {selectedYear.months?.filter(m => !searchTerm || m.month.includes(searchTerm) || m.label.toLowerCase().includes(searchTerm.toLowerCase())).map(m => (
+            <ArchiveFolderCard
               key={m.month}
-              onClick={() => handleSelectMonth(m)}
-              style={{
-                backgroundColor: '#FFFFFF',
-                border: '2px solid #E2E8F0',
-                borderRadius: '16px',
-                padding: '1.15rem',
-                cursor: 'pointer',
-                transition: 'all 0.22s cubic-bezier(0.16, 1, 0.3, 1)',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.03)'
+              id={`month_${m.month}`}
+              type="month"
+              title={m.label}
+              subTitle={`${m.days?.length || 0} ca trực`}
+              counterNumber={String(m.days?.length || 0).padStart(2, '0')}
+              counterLabel="CA TRỰC"
+              colorTheme="emerald"
+              stats={{
+                days: m.totalDays,
+                cases: m.totalCases
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-3px)';
-                e.currentTarget.style.borderColor = '#0284C7';
-                e.currentTarget.style.boxShadow = '0 10px 25px rgba(2, 132, 199, 0.15)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.borderColor = '#E2E8F0';
-                e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.03)';
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                <div style={{
-                  width: '42px',
-                  height: '42px',
-                  borderRadius: '12px',
-                  backgroundColor: '#F0FDF4',
-                  border: '1.5px solid #BBF7D0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '1.3rem',
-                  color: '#059669'
-                }}>
-                  📂
-                </div>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: '900', color: '#0F2C59' }}>
-                    Tháng {m.month} / {m.year}
-                  </h3>
-                  <div style={{ fontSize: '0.74rem', color: '#64748B', marginTop: '2px' }}>
-                    {m.days?.length || 0} ngày ca trực đã lưu
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ backgroundColor: '#F8FAFC', padding: '0.6rem 0.8rem', borderRadius: '10px', fontSize: '0.78rem', display: 'flex', justifyContent: 'space-between' }}>
-                <span>Tổng ca đặc biệt:</span>
-                <strong style={{ color: '#059669', fontSize: '0.9rem' }}>{m.totalCases} ca</strong>
-              </div>
-            </div>
+              onOpen={() => handleSelectMonth(m)}
+            />
           ))}
         </div>
       )}
 
-      {/* LEVEL 3: DAYS GRID */}
+      {/* 📁 LEVEL 3: DAYS GRID (3D FOLDERS) */}
       {currentLevel === 'days' && selectedMonth && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
           {selectedMonth.days?.filter(d => !searchTerm || d.date.includes(searchTerm) || d.label.toLowerCase().includes(searchTerm.toLowerCase())).map(d => (
-            <div
+            <ArchiveFolderCard
               key={d.date}
-              onClick={() => handleSelectDay(d)}
-              style={{
-                backgroundColor: '#FFFFFF',
-                border: '2px solid #E2E8F0',
-                borderRadius: '16px',
-                padding: '1.15rem',
-                cursor: 'pointer',
-                transition: 'all 0.22s cubic-bezier(0.16, 1, 0.3, 1)',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.03)',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '0.65rem'
+              id={`day_${d.date}`}
+              type="day"
+              title={d.label}
+              subTitle={d.isFullySubmitted ? '12/12 Khoa nộp' : `${d.submittedCount}/12 Khoa`}
+              counterNumber={String(d.stats?.totalCases || 0).padStart(2, '0')}
+              counterLabel="CA BỆNH"
+              colorTheme="purple"
+              stats={{
+                submittedCount: d.submittedCount,
+                isFullySubmitted: d.isFullySubmitted,
+                surgeries: d.stats?.surgeries || 0,
+                transfers: d.stats?.transfers || 0
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-3px)';
-                e.currentTarget.style.borderColor = '#0284C7';
-                e.currentTarget.style.boxShadow = '0 10px 25px rgba(2, 132, 199, 0.15)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.borderColor = '#E2E8F0';
-                e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.03)';
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <FaCalendarAlt style={{ color: '#0284C7', fontSize: '1.1rem' }} />
-                  <span style={{ fontWeight: '900', color: '#0F2C59', fontSize: '1rem' }}>
-                    {d.label}
-                  </span>
-                </div>
-                <span style={{
-                  backgroundColor: d.isFullySubmitted ? '#DCFCE7' : '#FEF3C7',
-                  color: d.isFullySubmitted ? '#166534' : '#92400E',
-                  fontSize: '0.7rem',
-                  fontWeight: '900',
-                  padding: '2px 8px',
-                  borderRadius: '999px'
-                }}>
-                  {d.submittedCount}/12 Khoa
-                </span>
-              </div>
-
-              {/* Case Stats Chips */}
-              <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', fontSize: '0.72rem' }}>
-                <span style={{ backgroundColor: '#EFF6FF', color: '#1E40AF', padding: '2px 7px', borderRadius: '6px', fontWeight: '700' }}>
-                  🔪 {d.stats?.surgeries || 0} mổ
-                </span>
-                <span style={{ backgroundColor: '#FFFBEB', color: '#92400E', padding: '2px 7px', borderRadius: '6px', fontWeight: '700' }}>
-                  🚑 {d.stats?.transfers || 0} chuyển
-                </span>
-                <span style={{ backgroundColor: '#FEF2F2', color: '#991B1B', padding: '2px 7px', borderRadius: '6px', fontWeight: '700' }}>
-                  ⚠️ {d.stats?.deaths || 0} tử vong
-                </span>
-                <span style={{ backgroundColor: '#FAF5FF', color: '#6B21A8', padding: '2px 7px', borderRadius: '6px', fontWeight: '700' }}>
-                  🏥 {d.stats?.criticals || 0} nặng
-                </span>
-              </div>
-
-              <div style={{ borderTop: '1px solid #F1F5F9', paddingTop: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', color: '#0284C7', fontWeight: '800' }}>
-                <span>📦 Mở trọn bộ hồ sơ ➔</span>
-              </div>
-            </div>
+              onOpen={() => handleSelectDay(d)}
+            />
           ))}
         </div>
       )}
 
-      {/* LEVEL 4: THE COMPLETE DAILY SHIFT HUB */}
+      {/* 📄 LEVEL 4: DAY DETAILS WORKSPACE */}
       {currentLevel === 'day_details' && selectedDay && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
           
-          {/* Daily Hero Action Card */}
+          {/* Action Bar for Day Workspace */}
           <div style={{
             backgroundColor: '#FFFFFF',
-            border: '2px solid #BAE6FD',
             borderRadius: '16px',
-            padding: '1.3rem 1.6rem',
-            boxShadow: '0 10px 30px rgba(2, 132, 199, 0.08)',
+            padding: '1.2rem 1.6rem',
+            border: '2px solid #0284C7',
+            boxShadow: '0 8px 25px rgba(2, 132, 199, 0.12)',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             flexWrap: 'wrap',
-            gap: '1.2rem'
+            gap: '1rem'
           }}>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '1.25rem', fontWeight: '900', color: '#0F2C59' }}>
-                  HỒ SƠ CA TRỰC NGÀY {selectedDay.date}
-                </span>
-                <span style={{
-                  backgroundColor: '#DCFCE7',
-                  color: '#166534',
-                  fontSize: '0.76rem',
-                  fontWeight: '900',
-                  padding: '3px 10px',
-                  borderRadius: '999px'
-                }}>
-                  {dayDetails?.reports?.length || 0}/12 Khoa Đã Nộp
-                </span>
-              </div>
-              <div style={{ fontSize: '0.8rem', color: '#64748B', marginTop: '4px' }}>
-                Tổng hợp: {dayDetails?.surgeryCases?.length || 0} ca phẫu thuật • {dayDetails?.transferCases?.length || 0} ca chuyển viện • {dayDetails?.imagesList?.length || 0} ảnh lâm sàng
-              </div>
+              <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: '800', textTransform: 'uppercase' }}>HỒ SƠ CA TRỰC NGÀY</div>
+              <div style={{ fontSize: '1.4rem', fontWeight: '900', color: '#0F2C59' }}>{selectedDay.label}</div>
             </div>
 
-            {/* The 2 Core Action Buttons requested by User */}
-            <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
-              {/* Method 1: Download ZIP directly */}
+            <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap' }}>
               <button
                 onClick={handleDownloadZip}
-                disabled={isZipping || loadingDay}
+                disabled={isZipping}
                 style={{
-                  padding: '0.6rem 1.25rem',
+                  padding: '0.65rem 1.25rem',
+                  borderRadius: '10px',
+                  border: 'none',
                   background: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)',
                   color: '#FFFFFF',
-                  border: 'none',
-                  borderRadius: '10px',
                   fontWeight: '900',
-                  fontSize: '0.86rem',
-                  cursor: (isZipping || loadingDay) ? 'not-allowed' : 'pointer',
+                  fontSize: '0.88rem',
+                  cursor: isZipping ? 'not-allowed' : 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.45rem',
-                  boxShadow: '0 4px 15px rgba(2, 132, 199, 0.35)',
-                  transition: 'transform 0.15s ease'
+                  boxShadow: '0 4px 14px rgba(2, 132, 199, 0.35)'
                 }}
               >
-                {isZipping ? <><FaSpinner className="spinner" /> {zipProgressText || 'Đang nén...'}</> : <><FaFileArchive /> 📦 Tải File ZIP Trọn Gói Về Máy</>}
+                {isZipping ? <><FaSpinner className="spinner" /> {zipProgressText} ({zipProgressPct}%)</> : <><FaFileArchive /> 📦 Tải File ZIP Trọn Gói Về Máy</>}
               </button>
 
-              {/* Method 2: Send directly to another computer via Email */}
               <button
                 onClick={handleOpenEmailModal}
-                disabled={loadingDay}
                 style={{
-                  padding: '0.6rem 1.15rem',
-                  backgroundColor: '#10B981',
-                  color: '#FFFFFF',
-                  border: 'none',
+                  padding: '0.65rem 1.25rem',
                   borderRadius: '10px',
-                  fontWeight: '800',
-                  fontSize: '0.86rem',
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                  color: '#FFFFFF',
+                  fontWeight: '900',
+                  fontSize: '0.88rem',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.45rem',
-                  boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)'
+                  boxShadow: '0 4px 14px rgba(5, 150, 105, 0.35)'
                 }}
               >
-                <FaEnvelope /> 📧 Gửi Sang Máy Khác (Email)
+                <FaEnvelope /> 📧 Gửi Sang Máy Khác (Email & Lưu Trữ)
               </button>
             </div>
           </div>
 
-          {/* Loading Indicator */}
-          {loadingDay ? (
-            <div style={{ padding: '3rem', textAlign: 'center', color: '#64748B' }}>
-              <FaSpinner className="spinner" style={{ fontSize: '1.8rem', color: '#0284C7', marginBottom: '0.5rem' }} />
-              <div>Đang giải nén và tải dữ liệu chi tiết ca trực...</div>
+          {/* Details Content */}
+          {loadingDay && (
+            <div style={{ padding: '3.5rem', textAlign: 'center', backgroundColor: '#FFFFFF', borderRadius: '16px' }}>
+              <FaSpinner className="spinner" style={{ fontSize: '2.5rem', color: '#0284C7', marginBottom: '1rem' }} />
+              <div style={{ fontSize: '1rem', fontWeight: '800' }}>Đang nạp toàn bộ hồ sơ 12 khoa phòng...</div>
             </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-              
-              {/* Category 1: Báo Cáo 12 Khoa */}
-              <div style={{ backgroundColor: '#FFFFFF', borderRadius: '16px', border: '1.5px solid #CBD5E1', padding: '1.2rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
-                  <h3 style={{ margin: 0, fontSize: '0.95rem', fontWeight: '900', color: '#0F2C59', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                    <FaFileAlt style={{ color: '#0284C7' }} /> 1. BÁO CÁO CHUYÊN MÔN 12 KHOA PHÒNG ({dayDetails?.reports?.length || 0})
-                  </h3>
-                </div>
+          )}
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '0.75rem' }}>
+          {!loadingDay && dayDetails && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.4rem' }}>
+              
+              {/* Category 1: 12 Khoa Phòng Báo Cáo */}
+              <div style={{ backgroundColor: '#FFFFFF', borderRadius: '16px', border: '1.5px solid #CBD5E1', padding: '1.2rem', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+                <h3 style={{ margin: '0 0 0.85rem 0', fontSize: '0.95rem', fontWeight: '900', color: '#0F2C59', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                  <FaCheckCircle style={{ color: '#059669' }} /> 1. BÁO CÁO 12 KHOA PHÒNG ({dayDetails?.reports?.length || 0}/12)
+                </h3>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '0.65rem' }}>
                   {(dayDetails?.reports || []).map(r => (
-                    <div
-                      key={r.id}
-                      onClick={() => onOpenReportDetail && onOpenReportDetail(r)}
-                      style={{
-                        padding: '0.75rem 0.95rem',
-                        backgroundColor: '#F8FAFC',
-                        border: '1.5px solid #E2E8F0',
-                        borderRadius: '10px',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      <div style={{ fontWeight: '800', color: '#0F2C59', fontSize: '0.85rem' }}>
-                        {r.department_name || r.department_code}
-                      </div>
-                      <div style={{ fontSize: '0.74rem', color: '#64748B', marginTop: '2px' }}>
-                        BS: <strong>{r.doctor_name || '—'}</strong> | ĐD: {r.nurse_name || '—'}
-                      </div>
+                    <div key={r.id} style={{ padding: '0.75rem', backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', fontSize: '0.8rem' }}>
+                      <div style={{ fontWeight: '800', color: '#0F2C59' }}>{r.department_name || r.department_code}</div>
+                      <div style={{ color: '#1D4ED8', fontSize: '0.75rem', marginTop: '2px' }}>BS: <strong>{r.doctor_name || '—'}</strong> | ĐD: <strong>{r.nurse_name || '—'}</strong></div>
                     </div>
                   ))}
                 </div>
@@ -929,7 +816,7 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
         </div>
       )}
 
-      {/* Method 2 Modal: Send to another computer via Email */}
+      {/* 📧 METHOD 2 MODAL: SEND TO ANOTHER COMPUTER VIA EMAIL */}
       {showEmailModal && (
         <div style={{
           position: 'fixed',
