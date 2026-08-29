@@ -58,8 +58,9 @@ router.put('/reports/:departmentCode/:date/toggle-lock', auth, requireAdmin, tog
 router.put('/reports/toggle-lock-all/:date', auth, requireAdmin, toggleLockAllReports);
 
 // Version Changelog Management
-const { getChangelogHistory, publishChangelog } = require('../controllers/changelogController');
+const { getChangelogHistory, publishChangelog, deleteChangelog } = require('../controllers/changelogController');
 router.get('/changelog/history', auth, requireAdmin, getChangelogHistory);
 router.post('/changelog', auth, requireAdmin, publishChangelog);
+router.delete('/changelog/:id', auth, requireAdmin, deleteChangelog);
 
 module.exports = router;

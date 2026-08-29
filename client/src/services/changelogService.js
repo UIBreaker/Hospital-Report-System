@@ -123,6 +123,12 @@ export const changelogService = {
   publishChangelog: async (data) => {
     const res = await api.post('/admin/changelog', data);
     return res.data;
+  },
+
+  // Admin endpoint
+  deleteChangelog: async (id) => {
+    const res = await api.delete(`/admin/changelog/${id}`);
+    return res.data;
   }
 };
 

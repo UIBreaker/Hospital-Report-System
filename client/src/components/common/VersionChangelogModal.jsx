@@ -17,11 +17,17 @@ import {
   FaHeartbeat,
   FaBullhorn,
   FaMagic,
-  FaBolt
+  FaBolt,
+  FaBug,
+  FaPaintBrush
 } from 'react-icons/fa';
 import changelogService, { DEFAULT_V2_CHANGELOG } from '../../services/changelogService';
 
 const ICON_MAP = {
+  FaBug: <FaBug />,
+  FaStar: <FaStar />,
+  FaBolt: <FaBolt />,
+  FaPaintBrush: <FaPaintBrush />,
   FaMicrophoneAlt: <FaMicrophoneAlt />,
   FaTv: <FaTv />,
   FaChartLine: <FaChartLine />,

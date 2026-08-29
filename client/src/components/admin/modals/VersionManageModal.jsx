@@ -18,12 +18,21 @@ import {
   FaSave,
   FaSpinner,
   FaCalendarAlt,
-  FaUserTie
+  FaUserTie,
+  FaBug,
+  FaBolt,
+  FaPaintBrush,
+  FaEdit,
+  FaMagic
 } from 'react-icons/fa';
 import changelogService, { DEFAULT_V2_CHANGELOG } from '../../../services/changelogService';
 import VersionChangelogModal from '../../common/VersionChangelogModal';
 
 const AVAILABLE_ICONS = [
+  { id: 'FaStar', label: '⭐ Tính năng nổi bật' },
+  { id: 'FaBug', label: '🛠️ Bản vá lỗi / Sửa lỗi' },
+  { id: 'FaBolt', label: '⚡ Tối ưu hiệu năng & Tốc độ' },
+  { id: 'FaPaintBrush', label: '🎨 Giao diện & Trải nghiệm UI/UX' },
   { id: 'FaMicrophoneAlt', label: '🎙️ Giọng đọc AI' },
   { id: 'FaTv', label: '🖥️ Trình chiếu 4K' },
   { id: 'FaChartLine', label: '📊 Biểu đồ & Thống kê' },
@@ -34,21 +43,56 @@ const AVAILABLE_ICONS = [
   { id: 'FaRobot', label: '🤖 Trợ lý thông minh' }
 ];
 
-const THEME_COLORS = [
-  { label: 'Xanh Dương (Ocean)', bg: '#EFF6FF', border: '#BFDBFE', color: '#0284C7' },
-  { label: 'Xanh Lá (Emerald)', bg: '#F0FDF4', border: '#BBF7D0', color: '#059669' },
-  { label: 'Hổ Phách (Amber)', bg: '#FFFBEB', border: '#FDE68A', color: '#D97706' },
-  { label: 'Tím (Purple)', bg: '#FAF5FF', border: '#DDD6FE', color: '#7C3AED' },
-  { label: 'Đỏ (Rose)', bg: '#FEF2F2', border: '#FECACA', color: '#DC2626' },
-  { label: 'Chàm (Indigo)', bg: '#EEF2FF', border: '#C7D2FE', color: '#4F46E5' }
+const PATCH_TEMPLATE_SECTIONS = [
+  {
+    iconName: 'FaBug',
+    iconColor: '#DC2626',
+    bg: '#FEF2F2',
+    border: '#FECACA',
+    title: '🛠️ Sửa Lỗi & Khắc Phục Sự Cố',
+    badge: 'Bản vá',
+    badgeBg: '#DC2626',
+    items: [
+      'Sửa lỗi hiển thị dữ liệu và tối ưu hóa thời gian phản hồi của hệ thống.',
+      'Khắc phục sự cố đồng bộ trạng thái ca trực giữa các khoa phòng.'
+    ]
+  },
+  {
+    iconName: 'FaBolt',
+    iconColor: '#D97706',
+    bg: '#FFFBEB',
+    border: '#FDE68A',
+    title: '⚡ Tối Ưu Hiệu Năng & Tốc Độ Tải Trang',
+    badge: 'Tối ưu',
+    badgeBg: '#D97706',
+    items: [
+      'Giảm hơn 60% dung lượng tải ban đầu, mở trang tức thì không độ trễ.',
+      'Tối ưu hóa các truy vấn CSDL giúp tải lịch sử nộp báo cáo mượt mà.'
+    ]
+  },
+  {
+    iconName: 'FaPaintBrush',
+    iconColor: '#0284C7',
+    bg: '#EFF6FF',
+    border: '#BFDBFE',
+    title: '🎨 Tinh Chỉnh Giao Diện & Trải Nghiệm Người Dùng',
+    badge: 'Cải tiến',
+    badgeBg: '#0284C7',
+    items: [
+      'Cải thiện độ tương phản màu sắc giúp bác sĩ dễ đọc trong phòng trực.',
+      'Căn chỉnh bố cục bảng biểu gọn gàng và chuẩn xác trên mọi thiết bị.'
+    ]
+  }
 ];
 
 const VersionManageModal = ({ isOpen, onClose, onVersionPublished }) => {
   const [activeSubTab, setActiveSubTab] = useState('editor'); // 'editor' | 'history'
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
   const [historyList, setHistoryList] = useState([]);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [previewCustomData, setPreviewCustomData] = useState(null);
 
   // Form State
   const [version, setVersion] = useState('2.0.0');
@@ -103,16 +147,30 @@ const VersionManageModal = ({ isOpen, onClose, onVersionPublished }) => {
     setSections(prev => [
       ...prev,
       {
-        iconName: 'FaRocket',
-        iconColor: '#0284C7',
-        bg: '#EFF6FF',
-        border: '#BFDBFE',
-        title: 'Tính Năng Mới Mẻ & Hữu Ích',
-        badge: 'Mới',
-        badgeBg: '#0284C7',
-        items: ['Mô tả chi tiết cải tiến đầu tiên của tính năng này.']
+        iconName: isMajor ? 'FaStar' : 'FaBug',
+        iconColor: isMajor ? '#0284C7' : '#DC2626',
+        bg: isMajor ? '#EFF6FF' : '#FEF2F2',
+        border: isMajor ? '#BFDBFE' : '#FECACA',
+        title: isMajor ? '⭐ Tính Năng Nổi Bật Mới' : '🛠️ Sửa Lỗi & Tối Ưu Hóa',
+        badge: isMajor ? 'Nổi bật' : 'Bản vá',
+        badgeBg: isMajor ? '#0284C7' : '#DC2626',
+        items: ['Mô tả chi tiết cải tiến đầu tiên của mục này.']
       }
     ]);
+  };
+
+  const handleApplyMajorTemplate = () => {
+    setIsMajor(true);
+    setTitle(`NHẬT KÝ PHIÊN BẢN v${version.trim() || '2.0.0'}`);
+    setSummary('Chào mừng đến với bản cập nhật lớn với hàng loạt tính năng công nghệ đột phá!');
+    setSections(DEFAULT_V2_CHANGELOG.sections);
+  };
+
+  const handleApplyPatchTemplate = () => {
+    setIsMajor(false);
+    setTitle(`BẢN VÁ & TỐI ƯU HỆ THỐNG v${version.trim() || '2.0.1'}`);
+    setSummary('Bản cập nhật định kỳ tập trung sửa lỗi, tối ưu tốc độ và nâng cao độ ổn định hệ thống.');
+    setSections(PATCH_TEMPLATE_SECTIONS);
   };
 
   const handleUpdateSection = (idx, field, val) => {
@@ -125,7 +183,7 @@ const VersionManageModal = ({ isOpen, onClose, onVersionPublished }) => {
 
   const handleRemoveSection = (idx) => {
     if (sections.length <= 1) {
-      alert('Bản cập nhật cần tối thiểu 1 nhóm tính năng.');
+      alert('Bản cập nhật cần tối thiểu 1 nhóm nội dung.');
       return;
     }
     setSections(prev => prev.filter((_, i) => i !== idx));
@@ -163,7 +221,7 @@ const VersionManageModal = ({ isOpen, onClose, onVersionPublished }) => {
     });
   };
 
-  const handleApplyHistory = (item) => {
+  const handleApplyHistoryToEditor = (item) => {
     setVersion(item.version);
     setTitle(item.title);
     setReleaseDate(item.release_date);
@@ -174,6 +232,33 @@ const VersionManageModal = ({ isOpen, onClose, onVersionPublished }) => {
       setSections(item.sections);
     }
     setActiveSubTab('editor');
+  };
+
+  const handlePreviewHistoryItem = (item) => {
+    setPreviewCustomData(item);
+    setShowPreviewModal(true);
+  };
+
+  const handleDeleteHistoryItem = async (item) => {
+    const confirmMsg = `Bạn có chắc chắn muốn xóa bản ghi phiên bản v${item.version} ("${item.title}") khỏi CSDL không?\n\nHành động này không thể hoàn tác!`;
+    if (!window.confirm(confirmMsg)) return;
+
+    try {
+      setDeletingId(item.id);
+      const res = await changelogService.deleteChangelog(item.id);
+      if (res?.success) {
+        setHistoryList(prev => prev.filter(h => h.id !== item.id));
+        alert(`✅ Đã xóa bản ghi v${item.version} thành công!`);
+        if (onVersionPublished) onVersionPublished();
+      } else {
+        alert(res?.error || 'Không thể xóa bản ghi.');
+      }
+    } catch (err) {
+      console.error('Lỗi khi xóa bản ghi phiên bản:', err);
+      alert('Lỗi máy chủ khi xóa bản ghi.');
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const handleSaveAndPublish = async () => {
@@ -212,7 +297,7 @@ const VersionManageModal = ({ isOpen, onClose, onVersionPublished }) => {
 
   if (!isOpen) return null;
 
-  const previewChangelogData = {
+  const currentEditorPreviewData = {
     version,
     title,
     release_date: releaseDate,
@@ -226,7 +311,7 @@ const VersionManageModal = ({ isOpen, onClose, onVersionPublished }) => {
     <div style={{
       position: 'fixed',
       inset: 0,
-      backgroundColor: 'rgba(10, 18, 35, 0.75)',
+      backgroundColor: 'rgba(10, 18, 35, 0.78)',
       backdropFilter: 'blur(8px)',
       zIndex: 99999,
       display: 'flex',
@@ -238,11 +323,11 @@ const VersionManageModal = ({ isOpen, onClose, onVersionPublished }) => {
     }}>
       <div style={{
         width: '100%',
-        maxWidth: '840px',
+        maxWidth: '860px',
         maxHeight: '92vh',
         backgroundColor: '#FFFFFF',
         borderRadius: '20px',
-        boxShadow: '0 25px 60px rgba(15, 44, 89, 0.35)',
+        boxShadow: '0 25px 60px rgba(15, 44, 89, 0.4)',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
@@ -260,14 +345,14 @@ const VersionManageModal = ({ isOpen, onClose, onVersionPublished }) => {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '10px',
+              width: '42px',
+              height: '42px',
+              borderRadius: '12px',
               backgroundColor: 'rgba(255, 255, 255, 0.15)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '1.25rem',
+              fontSize: '1.3rem',
               color: '#38BDF8'
             }}>
               <FaRocket />
@@ -277,7 +362,7 @@ const VersionManageModal = ({ isOpen, onClose, onVersionPublished }) => {
                 QUẢN LÝ PHIÊN BẢN & NHẬT KÝ CẬP NHẬT
               </h3>
               <p style={{ margin: '2px 0 0 0', fontSize: '0.76rem', color: '#93C5FD' }}>
-                Soạn thảo thông tin phiên bản mới và kiểm soát chế độ nổi bật ngoài trang đăng nhập
+                Soạn thảo thông tin phiên bản mới, nạp bản vá lỗi và quản lý lịch sử công bố
               </p>
             </div>
           </div>
@@ -307,44 +392,92 @@ const VersionManageModal = ({ isOpen, onClose, onVersionPublished }) => {
           borderBottom: '1px solid #E2E8F0',
           padding: '0.5rem 1.6rem',
           display: 'flex',
-          gap: '0.6rem'
+          justifyContent: 'space-between',
+          alignItems: 'center'
         }}>
-          <button
-            onClick={() => setActiveSubTab('editor')}
-            style={{
-              padding: '0.4rem 1rem',
-              borderRadius: '8px',
-              border: 'none',
-              backgroundColor: activeSubTab === 'editor' ? '#0F2C59' : 'transparent',
-              color: activeSubTab === 'editor' ? '#FFFFFF' : '#64748B',
-              fontWeight: '800',
-              fontSize: '0.82rem',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.35rem'
-            }}
-          >
-            <FaRocket /> Soạn Thảo Bản Mới
-          </button>
-          <button
-            onClick={() => setActiveSubTab('history')}
-            style={{
-              padding: '0.4rem 1rem',
-              borderRadius: '8px',
-              border: 'none',
-              backgroundColor: activeSubTab === 'history' ? '#0F2C59' : 'transparent',
-              color: activeSubTab === 'history' ? '#FFFFFF' : '#64748B',
-              fontWeight: '800',
-              fontSize: '0.82rem',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.35rem'
-            }}
-          >
-            <FaHistory /> Lịch Sử Đã Công Bố ({historyList.length})
-          </button>
+          <div style={{ display: 'flex', gap: '0.6rem' }}>
+            <button
+              onClick={() => setActiveSubTab('editor')}
+              style={{
+                padding: '0.42rem 1.1rem',
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: activeSubTab === 'editor' ? '#0F2C59' : 'transparent',
+                color: activeSubTab === 'editor' ? '#FFFFFF' : '#64748B',
+                fontWeight: '800',
+                fontSize: '0.82rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.35rem'
+              }}
+            >
+              <FaRocket /> Soạn Thảo Bản Mới
+            </button>
+            <button
+              onClick={() => { setActiveSubTab('history'); loadHistory(); }}
+              style={{
+                padding: '0.42rem 1.1rem',
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: activeSubTab === 'history' ? '#0F2C59' : 'transparent',
+                color: activeSubTab === 'history' ? '#FFFFFF' : '#64748B',
+                fontWeight: '800',
+                fontSize: '0.82rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.35rem'
+              }}
+            >
+              <FaHistory /> Lịch Sử Đã Công Bố ({historyList.length})
+            </button>
+          </div>
+
+          {activeSubTab === 'editor' && (
+            <div style={{ display: 'flex', gap: '0.4rem' }}>
+              <button
+                type="button"
+                onClick={handleApplyMajorTemplate}
+                style={{
+                  backgroundColor: '#EFF6FF',
+                  border: '1px solid #BFDBFE',
+                  color: '#1E40AF',
+                  padding: '0.3rem 0.65rem',
+                  borderRadius: '6px',
+                  fontSize: '0.74rem',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.25rem'
+                }}
+                title="Tải mẫu cấu trúc Tính Năng Nổi Bật v2.0"
+              >
+                <FaStar style={{ color: '#D97706' }} /> Mẫu Tính Năng Nổi Bật
+              </button>
+              <button
+                type="button"
+                onClick={handleApplyPatchTemplate}
+                style={{
+                  backgroundColor: '#FEF2F2',
+                  border: '1px solid #FECACA',
+                  color: '#991B1B',
+                  padding: '0.3rem 0.65rem',
+                  borderRadius: '6px',
+                  fontSize: '0.74rem',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.25rem'
+                }}
+                title="Tải mẫu cấu trúc Bản Vá Lỗi & Tối Ưu Hệ Thống"
+              >
+                <FaBug style={{ color: '#DC2626' }} /> Mẫu Bản Vá Lỗi
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Body Content */}
@@ -362,7 +495,7 @@ const VersionManageModal = ({ isOpen, onClose, onVersionPublished }) => {
                     type="text"
                     value={version}
                     onChange={(e) => setVersion(e.target.value)}
-                    placeholder="2.0.0 hoặc 2.1.0"
+                    placeholder="2.0.0 hoặc 2.0.1"
                     style={{
                       width: '100%',
                       padding: '0.5rem 0.75rem',
@@ -416,7 +549,7 @@ const VersionManageModal = ({ isOpen, onClose, onVersionPublished }) => {
                 </div>
               </div>
 
-              {/* Major vs Minor Patch Toggle Switch (THE CORE REQUIREMENT) */}
+              {/* Major vs Minor Patch Toggle Switch */}
               <div style={{
                 backgroundColor: isMajor ? '#EFF6FF' : '#F8FAFC',
                 border: `2px solid ${isMajor ? '#38BDF8' : '#CBD5E1'}`,
@@ -434,8 +567,8 @@ const VersionManageModal = ({ isOpen, onClose, onVersionPublished }) => {
                   </div>
                   <p style={{ margin: '3px 0 0 0', fontSize: '0.76rem', color: '#64748B', lineHeight: 1.4 }}>
                     {isMajor 
-                      ? '👉 Sẽ kích hoạt hào quang Neon phát sáng, huy hiệu "🚀 MỚI" và nút lấp lánh ngoài trang đăng nhập để thu hút mọi người xem.' 
-                      : '👉 Thẻ phiên bản ngoài trang đăng nhập sẽ hiển thị phẳng êm dịu, không nhấp nháy làm phân tâm người dùng.'}
+                      ? '👉 BẬT hào quang Neon phát sáng, huy hiệu "🚀 MỚI" và nút lấp lánh ngoài trang đăng nhập để thu hút mọi người xem.' 
+                      : '👉 TẮT hiệu ứng phát sáng, thẻ phiên bản ngoài trang đăng nhập hiển thị phẳng êm dịu, không nhấp nháy làm phân tâm.'}
                   </p>
                 </div>
 
@@ -521,7 +654,7 @@ const VersionManageModal = ({ isOpen, onClose, onVersionPublished }) => {
               <div style={{ marginTop: '0.5rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.65rem' }}>
                   <span style={{ fontSize: '0.88rem', fontWeight: '900', color: '#0F2C59' }}>
-                    📋 DANH SÁCH NHÓM TÍNH NĂNG MỚI ({sections.length})
+                    📋 DANH SÁCH NHÓM NỘI DUNG / TÍNH NĂNG ({sections.length})
                   </span>
                   <button
                     type="button"
@@ -559,13 +692,13 @@ const VersionManageModal = ({ isOpen, onClose, onVersionPublished }) => {
                       }}
                     >
                       {/* Section Header Controls */}
-                      <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1.5fr 1fr auto', gap: '0.5rem', alignItems: 'center' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1.6fr 1fr auto', gap: '0.5rem', alignItems: 'center' }}>
                         <div>
-                          <label style={{ fontSize: '0.7rem', fontWeight: '800', color: '#64748B' }}>Biểu tượng:</label>
+                          <label style={{ fontSize: '0.7rem', fontWeight: '800', color: '#64748B' }}>Biểu tượng (Icon):</label>
                           <select
-                            value={sec.iconName || 'FaRocket'}
+                            value={sec.iconName || 'FaStar'}
                             onChange={(e) => handleUpdateSection(sIdx, 'iconName', e.target.value)}
-                            style={{ width: '100%', padding: '0.35rem', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '0.78rem' }}
+                            style={{ width: '100%', padding: '0.38rem', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '0.78rem', fontWeight: '700' }}
                           >
                             {AVAILABLE_ICONS.map(ic => (
                               <option key={ic.id} value={ic.id}>{ic.label}</option>
@@ -579,7 +712,7 @@ const VersionManageModal = ({ isOpen, onClose, onVersionPublished }) => {
                             type="text"
                             value={sec.title}
                             onChange={(e) => handleUpdateSection(sIdx, 'title', e.target.value)}
-                            style={{ width: '100%', padding: '0.35rem 0.5rem', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '0.78rem', fontWeight: '700', boxSizing: 'border-box' }}
+                            style={{ width: '100%', padding: '0.38rem 0.5rem', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '0.78rem', fontWeight: '700', boxSizing: 'border-box' }}
                           />
                         </div>
 
@@ -589,7 +722,7 @@ const VersionManageModal = ({ isOpen, onClose, onVersionPublished }) => {
                             type="text"
                             value={sec.badge || 'Mới'}
                             onChange={(e) => handleUpdateSection(sIdx, 'badge', e.target.value)}
-                            style={{ width: '100%', padding: '0.35rem 0.5rem', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '0.78rem', boxSizing: 'border-box' }}
+                            style={{ width: '100%', padding: '0.38rem 0.5rem', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '0.78rem', boxSizing: 'border-box' }}
                           />
                         </div>
 
@@ -598,12 +731,12 @@ const VersionManageModal = ({ isOpen, onClose, onVersionPublished }) => {
                           onClick={() => handleRemoveSection(sIdx)}
                           title="Xóa nhóm này"
                           style={{
-                            marginTop: '14px',
+                            marginTop: '16px',
                             backgroundColor: '#FEE2E2',
                             color: '#DC2626',
                             border: '1px solid #FECACA',
                             borderRadius: '6px',
-                            padding: '0.4rem 0.6rem',
+                            padding: '0.42rem 0.65rem',
                             cursor: 'pointer'
                           }}
                         >
@@ -614,7 +747,7 @@ const VersionManageModal = ({ isOpen, onClose, onVersionPublished }) => {
                       {/* Items list */}
                       <div>
                         <label style={{ fontSize: '0.72rem', fontWeight: '800', color: '#475569', display: 'block', marginBottom: '4px' }}>
-                          Các gạch đầu dòng tính năng:
+                          Các gạch đầu dòng tính năng / sửa lỗi:
                         </label>
                         {Array.isArray(sec.items) && sec.items.map((item, iIdx) => (
                           <div key={iIdx} style={{ display: 'flex', gap: '0.4rem', marginBottom: '4px' }}>
@@ -622,7 +755,7 @@ const VersionManageModal = ({ isOpen, onClose, onVersionPublished }) => {
                               type="text"
                               value={item}
                               onChange={(e) => handleUpdateItem(sIdx, iIdx, e.target.value)}
-                              placeholder="Mô tả cụ thể tính năng..."
+                              placeholder="Mô tả cụ thể tính năng hoặc lỗi đã sửa..."
                               style={{
                                 flex: 1,
                                 padding: '0.35rem 0.6rem',
@@ -673,7 +806,7 @@ const VersionManageModal = ({ isOpen, onClose, onVersionPublished }) => {
 
             </div>
           ) : (
-            /* History Subtab */
+            /* History Subtab with View, Edit, and Delete */
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {historyList.length === 0 ? (
                 <div style={{ padding: '2rem', textAlign: 'center', color: '#94A3B8', fontStyle: 'italic' }}>
@@ -684,19 +817,20 @@ const VersionManageModal = ({ isOpen, onClose, onVersionPublished }) => {
                   <div
                     key={h.id}
                     style={{
-                      padding: '0.85rem 1.1rem',
-                      backgroundColor: '#F8FAFC',
+                      padding: '0.9rem 1.1rem',
+                      backgroundColor: '#FFFFFF',
                       border: '1.5px solid #E2E8F0',
                       borderRadius: '12px',
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
-                      gap: '1rem'
+                      gap: '1rem',
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
                     }}
                   >
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <span style={{ fontWeight: '900', color: '#0F2C59', fontSize: '0.95rem' }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        <span style={{ fontWeight: '900', color: '#0F2C59', fontSize: '1rem' }}>
                           v{h.version}
                         </span>
                         <span style={{
@@ -709,28 +843,84 @@ const VersionManageModal = ({ isOpen, onClose, onVersionPublished }) => {
                         }}>
                           {h.is_major ? '🌟 BẢN LỚN' : '⚪ BẢN VÁ'}
                         </span>
+                        <span style={{ fontSize: '0.74rem', color: '#94A3B8' }}>
+                          ({Array.isArray(h.sections) ? h.sections.length : 0} nhóm tính năng)
+                        </span>
                       </div>
-                      <div style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '2px' }}>
-                        {h.title} • {h.release_date} • {h.author}
+                      <div style={{ fontSize: '0.82rem', fontWeight: '700', color: '#334155', marginTop: '3px' }}>
+                        {h.title}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '1px' }}>
+                        📅 {h.release_date} • 👤 {h.author}
                       </div>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => handleApplyHistory(h)}
-                      style={{
-                        padding: '0.4rem 0.85rem',
-                        backgroundColor: '#EFF6FF',
-                        border: '1.5px solid #BFDBFE',
-                        color: '#1E40AF',
-                        borderRadius: '7px',
-                        fontWeight: '800',
-                        fontSize: '0.78rem',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Dùng bản này để sửa ➔
-                    </button>
+                    {/* Action Buttons: View, Edit, Delete */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
+                      <button
+                        type="button"
+                        onClick={() => handlePreviewHistoryItem(h)}
+                        style={{
+                          padding: '0.42rem 0.75rem',
+                          backgroundColor: '#F0F9FF',
+                          border: '1px solid #BAE6FD',
+                          color: '#0284C7',
+                          borderRadius: '7px',
+                          fontWeight: '800',
+                          fontSize: '0.78rem',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.3rem'
+                        }}
+                        title="Xem giao diện modal của bản ghi này"
+                      >
+                        <FaEye /> Xem
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleApplyHistoryToEditor(h)}
+                        style={{
+                          padding: '0.42rem 0.75rem',
+                          backgroundColor: '#EFF6FF',
+                          border: '1px solid #BFDBFE',
+                          color: '#1E40AF',
+                          borderRadius: '7px',
+                          fontWeight: '800',
+                          fontSize: '0.78rem',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.3rem'
+                        }}
+                        title="Nạp dữ liệu bản ghi này vào tab Soạn Thảo để chỉnh sửa"
+                      >
+                        <FaEdit /> Sửa
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteHistoryItem(h)}
+                        disabled={deletingId === h.id}
+                        style={{
+                          padding: '0.42rem 0.65rem',
+                          backgroundColor: '#FEF2F2',
+                          border: '1px solid #FECACA',
+                          color: '#DC2626',
+                          borderRadius: '7px',
+                          fontWeight: '800',
+                          fontSize: '0.78rem',
+                          cursor: deletingId === h.id ? 'not-allowed' : 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.3rem'
+                        }}
+                        title="Xóa vĩnh viễn bản ghi này khỏi CSDL"
+                      >
+                        {deletingId === h.id ? <FaSpinner className="spinner" /> : <FaTrash />} Xóa
+                      </button>
+                    </div>
                   </div>
                 ))
               )}
@@ -750,7 +940,10 @@ const VersionManageModal = ({ isOpen, onClose, onVersionPublished }) => {
         }}>
           <button
             type="button"
-            onClick={() => setShowPreviewModal(true)}
+            onClick={() => {
+              setPreviewCustomData(currentEditorPreviewData);
+              setShowPreviewModal(true);
+            }}
             style={{
               padding: '0.5rem 1.1rem',
               backgroundColor: '#F1F5F9',
@@ -814,8 +1007,11 @@ const VersionManageModal = ({ isOpen, onClose, onVersionPublished }) => {
       {showPreviewModal && (
         <VersionChangelogModal
           isOpen={true}
-          onClose={() => setShowPreviewModal(false)}
-          customChangelog={previewChangelogData}
+          onClose={() => {
+            setShowPreviewModal(false);
+            setPreviewCustomData(null);
+          }}
+          customChangelog={previewCustomData || currentEditorPreviewData}
         />
       )}
     </div>

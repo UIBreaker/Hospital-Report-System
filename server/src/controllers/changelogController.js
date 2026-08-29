@@ -286,3 +286,27 @@ exports.publishChangelog = async (req, res) => {
     return res.status(500).json({ success: false, error: 'Lỗi máy chủ khi lưu phiên bản cập nhật.' });
   }
 };
+
+/**
+ * Admin Endpoint: DELETE /api/admin/changelog/:id
+ * Delete a specific changelog record
+ */
+exports.deleteChangelog = async (req, res) => {
+  try {
+    await ensureTableExists();
+    const { id } = req.params;
+
+    const [result] = await pool.query('DELETE FROM system_changelogs WHERE id = ?', [id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, error: 'Không tìm thấy bản ghi phiên bản cần xóa.' });
+    }
+
+    return res.json({
+      success: true,
+      message: 'Đã xóa bản ghi phiên bản khỏi CSDL thành công!'
+    });
+  } catch (err) {
+    console.error('deleteChangelog error:', err);
+    return res.status(500).json({ success: false, error: 'Lỗi máy chủ khi xóa bản ghi phiên bản.' });
+  }
+};
