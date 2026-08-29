@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const compression = require('compression');
 const authRoutes = require('./routes/authRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const adminRoutes = require('./routes/adminRoutes');
@@ -11,6 +12,12 @@ const errorHandler = require('./middleware/errorHandler');
 const pool = require('./config/db');
 
 const app = express();
+
+// High performance Gzip compression for all JSON / API responses
+app.use(compression({
+  threshold: 1024, // Compress anything above 1KB
+  level: 6 // Balanced speed vs compression ratio
+}));
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
