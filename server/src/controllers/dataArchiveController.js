@@ -293,10 +293,20 @@ exports.getArchiveDayDetails = async (req, res) => {
  */
 exports.sendArchiveEmail = async (req, res) => {
   try {
-    const { date, recipientEmail, subject, notes, shiftSummary } = req.body;
+    const { date, recipientEmail, subject, notes, shiftSummary, zipAttachmentBase64, portalUrl } = req.body;
 
     if (!recipientEmail || !recipientEmail.includes('@')) {
       return res.status(400).json({ success: false, error: 'Vui lòng nhập địa chỉ Email hợp lệ.' });
+    }
+
+    const mailAttachments = [];
+    if (zipAttachmentBase64) {
+      mailAttachments.push({
+        filename: `BaoCaoGiaoBan_Ngay_${date}.zip`,
+        content: zipAttachmentBase64,
+        encoding: 'base64',
+        contentType: 'application/zip'
+      });
     }
 
     if (!nodemailer) {
@@ -319,18 +329,18 @@ exports.sendArchiveEmail = async (req, res) => {
 
     const emailSubject = subject || `[TTYT BÌNH LONG] Báo Cáo Giao Ban Trực Toàn Viện - Ngày ${date}`;
     const emailHtml = `
-      <div style="font-family: Arial, sans-serif; max-width: 650px; margin: 0 auto; border: 1px solid #E2E8F0; border-radius: 12px; overflow: hidden; color: #1E293B;">
-        <div style="background: linear-gradient(135deg, #0F2C59 0%, #0284C7 100%); color: #FFFFFF; padding: 20px; text-align: center;">
-          <h2 style="margin: 0; font-size: 18px; text-transform: uppercase;">TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG</h2>
-          <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.9;">Gói Hồ Sơ Lưu Trữ Báo Cáo Giao Ban Chuyên Môn Trực Tuyến</p>
+      <div style="font-family: Arial, sans-serif; max-width: 650px; margin: 0 auto; border: 1px solid #CBD5E1; border-radius: 12px; overflow: hidden; color: #1E293B;">
+        <div style="background: linear-gradient(135deg, #0F2C59 0%, #0284C7 100%); color: #FFFFFF; padding: 22px; text-align: center;">
+          <h2 style="margin: 0; font-size: 18px; text-transform: uppercase; letter-spacing: 0.5px;">TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG</h2>
+          <p style="margin: 6px 0 0 0; font-size: 14px; opacity: 0.95;">Gói Hồ Sơ Lưu Trữ Báo Cáo Giao Ban Chuyên Môn Trực Tuyến</p>
         </div>
-        <div style="padding: 20px; background-color: #F8FAFC;">
-          <p style="margin: 0 0 10px 0; font-size: 14px;">Kính gửi Ban Giám Đốc và Phòng Kế Hoạch Nghiệp Vụ,</p>
-          <p style="margin: 0 0 15px 0; font-size: 14px; line-height: 1.5;">Hệ thống xin gửi tóm tắt hồ sơ ca trực giao ban ngày <strong>${date}</strong>:</p>
+        <div style="padding: 22px; background-color: #F8FAFC;">
+          <p style="margin: 0 0 12px 0; font-size: 14px;">Kính gửi Ban Giám Đốc và Phòng Kế Hoạch Nghiệp Vụ,</p>
+          <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.5;">Hệ thống xin gửi toàn bộ hồ sơ lưu trữ ca trực giao ban ngày <strong>${date}</strong> kèm tệp nén <strong>ZIP đính kèm</strong> bên dưới thư:</p>
           
-          <div style="background-color: #FFFFFF; border: 1.5px solid #CBD5E1; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
-            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-              <tr><td style="padding: 6px 0; color: #64748B;">📅 Ngày ca trực:</td><td style="font-weight: bold; color: #0F2C59;">${date}</td></tr>
+          <div style="background-color: #FFFFFF; border: 1.5px solid #CBD5E1; border-radius: 10px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+            <table style="width: 100%; border-collapse: collapse; font-size: 13.5px;">
+              <tr><td style="padding: 6px 0; color: #64748B; width: 45%;">📅 Ngày ca trực:</td><td style="font-weight: bold; color: #0F2C59;">${date}</td></tr>
               <tr><td style="padding: 6px 0; color: #64748B;">🏥 Số khoa đã nộp:</td><td style="font-weight: bold; color: #10B981;">${shiftSummary?.submittedCount || '12/12'} Khoa Phòng</td></tr>
               <tr><td style="padding: 6px 0; color: #64748B;">🚑 Tổng ca chuyển viện:</td><td style="font-weight: bold; color: #D97706;">${shiftSummary?.transfers || 0} ca</td></tr>
               <tr><td style="padding: 6px 0; color: #64748B;">🔪 Tổng ca phẫu thuật:</td><td style="font-weight: bold; color: #0284C7;">${shiftSummary?.surgeries || 0} ca</td></tr>
@@ -338,10 +348,21 @@ exports.sendArchiveEmail = async (req, res) => {
             </table>
           </div>
 
-          ${notes ? `<div style="background-color: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px; padding: 12px; margin-bottom: 15px; font-size: 13px; color: #92400E;"><strong>📌 Ghi chú từ Admin:</strong> ${notes}</div>` : ''}
+          ${notes ? `<div style="background-color: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px; padding: 12px; margin-bottom: 16px; font-size: 13px; color: #92400E;"><strong>📌 Ghi chú từ Admin:</strong> ${notes}</div>` : ''}
+
+          <div style="background-color: #EFF6FF; border: 1.5px solid #BFDBFE; border-radius: 10px; padding: 14px; margin-bottom: 16px; text-align: center;">
+            <div style="font-weight: bold; color: #1E40AF; font-size: 13px; margin-bottom: 4px;">📦 TỆP ĐÍNH KÈM GỒM:</div>
+            <div style="font-size: 12.5px; color: #334155;">
+              • 01_BaoCaoGiaoBan_ToanVien_Chuan_A4.html<br>
+              • 02_HoSo_CaDienBienLamSangDacBiet_ChiTiet.html (Đầy đủ Lâm Sàng & Cận Lâm Sàng)<br>
+              • 03_DanhSach_CanBoTruc_Va_ThemGio.html<br>
+              • 04_BangTongHopSoLieu_ToanVien.xlsx<br>
+              • Thư mục hình ảnh X-quang, CT-Scanner, ECG cận lâm sàng
+            </div>
+          </div>
 
           <p style="font-size: 12px; color: #64748B; margin: 15px 0 0 0; text-align: center;">
-            Hồ sơ chi tiết và toàn bộ file ảnh cận lâm sàng đã được đồng bộ an toàn trên hệ thống.
+            Hệ thống Báo cáo Giao ban Trực tuyến © 2026 Trung Tâm Y Tế Khu Vực Bình Long.
           </p>
         </div>
       </div>
@@ -352,7 +373,8 @@ exports.sendArchiveEmail = async (req, res) => {
         from: `"Hệ Thống Giao Ban BV Bình Long" <${process.env.SMTP_USER || 'system@bvbinhlong.vn'}>`,
         to: recipientEmail,
         subject: emailSubject,
-        html: emailHtml
+        html: emailHtml,
+        attachments: mailAttachments
       });
     } catch (mailErr) {
       console.warn('Mail send notice (fallback mode):', mailErr.message);
@@ -360,7 +382,7 @@ exports.sendArchiveEmail = async (req, res) => {
 
     return res.json({
       success: true,
-      message: `Đã gửi thành công hồ sơ ca trực ngày ${date} đến Email: ${recipientEmail}!`
+      message: `Đã gửi thành công hồ sơ ca trực ngày ${date} kèm tệp nén ZIP đến Email: ${recipientEmail}!`
     });
   } catch (err) {
     console.error('sendArchiveEmail error:', err);

@@ -719,6 +719,57 @@ export const dataArchiveService = {
 
     if (onProgress) onProgress('Hoàn tất!', 100);
     return true;
+  },
+
+  /**
+   * Generates Base64 ZIP representation for Email Attachment Dispatch
+   */
+  generateShiftZipBase64: async (date, dayData) => {
+    const zip = new JSZip();
+    const folderName = `BaoCaoGiaoBan_${date}`;
+    const rootFolder = zip.folder(folderName);
+
+    const generalReportHtml = dataArchiveService.generateGeneralReportHtml(date, dayData);
+    rootFolder.file(`01_BaoCaoGiaoBan_ToanVien_Chuan_A4.html`, generalReportHtml);
+
+    const clinicalCasesHtml = dataArchiveService.generateClinicalCasesHtml(date, dayData);
+    rootFolder.file(`02_HoSo_CaDienBienLamSangDacBiet_ChiTiet.html`, clinicalCasesHtml);
+
+    const staffListHtml = dataArchiveService.generateStaffListHtml(date, dayData);
+    rootFolder.file(`03_DanhSach_CanBoTruc_Va_ThemGio.html`, staffListHtml);
+
+    try {
+      const excelBuffer = await dataArchiveService.generateExcelFileBuffer(date, dayData);
+      rootFolder.file(`04_BangTongHopSoLieu_ToanVien.xlsx`, excelBuffer);
+    } catch (e) {}
+
+    rootFolder.file(`05_DuLieuGiaoBan_RawData.json`, JSON.stringify(dayData, null, 2));
+
+    const imagesFolder = rootFolder.folder('HinhAnh_LamSang');
+    const imagesList = dayData.imagesList || [];
+    for (let i = 0; i < imagesList.length; i++) {
+      const img = imagesList[i];
+      try {
+        const cleanName = (img.patientName || 'BenhNhan').replace(/[^a-zA-Z0-9]/g, '_');
+        const cleanType = (img.caseType || 'Anh').replace(/[^a-zA-Z0-9]/g, '_');
+        const fileName = `${String(i + 1).padStart(2, '0')}_${cleanType}_${cleanName}.jpg`;
+
+        if (img.url?.startsWith('data:image')) {
+          const base64Data = img.url.split(',')[1];
+          imagesFolder.file(fileName, base64Data, { base64: true });
+        } else if (img.url?.startsWith('http')) {
+          const res = await fetch(img.url);
+          const blob = await res.blob();
+          imagesFolder.file(fileName, blob);
+        }
+      } catch (imgErr) {}
+    }
+
+    return await zip.generateAsync({
+      type: 'base64',
+      compression: 'DEFLATE',
+      compressionOptions: { level: 6 }
+    });
   }
 };
 

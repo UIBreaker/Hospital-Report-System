@@ -165,15 +165,23 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
   };
 
   // 1-Click Open Gmail Webmail
-  const handleOpenGmailWeb = () => {
+  const handleOpenGmailWeb = async () => {
+    // Also trigger ZIP download so user can easily attach it with 1-click in Gmail
+    if (dayDetails && selectedDay) {
+      dataArchiveService.generateAndDownloadShiftZip(selectedDay.date, dayDetails);
+    }
     const body = buildEmailBodyText();
     const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(recipientEmail)}&su=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
     window.open(gmailUrl, '_blank');
     localStorage.setItem('last_archive_email', recipientEmail.trim());
+    alert('💡 Hệ thống đã mở thư Gmail và đồng thời tải sẵn file nén ZIP về máy tính của bạn.\n\n👉 Bạn chỉ cần bấm biểu tượng đính kèm tệp 📎 trên Gmail và chọn file ZIP vừa tải để gửi đi nhé!');
   };
 
   // 1-Click Open Native Mail Client (mailto)
   const handleOpenNativeMail = () => {
+    if (dayDetails && selectedDay) {
+      dataArchiveService.generateAndDownloadShiftZip(selectedDay.date, dayDetails);
+    }
     const body = buildEmailBodyText();
     window.location.href = `mailto:${encodeURIComponent(recipientEmail)}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
     localStorage.setItem('last_archive_email', recipientEmail.trim());
@@ -198,11 +206,22 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
       setSendingEmail(true);
       localStorage.setItem('last_archive_email', recipientEmail.trim());
 
+      // Generate complete Base64 ZIP file attachment
+      let zipAttachmentBase64 = '';
+      if (dayDetails && selectedDay) {
+        try {
+          zipAttachmentBase64 = await dataArchiveService.generateShiftZipBase64(selectedDay.date, dayDetails);
+        } catch (zipErr) {
+          console.warn('Lỗi tạo base64 zip:', zipErr);
+        }
+      }
+
       const payload = {
         date: selectedDay.date,
         recipientEmail: recipientEmail.trim(),
         subject: emailSubject.trim(),
         notes: emailNotes.trim(),
+        zipAttachmentBase64,
         shiftSummary: {
           submittedCount: `${dayDetails?.reports?.length || 0}/12`,
           transfers: dayDetails?.transferCases?.length || 0,
