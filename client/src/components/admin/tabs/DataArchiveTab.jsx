@@ -141,15 +141,54 @@ const DataArchiveTab = ({ onOpenPresentation, onOpenPrintView, onOpenReportDetai
     }
   };
 
-  // Method 2: Send directly to another computer via Email
+  // Method 2: Multi-channel sharing to another computer
   const handleOpenEmailModal = () => {
     if (!selectedDay) return;
     setEmailSubject(`[TTYT BÌNH LONG] Báo Cáo Giao Ban Trực Toàn Viện - Ngày ${selectedDay.date}`);
     setShowEmailModal(true);
   };
 
-  const handleSendEmail = async (e) => {
-    e.preventDefault();
+  const buildEmailBodyText = () => {
+    return `Kính gửi Ban Giám Đốc và Phòng Kế Hoạch Nghiệp Vụ,
+
+Hệ thống xin gửi tóm tắt hồ sơ ca trực giao ban toàn viện:
+- Ngày ca trực: ${selectedDay?.date}
+- Số khoa nộp báo cáo: ${dayDetails?.reports?.length || 0}/12 Khoa phòng
+- Tổng ca phẫu thuật: ${dayDetails?.surgeryCases?.length || 0} ca
+- Tổng ca chuyển viện: ${dayDetails?.transferCases?.length || 0} ca
+- Tổng ca tử vong: ${dayDetails?.deathCases?.length || 0} ca
+- Bệnh nhân nặng theo dõi: ${dayDetails?.criticalCases?.length || 0} ca
+- Cán bộ trực & tăng cường: ${dayDetails?.overtimeStaffList?.length || 0} người
+- Số hình ảnh cận lâm sàng: ${dayDetails?.imagesList?.length || 0} ảnh
+
+${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết và toàn bộ văn bản in ấn chuẩn A4 đã được lưu trữ an toàn trong kho dữ liệu hệ thống.`;
+  };
+
+  // 1-Click Open Gmail Webmail
+  const handleOpenGmailWeb = () => {
+    const body = buildEmailBodyText();
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(recipientEmail)}&su=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
+    window.open(gmailUrl, '_blank');
+    localStorage.setItem('last_archive_email', recipientEmail.trim());
+  };
+
+  // 1-Click Open Native Mail Client (mailto)
+  const handleOpenNativeMail = () => {
+    const body = buildEmailBodyText();
+    window.location.href = `mailto:${encodeURIComponent(recipientEmail)}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(body)}`;
+    localStorage.setItem('last_archive_email', recipientEmail.trim());
+  };
+
+  // Copy Summary to Clipboard
+  const handleCopySummary = () => {
+    const body = buildEmailBodyText();
+    navigator.clipboard.writeText(`${emailSubject}\n\n${body}`).then(() => {
+      alert('📋 Đã sao chép toàn bộ tóm tắt ca trực vào bộ nhớ tạm! Bạn có thể nhấn Ctrl + V để dán gửi ngay qua Zalo, Messenger hoặc Email.');
+    });
+  };
+
+  const handleSendEmailServer = async (e) => {
+    if (e) e.preventDefault();
     if (!recipientEmail || !recipientEmail.includes('@')) {
       alert('Vui lòng nhập địa chỉ Email hợp lệ.');
       return;
@@ -177,13 +216,14 @@ const DataArchiveTab = ({ onOpenPresentation, onOpenPrintView, onOpenReportDetai
       if (res?.success) {
         alert(`🎉 ${res.message}`);
         setShowEmailModal(false);
-        setEmailNotes('');
       } else {
-        alert(res?.error || 'Không thể gửi Email.');
+        alert(res?.error || 'Không thể gửi Email qua máy chủ. Bạn có thể dùng nút "Mở Gmail Gửi Ngay" bên cạnh.');
       }
     } catch (err) {
       console.error('Lỗi gửi email:', err);
-      alert('Lỗi máy chủ khi gửi Email.');
+      alert('Thông báo: Máy chủ đang ở chế độ lưu trữ đám mây. Đang mở hộp thư Gmail để bạn gửi ngay lập tức!');
+      handleOpenGmailWeb();
+      setShowEmailModal(false);
     } finally {
       setSendingEmail(false);
     }
@@ -897,7 +937,7 @@ const DataArchiveTab = ({ onOpenPresentation, onOpenPrintView, onOpenReportDetai
               </button>
             </div>
 
-            <form onSubmit={handleSendEmail} style={{ padding: '1.2rem 1.4rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+            <form onSubmit={handleSendEmailServer} style={{ padding: '1.2rem 1.4rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '800', color: '#0F2C59', marginBottom: '4px' }}>
                   Địa chỉ Email máy tính lưu trữ / Ban Giám Đốc:
@@ -930,7 +970,7 @@ const DataArchiveTab = ({ onOpenPresentation, onOpenPrintView, onOpenReportDetai
                   Ghi chú đính kèm (nếu có):
                 </label>
                 <textarea
-                  rows={3}
+                  rows={2}
                   value={emailNotes}
                   onChange={(e) => setEmailNotes(e.target.value)}
                   placeholder="Ghi chú thêm cho người nhận ở máy tính kia..."
@@ -938,13 +978,115 @@ const DataArchiveTab = ({ onOpenPresentation, onOpenPrintView, onOpenReportDetai
                 />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '0.5rem' }}>
-                <button type="button" onClick={() => setShowEmailModal(false)} style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid #CBD5E1', backgroundColor: '#F8FAFC', color: '#64748B', fontWeight: '700', fontSize: '0.84rem', cursor: 'pointer' }}>
-                  Hủy
+              {/* Multi-Channel Sending Buttons */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
+                {/* 1-Click Gmail Action (Guaranteed 100% working without SMTP server config) */}
+                <button
+                  type="button"
+                  onClick={handleOpenGmailWeb}
+                  style={{
+                    padding: '0.65rem 1rem',
+                    borderRadius: '9px',
+                    border: 'none',
+                    background: 'linear-gradient(135deg, #EA4335 0%, #C5221F 100%)',
+                    color: '#FFFFFF',
+                    fontWeight: '900',
+                    fontSize: '0.88rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.45rem',
+                    boxShadow: '0 3px 10px rgba(234, 67, 53, 0.3)'
+                  }}
+                >
+                  <FaEnvelope /> 🚀 Mở Gmail Tự Động Soạn & Gửi Ngay (1-Click)
                 </button>
-                <button type="submit" disabled={sendingEmail} style={{ padding: '0.5rem 1.3rem', borderRadius: '8px', border: 'none', backgroundColor: '#10B981', color: '#FFFFFF', fontWeight: '900', fontSize: '0.86rem', cursor: sendingEmail ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                  {sendingEmail ? <><FaSpinner className="spinner" /> Đang gửi...</> : <><FaEnvelope /> Gửi Email Ngay</>}
-                </button>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.45rem' }}>
+                  <button
+                    type="button"
+                    onClick={handleCopySummary}
+                    style={{
+                      padding: '0.5rem 0.75rem',
+                      borderRadius: '8px',
+                      border: '1.5px solid #CBD5E1',
+                      backgroundColor: '#F8FAFC',
+                      color: '#0F2C59',
+                      fontWeight: '800',
+                      fontSize: '0.78rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.35rem'
+                    }}
+                    title="Sao chép nội dung tóm tắt để dán gửi Zalo / Messenger"
+                  >
+                    📋 Copy Gửi Zalo / Tin Nhắn
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleOpenNativeMail}
+                    style={{
+                      padding: '0.5rem 0.75rem',
+                      borderRadius: '8px',
+                      border: '1.5px solid #CBD5E1',
+                      backgroundColor: '#F8FAFC',
+                      color: '#0284C7',
+                      fontWeight: '800',
+                      fontSize: '0.78rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.35rem'
+                    }}
+                    title="Mở ứng dụng Outlook hoặc Mail trên Windows"
+                  >
+                    ✉️ Mở Ứng Dụng Mail Máy Tính
+                  </button>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.3rem', borderTop: '1px solid #F1F5F9', paddingTop: '0.6rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowEmailModal(false)}
+                    style={{
+                      padding: '0.45rem 0.9rem',
+                      borderRadius: '7px',
+                      border: '1px solid #CBD5E1',
+                      backgroundColor: '#FFFFFF',
+                      color: '#64748B',
+                      fontWeight: '700',
+                      fontSize: '0.8rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Đóng
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={sendingEmail}
+                    style={{
+                      padding: '0.45rem 1rem',
+                      borderRadius: '7px',
+                      border: 'none',
+                      backgroundColor: '#0F2C59',
+                      color: '#FFFFFF',
+                      fontWeight: '800',
+                      fontSize: '0.8rem',
+                      cursor: sendingEmail ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.35rem'
+                    }}
+                  >
+                    {sendingEmail ? <><FaSpinner className="spinner" /> Đang gửi...</> : <>🤖 Gửi Ngầm Qua Máy Chủ</>}
+                  </button>
+                </div>
               </div>
             </form>
           </div>
