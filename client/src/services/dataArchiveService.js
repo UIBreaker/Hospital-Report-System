@@ -2,6 +2,7 @@ import api from './api';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import ExcelJS from 'exceljs';
+import { translateFieldKey } from '../utils/medicalFormatters';
 
 const escapeHtml = (unsafe) => {
   if (unsafe === null || unsafe === undefined) return '';
@@ -30,7 +31,7 @@ export const dataArchiveService = {
   },
 
   /**
-   * Generates a Beautiful Standalone HTML Medical Report Document
+   * 1. Generates 01_BaoCao_12_KhoaPhong.html
    */
   generateGeneralReportHtml: (date, dayData) => {
     const reports = dayData.reports || [];
@@ -40,91 +41,32 @@ export const dataArchiveService = {
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Báo Cáo Giao Ban Toàn Viện - Ngày ${dateFormatted}</title>
+  <title>Báo Cáo 12 Khoa Phòng - Ngày ${dateFormatted}</title>
   <style>
     @page { size: A4 portrait; margin: 10mm 10mm; }
-    body {
-      font-family: 'Times New Roman', Times, serif;
-      font-size: 11pt;
-      line-height: 1.4;
-      color: #111827;
-      background-color: #F8FAFC;
-      margin: 0;
-      padding: 20px;
-    }
-    .container {
-      max-width: 210mm;
-      margin: 0 auto;
-      background-color: #FFFFFF;
-      padding: 15mm;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-      border-radius: 8px;
-      box-sizing: border-box;
-    }
-    @media print {
-      body { background: none; padding: 0; }
-      .container { box-shadow: none; padding: 0; max-width: 100%; }
-      .no-print { display: none !important; }
-    }
+    body { font-family: 'Times New Roman', Times, serif; font-size: 11pt; line-height: 1.4; color: #111827; background-color: #F8FAFC; margin: 0; padding: 20px; }
+    .container { max-width: 210mm; margin: 0 auto; background-color: #FFFFFF; padding: 15mm; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border-radius: 8px; box-sizing: border-box; }
+    @media print { body { background: none; padding: 0; } .container { box-shadow: none; padding: 0; max-width: 100%; } .no-print { display: none !important; } }
     .header-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
-    .header-table td { vertical-align: top; }
     .title-box { text-align: center; margin: 15px 0 20px; }
     .title-main { font-size: 14pt; font-weight: bold; text-transform: uppercase; color: #0F2C59; }
     .title-sub { font-size: 11pt; font-style: italic; color: #374151; margin-top: 4px; }
-    table.data-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 16px;
-      font-size: 10pt;
-    }
-    table.data-table th, table.data-table td {
-      border: 1px solid #000;
-      padding: 6px 8px;
-    }
-    table.data-table th {
-      background-color: #D9E8FB;
-      color: #0F2C59;
-      font-weight: bold;
-      text-align: center;
-    }
-    .section-title {
-      font-size: 11.5pt;
-      font-weight: bold;
-      text-transform: uppercase;
-      color: #1E3A8A;
-      border-left: 4px solid #0284C7;
-      padding-left: 8px;
-      margin: 18px 0 8px;
-    }
-    .btn-print {
-      background-color: #0284C7;
-      color: #FFFFFF;
-      border: none;
-      padding: 8px 16px;
-      font-weight: bold;
-      border-radius: 6px;
-      cursor: pointer;
-      font-family: Arial, sans-serif;
-      font-size: 13px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 15px;
-    }
+    table.data-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 10pt; }
+    table.data-table th, table.data-table td { border: 1px solid #000; padding: 6px 8px; }
+    table.data-table th { background-color: #D9E8FB; color: #0F2C59; font-weight: bold; text-align: center; }
+    .btn-print { background-color: #0284C7; color: #FFFFFF; border: none; padding: 8px 16px; font-weight: bold; border-radius: 6px; cursor: pointer; font-family: Arial, sans-serif; font-size: 13px; margin-bottom: 15px; }
   </style>
 </head>
 <body>
   <div class="no-print" style="max-width: 210mm; margin: 0 auto 10px; text-align: right;">
     <button class="btn-print" onclick="window.print()">🖨️ In Báo Cáo / Lưu PDF (Ctrl + P)</button>
   </div>
-
   <div class="container">
     <table class="header-table">
       <tr>
-        <td style="width: 50%; text-align: left;">
+        <td style="width: 50%;">
           <div style="font-size: 9pt; text-transform: uppercase; color: #1E3A8A; font-weight: bold;">SỞ Y TẾ THÀNH PHỐ ĐỒNG NAI</div>
           <div style="font-size: 10pt; font-weight: bold; text-transform: uppercase; color: #0F2C59;">TTYT KHU VỰC BÌNH LONG</div>
-          <div style="font-size: 8.5pt; font-style: italic;">Hệ Thống Báo Cáo Giao Ban Trực Tuyến</div>
         </td>
         <td style="width: 50%; text-align: center;">
           <div style="font-size: 9.5pt; font-weight: bold; text-transform: uppercase;">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
@@ -133,29 +75,10 @@ export const dataArchiveService = {
         </td>
       </tr>
     </table>
-
     <div class="title-box">
-      <div class="title-main">Báo Cáo Tổng Hợp Giao Ban Chuyên Môn Toàn Viện</div>
+      <div class="title-main">Báo Cáo Tổng Hợp Trực Ban 12 Khoa Phòng</div>
       <div class="title-sub">Ca trực ngày: ${dateFormatted}</div>
     </div>
-
-    <div class="section-title">I. Tổng Quan Tình Hình Ca Trực</div>
-    <table class="data-table">
-      <tr style="background-color: #F8FAFC;">
-        <td style="width: 25%; font-weight: bold;">Tổng số khoa nộp báo cáo:</td>
-        <td style="width: 25%; color: #059669; font-weight: bold;">${reports.length}/12 Khoa phòng</td>
-        <td style="width: 25%; font-weight: bold;">Tổng ca phẫu thuật:</td>
-        <td style="width: 25%; color: #0284C7; font-weight: bold;">${dayData.surgeryCases?.length || 0} ca</td>
-      </tr>
-      <tr style="background-color: #FFFFFF;">
-        <td style="font-weight: bold;">Tổng ca chuyển viện:</td>
-        <td style="color: #D97706; font-weight: bold;">${dayData.transferCases?.length || 0} ca</td>
-        <td style="font-weight: bold;">Bệnh nhân nặng / Tử vong:</td>
-        <td style="color: #DC2626; font-weight: bold;">${dayData.criticalCases?.length || 0} ca nặng / ${dayData.deathCases?.length || 0} ca tử vong</td>
-      </tr>
-    </table>
-
-    <div class="section-title">II. Tình Hình Trực & Hoạt Động Chuyên Môn 12 Khoa Phòng</div>
     <table class="data-table">
       <thead>
         <tr>
@@ -163,38 +86,20 @@ export const dataArchiveService = {
           <th style="width: 28%;">Khoa Phòng</th>
           <th style="width: 22%;">Bác Sĩ Trực</th>
           <th style="width: 22%;">Điều Dưỡng Trực</th>
-          <th style="width: 23%;">Trạng Thái & Phòng Trực</th>
+          <th style="width: 23%;">Trạng Thái & Phòng</th>
         </tr>
       </thead>
       <tbody>
         ${reports.map((r, i) => `
-          <tr style="background-color: ${i % 2 === 0 ? '#FFFFFF' : '#F9FAFB'};">
+          <tr>
             <td style="text-align: center;">${i + 1}</td>
             <td style="font-weight: bold; color: #0F2C59;">${escapeHtml(r.department_name || r.department_code)}</td>
             <td style="color: #1D4ED8; font-weight: bold;">${escapeHtml(r.doctor_name || '—')}</td>
             <td style="color: #065F46; font-weight: bold;">${escapeHtml(r.nurse_name || '—')}</td>
-            <td>
-              <span style="font-size: 8pt; background: #DCFCE7; color: #166534; padding: 2px 6px; border-radius: 4px; font-weight: bold;">ĐÃ NỘP</span>
-              ${r.room ? `<div style="font-size: 8pt; color: #64748B; margin-top: 2px;">Phòng: ${escapeHtml(r.room)}</div>` : ''}
-            </td>
+            <td><span style="font-size: 8pt; background: #DCFCE7; color: #166534; padding: 2px 6px; border-radius: 4px; font-weight: bold;">ĐÃ NỘP</span> ${r.room ? `<div style="font-size: 8pt; color: #64748B;">Phòng: ${escapeHtml(r.room)}</div>` : ''}</td>
           </tr>
         `).join('')}
       </tbody>
-    </table>
-
-    <table style="width: 100%; margin-top: 30px; border-collapse: collapse; page-break-inside: avoid;">
-      <tr>
-        <td style="width: 50%; text-align: center;">
-          <div style="font-weight: bold; text-transform: uppercase; font-size: 10pt;">PHÒNG KẾ HOẠCH NGHIỆP VỤ</div>
-          <div style="font-size: 8.5pt; font-style: italic; color: #64748B; height: 50px;">(Ký và ghi rõ họ tên)</div>
-          <div style="font-weight: bold; margin-top: 40px;">BS. Quản Trị Hệ Thống</div>
-        </td>
-        <td style="width: 50%; text-align: center;">
-          <div style="font-weight: bold; text-transform: uppercase; font-size: 10pt;">TRỰC LÃNH ĐẠO BỆNH VIỆN</div>
-          <div style="font-size: 8.5pt; font-style: italic; color: #64748B; height: 50px;">(Ký và ghi rõ họ tên)</div>
-          <div style="font-weight: bold; margin-top: 40px;">Ban Giám Đốc</div>
-        </td>
-      </tr>
     </table>
   </div>
 </body>
@@ -202,7 +107,132 @@ export const dataArchiveService = {
   },
 
   /**
-   * Generates Exhaustive Clinical Cases HTML Document (Lâm Sàng, Cận Lâm Sàng, Chẩn Đoán, Xử Trí...)
+   * 2. Generates 02_ChiSo_BaoCao_TrongCaTruc_CacKhoa.html
+   * Exhaustive Department Specialization Metrics for ALL 12 departments
+   */
+  generateDepartmentMetricsHtml: (date, dayData) => {
+    const reports = dayData.reports || [];
+    const dateFormatted = date.split('-').reverse().join('/');
+
+    return `<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Chỉ Số Báo Cáo Trong Ca Trực Các Khoa - Ngày ${dateFormatted}</title>
+  <style>
+    @page { size: A4 portrait; margin: 8mm 8mm; }
+    body { font-family: 'Times New Roman', Times, serif; font-size: 10pt; line-height: 1.4; color: #111827; background-color: #F8FAFC; margin: 0; padding: 20px; }
+    .container { max-width: 210mm; margin: 0 auto; background-color: #FFFFFF; padding: 12mm; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border-radius: 8px; box-sizing: border-box; }
+    @media print { body { background: none; padding: 0; } .container { box-shadow: none; padding: 0; max-width: 100%; } .no-print { display: none !important; } .dept-block { page-break-inside: avoid; } }
+    .title-box { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #0F2C59; padding-bottom: 10px; }
+    .title-main { font-size: 13.5pt; font-weight: bold; text-transform: uppercase; color: #0F2C59; }
+    .dept-block { border: 1.5px solid #CBD5E1; border-radius: 8px; margin-bottom: 16px; overflow: hidden; background: #FFFFFF; }
+    .dept-header { background: #0F2C59; color: #FFFFFF; padding: 6px 12px; font-weight: bold; font-size: 10.5pt; display: flex; justify-content: space-between; }
+    .metrics-table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+    .metrics-table th, .metrics-table td { border: 1px solid #E2E8F0; padding: 5px 8px; }
+    .metrics-table td.lbl { width: 35%; background: #F8FAFC; font-weight: bold; color: #334155; }
+    .metrics-table td.val { width: 15%; text-align: center; font-weight: bold; color: #0F2C59; }
+    .sec-sub-header { background-color: #EFF6FF; color: #1E40AF; font-weight: bold; padding: 4px 8px; font-size: 9pt; }
+    .btn-print { background-color: #0284C7; color: #FFFFFF; border: none; padding: 8px 16px; font-weight: bold; border-radius: 6px; cursor: pointer; font-family: Arial, sans-serif; margin-bottom: 15px; }
+  </style>
+</head>
+<body>
+  <div class="no-print" style="max-width: 210mm; margin: 0 auto 10px; text-align: right;">
+    <button class="btn-print" onclick="window.print()">🖨️ In Bảng Chỉ Số / Lưu PDF (Ctrl + P)</button>
+  </div>
+  <div class="container">
+    <div class="title-box">
+      <div style="font-size: 9pt; text-transform: uppercase; color: #1E3A8A; font-weight: bold;">TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG</div>
+      <div class="title-main" style="margin-top: 4px;">TỔNG HỢP CHỈ SỐ BÁO CÁO CHUYÊN MÔN TRONG CA TRỰC (TẤT CẢ CÁC KHOA)</div>
+      <div style="font-size: 10pt; font-style: italic; color: #4B5563; margin-top: 3px;">Ngày ca trực: ${dateFormatted}</div>
+    </div>
+
+    ${reports.map((r, i) => {
+      let rawForm = {};
+      try { rawForm = typeof r.form_data === 'string' ? JSON.parse(r.form_data) : (r.form_data || {}); } catch(e) {}
+      
+      const metricsList = [];
+      const subSections = [];
+      const notesList = [];
+
+      Object.entries(rawForm).forEach(([k, v]) => {
+        if (v === null || v === undefined || v === '' || k === '_id') return;
+        if (k === 'themGio' || k === 'tinhHinhChung' || k === 'ghiChu' || k === 'dienBien') {
+          notesList.push({ label: translateFieldKey(k), value: String(v) });
+          return;
+        }
+        if (typeof v === 'object' && !Array.isArray(v)) {
+          const subItems = [];
+          Object.entries(v).forEach(([subK, subV]) => {
+            if (subV !== null && subV !== undefined && subV !== '') {
+              subItems.push({ label: translateFieldKey(subK, k), value: String(subV) });
+            }
+          });
+          if (subItems.length > 0) subSections.push({ title: translateFieldKey(k), items: subItems });
+        } else if (Array.isArray(v)) {
+          // List
+        } else {
+          metricsList.push({ label: translateFieldKey(k), value: String(v) });
+        }
+      });
+
+      return `
+        <div class="dept-block">
+          <div class="dept-header">
+            <span>${i + 1}. ${escapeHtml(r.department_name || r.department_code)}</span>
+            <span style="font-size: 8.5pt; font-weight: normal; opacity: 0.9;">BS: <strong>${escapeHtml(r.doctor_name || '—')}</strong> | ĐD: <strong>${escapeHtml(r.nurse_name || '—')}</strong></span>
+          </div>
+          
+          <table class="metrics-table">
+            <tbody>
+              ${Array.from({ length: Math.ceil(metricsList.length / 2) }).map((_, rIdx) => {
+                const left = metricsList[rIdx * 2];
+                const right = metricsList[rIdx * 2 + 1];
+                return `
+                  <tr>
+                    <td class="lbl">${escapeHtml(left?.label || '')}:</td>
+                    <td class="val">${escapeHtml(left?.value || '')}</td>
+                    ${right ? `<td class="lbl">${escapeHtml(right.label)}:</td><td class="val">${escapeHtml(right.value)}</td>` : '<td class="lbl"></td><td class="val"></td>'}
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+
+          ${subSections.map(sec => `
+            <div class="sec-sub-header">❖ ${escapeHtml(sec.title)}</div>
+            <table class="metrics-table">
+              <tbody>
+                ${Array.from({ length: Math.ceil(sec.items.length / 2) }).map((_, rIdx) => {
+                  const left = sec.items[rIdx * 2];
+                  const right = sec.items[rIdx * 2 + 1];
+                  return `
+                    <tr>
+                      <td class="lbl">${escapeHtml(left?.label || '')}:</td>
+                      <td class="val">${escapeHtml(left?.value || '')}</td>
+                      ${right ? `<td class="lbl">${escapeHtml(right.label)}:</td><td class="val">${escapeHtml(right.value)}</td>` : '<td class="lbl"></td><td class="val"></td>'}
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          `).join('')}
+
+          ${notesList.length > 0 ? `
+            <div style="padding: 6px 10px; background: #FFFBEB; font-size: 8.5pt; color: #92400E; border-top: 1px solid #FDE68A;">
+              ${notesList.map(n => `<div><strong>📌 ${escapeHtml(n.label)}:</strong> ${escapeHtml(n.value)}</div>`).join('')}
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }).join('')}
+  </div>
+</body>
+</html>`;
+  },
+
+  /**
+   * 3. Generates 03_CacCaDienBien_LamSangDacBiet.html
    */
   generateClinicalCasesHtml: (date, dayData) => {
     const dateFormatted = date.split('-').reverse().join('/');
@@ -215,263 +245,107 @@ export const dataArchiveService = {
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Hồ Sơ Diễn Biến Lâm Sàng Đặc Biệt - Ngày ${dateFormatted}</title>
+  <title>Các Ca Diễn Biến Lâm Sàng Đặc Biệt - Ngày ${dateFormatted}</title>
   <style>
     @page { size: A4 portrait; margin: 10mm 10mm; }
-    body {
-      font-family: 'Times New Roman', Times, serif;
-      font-size: 10.5pt;
-      line-height: 1.45;
-      color: #111827;
-      background-color: #F1F5F9;
-      margin: 0;
-      padding: 20px;
-    }
-    .container {
-      max-width: 210mm;
-      margin: 0 auto;
-      background-color: #FFFFFF;
-      padding: 15mm;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-      border-radius: 8px;
-      box-sizing: border-box;
-    }
-    @media print {
-      body { background: none; padding: 0; }
-      .container { box-shadow: none; padding: 0; max-width: 100%; }
-      .no-print { display: none !important; }
-      .case-card { page-break-inside: avoid; }
-    }
+    body { font-family: 'Times New Roman', Times, serif; font-size: 10.5pt; line-height: 1.45; color: #111827; background-color: #F1F5F9; margin: 0; padding: 20px; }
+    .container { max-width: 210mm; margin: 0 auto; background-color: #FFFFFF; padding: 15mm; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border-radius: 8px; box-sizing: border-box; }
+    @media print { body { background: none; padding: 0; } .container { box-shadow: none; padding: 0; max-width: 100%; } .no-print { display: none !important; } .case-card { page-break-inside: avoid; } }
     .title-box { text-align: center; margin-bottom: 25px; border-bottom: 2px solid #0F2C59; padding-bottom: 12px; }
     .title-main { font-size: 14pt; font-weight: bold; text-transform: uppercase; color: #0F2C59; }
-    .title-sub { font-size: 10.5pt; font-style: italic; color: #374151; margin-top: 4px; }
-    .cat-header {
-      padding: 6px 12px;
-      font-size: 11pt;
-      font-weight: bold;
-      text-transform: uppercase;
-      color: #FFFFFF;
-      border-radius: 4px;
-      margin: 24px 0 12px;
-    }
+    .cat-header { padding: 6px 12px; font-size: 11pt; font-weight: bold; text-transform: uppercase; color: #FFFFFF; border-radius: 4px; margin: 24px 0 12px; }
     .cat-surgery { background: linear-gradient(135deg, #1E40AF, #0284C7); }
     .cat-transfer { background: linear-gradient(135deg, #B45309, #D97706); }
     .cat-death { background: linear-gradient(135deg, #991B1B, #DC2626); }
     .cat-critical { background: linear-gradient(135deg, #5B21B6, #7C3AED); }
-    .case-card {
-      border: 1.5px solid #CBD5E1;
-      border-radius: 8px;
-      margin-bottom: 14px;
-      overflow: hidden;
-      background-color: #FFFFFF;
-    }
-    .case-card-header {
-      background-color: #F8FAFC;
-      padding: 8px 12px;
-      border-bottom: 1.5px solid #CBD5E1;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+    .case-card { border: 1.5px solid #CBD5E1; border-radius: 8px; margin-bottom: 14px; overflow: hidden; background-color: #FFFFFF; }
+    .case-card-header { background-color: #F8FAFC; padding: 8px 12px; border-bottom: 1.5px solid #CBD5E1; display: flex; justify-content: space-between; align-items: center; }
     .case-patient-name { font-size: 11pt; font-weight: bold; text-transform: uppercase; }
     .case-table { width: 100%; border-collapse: collapse; font-size: 9.5pt; }
     .case-table td { padding: 6px 10px; border-bottom: 1px solid #E2E8F0; vertical-align: top; }
-    .case-table tr:last-child td { border-bottom: none; }
     .label-col { width: 24%; font-weight: bold; background-color: #F8FAFC; color: #1E293B; }
     .highlight-ls { background-color: #F0F9FF; border-left: 3px solid #0284C7; }
     .highlight-cls { background-color: #FAF5FF; border-left: 3px solid #7C3AED; }
     .highlight-cd { background-color: #FEF3C7; border-left: 3px solid #D97706; font-weight: bold; color: #92400E; }
-    .highlight-xt { background-color: #F0FDF4; border-left: 3px solid #059669; }
-    .btn-print {
-      background-color: #0284C7;
-      color: #FFFFFF;
-      border: none;
-      padding: 8px 16px;
-      font-weight: bold;
-      border-radius: 6px;
-      cursor: pointer;
-      font-family: Arial, sans-serif;
-      font-size: 13px;
-      margin-bottom: 15px;
-    }
+    .btn-print { background-color: #0284C7; color: #FFFFFF; border: none; padding: 8px 16px; font-weight: bold; border-radius: 6px; cursor: pointer; font-family: Arial, sans-serif; margin-bottom: 15px; }
   </style>
 </head>
 <body>
   <div class="no-print" style="max-width: 210mm; margin: 0 auto 10px; text-align: right;">
-    <button class="btn-print" onclick="window.print()">🖨️ In Báo Cáo Ca Bệnh / Lưu PDF (Ctrl + P)</button>
+    <button class="btn-print" onclick="window.print()">🖨️ In Hồ Sơ Ca Bệnh / Lưu PDF (Ctrl + P)</button>
   </div>
-
   <div class="container">
     <div class="title-box">
       <div style="font-size: 9pt; text-transform: uppercase; color: #1E3A8A; font-weight: bold;">TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG</div>
-      <div class="title-main" style="margin-top: 4px;">HỒ SƠ CÁC CA DIỄN BIẾN LÂM SÀNG ĐẶC BIỆT TRONG CA TRỰC</div>
-      <div class="title-sub">Bao gồm đầy đủ: Lâm Sàng, Cận Lâm Sàng, Chẩn Đoán, Xử Trí & Diễn Biến — Ngày ${dateFormatted}</div>
+      <div class="title-main" style="margin-top: 4px;">CÁC CA DIỄN BIẾN LÂM SÀNG ĐẶC BIỆT TRONG CA TRỰC</div>
+      <div style="font-size: 10pt; font-style: italic; color: #374151; margin-top: 4px;">Đầy đủ 100% Lâm Sàng, Cận Lâm Sàng, Chẩn Đoán, Xử Trí & Diễn Biến — Ngày ${dateFormatted}</div>
     </div>
 
-    <!-- 1. CA PHẪU THUẬT -->
-    <div class="cat-header cat-surgery">I. DANH SÁCH CA PHẪU THUẬT CẤP CỨU & KẾ HOẠCH (${surgeries.length} CA)</div>
-    ${surgeries.length === 0 ? '<div style="font-style: italic; color: #64748B; padding: 6px 0;">Không có ca phẫu thuật nào trong ca trực.</div>' : ''}
+    <!-- 1. PHẪU THUẬT -->
+    <div class="cat-header cat-surgery">I. DANH SÁCH CA PHẪU THUẬT (${surgeries.length} CA)</div>
     ${surgeries.map((sc, i) => `
       <div class="case-card">
         <div class="case-card-header">
-          <div class="case-patient-name" style="color: #1E40AF;">
-            #${i + 1}. ${escapeHtml(sc.patient_name || sc.patientName || 'BỆNH NHÂN PHẪU THUẬT')} 
-            <span style="font-size: 9.5pt; font-weight: normal; color: #374151;">(${sc.birth_year || sc.age || '—'} tuổi) — Khoa: ${escapeHtml(sc.department_name || sc.department_code || '')}</span>
-          </div>
+          <div class="case-patient-name" style="color: #1E40AF;">#${i + 1}. ${escapeHtml(sc.patient_name || sc.patientName)} (${sc.birth_year || sc.age} tuổi) — ${escapeHtml(sc.department_name || sc.department_code)}</div>
           <div style="font-size: 8.5pt; color: #64748B;">Vào: <strong>${escapeHtml(sc.admission_time || sc.admissionTime || '—')}</strong></div>
         </div>
         <table class="case-table">
-          <tr>
-            <td class="label-col">Địa chỉ & Lý do vào:</td>
-            <td>📍 ${escapeHtml(sc.address || '—')} | <strong>Lý do:</strong> ${escapeHtml(sc.reason || '—')}</td>
-          </tr>
-          <tr>
-            <td class="label-col highlight-ls">🩺 Triệu chứng Lâm sàng:</td>
-            <td style="color: #0F172A; font-weight: 500;">${escapeHtml(sc.clinical_symptoms || sc.clinicalSymptoms || '—')}</td>
-          </tr>
-          <tr>
-            <td class="label-col highlight-cls">🔬 Kết quả Cận lâm sàng:</td>
-            <td style="color: #4C1D95; font-weight: 500;">${escapeHtml(sc.clinical_tests || sc.clinicalTests || '—')}</td>
-          </tr>
-          <tr>
-            <td class="label-col highlight-cd">🏥 Chẩn đoán trước mổ:</td>
-            <td style="color: #92400E; font-weight: bold;">${escapeHtml(sc.preoperative_diagnosis || sc.pre_diagnosis || '—')}</td>
-          </tr>
-          <tr>
-            <td class="label-col highlight-xt">🔪 Lệnh mổ & Phương pháp:</td>
-            <td>${escapeHtml(sc.consultation_order || sc.surgery_method || '—')}</td>
-          </tr>
-          <tr>
-            <td class="label-col">🏥 Chẩn đoán sau mổ:</td>
-            <td style="color: #1E40AF; font-weight: bold;">${escapeHtml(sc.postoperative_diagnosis || sc.post_diagnosis || '—')}</td>
-          </tr>
-          <tr>
-            <td class="label-col">👨‍⚕️ Phẫu thuật & Gây mê:</td>
-            <td>PTV: <strong>${escapeHtml(sc.main_surgeon || '—')}</strong> | Gây mê: <strong>${escapeHtml(sc.anesthesiologist || '—')}</strong> | Hiện tại: ${escapeHtml(sc.current_status || '—')}</td>
-          </tr>
+          <tr><td class="label-col">Địa chỉ & Lý do vào:</td><td>📍 ${escapeHtml(sc.address || '—')} | <strong>Lý do:</strong> ${escapeHtml(sc.reason || '—')}</td></tr>
+          <tr><td class="label-col highlight-ls">🩺 Triệu chứng Lâm sàng:</td><td style="color: #0F172A; font-weight: 500;">${escapeHtml(sc.clinical_symptoms || sc.clinicalSymptoms || '—')}</td></tr>
+          <tr><td class="label-col highlight-cls">🔬 Kết quả Cận lâm sàng:</td><td style="color: #4C1D95; font-weight: 500;">${escapeHtml(sc.clinical_tests || sc.clinicalTests || '—')}</td></tr>
+          <tr><td class="label-col highlight-cd">🏥 Chẩn đoán trước mổ:</td><td style="color: #92400E; font-weight: bold;">${escapeHtml(sc.preoperative_diagnosis || sc.pre_diagnosis || '—')}</td></tr>
+          <tr><td class="label-col">🔪 Lệnh mổ & PTV:</td><td>${escapeHtml(sc.consultation_order || sc.surgery_method || '—')} | PTV: <strong>${escapeHtml(sc.main_surgeon || '—')}</strong> | Gây mê: <strong>${escapeHtml(sc.anesthesiologist || '—')}</strong></td></tr>
+          <tr><td class="label-col">🏥 Chẩn đoán sau mổ:</td><td style="color: #1E40AF; font-weight: bold;">${escapeHtml(sc.postoperative_diagnosis || sc.post_diagnosis || '—')}</td></tr>
         </table>
       </div>
     `).join('')}
 
-    <!-- 2. CA CHUYỂN VIỆN -->
-    <div class="cat-header cat-transfer">II. DANH SÁCH CA CHUYỂN VIỆN TUYẾN TRÊN (${transfers.length} CA)</div>
-    ${transfers.length === 0 ? '<div style="font-style: italic; color: #64748B; padding: 6px 0;">Không có ca chuyển viện trong ca trực.</div>' : ''}
+    <!-- 2. CHUYỂN VIỆN -->
+    <div class="cat-header cat-transfer">II. DANH SÁCH CA CHUYỂN VIỆN (${transfers.length} CA)</div>
     ${transfers.map((tc, i) => `
       <div class="case-card">
         <div class="case-card-header">
-          <div class="case-patient-name" style="color: #B45309;">
-            #${i + 1}. ${escapeHtml(tc.patient_name || tc.patientName || 'BỆNH NHÂN CHUYỂN VIỆN')}
-            <span style="font-size: 9.5pt; font-weight: normal; color: #374151;">(${tc.age || '—'} tuổi) — Khoa: ${escapeHtml(tc.department_name || tc.department_code || '')}</span>
-          </div>
+          <div class="case-patient-name" style="color: #B45309;">#${i + 1}. ${escapeHtml(tc.patient_name || tc.patientName)} (${tc.age} tuổi) — ${escapeHtml(tc.department_name || tc.department_code)}</div>
           <div style="font-size: 8.5pt; color: #64748B;">Vào: <strong>${escapeHtml(tc.admission_time || tc.admissionTime || '—')}</strong></div>
         </div>
         <table class="case-table">
-          <tr>
-            <td class="label-col">Địa chỉ & Lý do vào:</td>
-            <td>📍 ${escapeHtml(tc.address || '—')} | <strong>Lý do:</strong> ${escapeHtml(tc.reason || '—')}</td>
-          </tr>
-          <tr>
-            <td class="label-col highlight-ls">🩺 Triệu chứng Lâm sàng:</td>
-            <td style="color: #0F172A; font-weight: 500;">${escapeHtml(tc.clinical_symptoms || tc.clinicalSymptoms || '—')}</td>
-          </tr>
-          <tr>
-            <td class="label-col highlight-cls">🔬 Kết quả Cận lâm sàng:</td>
-            <td style="color: #4C1D95; font-weight: 500;">${escapeHtml(tc.clinical_tests || tc.clinicalTests || '—')}</td>
-          </tr>
-          <tr>
-            <td class="label-col highlight-cd">🏥 Chẩn đoán xác định:</td>
-            <td style="color: #92400E; font-weight: bold;">${escapeHtml(tc.diagnosis || '—')}</td>
-          </tr>
-          <tr>
-            <td class="label-col highlight-xt">💊 Xử trí cấp cứu ban đầu:</td>
-            <td>${escapeHtml(tc.initial_treatment || tc.initialTreatment || '—')}</td>
-          </tr>
-          <tr>
-            <td class="label-col">🚑 Diễn biến chuyển viện:</td>
-            <td>${escapeHtml(tc.progress_notes || tc.progressNotes || '—')}</td>
-          </tr>
+          <tr><td class="label-col">Địa chỉ & Lý do vào:</td><td>📍 ${escapeHtml(tc.address || '—')} | <strong>Lý do:</strong> ${escapeHtml(tc.reason || '—')}</td></tr>
+          <tr><td class="label-col highlight-ls">🩺 Triệu chứng Lâm sàng:</td><td style="color: #0F172A; font-weight: 500;">${escapeHtml(tc.clinical_symptoms || tc.clinicalSymptoms || '—')}</td></tr>
+          <tr><td class="label-col highlight-cls">🔬 Kết quả Cận lâm sàng:</td><td style="color: #4C1D95; font-weight: 500;">${escapeHtml(tc.clinical_tests || tc.clinicalTests || '—')}</td></tr>
+          <tr><td class="label-col highlight-cd">🏥 Chẩn đoán:</td><td style="color: #92400E; font-weight: bold;">${escapeHtml(tc.diagnosis || '—')}</td></tr>
+          <tr><td class="label-col">💊 Xử trí & Diễn biến:</td><td>${escapeHtml(tc.initial_treatment || '—')} | Diễn biến: ${escapeHtml(tc.progress_notes || '—')}</td></tr>
         </table>
       </div>
     `).join('')}
 
-    <!-- 3. CA BỆNH NHÂN NẶNG -->
-    <div class="cat-header cat-critical">III. DANH SÁCH BỆNH NHÂN NẶNG CẦN THEO DÕI (${criticals.length} CA)</div>
-    ${criticals.length === 0 ? '<div style="font-style: italic; color: #64748B; padding: 6px 0;">Không có ca bệnh nặng theo dõi trong ca trực.</div>' : ''}
+    <!-- 3. BỆNH NHÂN NẶNG -->
+    <div class="cat-header cat-critical">III. BỆNH NHÂN NẶNG THEO DÕI (${criticals.length} CA)</div>
     ${criticals.map((cc, i) => `
       <div class="case-card">
         <div class="case-card-header">
-          <div class="case-patient-name" style="color: #5B21B6;">
-            #${i + 1}. ${escapeHtml(cc.patient_name || cc.patientName || 'BỆNH NHÂN NẶNG')}
-            <span style="font-size: 9.5pt; font-weight: normal; color: #374151;">(${cc.age || '—'} tuổi) — Khoa: ${escapeHtml(cc.department_name || cc.department_code || '')}</span>
-          </div>
-          <div style="font-size: 8.5pt; color: #64748B;">Vào: <strong>${escapeHtml(cc.admission_time || cc.admissionTime || '—')}</strong></div>
+          <div class="case-patient-name" style="color: #5B21B6;">#${i + 1}. ${escapeHtml(cc.patient_name || cc.patientName)} (${cc.age} tuổi) — ${escapeHtml(cc.department_name || cc.department_code)}</div>
         </div>
         <table class="case-table">
-          <tr>
-            <td class="label-col">Địa chỉ & Tiền sử bệnh:</td>
-            <td>📍 ${escapeHtml(cc.address || '—')} | <strong>Tiền sử:</strong> ${escapeHtml(cc.medical_history || cc.medicalHistory || '—')}</td>
-          </tr>
-          <tr>
-            <td class="label-col highlight-ls">🩺 Lâm sàng & Sinh hiệu:</td>
-            <td style="color: #0F172A; font-weight: 500;">${escapeHtml(cc.clinical_symptoms || cc.clinicalSymptoms || '—')}</td>
-          </tr>
-          <tr>
-            <td class="label-col highlight-cls">🔬 Cận lâm sàng & Khí máu:</td>
-            <td style="color: #4C1D95; font-weight: 500;">${escapeHtml(cc.clinical_tests || cc.clinicalTests || '—')}</td>
-          </tr>
-          <tr>
-            <td class="label-col highlight-cd">🏥 Chẩn đoán:</td>
-            <td style="color: #5B21B6; font-weight: bold;">${escapeHtml(cc.diagnosis || '—')}</td>
-          </tr>
-          <tr>
-            <td class="label-col">📈 Diễn biến trong ca trực:</td>
-            <td>${escapeHtml(cc.condition_summary || cc.conditionSummary || '—')}</td>
-          </tr>
-          <tr>
-            <td class="label-col highlight-xt">💊 Xử trí & Bàn giao ca sau:</td>
-            <td>${escapeHtml(cc.treatment || '—')} ${cc.notes ? `| <strong>Ghi chú:</strong> ${escapeHtml(cc.notes)}` : ''}</td>
-          </tr>
+          <tr><td class="label-col highlight-ls">🩺 Lâm sàng & Sinh hiệu:</td><td>${escapeHtml(cc.clinical_symptoms || '—')}</td></tr>
+          <tr><td class="label-col highlight-cls">🔬 Cận lâm sàng:</td><td>${escapeHtml(cc.clinical_tests || '—')}</td></tr>
+          <tr><td class="label-col highlight-cd">🏥 Chẩn đoán & Xử trí:</td><td><strong>CĐ:</strong> ${escapeHtml(cc.diagnosis || '—')} | <strong>XT:</strong> ${escapeHtml(cc.treatment || '—')}</td></tr>
         </table>
       </div>
     `).join('')}
 
-    <!-- 4. CA TỬ VONG -->
-    <div class="cat-header cat-death">IV. HỒ SƠ BỆNH NHÂN TỬ VONG (${deaths.length} TRƯỜNG HỢP)</div>
-    ${deaths.length === 0 ? '<div style="font-style: italic; color: #64748B; padding: 6px 0;">Không có ca tử vong trong ca trực.</div>' : ''}
+    <!-- 4. TỬ VONG -->
+    <div class="cat-header cat-death">IV. HỒ SƠ BỆNH NHÂN TỬ VONG (${deaths.length} CA)</div>
     ${deaths.map((dc, i) => `
       <div class="case-card">
         <div class="case-card-header">
-          <div class="case-patient-name" style="color: #991B1B;">
-            #${i + 1}. ${escapeHtml(dc.patient_name || dc.patientName || 'BỆNH NHÂN TỬ VONG')}
-            <span style="font-size: 9.5pt; font-weight: normal; color: #374151;">(${dc.age || '—'} tuổi) — Khoa: ${escapeHtml(dc.department_name || dc.department_code || '')}</span>
-          </div>
-          <div style="font-size: 8.5pt; color: #991B1B; font-weight: bold;">Vào: ${escapeHtml(dc.admission_time || '—')} ➔ Tử vong: ${escapeHtml(dc.death_time || '—')}</div>
+          <div class="case-patient-name" style="color: #991B1B;">#${i + 1}. ${escapeHtml(dc.patient_name || dc.patientName)} (${dc.age} tuổi)</div>
+          <div style="font-size: 8.5pt; color: #991B1B; font-weight: bold;">Tử vong lúc: ${escapeHtml(dc.death_time || '—')}</div>
         </div>
         <table class="case-table">
-          <tr>
-            <td class="label-col">Địa chỉ & Lúc vào viện:</td>
-            <td>📍 ${escapeHtml(dc.address || '—')} | <strong>Tình trạng vào:</strong> ${escapeHtml(dc.admission_status || '—')} | <strong>Tiền sử:</strong> ${escapeHtml(dc.medical_history || '—')}</td>
-          </tr>
-          <tr>
-            <td class="label-col highlight-ls">🩺 Lâm sàng & Sinh hiệu:</td>
-            <td>${escapeHtml(dc.clinical_symptoms || '—')}</td>
-          </tr>
-          <tr>
-            <td class="label-col highlight-cls">🔬 Cận lâm sàng / ECG:</td>
-            <td>${escapeHtml(dc.clinical_tests || '—')}</td>
-          </tr>
-          <tr>
-            <td class="label-col highlight-cd">🏥 Chẩn đoán tử vong:</td>
-            <td style="color: #991B1B; font-weight: bold;">${escapeHtml(dc.diagnosis || '—')}</td>
-          </tr>
-          <tr>
-            <td class="label-col highlight-xt">⚡ Hồi sức cấp cứu:</td>
-            <td>${escapeHtml(dc.emergency_treatment || '—')}</td>
-          </tr>
-          <tr>
-            <td class="label-col">📌 Nguyên nhân & Kết luận:</td>
-            <td style="font-weight: bold; color: #B91C1C;">${escapeHtml(dc.final_outcome || dc.cause_of_death || '—')}</td>
-          </tr>
+          <tr><td class="label-col highlight-ls">🩺 Lâm sàng & Sinh hiệu:</td><td>${escapeHtml(dc.clinical_symptoms || '—')}</td></tr>
+          <tr><td class="label-col highlight-cls">🔬 Cận lâm sàng / ECG:</td><td>${escapeHtml(dc.clinical_tests || '—')}</td></tr>
+          <tr><td class="label-col highlight-cd">🏥 Chẩn đoán tử vong:</td><td style="color: #991B1B; font-weight: bold;">${escapeHtml(dc.diagnosis || '—')}</td></tr>
+          <tr><td class="label-col">⚡ Cấp cứu & Kết luận:</td><td>${escapeHtml(dc.emergency_treatment || '—')} | <strong>KL:</strong> ${escapeHtml(dc.final_outcome || '—')}</td></tr>
         </table>
       </div>
     `).join('')}
@@ -481,7 +355,7 @@ export const dataArchiveService = {
   },
 
   /**
-   * Generates Duty & Overtime Staff HTML Document
+   * 4. Generates 04_DanhSach_CanBoTruc_Va_ThemGio.html
    */
   generateStaffListHtml: (date, dayData) => {
     const dateFormatted = date.split('-').reverse().join('/');
@@ -495,56 +369,25 @@ export const dataArchiveService = {
   <title>Danh Sách Cán Bộ Trực & Thêm Giờ - Ngày ${dateFormatted}</title>
   <style>
     @page { size: A4 portrait; margin: 10mm 10mm; }
-    body {
-      font-family: 'Times New Roman', Times, serif;
-      font-size: 11pt;
-      line-height: 1.4;
-      color: #111827;
-      background-color: #F8FAFC;
-      margin: 0;
-      padding: 20px;
-    }
-    .container {
-      max-width: 210mm;
-      margin: 0 auto;
-      background-color: #FFFFFF;
-      padding: 15mm;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-      border-radius: 8px;
-    }
-    @media print {
-      body { background: none; padding: 0; }
-      .container { box-shadow: none; padding: 0; max-width: 100%; }
-      .no-print { display: none !important; }
-    }
+    body { font-family: 'Times New Roman', Times, serif; font-size: 11pt; line-height: 1.4; color: #111827; background-color: #F8FAFC; margin: 0; padding: 20px; }
+    .container { max-width: 210mm; margin: 0 auto; background-color: #FFFFFF; padding: 15mm; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border-radius: 8px; }
+    @media print { body { background: none; padding: 0; } .container { box-shadow: none; padding: 0; max-width: 100%; } .no-print { display: none !important; } }
     table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 10pt; }
     th, td { border: 1px solid #000; padding: 6px 8px; }
     th { background-color: #D1FAE5; color: #065F46; text-align: center; }
-    .btn-print {
-      background-color: #059669;
-      color: #FFFFFF;
-      border: none;
-      padding: 8px 16px;
-      font-weight: bold;
-      border-radius: 6px;
-      cursor: pointer;
-      font-family: Arial, sans-serif;
-      margin-bottom: 15px;
-    }
+    .btn-print { background-color: #059669; color: #FFFFFF; border: none; padding: 8px 16px; font-weight: bold; border-radius: 6px; cursor: pointer; font-family: Arial, sans-serif; margin-bottom: 15px; }
   </style>
 </head>
 <body>
   <div class="no-print" style="max-width: 210mm; margin: 0 auto 10px; text-align: right;">
     <button class="btn-print" onclick="window.print()">🖨️ In Danh Sách Nhân Sự (Ctrl + P)</button>
   </div>
-
   <div class="container">
     <div style="text-align: center; margin-bottom: 20px;">
       <div style="font-size: 9pt; text-transform: uppercase; color: #1E3A8A; font-weight: bold;">TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG</div>
       <div style="font-size: 13.5pt; font-weight: bold; text-transform: uppercase; color: #065F46; margin-top: 4px;">DANH SÁCH CÁN BỘ TRỰC CA & TĂNG CƯỜNG THÊM GIỜ</div>
       <div style="font-size: 10pt; font-style: italic; color: #4B5563;">Ngày ca trực: ${dateFormatted}</div>
     </div>
-
     <div style="font-weight: bold; text-transform: uppercase; color: #1E3A8A; margin-bottom: 8px;">I. Bác Sĩ & Điều Dưỡng Trực Chính 12 Khoa</div>
     <table>
       <thead>
@@ -566,7 +409,6 @@ export const dataArchiveService = {
         `).join('')}
       </tbody>
     </table>
-
     <div style="font-weight: bold; text-transform: uppercase; color: #1E3A8A; margin: 20px 0 8px;">II. Nhân Sự Tăng Cường Thêm Giờ (${staffList.length} Cán Bộ)</div>
     <table>
       <thead>
@@ -591,6 +433,57 @@ export const dataArchiveService = {
         `).join('')}
       </tbody>
     </table>
+  </div>
+</body>
+</html>`;
+  },
+
+  /**
+   * 5. Generates 05_BoSuuTap_HinhAnh_LamSang_Va_CLS.html
+   */
+  generateImageGalleryHtml: (date, dayData) => {
+    const dateFormatted = date.split('-').reverse().join('/');
+    const imagesList = dayData.imagesList || [];
+
+    return `<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Bộ Sưu Tập Hình Ảnh Lâm Sàng & Cận Lâm Sàng - Ngày ${dateFormatted}</title>
+  <style>
+    @page { size: A4 portrait; margin: 10mm 10mm; }
+    body { font-family: 'Times New Roman', Times, serif; font-size: 11pt; line-height: 1.4; color: #111827; background-color: #0F172A; margin: 0; padding: 20px; }
+    .container { max-width: 210mm; margin: 0 auto; background-color: #FFFFFF; padding: 15mm; border-radius: 8px; box-sizing: border-box; }
+    @media print { body { background: none; padding: 0; } .container { box-shadow: none; padding: 0; max-width: 100%; } .no-print { display: none !important; } }
+    .gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; }
+    .img-card { border: 1.5px solid #CBD5E1; border-radius: 8px; overflow: hidden; page-break-inside: avoid; }
+    .img-card img { width: 100%; height: 220px; object-fit: cover; background-color: #000; }
+    .img-card-info { padding: 8px 12px; font-size: 9pt; background: #F8FAFC; }
+    .btn-print { background-color: #7C3AED; color: #FFFFFF; border: none; padding: 8px 16px; font-weight: bold; border-radius: 6px; cursor: pointer; font-family: Arial, sans-serif; margin-bottom: 15px; }
+  </style>
+</head>
+<body>
+  <div class="no-print" style="max-width: 210mm; margin: 0 auto 10px; text-align: right;">
+    <button class="btn-print" onclick="window.print()">🖨️ In Bộ Sưu Tập Ảnh (Ctrl + P)</button>
+  </div>
+  <div class="container">
+    <div style="text-align: center; border-bottom: 2px solid #0F2C59; padding-bottom: 12px;">
+      <div style="font-size: 9pt; text-transform: uppercase; color: #1E3A8A; font-weight: bold;">TRUNG TÂM Y TẾ KHU VỰC BÌNH LONG</div>
+      <div style="font-size: 13.5pt; font-weight: bold; text-transform: uppercase; color: #7C3AED; margin-top: 4px;">BỘ SƯU TẬP HÌNH ẢNH LÂM SÀNG & CẬN LÂM SÀNG (${imagesList.length} ẢNH)</div>
+      <div style="font-size: 10pt; font-style: italic; color: #64748B;">Ca trực ngày: ${dateFormatted}</div>
+    </div>
+    <div class="gallery-grid">
+      ${imagesList.map((img, i) => `
+        <div class="img-card">
+          <img src="${img.url}" alt="${img.caption || 'Hình ảnh lâm sàng'}" />
+          <div class="img-card-info">
+            <div style="font-weight: bold; color: #0F2C59;">#${i + 1}. ${escapeHtml(img.patientName)}</div>
+            <div style="color: #7C3AED; font-size: 8pt;">${escapeHtml(img.caseType)} — ${escapeHtml(img.caption)}</div>
+            ${img.diagnosis ? `<div style="color: #D97706; font-size: 8pt; margin-top: 2px;">CĐ: ${escapeHtml(img.diagnosis)}</div>` : ''}
+          </div>
+        </div>
+      `).join('')}
+    </div>
   </div>
 </body>
 </html>`;
@@ -642,44 +535,44 @@ export const dataArchiveService = {
   },
 
   /**
-   * Client-Side Master ZIP Packager
-   * Packages beautiful A4 HTML reports, formatted Excel spreadsheets, clinical case cards with full LS/CLS, and clinical images
+   * Client-Side Master ZIP Packager - 5 DISTINCT INDIVIDUAL FILES + EXCEL & JSON
    */
   generateAndDownloadShiftZip: async (date, dayData, onProgress) => {
     const zip = new JSZip();
     const folderName = `BaoCaoGiaoBan_${date}`;
     const rootFolder = zip.folder(folderName);
 
-    if (onProgress) onProgress('Đang kết xuất Báo Cáo Tổng Hợp Toàn Viện A4...', 10);
+    if (onProgress) onProgress('1/5: Đang tạo File Báo Cáo 12 Khoa Phòng...', 10);
     const generalReportHtml = dataArchiveService.generateGeneralReportHtml(date, dayData);
-    rootFolder.file(`01_BaoCaoGiaoBan_ToanVien_Chuan_A4.html`, generalReportHtml);
+    rootFolder.file(`01_BaoCao_12_KhoaPhong.html`, generalReportHtml);
 
-    if (onProgress) onProgress('Đang kết xuất Hồ Sơ Lâm Sàng & Cận Lâm Sàng Chi Tiết...', 25);
+    if (onProgress) onProgress('2/5: Đang tạo File Chỉ Số Báo Cáo Trong Ca Trực (12 Khoa)...', 25);
+    const departmentMetricsHtml = dataArchiveService.generateDepartmentMetricsHtml(date, dayData);
+    rootFolder.file(`02_ChiSo_BaoCao_TrongCaTruc_CacKhoa.html`, departmentMetricsHtml);
+
+    if (onProgress) onProgress('3/5: Đang tạo File Các Ca Diễn Biến Lâm Sàng Đặc Biệt...', 40);
     const clinicalCasesHtml = dataArchiveService.generateClinicalCasesHtml(date, dayData);
-    rootFolder.file(`02_HoSo_CaDienBienLamSangDacBiet_ChiTiet.html`, clinicalCasesHtml);
+    rootFolder.file(`03_CacCaDienBien_LamSangDacBiet.html`, clinicalCasesHtml);
 
-    if (onProgress) onProgress('Đang kết xuất Danh Sách Cán Bộ Trực & Thêm Giờ...', 40);
+    if (onProgress) onProgress('4/5: Đang tạo File Danh Sách Cán Bộ Trực & Thêm Giờ...', 55);
     const staffListHtml = dataArchiveService.generateStaffListHtml(date, dayData);
-    rootFolder.file(`03_DanhSach_CanBoTruc_Va_ThemGio.html`, staffListHtml);
+    rootFolder.file(`04_DanhSach_CanBoTruc_Va_ThemGio.html`, staffListHtml);
 
-    if (onProgress) onProgress('Đang tạo Bảng Tính Excel Toàn Viện...', 55);
+    if (onProgress) onProgress('5/5: Đang tạo File Bộ Sưu Tập Ảnh Lâm Sàng...', 70);
+    const imageGalleryHtml = dataArchiveService.generateImageGalleryHtml(date, dayData);
+    rootFolder.file(`05_BoSuuTap_HinhAnh_LamSang_Va_CLS.html`, imageGalleryHtml);
+
+    // Excel & Raw JSON
     try {
       const excelBuffer = await dataArchiveService.generateExcelFileBuffer(date, dayData);
-      rootFolder.file(`04_BangTongHopSoLieu_ToanVien.xlsx`, excelBuffer);
-    } catch (e) {
-      console.warn('Lỗi tạo Excel Buffer:', e);
-    }
+      rootFolder.file(`06_BangTongHop_SoLieu_ToanVien.xlsx`, excelBuffer);
+    } catch (e) {}
+    rootFolder.file(`07_DuLieuGiaoBan_RawData.json`, JSON.stringify(dayData, null, 2));
 
-    // Raw JSON for Digital Backup
-    rootFolder.file(`05_DuLieuGiaoBan_RawData.json`, JSON.stringify(dayData, null, 2));
-
-    // Clinical Images Subfolder
-    const imagesFolder = rootFolder.folder('HinhAnh_LamSang');
+    // Images Subfolder
+    const imagesFolder = rootFolder.folder('05_HinhAnh_LamSang_Va_CLS');
     const imagesList = dayData.imagesList || [];
-
     if (imagesList.length > 0) {
-      if (onProgress) onProgress(`Đang đóng gói ${imagesList.length} ảnh X-quang, CT, ECG...`, 70);
-
       let loadedCount = 0;
       for (let i = 0; i < imagesList.length; i++) {
         const img = imagesList[i];
@@ -701,9 +594,7 @@ export const dataArchiveService = {
             const pct = 70 + Math.round((loadedCount / imagesList.length) * 20);
             onProgress(`Đang nén ảnh (${loadedCount}/${imagesList.length})...`, pct);
           }
-        } catch (imgErr) {
-          console.warn(`Lỗi đóng gói ảnh #${i + 1}:`, imgErr.message);
-        }
+        } catch (imgErr) {}
       }
     }
 
@@ -716,7 +607,6 @@ export const dataArchiveService = {
     });
 
     saveAs(zipBlob, `BaoCaoGiaoBan_Ngay_${date}.zip`);
-
     if (onProgress) onProgress('Hoàn tất!', 100);
     return true;
   },
@@ -729,23 +619,20 @@ export const dataArchiveService = {
     const folderName = `BaoCaoGiaoBan_${date}`;
     const rootFolder = zip.folder(folderName);
 
-    const generalReportHtml = dataArchiveService.generateGeneralReportHtml(date, dayData);
-    rootFolder.file(`01_BaoCaoGiaoBan_ToanVien_Chuan_A4.html`, generalReportHtml);
-
-    const clinicalCasesHtml = dataArchiveService.generateClinicalCasesHtml(date, dayData);
-    rootFolder.file(`02_HoSo_CaDienBienLamSangDacBiet_ChiTiet.html`, clinicalCasesHtml);
-
-    const staffListHtml = dataArchiveService.generateStaffListHtml(date, dayData);
-    rootFolder.file(`03_DanhSach_CanBoTruc_Va_ThemGio.html`, staffListHtml);
+    rootFolder.file(`01_BaoCao_12_KhoaPhong.html`, dataArchiveService.generateGeneralReportHtml(date, dayData));
+    rootFolder.file(`02_ChiSo_BaoCao_TrongCaTruc_CacKhoa.html`, dataArchiveService.generateDepartmentMetricsHtml(date, dayData));
+    rootFolder.file(`03_CacCaDienBien_LamSangDacBiet.html`, dataArchiveService.generateClinicalCasesHtml(date, dayData));
+    rootFolder.file(`04_DanhSach_CanBoTruc_Va_ThemGio.html`, dataArchiveService.generateStaffListHtml(date, dayData));
+    rootFolder.file(`05_BoSuuTap_HinhAnh_LamSang_Va_CLS.html`, dataArchiveService.generateImageGalleryHtml(date, dayData));
 
     try {
       const excelBuffer = await dataArchiveService.generateExcelFileBuffer(date, dayData);
-      rootFolder.file(`04_BangTongHopSoLieu_ToanVien.xlsx`, excelBuffer);
+      rootFolder.file(`06_BangTongHop_SoLieu_ToanVien.xlsx`, excelBuffer);
     } catch (e) {}
 
-    rootFolder.file(`05_DuLieuGiaoBan_RawData.json`, JSON.stringify(dayData, null, 2));
+    rootFolder.file(`07_DuLieuGiaoBan_RawData.json`, JSON.stringify(dayData, null, 2));
 
-    const imagesFolder = rootFolder.folder('HinhAnh_LamSang');
+    const imagesFolder = rootFolder.folder('05_HinhAnh_LamSang_Va_CLS');
     const imagesList = dayData.imagesList || [];
     for (let i = 0; i < imagesList.length; i++) {
       const img = imagesList[i];
