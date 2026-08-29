@@ -63,4 +63,10 @@ router.get('/changelog/history', auth, requireAdmin, getChangelogHistory);
 router.post('/changelog', auth, requireAdmin, publishChangelog);
 router.delete('/changelog/:id', auth, requireAdmin, deleteChangelog);
 
+// Hospital Data Archive & Explorer
+const { getArchiveTree, getArchiveDayDetails, sendArchiveEmail } = require('../controllers/dataArchiveController');
+router.get('/data-archive/tree', auth, requireAdmin, getArchiveTree);
+router.get('/data-archive/day/:date', auth, requireAdmin, getArchiveDayDetails);
+router.post('/data-archive/send-email', auth, requireAdmin, sendArchiveEmail);
+
 module.exports = router;

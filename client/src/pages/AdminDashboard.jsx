@@ -24,7 +24,8 @@ import {
   FaUserMd,
   FaChartLine,
   FaHistory,
-  FaRocket
+  FaRocket,
+  FaFolderOpen
 } from 'react-icons/fa';
 import reportService from '../services/reportService';
 import { generateAndDownloadHospitalExcel } from '../services/excelExportService';
@@ -39,6 +40,7 @@ import { normalizeImages } from '../utils/medicalFormatters';
 // Lazy-loaded Tab components for performance and code splitting
 const ReportsTab = lazy(() => import('../components/admin/tabs/ReportsTab'));
 const SubmissionHistoryTab = lazy(() => import('../components/admin/tabs/SubmissionHistoryTab'));
+const DataArchiveTab = lazy(() => import('../components/admin/tabs/DataArchiveTab'));
 const AnalyticsTab = lazy(() => import('../components/admin/tabs/AnalyticsTab'));
 const StaffTab = lazy(() => import('../components/admin/tabs/StaffTab'));
 const DatabaseTab = lazy(() => import('../components/admin/tabs/DatabaseTab'));
@@ -915,6 +917,45 @@ const AdminDashboard = () => {
               {!isSidebarCollapsed && <span>Lịch Sử Nộp Báo Cáo</span>}
             </button>
 
+            {/* Item: Tổng Hợp Dữ Liệu & Kho Lưu Trữ */}
+            <button
+              type="button"
+              onClick={() => { setActiveTab('data_archive'); setMobileDrawerOpen(false); }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: isSidebarCollapsed ? 'center' : 'flex-start',
+                gap: '0.65rem',
+                padding: isSidebarCollapsed ? '0.75rem 0' : '0.75rem 0.85rem',
+                borderRadius: '10px',
+                border: 'none',
+                backgroundColor: activeTab === 'data_archive' ? '#2563EB' : 'transparent',
+                color: activeTab === 'data_archive' ? '#FFFFFF' : '#94A3B8',
+                cursor: 'pointer',
+                fontWeight: activeTab === 'data_archive' ? '800' : '600',
+                fontSize: '0.86rem',
+                transition: 'all 0.15s ease',
+                textAlign: 'left',
+                boxShadow: activeTab === 'data_archive' ? '0 4px 12px rgba(37, 99, 235, 0.4)' : 'none'
+              }}
+              title={isSidebarCollapsed ? 'Tổng Hợp Dữ Liệu' : undefined}
+              onMouseEnter={(e) => {
+                if (activeTab !== 'data_archive') {
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
+                  e.currentTarget.style.color = '#FFFFFF';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeTab !== 'data_archive') {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = '#94A3B8';
+                }
+              }}
+            >
+              <FaFolderOpen style={{ fontSize: isSidebarCollapsed ? '1.15rem' : '0.95rem' }} />
+              {!isSidebarCollapsed && <span>Tổng Hợp Dữ Liệu</span>}
+            </button>
+
             {/* Item 3: Số Liệu Thống Kê & Biểu Đồ */}
             <button
               type="button"
@@ -1455,6 +1496,18 @@ const AdminDashboard = () => {
                     setDate(reportDate);
                   }
                   setShowPrintModal(true);
+                }}
+              />
+            )}
+            {activeTab === 'data_archive' && (
+              <DataArchiveTab
+                onOpenPresentation={handlePresentation}
+                onOpenPrintView={() => {
+                  fetchStatus(date);
+                  setShowPrintModal(true);
+                }}
+                onOpenReportDetail={(r) => {
+                  handleOpenDetailModal(r.department_code, r.report_date || date);
                 }}
               />
             )}
