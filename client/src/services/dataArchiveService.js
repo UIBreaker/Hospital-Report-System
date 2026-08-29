@@ -158,7 +158,12 @@ export const dataArchiveService = {
 
     ${reports.map((r, i) => {
       const rawForm = extractFormData(r);
-      const is4CK = r.department_code === '4ck' || r.department_code === 'lien_chuyen_khoa' || rawForm.tmh_tongSo !== undefined || rawForm.tong4ck_tongSo !== undefined;
+      const deptCode = (r.department_code || '').toLowerCase();
+      const is4CK = deptCode === '4ck' || deptCode === 'lck' || deptCode === 'lien_chuyen_khoa' || rawForm.tmh_tongSo !== undefined || rawForm.tong4ck_tongSo !== undefined;
+      const isCDHA = deptCode === 'cdha' || deptCode === 'chuan_doan_hinh_anh' || Array.isArray(rawForm.techniques) || rawForm.bsSieuAm !== undefined || rawForm.bsXquangCT !== undefined;
+      const isHSCC = deptCode === 'hscc_tnt' || deptCode === 'hscc' || deptCode === 'hoi_suc_cap_cuu' || rawForm.hscc !== undefined || rawForm.tnt !== undefined || rawForm.pk21 !== undefined;
+      const isYHCT = deptCode === 'yhct_phcn' || deptCode === 'yhct' || deptCode === 'y_hoc_co_truyen' || rawForm.noiTru !== undefined || rawForm.ngoaiTru !== undefined;
+      const isGMHS = deptCode === 'gmhs' || deptCode === 'gay_me_hoi_suc' || rawForm.cc_ctch !== undefined || rawForm.tongSoCaMo !== undefined;
 
       const metricsList = [];
       const subSections = [];
@@ -166,7 +171,7 @@ export const dataArchiveService = {
 
       Object.entries(rawForm).forEach(([k, v]) => {
         if (v === null || v === undefined || v === '' || k === '_id') return;
-        if (k === 'themGio' || k === 'tinhHinhChung' || k === 'ghiChu' || k === 'dienBien') {
+        if (k === 'themGio' || k === 'tinhHinhChung' || k === 'ghiChu' || k === 'dienBien' || k === 'nhanSu') {
           notesList.push({ label: translateFieldKey(k), value: String(v) });
           return;
         }
@@ -178,9 +183,7 @@ export const dataArchiveService = {
             }
           });
           if (subItems.length > 0) subSections.push({ title: translateFieldKey(k), items: subItems });
-        } else if (Array.isArray(v)) {
-          // Array
-        } else {
+        } else if (!Array.isArray(v)) {
           metricsList.push({ label: translateFieldKey(k), value: String(v) });
         }
       });
@@ -193,7 +196,7 @@ export const dataArchiveService = {
           </div>
 
           ${is4CK ? `
-            <!-- BẢNG ĐẶC BIỆT DÀNH RIÊNG CHO 4 CHUYÊN KHOA -->
+            <!-- BẢNG 4 CHUYÊN KHOA -->
             <table class="metrics-table">
               <thead>
                 <tr>
@@ -248,10 +251,176 @@ export const dataArchiveService = {
                 </tr>
               </tbody>
             </table>
+          ` : isCDHA ? `
+            <!-- BẢNG CHẨN ĐOÁN HÌNH ẢNH -->
+            ${(rawForm.bsSieuAm || rawForm.bsXquangCT) ? `
+              <div style="padding: 6px 10px; background: #EEF2FF; font-size: 8.5pt; color: #3730A3; border-bottom: 1px solid #C7D2FE;">
+                ${rawForm.bsSieuAm ? `<strong>BS Trực Siêu âm:</strong> ${escapeHtml(rawForm.bsSieuAm)} &nbsp;|&nbsp; ` : ''}
+                ${rawForm.bsXquangCT ? `<strong>BS Trực Xquang - CT:</strong> ${escapeHtml(rawForm.bsXquangCT)}` : ''}
+              </div>
+            ` : ''}
+            <table class="metrics-table">
+              <thead>
+                <tr>
+                  <th style="width: 28%; text-align: left; padding-left: 8px;">Kỹ Thuật Thực Hiện</th>
+                  <th style="width: 18%;">Tổng Số</th>
+                  <th style="width: 18%;">Bảo Hiểm (BHYT)</th>
+                  <th style="width: 18%;">Nội Trú</th>
+                  <th style="width: 18%;">Ngoại Trú</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${(Array.isArray(rawForm.techniques) ? rawForm.techniques : []).map((t, tIdx) => `
+                  <tr style="background-color: ${tIdx % 2 === 0 ? '#FFFFFF' : '#F8FAFC'};">
+                    <td style="padding-left: 8px; font-weight: bold; color: #0F2C59;">${escapeHtml(t.name)}</td>
+                    <td style="text-align: center; font-weight: bold; color: #1E40AF;"><span class="badge-num">${t.tongSo || 0}</span></td>
+                    <td style="text-align: center; color: #059669; font-weight: bold;">${t.baoHiem || 0}</td>
+                    <td style="text-align: center; color: #0F2C59;">${t.noiTru || 0}</td>
+                    <td style="text-align: center; color: #0F2C59;">${t.ngoaiTru || 0}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          ` : isHSCC ? `
+            <!-- BẢNG HỒI SỨC CẤP CỨU - THẬN NHÂN TẠO - PK21 -->
+            ${rawForm.hscc ? `
+              <div class="sec-sub-header">🚨 KHỐI HỒI SỨC CẤP CỨU (HSCC)</div>
+              <table class="metrics-table">
+                <tbody>
+                  <tr>
+                    <td class="lbl">Tổng số khám:</td><td class="val" style="color: #1E40AF;"><span class="badge-num">${rawForm.hscc.tongSoKham || 0}</span></td>
+                    <td class="lbl">Tử vong:</td><td class="val" style="color: #DC2626; font-weight: bold;">${rawForm.hscc.tuVong || 0}</td>
+                  </tr>
+                  <tr>
+                    <td class="lbl">Bệnh cũ:</td><td class="val">${rawForm.hscc.benhCu || 0}</td>
+                    <td class="lbl">Bệnh mới:</td><td class="val">${rawForm.hscc.benhMoi || 0}</td>
+                  </tr>
+                  <tr>
+                    <td class="lbl">Xuất viện:</td><td class="val">${rawForm.hscc.xuatVien || 0}</td>
+                    <td class="lbl">Chuyển viện:</td><td class="val">${rawForm.hscc.chuyenVien || 0}</td>
+                  </tr>
+                  <tr>
+                    <td class="lbl">Chuyển khoa:</td><td class="val">${rawForm.hscc.chuyenKhoa || 0}</td>
+                    <td class="lbl">Hiện còn:</td><td class="val" style="color: #059669; font-weight: bold;">${rawForm.hscc.hienCon || 0}</td>
+                  </tr>
+                  <tr>
+                    <td class="lbl">Kê toa:</td><td class="val">${rawForm.hscc.keToa || 0}</td>
+                    <td class="lbl">Ngoại trú:</td><td class="val">${rawForm.hscc.ngoaiTru || 0}</td>
+                  </tr>
+                  <tr>
+                    <td class="lbl">Truyền máu:</td><td class="val">${rawForm.hscc.truyenMau || 0}</td>
+                    <td class="lbl">Tiểu phẫu / Bó bột:</td><td class="val">${rawForm.hscc.tieuPhau || 0} / ${rawForm.hscc.boBot || 0}</td>
+                  </tr>
+                </tbody>
+              </table>
+            ` : ''}
+
+            ${rawForm.tnt ? `
+              <div class="sec-sub-header">🩺 KHỐI THẬN NHÂN TẠO (TNT) ${rawForm.bsTrucTNT ? `— BS trực: ${escapeHtml(rawForm.bsTrucTNT)}` : ''}</div>
+              <table class="metrics-table">
+                <tbody>
+                  <tr>
+                    <td class="lbl">Chạy thận định kỳ (CTĐK):</td><td class="val" style="color: #1E40AF;"><span class="badge-num">${rawForm.tnt.tnt_ctdk || 0}</span></td>
+                    <td class="lbl">TNT Nội trú:</td><td class="val">${rawForm.tnt.tnt_noiTru || 0}</td>
+                  </tr>
+                  <tr>
+                    <td class="lbl">Bệnh cũ:</td><td class="val">${rawForm.tnt.tnt_benhCu || 0}</td>
+                    <td class="lbl">Bệnh mới:</td><td class="val">${rawForm.tnt.tnt_benhMoi || 0}</td>
+                  </tr>
+                  <tr>
+                    <td class="lbl">Xuất viện:</td><td class="val">${rawForm.tnt.tnt_xuatVien || 0}</td>
+                    <td class="lbl">Hiện còn:</td><td class="val" style="color: #059669; font-weight: bold;">${rawForm.tnt.tnt_hienCon || 0}</td>
+                  </tr>
+                </tbody>
+              </table>
+            ` : ''}
+
+            ${rawForm.pk21 ? `
+              <div class="sec-sub-header">🏥 PHÒNG KHÁM 21 (PK21)</div>
+              <table class="metrics-table">
+                <tbody>
+                  <tr>
+                    <td class="lbl">Tổng khám PK21:</td><td class="val" style="color: #1E40AF;"><span class="badge-num">${rawForm.pk21.pk21_tongSo || rawForm.pk21.pk21_tongSoKham || 0}</span></td>
+                    <td class="lbl">Ngoại trú PK21:</td><td class="val">${rawForm.pk21.pk21_ngoaiTru || 0}</td>
+                  </tr>
+                  <tr>
+                    <td class="lbl">Nhập viện PK21:</td><td class="val">${rawForm.pk21.pk21_nhapVien || 0}</td>
+                    <td class="lbl">Chuyển viện PK21:</td><td class="val">${rawForm.pk21.pk21_chuyenVien || 0}</td>
+                  </tr>
+                </tbody>
+              </table>
+            ` : ''}
+          ` : isYHCT ? `
+            <!-- BẢNG Y HỌC CỔ TRUYỀN - PHCN -->
+            <table class="metrics-table">
+              <thead>
+                <tr>
+                  <th style="width: 25%; text-align: left; padding-left: 8px;">Khu Vực Điều Trị</th>
+                  <th style="width: 18%;">Bệnh Cũ</th>
+                  <th style="width: 18%;">Bệnh Mới</th>
+                  <th style="width: 18%;">Xuất Viện</th>
+                  <th style="width: 21%;">Hiện Còn</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="padding-left: 8px; font-weight: bold; color: #0F2C59;">🛏️ Nội trú</td>
+                  <td style="text-align: center; font-weight: bold;">${rawForm.noiTru?.benhCu || 0}</td>
+                  <td style="text-align: center; font-weight: bold;">${rawForm.noiTru?.benhMoi || 0}</td>
+                  <td style="text-align: center;">${rawForm.noiTru?.xuat || 0}</td>
+                  <td style="text-align: center; color: #059669; font-weight: bold;"><span class="badge-num">${rawForm.noiTru?.hienCon || 0}</span></td>
+                </tr>
+                <tr style="background-color: #F8FAFC;">
+                  <td style="padding-left: 8px; font-weight: bold; color: #0F2C59;">🚶 Ngoại trú</td>
+                  <td style="text-align: center; font-weight: bold;">${rawForm.ngoaiTru?.benhCu || 0}</td>
+                  <td style="text-align: center; font-weight: bold;">${rawForm.ngoaiTru?.benhMoi || 0}</td>
+                  <td style="text-align: center;">${rawForm.ngoaiTru?.xuat || 0}</td>
+                  <td style="text-align: center; color: #059669; font-weight: bold;"><span class="badge-num">${rawForm.ngoaiTru?.hienCon || 0}</span></td>
+                </tr>
+              </tbody>
+            </table>
+            ${rawForm.keToa ? `
+              <div class="sec-sub-header">💊 THỐNG KÊ KÊ TOA THUỐC</div>
+              <table class="metrics-table">
+                <tbody>
+                  <tr>
+                    <td class="lbl">Tổng số kê toa:</td><td class="val"><span class="badge-num">${rawForm.keToa.tongSo || 0}</span></td>
+                    <td class="lbl">Bảo hiểm (BHYT):</td><td class="val">${rawForm.keToa.bhyt || 0}</td>
+                    <td class="lbl">Dịch vụ:</td><td class="val">${rawForm.keToa.dichVu || 0}</td>
+                  </tr>
+                </tbody>
+              </table>
+            ` : ''}
+          ` : isGMHS ? `
+            <!-- BẢNG GÂY MÊ HỒI SỨC -->
+            <table class="metrics-table">
+              <tbody>
+                <tr style="background-color: #EFF6FF;">
+                  <td class="lbl" style="font-weight: 800; color: #1E40AF;">🔪 Tổng số ca mổ:</td>
+                  <td class="val" colspan="3" style="text-align: left; padding-left: 12px;"><span class="badge-num" style="font-size: 11pt;">${rawForm.tongSoCaMo ?? (Number(rawForm.cc_ctch || 0) + Number(rawForm.cc_ngoaiTH || 0) + Number(rawForm.cc_san || 0) + Number(rawForm.ct_ctch || 0) + Number(rawForm.ct_ngoaiTH || 0) + Number(rawForm.ct_san || 0))}</span> ca</td>
+                </tr>
+                <tr>
+                  <td class="lbl">Mổ CC - CTCH:</td><td class="val">${rawForm.cc_ctch || 0}</td>
+                  <td class="lbl">Mổ KH - CTCH:</td><td class="val">${rawForm.ct_ctch || 0}</td>
+                </tr>
+                <tr>
+                  <td class="lbl">Mổ CC - Ngoại TH:</td><td class="val">${rawForm.cc_ngoaiTH || 0}</td>
+                  <td class="lbl">Mổ KH - Ngoại TH:</td><td class="val">${rawForm.ct_ngoaiTH || 0}</td>
+                </tr>
+                <tr>
+                  <td class="lbl">Mổ CC - Sản khoa:</td><td class="val">${rawForm.cc_san || 0}</td>
+                  <td class="lbl">Mổ KH - Sản khoa:</td><td class="val">${rawForm.ct_san || 0}</td>
+                </tr>
+                <tr>
+                  <td class="lbl">Số ca giảm đau:</td><td class="val">${rawForm.soCaGiamDau || 0}</td>
+                  <td class="lbl">Số ca gây mê / Hồi tỉnh:</td><td class="val">${rawForm.soCaGayMe || 0} / ${rawForm.soCaHoiTinh || 0}</td>
+                </tr>
+              </tbody>
+            </table>
           ` : `
             <table class="metrics-table">
               <tbody>
-                ${metricsList.length === 0 ? '<tr><td colspan="4" style="text-align:center; color:#64748B; font-style:italic; padding: 10px;">Không có chỉ số số liệu.</td></tr>' : ''}
+                ${metricsList.length === 0 && subSections.length === 0 ? '<tr><td colspan="4" style="text-align:center; color:#64748B; font-style:italic; padding: 10px;">Không có chỉ số số liệu.</td></tr>' : ''}
                 ${Array.from({ length: Math.ceil(metricsList.length / 2) }).map((_, rIdx) => {
                   const left = metricsList[rIdx * 2];
                   const right = metricsList[rIdx * 2 + 1];
