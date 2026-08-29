@@ -449,6 +449,22 @@ const LoginPage = () => {
           100% { transform: scale(1.5); opacity: 0; }
         }
 
+        @keyframes versionCardGlow {
+          0%, 100% {
+            box-shadow: 0 0 12px rgba(2, 132, 199, 0.3), 0 3px 10px rgba(2, 132, 199, 0.15);
+            border-color: #38BDF8;
+          }
+          50% {
+            box-shadow: 0 0 20px rgba(14, 165, 233, 0.65), 0 0 30px rgba(56, 189, 248, 0.35);
+            border-color: #0284C7;
+          }
+        }
+
+        @keyframes sparkleBounce {
+          0%, 100% { transform: translateY(0) scale(1); }
+          50% { transform: translateY(-2px) scale(1.1); }
+        }
+
         @keyframes successProgressLine {
           0% { width: 0%; }
           100% { width: 100%; }
@@ -1195,56 +1211,72 @@ const LoginPage = () => {
               gridTemplateColumns: 'repeat(4, 1fr)',
               gap: '0.45rem'
             }}>
-              {/* Badge 1: Version (Interactive & Highlighted) */}
+              {/* Badge 1: Version (Ultra Eye-Catching Glowing Card) */}
               <div 
                 onClick={() => setShowVersionModal(true)}
-                title="Nhấp để xem chi tiết tính năng mới của phiên bản v2.0.0"
+                title="✨ Nhấp để khám phá toàn bộ tính năng đột phá của phiên bản v2.0.0!"
                 style={{
-                  background: 'linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%)',
-                  border: '1.5px solid #93C5FD',
-                  borderRadius: '10px',
+                  background: 'linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 45%, #E0F2FE 100%)',
+                  border: '2px solid #38BDF8',
+                  borderRadius: '12px',
                   padding: '0.45rem 0.25rem',
                   textAlign: 'center',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  gap: '0.15rem',
+                  gap: '0.18rem',
                   cursor: 'pointer',
-                  boxShadow: '0 2px 8px rgba(2, 132, 199, 0.12)',
-                  transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                  position: 'relative'
+                  boxShadow: '0 0 12px rgba(2, 132, 199, 0.35), 0 3px 10px rgba(2, 132, 199, 0.18)',
+                  transition: 'all 0.22s cubic-bezier(0.16, 1, 0.3, 1)',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  animation: 'versionCardGlow 2.5s infinite ease-in-out'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
-                  e.currentTarget.style.boxShadow = '0 6px 16px rgba(2, 132, 199, 0.25)';
+                  e.currentTarget.style.transform = 'translateY(-3px) scale(1.04)';
+                  e.currentTarget.style.boxShadow = '0 0 22px rgba(14, 165, 233, 0.7), 0 8px 20px rgba(2, 132, 199, 0.35)';
                   e.currentTarget.style.borderColor = '#0284C7';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(2, 132, 199, 0.12)';
-                  e.currentTarget.style.borderColor = '#93C5FD';
+                  e.currentTarget.style.boxShadow = '0 0 12px rgba(2, 132, 199, 0.35), 0 3px 10px rgba(2, 132, 199, 0.18)';
+                  e.currentTarget.style.borderColor = '#38BDF8';
                 }}
               >
-                <div style={{ fontSize: '0.64rem', color: '#1E40AF', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                  <FaCodeBranch style={{ color: '#0284C7', fontSize: '0.68rem' }} /> Phiên bản
+                <div style={{ fontSize: '0.64rem', color: '#1E40AF', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                  <FaCodeBranch style={{ color: '#0284C7', fontSize: '0.7rem' }} /> Phiên bản
                 </div>
-                <div style={{ fontSize: '0.78rem', fontWeight: '900', color: '#0F2C59', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                <div style={{ fontSize: '0.8rem', fontWeight: '900', color: '#0F2C59', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                   v{APP_VERSION}
                   <span style={{
-                    backgroundColor: '#0284C7',
+                    background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)',
                     color: '#FFFFFF',
                     fontSize: '0.52rem',
-                    padding: '1px 4px',
-                    borderRadius: '4px',
+                    padding: '1px 5px',
+                    borderRadius: '999px',
                     fontWeight: '900',
-                    letterSpacing: '0.3px'
+                    letterSpacing: '0.4px',
+                    boxShadow: '0 2px 6px rgba(220, 38, 38, 0.35)',
+                    animation: 'sparkleBounce 1.8s infinite ease-in-out'
                   }}>
-                    NEW
+                    🚀 MỚI
                   </span>
                 </div>
-                <span style={{ fontSize: '0.56rem', color: '#0284C7', fontWeight: '800', textDecoration: 'underline' }}>
-                  ✨ Xem có gì mới?
-                </span>
+                <div style={{
+                  fontSize: '0.58rem',
+                  color: '#0284C7',
+                  fontWeight: '900',
+                  background: 'rgba(255, 255, 255, 0.8)',
+                  padding: '2px 6px',
+                  borderRadius: '6px',
+                  border: '1px solid #BAE6FD',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '2px',
+                  marginTop: '1px'
+                }}>
+                  ✨ Xem có gì mới? 👉
+                </div>
               </div>
 
               {/* Badge 2: Database */}
