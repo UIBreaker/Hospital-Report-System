@@ -2,13 +2,12 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   FaChevronLeft, FaChevronRight, FaExpand, FaCompress,
-  FaFilePowerpoint, FaSpinner, FaSearchPlus, FaSearchMinus,
+  FaSpinner, FaSearchPlus, FaSearchMinus,
   FaArrowLeft, FaFileAlt, FaUserMd, FaListUl, FaTimes, FaBars,
   FaHospital, FaAmbulance, FaProcedures, FaHeartbeat, FaSkullCrossbones,
   FaClipboardList, FaDoorOpen, FaHandHoldingHeart
 } from 'react-icons/fa';
 import reportService from '../services/reportService';
-import { exportPresentationToPowerPoint } from '../services/powerpointExportService';
 import ImageLightboxModal from '../components/common/ImageLightboxModal';
 import MedicalLoader from '../components/common/MedicalLoader';
 
@@ -123,7 +122,6 @@ const PresentationPage = () => {
   const [loading, setLoading] = useState(true);
   const [showIntro, setShowIntro] = useState(true);
   const [fontScale, setFontScale] = useState(1);
-  const [exportingPptx, setExportingPptx] = useState(false);
 
   // Lightbox Modal State
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -989,18 +987,6 @@ const PresentationPage = () => {
     } catch (e) {}
   };
 
-  const handleExportPowerPoint = async () => {
-    try {
-      setExportingPptx(true);
-      await exportPresentationToPowerPoint(slides, date || 'today', reports);
-    } catch (err) {
-      console.error('Failed to export PPTX', err);
-      alert(`Không thể xuất PowerPoint: ${err.message || 'Lỗi xử lý file PPTX'}`);
-    } finally {
-      setExportingPptx(false);
-    }
-  };
-
   const progressPct = slides.length > 1 ? (currentSlide / (slides.length - 1)) * 100 : 0;
 
   if (loading) {
@@ -1528,30 +1514,8 @@ const PresentationPage = () => {
             </div>
           </div>
 
-          {/* Right: Next & Fullscreen / Export Buttons */}
+          {/* Right: Next & Fullscreen Buttons */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-            <button
-              onClick={handleExportPowerPoint}
-              disabled={exportingPptx}
-              style={{
-                backgroundColor: '#D97706',
-                border: 'none',
-                color: '#FFFFFF',
-                borderRadius: '8px',
-                padding: '0.42rem 0.95rem',
-                fontSize: '0.84rem',
-                fontWeight: '800',
-                cursor: exportingPptx ? 'not-allowed' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                boxShadow: '0 2px 8px rgba(217, 119, 6, 0.25)'
-              }}
-              title="Xuất file trình chiếu PowerPoint PPTX"
-            >
-              {exportingPptx ? <><FaSpinner className="spinner" /> Đang xuất...</> : <><FaFilePowerpoint /> Xuất PPTX</>}
-            </button>
-
             <button
               onClick={toggleFullscreen}
               style={{
