@@ -16,10 +16,13 @@ import {
   FaDoorOpen,
   FaSyncAlt,
   FaInfoCircle,
-  FaFileExcel
+  FaFileExcel,
+  FaCheckCircle,
+  FaSpinner
 } from 'react-icons/fa';
 import reportService from '../../../services/reportService';
 import { formatDate } from '../../../utils/medicalFormatters';
+import CountUpNumber from '../../common/CountUpNumber';
 
 const AnalyticsTab = ({ initialDate = '' }) => {
   const [selectedDate, setSelectedDate] = useState(() => {
@@ -61,7 +64,7 @@ const AnalyticsTab = ({ initialDate = '' }) => {
   const timeSeries = analyticsData?.timeSeries || [];
   const departmentBreakdown = analyticsData?.departmentBreakdown || [];
 
-  // Render trend badge
+  // Render trend badge with animation
   const renderTrendBadge = (item, reverseColor = false) => {
     if (!item) return null;
     const { diff, percent, trend } = item;
@@ -85,12 +88,14 @@ const AnalyticsTab = ({ initialDate = '' }) => {
         display: 'inline-flex',
         alignItems: 'center',
         gap: '0.25rem',
-        padding: '0.2rem 0.55rem',
+        padding: '0.22rem 0.6rem',
         borderRadius: '999px',
         backgroundColor: bg,
         color: color,
         fontSize: '0.74rem',
-        fontWeight: '800'
+        fontWeight: '800',
+        boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
+        animation: 'badgePop 0.35s cubic-bezier(0.16, 1, 0.3, 1)'
       }}>
         <Icon style={{ fontSize: '0.65rem' }} />
         <span>{sign}{diff} ({sign}{percent}%)</span>
@@ -267,6 +272,39 @@ const AnalyticsTab = ({ initialDate = '' }) => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       
+      {/* Styles for Shimmer Skeleton and Explosive Animations */}
+      <style>{`
+        @keyframes shimmerPulse {
+          0% { background-position: -300% 0; }
+          100% { background-position: 300% 0; }
+        }
+        .analytics-shimmer {
+          background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
+          background-size: 300% 100%;
+          animation: shimmerPulse 1.4s infinite ease-in-out;
+        }
+        @keyframes kpiCardPop {
+          0% {
+            opacity: 0;
+            transform: translateY(12px) scale(0.96);
+          }
+          70% {
+            transform: translateY(-2px) scale(1.02);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+        @keyframes badgePop {
+          0% { transform: scale(0.8); opacity: 0; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        .kpi-animated-card {
+          animation: kpiCardPop 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+      `}</style>
+
       {/* ================= 1. HEADER TOOLBAR ================= */}
       <div style={{
         backgroundColor: '#FFFFFF',
@@ -291,7 +329,8 @@ const AnalyticsTab = ({ initialDate = '' }) => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '1.2rem'
+              fontSize: '1.2rem',
+              boxShadow: '0 2px 6px rgba(37, 99, 235, 0.15)'
             }}>
               <FaChartLine />
             </div>
@@ -299,91 +338,86 @@ const AnalyticsTab = ({ initialDate = '' }) => {
               <h2 style={{ fontSize: '1.25rem', fontWeight: '900', color: '#0F2C59', margin: 0 }}>
                 BÁO CÁO THỐNG KÊ & PHÂN TÍCH TOÀN VIỆN
               </h2>
-              <div style={{ fontSize: '0.8rem', color: '#64748B', marginTop: '2px' }}>
-                Đánh giá trực quan số liệu, tỷ lệ tăng trưởng so với hôm trước, theo dõi theo ngày, tháng, năm
+              <div style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <span>Đánh giá trực quan số liệu, tỷ lệ tăng trưởng so với hôm trước, theo dõi theo ngày, tháng, năm</span>
+                {loading && (
+                  <span style={{ 
+                    backgroundColor: '#EFF6FF', 
+                    color: '#2563EB', 
+                    padding: '0.1rem 0.5rem', 
+                    borderRadius: '10px', 
+                    fontWeight: '800', 
+                    fontSize: '0.72rem', 
+                    display: 'inline-flex', 
+                    alignItems: 'center', 
+                    gap: '0.3rem' 
+                  }}>
+                    <FaSpinner className="fa-spin" /> Đang cập nhật số liệu...
+                  </span>
+                )}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Controls: Date Picker + Range Selector */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-          {/* Range Selector Switch */}
+        {/* Toolbar Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+          {/* Range Mode Switcher */}
           <div style={{
-            display: 'inline-flex',
+            display: 'flex',
             backgroundColor: '#F1F5F9',
-            padding: '3px',
             borderRadius: '10px',
+            padding: '3px',
             border: '1px solid #CBD5E1'
           }}>
-            <button
-              type="button"
-              onClick={() => setRange('day')}
-              style={{
-                padding: '0.4rem 0.85rem',
-                borderRadius: '8px',
-                border: 'none',
-                backgroundColor: range === 'day' ? '#2563EB' : 'transparent',
-                color: range === 'day' ? '#FFFFFF' : '#475569',
-                fontWeight: '800',
-                fontSize: '0.8rem',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              Theo Ngày
-            </button>
-            <button
-              type="button"
-              onClick={() => setRange('month')}
-              style={{
-                padding: '0.4rem 0.85rem',
-                borderRadius: '8px',
-                border: 'none',
-                backgroundColor: range === 'month' ? '#2563EB' : 'transparent',
-                color: range === 'month' ? '#FFFFFF' : '#475569',
-                fontWeight: '800',
-                fontSize: '0.8rem',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              Theo Tháng
-            </button>
-            <button
-              type="button"
-              onClick={() => setRange('year')}
-              style={{
-                padding: '0.4rem 0.85rem',
-                borderRadius: '8px',
-                border: 'none',
-                backgroundColor: range === 'year' ? '#2563EB' : 'transparent',
-                color: range === 'year' ? '#FFFFFF' : '#475569',
-                fontWeight: '800',
-                fontSize: '0.8rem',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              Theo Năm
-            </button>
+            {[
+              { key: 'day', label: 'Theo Ngày' },
+              { key: 'month', label: 'Theo Tháng' },
+              { key: 'year', label: 'Theo Năm' }
+            ].map(tab => (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setRange(tab.key)}
+                style={{
+                  padding: '0.35rem 0.85rem',
+                  borderRadius: '7px',
+                  border: 'none',
+                  backgroundColor: range === tab.key ? '#2563EB' : 'transparent',
+                  color: range === tab.key ? '#FFFFFF' : '#475569',
+                  fontWeight: range === tab.key ? '800' : '600',
+                  fontSize: '0.8rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
 
-          {/* Reference Date Input */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <span style={{ fontSize: '0.8rem', fontWeight: '700', color: '#475569' }}>Mốc ngày:</span>
+          {/* Date Picker */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            backgroundColor: '#FFFFFF',
+            border: '1.5px solid #CBD5E1',
+            borderRadius: '8px',
+            padding: '0.35rem 0.65rem',
+            gap: '0.4rem'
+          }}>
+            <span style={{ fontSize: '0.76rem', color: '#64748B', fontWeight: '700' }}>Mốc ngày:</span>
             <input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
               style={{
-                padding: '0.45rem 0.75rem',
-                borderRadius: '8px',
-                border: '1.5px solid #CBD5E1',
-                fontSize: '0.84rem',
+                border: 'none',
+                outline: 'none',
                 fontWeight: '700',
+                fontSize: '0.84rem',
                 color: '#0F2C59',
-                backgroundColor: '#FFFFFF'
+                cursor: 'pointer'
               }}
             />
           </div>
@@ -401,10 +435,11 @@ const AnalyticsTab = ({ initialDate = '' }) => {
               padding: '0.45rem 0.85rem',
               fontWeight: '700',
               fontSize: '0.82rem',
-              cursor: 'pointer',
+              cursor: loading ? 'not-allowed' : 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '0.35rem'
+              gap: '0.35rem',
+              transition: 'all 0.15s ease'
             }}
             title="Làm mới dữ liệu thống kê"
           >
@@ -427,7 +462,7 @@ const AnalyticsTab = ({ initialDate = '' }) => {
         </div>
       )}
 
-      {/* ================= 2. TOP 8 KPI CARDS WITH DAY-OVER-DAY TRENDS ================= */}
+      {/* ================= 2. TOP 8 KPI CARDS WITH DAY-OVER-DAY TRENDS & EXPLOSIVE COUNTERS ================= */}
       <div>
         <div style={{
           display: 'flex',
@@ -435,77 +470,131 @@ const AnalyticsTab = ({ initialDate = '' }) => {
           alignItems: 'center',
           marginBottom: '0.85rem'
         }}>
-          <div style={{ fontSize: '0.92rem', fontWeight: '800', color: '#0F2C59', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            📌 CHỈ SỐ HOẠT ĐỘNG CHUYÊN MÔN TOÀN VIỆN ({formatDate(selectedDate)})
+          <div style={{ fontSize: '0.92rem', fontWeight: '900', color: '#0F2C59', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <span>📌 CHỈ SỐ HOẠT ĐỘNG CHUYÊN MÔN TOÀN VIỆN ({formatDate(selectedDate)})</span>
           </div>
           <div style={{ fontSize: '0.78rem', color: '#64748B', fontWeight: '600' }}>
             So sánh trực quan với ngày: <strong>{formatDate(comparison.previousDate)}</strong>
           </div>
         </div>
 
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-          gap: '1rem'
-        }}>
-          {kpiCards.map((card) => (
-            <div
-              key={card.key}
-              style={{
-                backgroundColor: card.bg,
-                border: '1.5px solid ' + card.border,
-                borderTop: '5px solid ' + card.color,
-                borderRadius: '14px',
-                padding: '1rem 1.15rem',
-                boxShadow: '0 4px 12px rgba(15, 44, 89, 0.03)',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                minHeight: '135px'
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
-                  <div style={{ fontSize: '0.76rem', fontWeight: '900', color: card.color, textTransform: 'uppercase', letterSpacing: '0.3px' }}>
-                    {card.label}
-                  </div>
-                  <div style={{ fontSize: '0.72rem', color: '#64748B', marginTop: '1px' }}>
-                    {card.subLabel}
-                  </div>
-                </div>
-                <div style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '50%',
+        {/* Shimmer Skeleton or Real KPI Cards */}
+        {loading ? (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: '1rem'
+          }}>
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div
+                key={i}
+                style={{
                   backgroundColor: '#FFFFFF',
-                  color: card.color,
+                  borderRadius: '14px',
+                  border: '1.5px solid #E2E8F0',
+                  borderTop: '5px solid #CBD5E1',
+                  padding: '1.15rem 1.25rem',
+                  minHeight: '140px',
                   display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '0.95rem',
-                  boxShadow: '0 2px 6px rgba(0,0,0,0.06)'
-                }}>
-                  {card.icon}
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div style={{ width: '65%' }}>
+                    <div className="analytics-shimmer" style={{ width: '80%', height: '14px', borderRadius: '4px', marginBottom: '8px' }} />
+                    <div className="analytics-shimmer" style={{ width: '55%', height: '10px', borderRadius: '4px' }} />
+                  </div>
+                  <div className="analytics-shimmer" style={{ width: '32px', height: '32px', borderRadius: '50%' }} />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '1rem' }}>
+                  <div className="analytics-shimmer" style={{ width: '70px', height: '32px', borderRadius: '6px' }} />
+                  <div className="analytics-shimmer" style={{ width: '85px', height: '20px', borderRadius: '999px' }} />
                 </div>
               </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: '1rem'
+          }}>
+            {kpiCards.map((card, index) => (
+              <div
+                key={card.key}
+                className="kpi-animated-card"
+                style={{
+                  backgroundColor: card.bg,
+                  border: '1.5px solid ' + card.border,
+                  borderTop: '5.5px solid ' + card.color,
+                  borderRadius: '16px',
+                  padding: '1.15rem 1.25rem',
+                  boxShadow: '0 4px 16px rgba(15, 44, 89, 0.05)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  minHeight: '140px',
+                  animationDelay: `${index * 50}ms`,
+                  transition: 'all 0.22s cubic-bezier(0.16, 1, 0.3, 1)',
+                  cursor: 'pointer'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                  e.currentTarget.style.boxShadow = '0 10px 25px rgba(15, 44, 89, 0.12)';
+                  e.currentTarget.style.borderColor = card.color;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 16px rgba(15, 44, 89, 0.05)';
+                  e.currentTarget.style.borderColor = card.border;
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <div style={{ fontSize: '0.78rem', fontWeight: '900', color: card.color, textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+                      {card.label}
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: '#64748B', marginTop: '2px' }}>
+                      {card.subLabel}
+                    </div>
+                  </div>
+                  <div style={{
+                    width: '34px',
+                    height: '34px',
+                    borderRadius: '50%',
+                    backgroundColor: '#FFFFFF',
+                    color: card.color,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '1rem',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+                  }}>
+                    {card.icon}
+                  </div>
+                </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '0.65rem' }}>
-                <div style={{
-                  fontSize: '2rem',
-                  fontWeight: '900',
-                  color: card.color,
-                  fontFamily: "'Roboto Mono', monospace",
-                  lineHeight: 1
-                }}>
-                  {card.comp?.current ?? 0}
-                </div>
-                <div>
-                  {renderTrendBadge(card.comp, card.reverse)}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '0.75rem' }}>
+                  <div style={{
+                    fontSize: '2.3rem',
+                    fontWeight: '900',
+                    color: card.color,
+                    fontFamily: "'Roboto Mono', monospace",
+                    lineHeight: 1,
+                    letterSpacing: '-0.5px'
+                  }}>
+                    <CountUpNumber value={card.comp?.current ?? 0} duration={1100} enableExplosion={true} />
+                  </div>
+                  <div>
+                    {renderTrendBadge(card.comp, card.reverse)}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ================= 3. CHARTS GRID (2 COLUMNS) ================= */}
@@ -564,115 +653,124 @@ const AnalyticsTab = ({ initialDate = '' }) => {
           </div>
 
           {/* SVG Area/Line Chart */}
-          <div style={{ position: 'relative', width: '100%', overflowX: 'auto' }}>
-            <svg viewBox={'0 0 ' + width + ' ' + height} style={{ width: '100%', height: 'auto', minWidth: '550px' }}>
-              <defs>
-                <linearGradient id="blueGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#2563EB" stopOpacity="0.35" />
-                  <stop offset="100%" stopColor="#2563EB" stopOpacity="0.0" />
-                </linearGradient>
-                <linearGradient id="greenGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#10B981" stopOpacity="0.3" />
-                  <stop offset="100%" stopColor="#10B981" stopOpacity="0.0" />
-                </linearGradient>
-                <linearGradient id="amberGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#F59E0B" stopOpacity="0.3" />
-                  <stop offset="100%" stopColor="#F59E0B" stopOpacity="0.0" />
-                </linearGradient>
-              </defs>
-
-              {/* Grid Lines (5 horizontal levels) */}
-              {[0, 0.25, 0.5, 0.75, 1].map((pct, i) => {
-                const y = padTop + plotH * (1 - pct);
-                const val = Math.round(chartMetrics.maxVal * pct);
-                return (
-                  <g key={i}>
-                    <line x1={padLeft} y1={y} x2={width - padRight} y2={y} stroke="#F1F5F9" strokeWidth="1.5" />
-                    <text x={padLeft - 8} y={y + 4} textAnchor="end" fontSize="10" fontWeight="700" fill="#94A3B8">
-                      {val}
-                    </text>
-                  </g>
-                );
-              })}
-
-              {/* Area Under Curve (Lượt Khám) */}
-              {(activeMetricFilter === 'all' || activeMetricFilter === 'tongSoKham') && (
-                <>
-                  <path d={buildAreaPath('tongSoKham')} fill="url(#blueGrad)" />
-                  <path d={buildSvgPath('tongSoKham')} fill="none" stroke="#2563EB" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                </>
-              )}
-
-              {/* Area Under Curve (Nhập Viện) */}
-              {(activeMetricFilter === 'all' || activeMetricFilter === 'benhMoi') && (
-                <>
-                  <path d={buildAreaPath('benhMoi')} fill="url(#greenGrad)" />
-                  <path d={buildSvgPath('benhMoi')} fill="none" stroke="#059669" strokeWidth="2.5" strokeDasharray="4 4" strokeLinecap="round" strokeLinejoin="round" />
-                </>
-              )}
-
-              {/* Curve (Phẫu thuật) */}
-              {(activeMetricFilter === 'all' || activeMetricFilter === 'phauThuat') && (
-                <path d={buildSvgPath('phauThuat')} fill="none" stroke="#0891B2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              )}
-
-              {/* Interactive Data Points & Vertical Highlights */}
-              {timeSeries.map((pt, i) => {
-                const { x, y } = getCoords(pt.tongSoKham || 0, i, timeSeries.length);
-                const isCur = pt.isCurrent;
-                return (
-                  <g key={i} onMouseEnter={() => setHoveredPoint(pt)} onMouseLeave={() => setHoveredPoint(null)} style={{ cursor: 'pointer' }}>
-                    {isCur && (
-                      <line x1={x} y1={padTop} x2={x} y2={padTop + plotH} stroke="#2563EB" strokeWidth="1.5" strokeDasharray="3 3" opacity="0.6" />
-                    )}
-                    <circle
-                      cx={x}
-                      cy={y}
-                      r={isCur ? 6 : 4}
-                      fill="#FFFFFF"
-                      stroke="#2563EB"
-                      strokeWidth={isCur ? 3 : 2}
-                    />
-                    {/* X-axis label */}
-                    <text
-                      x={x}
-                      y={height - 15}
-                      textAnchor="middle"
-                      fontSize="10"
-                      fontWeight={isCur ? '900' : '600'}
-                      fill={isCur ? '#1E40AF' : '#64748B'}
-                    >
-                      {pt.label}
-                    </text>
-                  </g>
-                );
-              })}
-            </svg>
-
-            {/* Hover Tooltip Overlay */}
-            {hoveredPoint && (
-              <div style={{
-                position: 'absolute',
-                top: '10px',
-                right: '15px',
-                backgroundColor: 'rgba(15, 44, 89, 0.92)',
-                color: '#FFFFFF',
-                padding: '0.5rem 0.85rem',
-                borderRadius: '8px',
-                fontSize: '0.76rem',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.25)',
-                pointerEvents: 'none',
-                zIndex: 10
-              }}>
-                <div style={{ fontWeight: '800', color: '#93C5FD', marginBottom: '2px' }}>
-                  {hoveredPoint.fullLabel}
-                </div>
-                <div>Tổng khám: <strong>{hoveredPoint.tongSoKham} ca</strong></div>
-                <div>Nhập viện: <strong>{hoveredPoint.benhMoi} ca</strong> | Xuất viện: <strong>{hoveredPoint.xuatVien} ca</strong></div>
-                <div>Chuyển viện: <strong>{hoveredPoint.chuyenVien} ca</strong> | Phẫu thuật: <strong>{hoveredPoint.phauThuat} ca</strong></div>
+          {loading ? (
+            <div style={{ width: '100%', height: '260px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '0.75rem' }}>
+              <div className="analytics-shimmer" style={{ width: '90%', height: '180px', borderRadius: '12px' }} />
+              <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: '700' }}>
+                Đang vẽ biểu đồ xu hướng...
               </div>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div style={{ position: 'relative', width: '100%', overflowX: 'auto' }}>
+              <svg viewBox={'0 0 ' + width + ' ' + height} style={{ width: '100%', height: 'auto', minWidth: '550px' }}>
+                <defs>
+                  <linearGradient id="blueGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#2563EB" stopOpacity="0.35" />
+                    <stop offset="100%" stopColor="#2563EB" stopOpacity="0.0" />
+                  </linearGradient>
+                  <linearGradient id="greenGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#10B981" stopOpacity="0.3" />
+                    <stop offset="100%" stopColor="#10B981" stopOpacity="0.0" />
+                  </linearGradient>
+                  <linearGradient id="amberGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#F59E0B" stopOpacity="0.3" />
+                    <stop offset="100%" stopColor="#F59E0B" stopOpacity="0.0" />
+                  </linearGradient>
+                </defs>
+
+                {/* Grid Lines (5 horizontal levels) */}
+                {[0, 0.25, 0.5, 0.75, 1].map((pct, i) => {
+                  const y = padTop + plotH * (1 - pct);
+                  const val = Math.round(chartMetrics.maxVal * pct);
+                  return (
+                    <g key={i}>
+                      <line x1={padLeft} y1={y} x2={width - padRight} y2={y} stroke="#F1F5F9" strokeWidth="1.5" />
+                      <text x={padLeft - 8} y={y + 4} textAnchor="end" fontSize="10" fontWeight="700" fill="#94A3B8">
+                        {val}
+                      </text>
+                    </g>
+                  );
+                })}
+
+                {/* Area Under Curve (Lượt Khám) */}
+                {(activeMetricFilter === 'all' || activeMetricFilter === 'tongSoKham') && (
+                  <>
+                    <path d={buildAreaPath('tongSoKham')} fill="url(#blueGrad)" />
+                    <path d={buildSvgPath('tongSoKham')} fill="none" stroke="#2563EB" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                  </>
+                )}
+
+                {/* Area Under Curve (Nhập Viện) */}
+                {(activeMetricFilter === 'all' || activeMetricFilter === 'benhMoi') && (
+                  <>
+                    <path d={buildAreaPath('benhMoi')} fill="url(#greenGrad)" />
+                    <path d={buildSvgPath('benhMoi')} fill="none" stroke="#059669" strokeWidth="2.5" strokeDasharray="4 4" strokeLinecap="round" strokeLinejoin="round" />
+                  </>
+                )}
+
+                {/* Curve (Phẫu thuật) */}
+                {(activeMetricFilter === 'all' || activeMetricFilter === 'phauThuat') && (
+                  <path d={buildSvgPath('phauThuat')} fill="none" stroke="#0891B2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                )}
+
+                {/* Interactive Data Points & Vertical Highlights */}
+                {timeSeries.map((pt, i) => {
+                  const { x, y } = getCoords(pt.tongSoKham || 0, i, timeSeries.length);
+                  const isCur = pt.isCurrent;
+                  return (
+                    <g key={i} onMouseEnter={() => setHoveredPoint(pt)} onMouseLeave={() => setHoveredPoint(null)} style={{ cursor: 'pointer' }}>
+                      {isCur && (
+                        <line x1={x} y1={padTop} x2={x} y2={padTop + plotH} stroke="#2563EB" strokeWidth="1.5" strokeDasharray="3 3" opacity="0.6" />
+                      )}
+                      <circle
+                        cx={x}
+                        cy={y}
+                        r={isCur ? 6 : 4}
+                        fill="#FFFFFF"
+                        stroke="#2563EB"
+                        strokeWidth={isCur ? 3 : 2}
+                      />
+                      {/* X-axis label */}
+                      <text
+                        x={x}
+                        y={height - 15}
+                        textAnchor="middle"
+                        fontSize="10"
+                        fontWeight={isCur ? '900' : '600'}
+                        fill={isCur ? '#1E40AF' : '#64748B'}
+                      >
+                        {pt.label}
+                      </text>
+                    </g>
+                  );
+                })}
+              </svg>
+            </div>
+          )}
+
+          {/* Hover Tooltip Overlay */}
+          {hoveredPoint && (
+            <div style={{
+              position: 'absolute',
+              top: '10px',
+              right: '15px',
+              backgroundColor: 'rgba(15, 44, 89, 0.92)',
+              color: '#FFFFFF',
+              padding: '0.5rem 0.85rem',
+              borderRadius: '8px',
+              fontSize: '0.76rem',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.25)',
+              pointerEvents: 'none',
+              zIndex: 10
+            }}>
+              <div style={{ fontWeight: '800', color: '#93C5FD', marginBottom: '2px' }}>
+                {hoveredPoint.fullLabel}
+              </div>
+              <div>Tổng khám: <strong>{hoveredPoint.tongSoKham} ca</strong></div>
+              <div>Nhập viện: <strong>{hoveredPoint.benhMoi} ca</strong> | Xuất viện: <strong>{hoveredPoint.xuatVien} ca</strong></div>
+              <div>Chuyển viện: <strong>{hoveredPoint.chuyenVien} ca</strong> | Phẫu thuật: <strong>{hoveredPoint.phauThuat} ca</strong></div>
+            </div>
+          )}
 
           {/* Legend */}
           <div style={{ display: 'flex', justifyContent: 'center', gap: '1.25rem', marginTop: '0.75rem', fontSize: '0.76rem', fontWeight: '700' }}>
@@ -711,34 +809,47 @@ const AnalyticsTab = ({ initialDate = '' }) => {
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem', maxHeight: '250px', overflowY: 'auto', paddingRight: '4px' }}>
-            {sortedDepts.length === 0 ? (
-              <div style={{ textAlign: 'center', color: '#94A3B8', fontSize: '0.82rem', padding: '2rem 0' }}>
-                Chưa có báo cáo khoa phòng cho ngày này
-              </div>
-            ) : (
-              sortedDepts.map((d, i) => {
-                const pct = Math.min(Math.round(((d.tongSoKham || 0) / maxDeptKham) * 100), 100);
-                return (
-                  <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.76rem', fontWeight: '700' }}>
-                      <span style={{ color: '#1E293B' }}>{d.departmentName}</span>
-                      <span style={{ color: '#1E40AF', fontWeight: '900' }}>{d.tongSoKham} ca</span>
+          {loading ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', padding: '1rem 0' }}>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div className="analytics-shimmer" style={{ width: '40%', height: '12px', borderRadius: '4px' }} />
+                  <div className="analytics-shimmer" style={{ width: '100%', height: '8px', borderRadius: '4px' }} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem', maxHeight: '250px', overflowY: 'auto', paddingRight: '4px' }}>
+              {sortedDepts.length === 0 ? (
+                <div style={{ textAlign: 'center', color: '#94A3B8', fontSize: '0.82rem', padding: '2rem 0' }}>
+                  Chưa có báo cáo khoa phòng cho ngày này
+                </div>
+              ) : (
+                sortedDepts.map((d, i) => {
+                  const pct = Math.min(Math.round(((d.tongSoKham || 0) / maxDeptKham) * 100), 100);
+                  return (
+                    <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.76rem', fontWeight: '700' }}>
+                        <span style={{ color: '#1E293B' }}>{d.departmentName}</span>
+                        <span style={{ color: '#1E40AF', fontWeight: '900' }}>
+                          <CountUpNumber value={d.tongSoKham || 0} suffix=" ca" duration={900} />
+                        </span>
+                      </div>
+                      <div style={{ width: '100%', height: '7px', backgroundColor: '#F1F5F9', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{
+                          width: pct + '%',
+                          height: '100%',
+                          background: 'linear-gradient(90deg, #3B82F6 0%, #1D4ED8 100%)',
+                          borderRadius: '4px',
+                          transition: 'width 0.6s cubic-bezier(0.16, 1, 0.3, 1)'
+                        }} />
+                      </div>
                     </div>
-                    <div style={{ width: '100%', height: '7px', backgroundColor: '#F1F5F9', borderRadius: '4px', overflow: 'hidden' }}>
-                      <div style={{
-                        width: pct + '%',
-                        height: '100%',
-                        background: 'linear-gradient(90deg, #3B82F6 0%, #1D4ED8 100%)',
-                        borderRadius: '4px',
-                        transition: 'width 0.4s ease'
-                      }} />
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
+                  );
+                })
+              )}
+            </div>
+          )}
 
           <div style={{
             marginTop: '0.75rem',
@@ -750,7 +861,7 @@ const AnalyticsTab = ({ initialDate = '' }) => {
             justifyContent: 'space-between'
           }}>
             <span>Đã nộp: <strong>{departmentBreakdown.length}/12 Khoa</strong></span>
-            <span>Tổng khám: <strong>{comparison.tongSoKham?.current || 0} ca</strong></span>
+            <span>Tổng khám: <strong><CountUpNumber value={comparison.tongSoKham?.current || 0} suffix=" ca" duration={1000} /></strong></span>
           </div>
         </div>
 
@@ -775,66 +886,74 @@ const AnalyticsTab = ({ initialDate = '' }) => {
           </div>
         </div>
 
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
-            <thead>
-              <tr style={{ backgroundColor: '#0F2C59', color: '#FFFFFF' }}>
-                <th style={{ padding: '0.65rem 0.85rem', textAlign: 'left', borderRadius: '8px 0 0 0' }}>Mốc Thời Gian</th>
-                <th style={{ padding: '0.65rem 0.85rem', textAlign: 'center' }}>Khoa Nộp</th>
-                <th style={{ padding: '0.65rem 0.85rem', textAlign: 'center' }}>Tổng Khám</th>
-                <th style={{ padding: '0.65rem 0.85rem', textAlign: 'center' }}>Bệnh Mới</th>
-                <th style={{ padding: '0.65rem 0.85rem', textAlign: 'center' }}>Xuất Viện</th>
-                <th style={{ padding: '0.65rem 0.85rem', textAlign: 'center' }}>Chuyển Viện</th>
-                <th style={{ padding: '0.65rem 0.85rem', textAlign: 'center' }}>Phẫu Thuật</th>
-                <th style={{ padding: '0.65rem 0.85rem', textAlign: 'center' }}>Bệnh Nặng</th>
-                <th style={{ padding: '0.65rem 0.85rem', textAlign: 'center', borderRadius: '0 8px 0 0' }}>Tử Vong</th>
-              </tr>
-            </thead>
-            <tbody>
-              {timeSeries.map((row, idx) => {
-                const isCur = row.isCurrent;
-                return (
-                  <tr
-                    key={idx}
-                    style={{
-                      backgroundColor: isCur ? '#EFF6FF' : (idx % 2 === 0 ? '#FFFFFF' : '#F8FAFC'),
-                      borderBottom: '1px solid #E2E8F0',
-                      fontWeight: isCur ? '800' : '500'
-                    }}
-                  >
-                    <td style={{ padding: '0.6rem 0.85rem', color: isCur ? '#1E40AF' : '#1E293B' }}>
-                      {row.fullLabel} {isCur && <span style={{ backgroundColor: '#2563EB', color: '#fff', fontSize: '0.65rem', padding: '1px 5px', borderRadius: '4px', marginLeft: '4px' }}>Đang chọn</span>}
-                    </td>
-                    <td style={{ padding: '0.6rem 0.85rem', textAlign: 'center', color: '#059669', fontWeight: '800' }}>
-                      {row.submittedDeptsCount}/12
-                    </td>
-                    <td style={{ padding: '0.6rem 0.85rem', textAlign: 'center', color: '#1E40AF', fontWeight: '800', fontFamily: 'monospace', fontSize: '0.9rem' }}>
-                      {row.tongSoKham}
-                    </td>
-                    <td style={{ padding: '0.6rem 0.85rem', textAlign: 'center', color: '#0284C7', fontWeight: '700', fontFamily: 'monospace' }}>
-                      {row.benhMoi}
-                    </td>
-                    <td style={{ padding: '0.6rem 0.85rem', textAlign: 'center', color: '#16A34A', fontWeight: '700', fontFamily: 'monospace' }}>
-                      {row.xuatVien}
-                    </td>
-                    <td style={{ padding: '0.6rem 0.85rem', textAlign: 'center', color: '#D97706', fontWeight: '700', fontFamily: 'monospace' }}>
-                      {row.chuyenVien}
-                    </td>
-                    <td style={{ padding: '0.6rem 0.85rem', textAlign: 'center', color: '#0891B2', fontWeight: '700', fontFamily: 'monospace' }}>
-                      {row.phauThuat}
-                    </td>
-                    <td style={{ padding: '0.6rem 0.85rem', textAlign: 'center', color: '#7C3AED', fontWeight: '700', fontFamily: 'monospace' }}>
-                      {row.benhNang}
-                    </td>
-                    <td style={{ padding: '0.6rem 0.85rem', textAlign: 'center', color: row.tuVong > 0 ? '#DC2626' : '#64748B', fontWeight: '800', fontFamily: 'monospace' }}>
-                      {row.tuVong}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        {loading ? (
+          <div style={{ padding: '2rem 0', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div className="analytics-shimmer" style={{ width: '100%', height: '35px', borderRadius: '8px' }} />
+            <div className="analytics-shimmer" style={{ width: '100%', height: '28px', borderRadius: '6px' }} />
+            <div className="analytics-shimmer" style={{ width: '100%', height: '28px', borderRadius: '6px' }} />
+          </div>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#0F2C59', color: '#FFFFFF' }}>
+                  <th style={{ padding: '0.65rem 0.85rem', textAlign: 'left', borderRadius: '8px 0 0 0' }}>Mốc Thời Gian</th>
+                  <th style={{ padding: '0.65rem 0.85rem', textAlign: 'center' }}>Khoa Nộp</th>
+                  <th style={{ padding: '0.65rem 0.85rem', textAlign: 'center' }}>Tổng Khám</th>
+                  <th style={{ padding: '0.65rem 0.85rem', textAlign: 'center' }}>Bệnh Mới</th>
+                  <th style={{ padding: '0.65rem 0.85rem', textAlign: 'center' }}>Xuất Viện</th>
+                  <th style={{ padding: '0.65rem 0.85rem', textAlign: 'center' }}>Chuyển Viện</th>
+                  <th style={{ padding: '0.65rem 0.85rem', textAlign: 'center' }}>Phẫu Thuật</th>
+                  <th style={{ padding: '0.65rem 0.85rem', textAlign: 'center' }}>Bệnh Nặng</th>
+                  <th style={{ padding: '0.65rem 0.85rem', textAlign: 'center', borderRadius: '0 8px 0 0' }}>Tử Vong</th>
+                </tr>
+              </thead>
+              <tbody>
+                {timeSeries.map((row, idx) => {
+                  const isCur = row.isCurrent;
+                  return (
+                    <tr
+                      key={idx}
+                      style={{
+                        backgroundColor: isCur ? '#EFF6FF' : (idx % 2 === 0 ? '#FFFFFF' : '#F8FAFC'),
+                        borderBottom: '1px solid #E2E8F0',
+                        fontWeight: isCur ? '800' : '500'
+                      }}
+                    >
+                      <td style={{ padding: '0.6rem 0.85rem', color: isCur ? '#1E40AF' : '#1E293B' }}>
+                        {row.fullLabel} {isCur && <span style={{ backgroundColor: '#2563EB', color: '#fff', fontSize: '0.65rem', padding: '1px 5px', borderRadius: '4px', marginLeft: '4px' }}>Đang chọn</span>}
+                      </td>
+                      <td style={{ padding: '0.6rem 0.85rem', textAlign: 'center', color: '#059669', fontWeight: '800' }}>
+                        {row.submittedDeptsCount}/12
+                      </td>
+                      <td style={{ padding: '0.6rem 0.85rem', textAlign: 'center', color: '#1E40AF', fontWeight: '800', fontFamily: 'monospace', fontSize: '0.9rem' }}>
+                        {row.tongSoKham}
+                      </td>
+                      <td style={{ padding: '0.6rem 0.85rem', textAlign: 'center', color: '#0284C7', fontWeight: '700', fontFamily: 'monospace' }}>
+                        {row.benhMoi}
+                      </td>
+                      <td style={{ padding: '0.6rem 0.85rem', textAlign: 'center', color: '#16A34A', fontWeight: '700', fontFamily: 'monospace' }}>
+                        {row.xuatVien}
+                      </td>
+                      <td style={{ padding: '0.6rem 0.85rem', textAlign: 'center', color: '#D97706', fontWeight: '700', fontFamily: 'monospace' }}>
+                        {row.chuyenVien}
+                      </td>
+                      <td style={{ padding: '0.6rem 0.85rem', textAlign: 'center', color: '#0891B2', fontWeight: '700', fontFamily: 'monospace' }}>
+                        {row.phauThuat}
+                      </td>
+                      <td style={{ padding: '0.6rem 0.85rem', textAlign: 'center', color: '#7C3AED', fontWeight: '700', fontFamily: 'monospace' }}>
+                        {row.benhNang}
+                      </td>
+                      <td style={{ padding: '0.6rem 0.85rem', textAlign: 'center', color: row.tuVong > 0 ? '#DC2626' : '#64748B', fontWeight: '800', fontFamily: 'monospace' }}>
+                        {row.tuVong}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
     </div>
