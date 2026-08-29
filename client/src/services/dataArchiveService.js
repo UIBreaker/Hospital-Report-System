@@ -159,11 +159,14 @@ export const dataArchiveService = {
     ${reports.map((r, i) => {
       const rawForm = extractFormData(r);
       const deptCode = (r.department_code || '').toLowerCase();
-      const is4CK = deptCode === '4ck' || deptCode === 'lck' || deptCode === 'lien_chuyen_khoa' || rawForm.tmh_tongSo !== undefined || rawForm.tong4ck_tongSo !== undefined;
-      const isCDHA = deptCode === 'cdha' || deptCode === 'chuan_doan_hinh_anh' || Array.isArray(rawForm.techniques) || rawForm.bsSieuAm !== undefined || rawForm.bsXquangCT !== undefined;
-      const isHSCC = deptCode === 'hscc_tnt' || deptCode === 'hscc' || deptCode === 'hoi_suc_cap_cuu' || rawForm.hscc !== undefined || rawForm.tnt !== undefined || rawForm.pk21 !== undefined;
-      const isYHCT = deptCode === 'yhct_phcn' || deptCode === 'yhct' || deptCode === 'y_hoc_co_truyen' || rawForm.noiTru !== undefined || rawForm.ngoaiTru !== undefined;
-      const isGMHS = deptCode === 'gmhs' || deptCode === 'gay_me_hoi_suc' || rawForm.cc_ctch !== undefined || rawForm.tongSoCaMo !== undefined;
+      const deptName = (r.department_name || '').toLowerCase();
+
+      const isXN = deptCode === 'xn' || deptCode === 'xet_nghiem' || deptName.includes('xét nghiệm') || deptName.includes('xet nghiem');
+      const isCDHA = !isXN && (deptCode === 'cdha' || deptCode === 'chuan_doan_hinh_anh' || deptName.includes('hình ảnh') || Array.isArray(rawForm.techniques));
+      const is4CK = !isXN && (deptCode === '4ck' || deptCode === 'lck' || deptCode === 'lien_chuyen_khoa' || deptName.includes('chuyên khoa') || rawForm.tmh_tongSo !== undefined || rawForm.tong4ck_tongSo !== undefined);
+      const isHSCC = !isXN && (deptCode === 'hscc_tnt' || deptCode === 'hscc' || deptCode === 'hoi_suc_cap_cuu' || deptName.includes('hồi sức') || deptName.includes('thận nhân tạo') || (rawForm.hscc && typeof rawForm.hscc === 'object') || (rawForm.tnt && typeof rawForm.tnt === 'object') || (rawForm.pk21 && typeof rawForm.pk21 === 'object'));
+      const isYHCT = !isXN && (deptCode === 'yhct_phcn' || deptCode === 'yhct' || deptCode === 'y_hoc_co_truyen' || deptName.includes('cổ truyền') || deptName.includes('phục hồi') || (typeof rawForm.noiTru === 'object' && typeof rawForm.ngoaiTru === 'object' && typeof rawForm.keToa === 'object'));
+      const isGMHS = !isXN && (deptCode === 'gmhs' || deptCode === 'gay_me_hoi_suc' || deptName.includes('gây mê') || rawForm.cc_ctch !== undefined || rawForm.tongSoCaMo !== undefined);
 
       const metricsList = [];
       const subSections = [];
@@ -171,7 +174,7 @@ export const dataArchiveService = {
 
       Object.entries(rawForm).forEach(([k, v]) => {
         if (v === null || v === undefined || v === '' || k === '_id') return;
-        if (k === 'themGio' || k === 'tinhHinhChung' || k === 'ghiChu' || k === 'dienBien' || k === 'nhanSu') {
+        if (k === 'themGio' || k === 'tinhHinhChung' || k === 'ghiChu' || k === 'dienBien' || k === 'nhanSu' || k === 'dieuDuongTruc' || k === 'hienCoGhiChu' || k === 'hienConGhiChu') {
           notesList.push({ label: translateFieldKey(k), value: String(v) });
           return;
         }
@@ -195,7 +198,25 @@ export const dataArchiveService = {
             <span style="font-size: 8.5pt; font-weight: normal; opacity: 0.9;">BS: <strong>${escapeHtml(r.doctor_name || '—')}</strong> | ĐD: <strong>${escapeHtml(r.nurse_name || '—')}</strong></span>
           </div>
 
-          ${is4CK ? `
+          ${isXN ? `
+            <!-- BẢNG KHOA XÉT NGHIỆM -->
+            <table class="metrics-table">
+              <tbody>
+                <tr style="background-color: #F0FDFA;">
+                  <td class="lbl" style="color: #0D9488; font-weight: bold; width: 40%;">🧪 Tổng số lượt xét nghiệm:</td>
+                  <td class="val" colspan="3" style="text-align: left; padding-left: 14px;"><span class="badge-num" style="background: #CCFBF1; color: #0F766E; font-size: 11pt;">${rawForm.tongSo || 0}</span> lượt</td>
+                </tr>
+                <tr>
+                  <td class="lbl">Bảo hiểm y tế (BHYT):</td><td class="val" style="color: #059669; font-weight: bold;">${rawForm.baoHiem || 0}</td>
+                  <td class="lbl">Bệnh nhân Nội trú:</td><td class="val">${rawForm.noiTru || 0}</td>
+                </tr>
+                <tr>
+                  <td class="lbl">Bệnh nhân Ngoại trú:</td><td class="val">${rawForm.ngoaiTru || 0}</td>
+                  <td class="lbl"></td><td class="val"></td>
+                </tr>
+              </tbody>
+            </table>
+          ` : is4CK ? `
             <!-- BẢNG 4 CHUYÊN KHOA -->
             <table class="metrics-table">
               <thead>

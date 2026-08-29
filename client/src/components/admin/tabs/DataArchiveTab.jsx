@@ -879,151 +879,216 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
                         try { return JSON.parse(raw); } catch (e) { return {}; }
                       })();
                       const deptCode = (r.department_code || '').toLowerCase();
-                      const is4CK = deptCode === '4ck' || deptCode === 'lck' || deptCode === 'lien_chuyen_khoa' || rawForm.tmh_tongSo !== undefined || rawForm.tong4ck_tongSo !== undefined;
-                      const isCDHA = deptCode === 'cdha' || deptCode === 'chuan_doan_hinh_anh' || Array.isArray(rawForm.techniques) || rawForm.bsSieuAm !== undefined || rawForm.bsXquangCT !== undefined;
-                      const isHSCC = deptCode === 'hscc_tnt' || deptCode === 'hscc' || deptCode === 'hoi_suc_cap_cuu' || rawForm.hscc !== undefined || rawForm.tnt !== undefined || rawForm.pk21 !== undefined;
-                      const isYHCT = deptCode === 'yhct_phcn' || deptCode === 'yhct' || deptCode === 'y_hoc_co_truyen' || rawForm.noiTru !== undefined || rawForm.ngoaiTru !== undefined;
-                      const isGMHS = deptCode === 'gmhs' || deptCode === 'gay_me_hoi_suc' || rawForm.cc_ctch !== undefined || rawForm.tongSoCaMo !== undefined;
+                      const deptName = (r.department_name || '').toLowerCase();
 
+                      const isXN = deptCode === 'xn' || deptCode === 'xet_nghiem' || deptName.includes('xét nghiệm') || deptName.includes('xet nghiem');
+                      const isCDHA = !isXN && (deptCode === 'cdha' || deptCode === 'chuan_doan_hinh_anh' || deptName.includes('hình ảnh') || Array.isArray(rawForm.techniques));
+                      const is4CK = !isXN && (deptCode === '4ck' || deptCode === 'lck' || deptCode === 'lien_chuyen_khoa' || deptName.includes('chuyên khoa') || rawForm.tmh_tongSo !== undefined || rawForm.tong4ck_tongSo !== undefined);
+                      const isHSCC = !isXN && (deptCode === 'hscc_tnt' || deptCode === 'hscc' || deptCode === 'hoi_suc_cap_cuu' || deptName.includes('hồi sức') || deptName.includes('thận nhân tạo') || (rawForm.hscc && typeof rawForm.hscc === 'object') || (rawForm.tnt && typeof rawForm.tnt === 'object') || (rawForm.pk21 && typeof rawForm.pk21 === 'object'));
+                      const isYHCT = !isXN && (deptCode === 'yhct_phcn' || deptCode === 'yhct' || deptCode === 'y_hoc_co_truyen' || deptName.includes('cổ truyền') || deptName.includes('phục hồi') || (typeof rawForm.noiTru === 'object' && typeof rawForm.ngoaiTru === 'object' && typeof rawForm.keToa === 'object'));
+                      const isGMHS = !isXN && (deptCode === 'gmhs' || deptCode === 'gay_me_hoi_suc' || deptName.includes('gây mê') || rawForm.cc_ctch !== undefined || rawForm.tongSoCaMo !== undefined);
+
+                      // Flatten all fields and sub-objects
                       const flatFields = [];
+                      const noteFields = [];
+
                       Object.entries(rawForm).forEach(([k, v]) => {
-                        if (v === null || v === undefined || v === '' || k === '_id' || k === 'themGio' || k === 'nhanSu') return;
-                        if (typeof v !== 'object') flatFields.push({ key: k, val: v });
+                        if (v === null || v === undefined || v === '' || k === '_id') return;
+                        if (k === 'themGio' || k === 'nhanSu' || k === 'dieuDuongTruc' || k === 'hienCoGhiChu' || k === 'hienConGhiChu' || k === 'ghiChu' || k === 'tinhHinhChung') {
+                          noteFields.push({ label: translateFieldKey(k), val: String(v) });
+                          return;
+                        }
+                        if (typeof v === 'object' && !Array.isArray(v)) {
+                          Object.entries(v).forEach(([subK, subV]) => {
+                            if (subV !== null && subV !== undefined && subV !== '') {
+                              flatFields.push({ key: `${k}_${subK}`, label: translateFieldKey(subK, k), val: subV });
+                            }
+                          });
+                        } else if (!Array.isArray(v)) {
+                          flatFields.push({ key: k, label: translateFieldKey(k), val: v });
+                        }
                       });
 
                       return (
-                        <div key={rIdx} style={{ border: '1.5px solid #CBD5E1', borderRadius: '14px', overflow: 'hidden', backgroundColor: '#FFFFFF', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                        <div key={rIdx} style={{ border: '1.5px solid #CBD5E1', borderRadius: '14px', overflow: 'hidden', backgroundColor: '#FFFFFF', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
                           <div style={{ backgroundColor: '#0F2C59', color: '#FFFFFF', padding: '0.6rem 0.9rem', fontWeight: '800', fontSize: '0.86rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <span>{r.department_name || r.department_code}</span>
                             <span style={{ fontSize: '0.74rem', fontWeight: 'normal', opacity: 0.9 }}>BS: <strong>{r.doctor_name || '—'}</strong></span>
                           </div>
 
-                          {/* 1. KHOA LIÊN CHUYÊN KHOA */}
-                          {is4CK ? (
-                            <div style={{ padding: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.78rem' }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', background: '#EFF6FF', padding: '5px 8px', borderRadius: '6px', fontWeight: 'bold', color: '#1E40AF' }}>
-                                <span>⭐ TỔNG 4CK (Khám / TT):</span>
-                                <span style={{ background: '#DBEAFE', padding: '1px 8px', borderRadius: '4px' }}>{rawForm.tong4ck_tongSo ?? (Number(rawForm.tmh_tongSo || 0) + Number(rawForm.mat_tongSo || 0) + Number(rawForm.rhm_noi_tongSo || 0) + Number(rawForm.daLieu_tongSo || 0))} / {rawForm.tong4ck_thuThuat ?? (Number(rawForm.tmh_thuThuat || 0) + Number(rawForm.mat_thuThuat || 0) + Number(rawForm.rhm_noi_thuThuat || 0))}</span>
-                              </div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '4px 8px', borderRadius: '4px', border: '1px solid #E2E8F0' }}>
-                                <span>👂 Tai Mũi Họng (TMH):</span>
-                                <strong style={{ color: '#0F2C59' }}>{rawForm.tmh_tongSo ?? 0} (TT: {rawForm.tmh_thuThuat ?? 0})</strong>
-                              </div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '4px 8px', borderRadius: '4px', border: '1px solid #E2E8F0' }}>
-                                <span>👁️ Mắt:</span>
-                                <strong style={{ color: '#0F2C59' }}>{rawForm.mat_tongSo ?? 0} (TT: {rawForm.mat_thuThuat ?? 0})</strong>
-                              </div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '4px 8px', borderRadius: '4px', border: '1px solid #E2E8F0' }}>
-                                <span>🦷 Răng Hàm Mặt (RHM):</span>
-                                <strong style={{ color: '#0F2C59' }}>{rawForm.rhm_noi_tongSo ?? 0} (TT: {rawForm.rhm_noi_thuThuat ?? 0})</strong>
-                              </div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '4px 8px', borderRadius: '4px', border: '1px solid #E2E8F0' }}>
-                                <span>🩺 Da Liễu:</span>
-                                <strong style={{ color: '#0F2C59' }}>{rawForm.daLieu_tongSo ?? 0}</strong>
-                              </div>
-                            </div>
-                          ) : isCDHA ? (
-                            /* 2. KHOA CHẨN ĐOÁN HÌNH ẢNH */
-                            <div style={{ padding: '0.65rem 0.75rem', display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.78rem' }}>
-                              {(rawForm.bsSieuAm || rawForm.bsXquangCT) && (
-                                <div style={{ fontSize: '0.74rem', background: '#EEF2FF', padding: '4px 8px', borderRadius: '6px', color: '#3730A3' }}>
-                                  {rawForm.bsSieuAm ? <div><strong>BS Siêu âm:</strong> {rawForm.bsSieuAm}</div> : null}
-                                  {rawForm.bsXquangCT ? <div><strong>BS Xquang-CT:</strong> {rawForm.bsXquangCT}</div> : null}
+                          <div style={{ padding: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1 }}>
+                            {/* 1. KHOA XÉT NGHIỆM */}
+                            {isXN ? (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.78rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F0FDFA', padding: '6px 10px', borderRadius: '6px', fontWeight: 'bold', border: '1px solid #99F6E4' }}>
+                                  <span style={{ color: '#0D9488' }}>🧪 TỔNG SỐ LƯỢT XÉT NGHIỆM:</span>
+                                  <span style={{ background: '#CCFBF1', color: '#0F766E', padding: '2px 10px', borderRadius: '6px', fontSize: '0.88rem' }}>{rawForm.tongSo || 0}</span>
                                 </div>
-                              )}
-                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '0.4rem' }}>
-                                {(Array.isArray(rawForm.techniques) ? rawForm.techniques : []).filter(t => t && (t.tongSo || t.name)).map((t, tIdx) => (
-                                  <div key={tIdx} style={{ background: '#F8FAFC', padding: '4px 6px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
-                                    <div style={{ fontWeight: '800', color: '#1E40AF', fontSize: '0.76rem' }}>{t.name}</div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2px', fontSize: '0.72rem' }}>
-                                      <span>Tổng: <strong style={{ color: '#0F2C59' }}>{t.tongSo || 0}</strong></span>
-                                      <span style={{ color: '#059669' }}>BHYT: {t.baoHiem || 0}</span>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.35rem' }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '4px 8px', borderRadius: '4px', border: '1px solid #E2E8F0' }}>
+                                    <span>Bảo hiểm (BHYT):</span>
+                                    <strong style={{ color: '#059669' }}>{rawForm.baoHiem || 0}</strong>
+                                  </div>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '4px 8px', borderRadius: '4px', border: '1px solid #E2E8F0' }}>
+                                    <span>Bệnh nhân Nội trú:</span>
+                                    <strong style={{ color: '#0F2C59' }}>{rawForm.noiTru || 0}</strong>
+                                  </div>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '4px 8px', borderRadius: '4px', border: '1px solid #E2E8F0', gridColumn: 'span 2' }}>
+                                    <span>Bệnh nhân Ngoại trú:</span>
+                                    <strong style={{ color: '#0F2C59' }}>{rawForm.ngoaiTru || 0}</strong>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : is4CK ? (
+                              /* 2. KHOA LIÊN CHUYÊN KHOA */
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.78rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', background: '#EFF6FF', padding: '5px 8px', borderRadius: '6px', fontWeight: 'bold', color: '#1E40AF' }}>
+                                  <span>⭐ TỔNG 4CK (Khám / TT):</span>
+                                  <span style={{ background: '#DBEAFE', padding: '1px 8px', borderRadius: '4px' }}>{rawForm.tong4ck_tongSo ?? (Number(rawForm.tmh_tongSo || 0) + Number(rawForm.mat_tongSo || 0) + Number(rawForm.rhm_noi_tongSo || 0) + Number(rawForm.daLieu_tongSo || 0))} / {rawForm.tong4ck_thuThuat ?? (Number(rawForm.tmh_thuThuat || 0) + Number(rawForm.mat_thuThuat || 0) + Number(rawForm.rhm_noi_thuThuat || 0))}</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '4px 8px', borderRadius: '4px', border: '1px solid #E2E8F0' }}>
+                                  <span>👂 Tai Mũi Họng (TMH):</span>
+                                  <strong style={{ color: '#0F2C59' }}>{rawForm.tmh_tongSo ?? 0} (TT: {rawForm.tmh_thuThuat ?? 0})</strong>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '4px 8px', borderRadius: '4px', border: '1px solid #E2E8F0' }}>
+                                  <span>👁️ Mắt:</span>
+                                  <strong style={{ color: '#0F2C59' }}>{rawForm.mat_tongSo ?? 0} (TT: {rawForm.mat_thuThuat ?? 0})</strong>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '4px 8px', borderRadius: '4px', border: '1px solid #E2E8F0' }}>
+                                  <span>🦷 Răng Hàm Mặt (RHM):</span>
+                                  <strong style={{ color: '#0F2C59' }}>{rawForm.rhm_noi_tongSo ?? 0} (TT: {rawForm.rhm_noi_thuThuat ?? 0})</strong>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '4px 8px', borderRadius: '4px', border: '1px solid #E2E8F0' }}>
+                                  <span>🩺 Da Liễu:</span>
+                                  <strong style={{ color: '#0F2C59' }}>{rawForm.daLieu_tongSo ?? 0}</strong>
+                                </div>
+                              </div>
+                            ) : isCDHA ? (
+                              /* 3. KHOA CHẨN ĐOÁN HÌNH ẢNH */
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.78rem' }}>
+                                {(rawForm.bsSieuAm || rawForm.bsXquangCT) && (
+                                  <div style={{ fontSize: '0.74rem', background: '#EEF2FF', padding: '4px 8px', borderRadius: '6px', color: '#3730A3' }}>
+                                    {rawForm.bsSieuAm ? <div><strong>BS Siêu âm:</strong> {rawForm.bsSieuAm}</div> : null}
+                                    {rawForm.bsXquangCT ? <div><strong>BS Xquang-CT:</strong> {rawForm.bsXquangCT}</div> : null}
+                                  </div>
+                                )}
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '0.4rem' }}>
+                                  {(Array.isArray(rawForm.techniques) ? rawForm.techniques : []).filter(t => t && (t.tongSo || t.name)).map((t, tIdx) => (
+                                    <div key={tIdx} style={{ background: '#F8FAFC', padding: '4px 6px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+                                      <div style={{ fontWeight: '800', color: '#1E40AF', fontSize: '0.76rem' }}>{t.name}</div>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2px', fontSize: '0.72rem' }}>
+                                        <span>Tổng: <strong style={{ color: '#0F2C59' }}>{t.tongSo || 0}</strong></span>
+                                        <span style={{ color: '#059669' }}>BHYT: {t.baoHiem || 0}</span>
+                                      </div>
                                     </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ) : isHSCC ? (
+                              /* 4. KHỐI HỒI SỨC CẤP CỨU - THẬN NHÂN TẠO */
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.76rem' }}>
+                                {rawForm.hscc && (
+                                  <div>
+                                    <div style={{ fontWeight: '800', color: '#DC2626', fontSize: '0.75rem', marginBottom: '3px' }}>🚨 HỒI SỨC CẤP CỨU (HSCC)</div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.3rem' }}>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', background: '#EFF6FF', padding: '3px 6px', borderRadius: '4px' }}><span>Tổng khám:</span><strong style={{ color: '#1E40AF' }}>{rawForm.hscc.tongSoKham || 0}</strong></div>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', background: '#FEF2F2', padding: '3px 6px', borderRadius: '4px' }}><span>Tử vong:</span><strong style={{ color: '#DC2626' }}>{rawForm.hscc.tuVong || 0}</strong></div>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}><span>Bệnh cũ:</span><strong>{rawForm.hscc.benhCu || 0}</strong></div>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}><span>Bệnh mới:</span><strong>{rawForm.hscc.benhMoi || 0}</strong></div>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}><span>Xuất viện:</span><strong>{rawForm.hscc.xuatVien || 0}</strong></div>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}><span>Chuyển viện:</span><strong>{rawForm.hscc.chuyenVien || 0}</strong></div>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}><span>Chuyển khoa:</span><strong>{rawForm.hscc.chuyenKhoa || 0}</strong></div>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}><span>Hiện còn:</span><strong style={{ color: '#059669' }}>{rawForm.hscc.hienCon || 0}</strong></div>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}><span>Kê toa:</span><strong>{rawForm.hscc.keToa || 0}</strong></div>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}><span>Ngoại trú:</span><strong>{rawForm.hscc.ngoaiTru || 0}</strong></div>
+                                    </div>
+                                  </div>
+                                )}
+                                {rawForm.tnt && (
+                                  <div style={{ borderTop: '1px solid #E2E8F0', paddingTop: '4px' }}>
+                                    <div style={{ fontWeight: '800', color: '#0284C7', fontSize: '0.75rem', marginBottom: '3px' }}>🩺 THẬN NHÂN TẠO (TNT) {rawForm.bsTrucTNT ? `(BS: ${rawForm.bsTrucTNT})` : ''}</div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.3rem' }}>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F0FDF4', padding: '3px 6px', borderRadius: '4px' }}><span>Chạy thận CTĐK:</span><strong style={{ color: '#059669' }}>{rawForm.tnt.tnt_ctdk || 0}</strong></div>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}><span>TNT Nội trú:</span><strong>{rawForm.tnt.tnt_noiTru || 0}</strong></div>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}><span>Bệnh cũ:</span><strong>{rawForm.tnt.tnt_benhCu || 0}</strong></div>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}><span>Bệnh mới:</span><strong>{rawForm.tnt.tnt_benhMoi || 0}</strong></div>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}><span>Xuất viện:</span><strong>{rawForm.tnt.tnt_xuatVien || 0}</strong></div>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}><span>Hiện còn:</span><strong style={{ color: '#059669' }}>{rawForm.tnt.tnt_hienCon || 0}</strong></div>
+                                    </div>
+                                  </div>
+                                )}
+                                {rawForm.pk21 && (
+                                  <div style={{ borderTop: '1px solid #E2E8F0', paddingTop: '4px' }}>
+                                    <div style={{ fontWeight: '800', color: '#7C3AED', fontSize: '0.75rem', marginBottom: '3px' }}>🏥 PHÒNG KHÁM 21</div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.3rem' }}>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', background: '#FAF5FF', padding: '3px 6px', borderRadius: '4px' }}><span>Khám PK21:</span><strong style={{ color: '#7C3AED' }}>{rawForm.pk21.pk21_tongSo || rawForm.pk21.pk21_tongSoKham || 0}</strong></div>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}><span>Ngoại trú:</span><strong>{rawForm.pk21.pk21_ngoaiTru || 0}</strong></div>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}><span>Nhập viện:</span><strong>{rawForm.pk21.pk21_nhapVien || 0}</strong></div>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}><span>Chuyển viện:</span><strong>{rawForm.pk21.pk21_chuyenVien || 0}</strong></div>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            ) : isYHCT ? (
+                              /* 5. Y HỌC CỔ TRUYỀN - PHCN */
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', fontSize: '0.76rem' }}>
+                                {rawForm.noiTru && (
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F0FDF4', padding: '4px 8px', borderRadius: '6px', border: '1px solid #BBF7D0' }}>
+                                    <span style={{ fontWeight: 'bold', color: '#065F46' }}>🛏️ Nội trú:</span>
+                                    <span>Cũ: <strong>{rawForm.noiTru.benhCu || 0}</strong> | Mới: <strong>{rawForm.noiTru.benhMoi || 0}</strong> | Xuất: <strong>{rawForm.noiTru.xuat || 0}</strong> | Còn: <strong style={{ color: '#059669' }}>{rawForm.noiTru.hienCon || 0}</strong></span>
+                                  </div>
+                                )}
+                                {rawForm.ngoaiTru && (
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '4px 8px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
+                                    <span style={{ fontWeight: 'bold', color: '#334155' }}>🚶 Ngoại trú:</span>
+                                    <span>Cũ: <strong>{rawForm.ngoaiTru.benhCu || 0}</strong> | Mới: <strong>{rawForm.ngoaiTru.benhMoi || 0}</strong> | Xuất: <strong>{rawForm.ngoaiTru.xuat || 0}</strong> | Còn: <strong style={{ color: '#059669' }}>{rawForm.ngoaiTru.hienCon || 0}</strong></span>
+                                  </div>
+                                )}
+                                {rawForm.keToa && (
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', background: '#EFF6FF', padding: '4px 8px', borderRadius: '6px', border: '1px solid #BFDBFE' }}>
+                                    <span style={{ fontWeight: 'bold', color: '#1E40AF' }}>💊 Kê toa:</span>
+                                    <span>Tổng: <strong>{rawForm.keToa.tongSo || 0}</strong> (BHYT: {rawForm.keToa.bhyt || 0} | DV: {rawForm.keToa.dichVu || 0})</span>
+                                  </div>
+                                )}
+                              </div>
+                            ) : isGMHS ? (
+                              /* 6. GÂY MÊ HỒI SỨC */
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.76rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', background: '#EFF6FF', padding: '4px 8px', borderRadius: '6px', fontWeight: 'bold', color: '#1E40AF' }}>
+                                  <span>🔪 Tổng số ca mổ:</span>
+                                  <span style={{ background: '#DBEAFE', padding: '1px 8px', borderRadius: '4px' }}>{rawForm.tongSoCaMo ?? (Number(rawForm.cc_ctch || 0) + Number(rawForm.cc_ngoaiTH || 0) + Number(rawForm.cc_san || 0) + Number(rawForm.ct_ctch || 0) + Number(rawForm.ct_ngoaiTH || 0) + Number(rawForm.ct_san || 0))} ca</span>
+                                </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.3rem' }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', background: '#FEF2F2', padding: '3px 6px', borderRadius: '4px' }}><span>Mổ CC CTCH:</span><strong>{rawForm.cc_ctch || 0}</strong></div>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', background: '#FEF2F2', padding: '3px 6px', borderRadius: '4px' }}><span>Mổ CC Ngoại:</span><strong>{rawForm.cc_ngoaiTH || 0}</strong></div>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', background: '#FEF2F2', padding: '3px 6px', borderRadius: '4px' }}><span>Mổ CC Sản:</span><strong>{rawForm.cc_san || 0}</strong></div>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}><span>Mổ KH CTCH:</span><strong>{rawForm.ct_ctch || 0}</strong></div>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}><span>Mổ KH Ngoại:</span><strong>{rawForm.ct_ngoaiTH || 0}</strong></div>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}><span>Mổ KH Sản:</span><strong>{rawForm.ct_san || 0}</strong></div>
+                                </div>
+                              </div>
+                            ) : (
+                              /* 7. TẤT CẢ CÁC KHOA KHÁC (Sản, Nhi, Nhiễm, Nội, Ngoại, CTCH...) */
+                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.35rem', fontSize: '0.76rem' }}>
+                                {flatFields.length === 0 ? <div style={{ color: '#94A3B8', fontStyle: 'italic', gridColumn: 'span 2' }}>Không có chỉ số chuyên môn.</div> : null}
+                                {flatFields.map((f, fIdx) => (
+                                  <div key={fIdx} style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}>
+                                    <span style={{ color: '#64748B' }}>{f.label}:</span>
+                                    <strong style={{ color: '#0F2C59' }}>{String(f.val)}</strong>
                                   </div>
                                 ))}
                               </div>
-                            </div>
-                          ) : isHSCC ? (
-                            /* 3. KHỐI HỒI SỨC CẤP CỨU - THẬN NHÂN TẠO */
-                            <div style={{ padding: '0.65rem 0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.76rem' }}>
-                              {rawForm.hscc && (
-                                <div>
-                                  <div style={{ fontWeight: '800', color: '#DC2626', fontSize: '0.75rem', marginBottom: '3px' }}>🚨 HỒI SỨC CẤP CỨU (HSCC)</div>
-                                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.3rem' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', background: '#EFF6FF', padding: '3px 6px', borderRadius: '4px' }}><span>Tổng khám:</span><strong style={{ color: '#1E40AF' }}>{rawForm.hscc.tongSoKham || 0}</strong></div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', background: '#FEF2F2', padding: '3px 6px', borderRadius: '4px' }}><span>Tử vong:</span><strong style={{ color: '#DC2626' }}>{rawForm.hscc.tuVong || 0}</strong></div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}><span>Bệnh mới:</span><strong>{rawForm.hscc.benhMoi || 0}</strong></div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}><span>Hiện còn:</span><strong style={{ color: '#059669' }}>{rawForm.hscc.hienCon || 0}</strong></div>
-                                  </div>
-                                </div>
-                              )}
-                              {rawForm.tnt && (
-                                <div style={{ borderTop: '1px solid #E2E8F0', paddingTop: '4px' }}>
-                                  <div style={{ fontWeight: '800', color: '#0284C7', fontSize: '0.75rem', marginBottom: '3px' }}>🩺 THẬN NHÂN TẠO (TNT)</div>
-                                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.3rem' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F0FDF4', padding: '3px 6px', borderRadius: '4px' }}><span>Chạy thận CTĐK:</span><strong style={{ color: '#059669' }}>{rawForm.tnt.tnt_ctdk || 0}</strong></div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}><span>TNT Nội trú:</span><strong>{rawForm.tnt.tnt_noiTru || 0}</strong></div>
-                                  </div>
-                                </div>
-                              )}
-                              {rawForm.pk21 && (
-                                <div style={{ borderTop: '1px solid #E2E8F0', paddingTop: '4px' }}>
-                                  <div style={{ fontWeight: '800', color: '#7C3AED', fontSize: '0.75rem', marginBottom: '3px' }}>🏥 PHÒNG KHÁM 21</div>
-                                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.3rem' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', background: '#FAF5FF', padding: '3px 6px', borderRadius: '4px' }}><span>Khám PK21:</span><strong style={{ color: '#7C3AED' }}>{rawForm.pk21.pk21_tongSo || rawForm.pk21.pk21_tongSoKham || 0}</strong></div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}><span>Ngoại trú:</span><strong>{rawForm.pk21.pk21_ngoaiTru || 0}</strong></div>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          ) : isYHCT ? (
-                            /* 4. Y HỌC CỔ TRUYỀN - PHCN */
-                            <div style={{ padding: '0.65rem 0.75rem', display: 'flex', flexDirection: 'column', gap: '0.45rem', fontSize: '0.76rem' }}>
-                              {rawForm.noiTru && (
-                                <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F0FDF4', padding: '4px 8px', borderRadius: '6px', border: '1px solid #BBF7D0' }}>
-                                  <span style={{ fontWeight: 'bold', color: '#065F46' }}>🛏️ Nội trú:</span>
-                                  <span>Cũ: <strong>{rawForm.noiTru.benhCu || 0}</strong> | Mới: <strong>{rawForm.noiTru.benhMoi || 0}</strong> | Còn: <strong style={{ color: '#059669' }}>{rawForm.noiTru.hienCon || 0}</strong></span>
-                                </div>
-                              )}
-                              {rawForm.ngoaiTru && (
-                                <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '4px 8px', borderRadius: '6px', border: '1px solid #E2E8F0' }}>
-                                  <span style={{ fontWeight: 'bold', color: '#334155' }}>🚶 Ngoại trú:</span>
-                                  <span>Cũ: <strong>{rawForm.ngoaiTru.benhCu || 0}</strong> | Mới: <strong>{rawForm.ngoaiTru.benhMoi || 0}</strong> | Còn: <strong style={{ color: '#059669' }}>{rawForm.ngoaiTru.hienCon || 0}</strong></span>
-                                </div>
-                              )}
-                              {rawForm.keToa && (
-                                <div style={{ display: 'flex', justifyContent: 'space-between', background: '#EFF6FF', padding: '4px 8px', borderRadius: '6px', border: '1px solid #BFDBFE' }}>
-                                  <span style={{ fontWeight: 'bold', color: '#1E40AF' }}>💊 Kê toa:</span>
-                                  <span>Tổng: <strong>{rawForm.keToa.tongSo || 0}</strong> (BHYT: {rawForm.keToa.bhyt || 0} | DV: {rawForm.keToa.dichVu || 0})</span>
-                                </div>
-                              )}
-                            </div>
-                          ) : isGMHS ? (
-                            /* 5. GÂY MÊ HỒI SỨC */
-                            <div style={{ padding: '0.65rem 0.75rem', display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.76rem' }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', background: '#EFF6FF', padding: '4px 8px', borderRadius: '6px', fontWeight: 'bold', color: '#1E40AF' }}>
-                                <span>🔪 Tổng số ca mổ:</span>
-                                <span style={{ background: '#DBEAFE', padding: '1px 8px', borderRadius: '4px' }}>{rawForm.tongSoCaMo ?? (Number(rawForm.cc_ctch || 0) + Number(rawForm.cc_ngoaiTH || 0) + Number(rawForm.cc_san || 0) + Number(rawForm.ct_ctch || 0) + Number(rawForm.ct_ngoaiTH || 0) + Number(rawForm.ct_san || 0))} ca</span>
+                            )}
+
+                            {/* Ghi chú / Diễn biến thêm giờ / Điều dưỡng trực chung cho TẤT CẢ các khoa */}
+                            {noteFields.length > 0 && (
+                              <div style={{ background: '#FFFBEB', padding: '4px 8px', borderRadius: '6px', border: '1px solid #FDE68A', fontSize: '0.73rem', color: '#92400E', marginTop: 'auto' }}>
+                                {noteFields.map((n, nIdx) => (
+                                  <div key={nIdx}><strong>📌 {n.label}:</strong> {n.val}</div>
+                                ))}
                               </div>
-                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.3rem' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', background: '#FEF2F2', padding: '3px 6px', borderRadius: '4px' }}><span>Mổ CC CTCH:</span><strong>{rawForm.cc_ctch || 0}</strong></div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', background: '#FEF2F2', padding: '3px 6px', borderRadius: '4px' }}><span>Mổ CC Ngoại:</span><strong>{rawForm.cc_ngoaiTH || 0}</strong></div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', background: '#FEF2F2', padding: '3px 6px', borderRadius: '4px' }}><span>Mổ CC Sản:</span><strong>{rawForm.cc_san || 0}</strong></div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}><span>Mổ KH Ngoại:</span><strong>{rawForm.ct_ngoaiTH || 0}</strong></div>
-                              </div>
-                            </div>
-                          ) : (
-                            /* 6. CÁC KHOA KHÁC (Nội, Ngoại, Sản, Nhi, Nhiễm, Xét Nghiệm, CTCH...) */
-                            <div style={{ padding: '0.65rem 0.8rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.35rem', fontSize: '0.76rem' }}>
-                              {flatFields.length === 0 ? <div style={{ color: '#94A3B8', fontStyle: 'italic', gridColumn: 'span 2' }}>Không có chỉ số chuyên môn.</div> : null}
-                              {flatFields.slice(0, 10).map((f, fIdx) => (
-                                <div key={fIdx} style={{ display: 'flex', justifyContent: 'space-between', background: '#F8FAFC', padding: '3px 6px', borderRadius: '4px', border: '1px solid #E2E8F0' }}>
-                                  <span style={{ color: '#64748B' }}>{translateFieldKey(f.key)}:</span>
-                                  <strong style={{ color: '#0F2C59' }}>{String(f.val)}</strong>
-                                </div>
-                              ))}
-                            </div>
-                          )}
+                            )}
+                          </div>
                         </div>
                       );
                     })}
