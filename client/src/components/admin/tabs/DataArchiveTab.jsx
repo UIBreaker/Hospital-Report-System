@@ -50,9 +50,12 @@ const DataArchiveTab = ({ onOpenPresentation, onOpenPrintView, onOpenReportDetai
   // Email Modal State
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [recipientEmail, setRecipientEmail] = useState(() => localStorage.getItem('last_archive_email') || 'khnv.bvbinhlong@gmail.com');
+  const [senderEmail, setSenderEmail] = useState(() => localStorage.getItem('archive_sender_email') || 'nhatnam171217@gmail.com');
+  const [senderAppPassword, setSenderAppPassword] = useState(() => localStorage.getItem('archive_sender_pass') || '');
   const [emailSubject, setEmailSubject] = useState('');
   const [emailNotes, setEmailNotes] = useState('');
   const [sendingEmail, setSendingEmail] = useState(false);
+  const [showPasswordHelp, setShowPasswordHelp] = useState(false);
 
   // Lightbox State
   const [lightboxData, setLightboxData] = useState({ isOpen: false, images: [], startIndex: 0 });
@@ -198,15 +201,22 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
   const handleSendEmailServer = async (e) => {
     if (e) e.preventDefault();
     if (!recipientEmail || !recipientEmail.includes('@')) {
-      alert('Vui lòng nhập địa chỉ Email hợp lệ.');
+      alert('Vui lòng nhập địa chỉ Email người nhận hợp lệ.');
+      return;
+    }
+    if (!senderAppPassword) {
+      setShowPasswordHelp(true);
+      alert('👉 Để hệ thống tự động gửi file ZIP đính kèm trong 1 click, bạn vui lòng nhập Mật Khẩu Ứng Dụng Gmail (16 chữ số) ở ô bên dưới.\n\n(Xem hướng dẫn tạo mã 16 chữ số ngay trong khung trợ giúp bên dưới nhé!)');
       return;
     }
 
     try {
       setSendingEmail(true);
       localStorage.setItem('last_archive_email', recipientEmail.trim());
+      localStorage.setItem('archive_sender_email', senderEmail.trim());
+      localStorage.setItem('archive_sender_pass', senderAppPassword.trim());
 
-      // Generate complete Base64 ZIP file attachment
+      // 1. Generate complete Base64 ZIP file attachment
       let zipAttachmentBase64 = '';
       if (dayDetails && selectedDay) {
         try {
@@ -219,6 +229,8 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
       const payload = {
         date: selectedDay.date,
         recipientEmail: recipientEmail.trim(),
+        senderEmail: senderEmail.trim(),
+        senderAppPassword: senderAppPassword.trim(),
         subject: emailSubject.trim(),
         notes: emailNotes.trim(),
         zipAttachmentBase64,
@@ -236,13 +248,12 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
         alert(`🎉 ${res.message}`);
         setShowEmailModal(false);
       } else {
-        alert(res?.error || 'Không thể gửi Email qua máy chủ. Bạn có thể dùng nút "Mở Gmail Gửi Ngay" bên cạnh.');
+        alert(res?.error || 'Không thể gửi Email qua máy chủ.');
       }
     } catch (err) {
       console.error('Lỗi gửi email:', err);
-      alert('Thông báo: Máy chủ đang ở chế độ lưu trữ đám mây. Đang mở hộp thư Gmail để bạn gửi ngay lập tức!');
-      handleOpenGmailWeb();
-      setShowEmailModal(false);
+      const errMsg = err.response?.data?.error || err.message || 'Lỗi khi gửi Email qua máy chủ. Vui lòng kiểm tra lại Mật khẩu ứng dụng Gmail.';
+      alert(`⚠️ ${errMsg}`);
     } finally {
       setSendingEmail(false);
     }
@@ -959,7 +970,7 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
             <form onSubmit={handleSendEmailServer} style={{ padding: '1.2rem 1.4rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '800', color: '#0F2C59', marginBottom: '4px' }}>
-                  Địa chỉ Email máy tính lưu trữ / Ban Giám Đốc:
+                  📮 1. Địa chỉ Email người nhận (Máy tính lưu trữ / Lãnh đạo):
                 </label>
                 <input
                   type="email"
@@ -971,17 +982,55 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
                 />
               </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '800', color: '#0F2C59', marginBottom: '4px' }}>
-                  Tiêu đề Email:
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={emailSubject}
-                  onChange={(e) => setEmailSubject(e.target.value)}
-                  style={{ width: '100%', padding: '0.5rem 0.75rem', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '0.85rem', boxSizing: 'border-box' }}
-                />
+              {/* Automatic 1-Click Sending Config */}
+              <div style={{ backgroundColor: '#F0F9FF', border: '1.5px solid #BAE6FD', borderRadius: '10px', padding: '0.85rem' }}>
+                <div style={{ fontSize: '0.82rem', fontWeight: '900', color: '#0369A1', marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>⚡ CẤU HÌNH GỬI FILE ZIP TỰ ĐỘNG 1-CLICK</span>
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswordHelp(!showPasswordHelp)}
+                    style={{ background: 'none', border: 'none', color: '#0284C7', fontSize: '0.74rem', fontWeight: '700', textDecoration: 'underline', cursor: 'pointer' }}
+                  >
+                    {showPasswordHelp ? 'Ẩn hướng dẫn ▲' : '❓ Cách lấy mã 16 số ▼'}
+                  </button>
+                </div>
+
+                {showPasswordHelp && (
+                  <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #7DD3FC', borderRadius: '8px', padding: '0.6rem 0.8rem', fontSize: '0.74rem', color: '#0C4A6E', marginBottom: '0.65rem', lineHeight: '1.45' }}>
+                    <strong>Cách lấy Mật khẩu ứng dụng Gmail (Chỉ làm 1 lần):</strong><br />
+                    1. Truy cập <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noreferrer" style={{ color: '#0284C7', fontWeight: 'bold' }}>myaccount.google.com/apppasswords</a> (Đăng nhập Google).<br />
+                    2. Đặt tên ứng dụng: <em>"Báo Cáo Bệnh Viện"</em> ➔ Bấm <strong>Tạo</strong>.<br />
+                    3. Copy mã 16 chữ số màu vàng dán vào ô bên dưới. (Hệ thống tự nhớ vĩnh viễn trên máy).
+                  </div>
+                )}
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: '700', color: '#0369A1', marginBottom: '3px' }}>
+                      Email gửi (Gmail của bạn):
+                    </label>
+                    <input
+                      type="email"
+                      value={senderEmail}
+                      onChange={(e) => setSenderEmail(e.target.value)}
+                      placeholder="email@gmail.com"
+                      style={{ width: '100%', padding: '0.42rem 0.65rem', borderRadius: '6px', border: '1px solid #7DD3FC', fontSize: '0.8rem', boxSizing: 'border-box' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: '700', color: '#0369A1', marginBottom: '3px' }}>
+                      Mật khẩu ứng dụng (16 chữ số):
+                    </label>
+                    <input
+                      type="password"
+                      value={senderAppPassword}
+                      onChange={(e) => setSenderAppPassword(e.target.value)}
+                      placeholder="xxxx xxxx xxxx xxxx"
+                      style={{ width: '100%', padding: '0.42rem 0.65rem', borderRadius: '6px', border: '1px solid #7DD3FC', fontSize: '0.8rem', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                </div>
               </div>
 
               <div>
@@ -993,47 +1042,70 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
                   value={emailNotes}
                   onChange={(e) => setEmailNotes(e.target.value)}
                   placeholder="Ghi chú thêm cho người nhận ở máy tính kia..."
-                  style={{ width: '100%', padding: '0.5rem 0.75rem', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '0.82rem', boxSizing: 'border-box', resize: 'vertical' }}
+                  style={{ width: '100%', padding: '0.45rem 0.75rem', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '0.82rem', boxSizing: 'border-box', resize: 'vertical' }}
                 />
               </div>
 
-              {/* Multi-Channel Sending Buttons */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
-                {/* 1-Click Gmail Action (Guaranteed 100% working without SMTP server config) */}
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.2rem' }}>
+                {/* PRIMARY 1-CLICK ACTION */}
                 <button
-                  type="button"
-                  onClick={handleOpenGmailWeb}
+                  type="submit"
+                  disabled={sendingEmail}
                   style={{
-                    padding: '0.65rem 1rem',
-                    borderRadius: '9px',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '10px',
                     border: 'none',
-                    background: 'linear-gradient(135deg, #EA4335 0%, #C5221F 100%)',
+                    background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
                     color: '#FFFFFF',
                     fontWeight: '900',
-                    fontSize: '0.88rem',
-                    cursor: 'pointer',
+                    fontSize: '0.92rem',
+                    cursor: sendingEmail ? 'not-allowed' : 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '0.45rem',
-                    boxShadow: '0 3px 10px rgba(234, 67, 53, 0.3)'
+                    gap: '0.5rem',
+                    boxShadow: '0 4px 15px rgba(5, 150, 105, 0.35)',
+                    transition: 'all 0.2s ease'
                   }}
                 >
-                  <FaEnvelope /> 🚀 Mở Gmail Tự Động Soạn & Gửi Ngay (1-Click)
+                  {sendingEmail ? <><FaSpinner className="spinner" /> Đang đóng gói ZIP & gửi trực tiếp...</> : <>⚡ GỬI EMAIL ĐÍNH KÈM FILE ZIP NGAY (1-CLICK)</>}
                 </button>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.45rem' }}>
                   <button
                     type="button"
-                    onClick={handleCopySummary}
+                    onClick={handleOpenGmailWeb}
                     style={{
-                      padding: '0.5rem 0.75rem',
+                      padding: '0.45rem 0.7rem',
                       borderRadius: '8px',
                       border: '1.5px solid #CBD5E1',
-                      backgroundColor: '#F8FAFC',
+                      backgroundColor: '#FFFFFF',
+                      color: '#C5221F',
+                      fontWeight: '800',
+                      fontSize: '0.75rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.35rem'
+                    }}
+                    title="Mở giao diện Gmail Web truyền thống"
+                  >
+                    <FaEnvelope /> Mở Gmail Web
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleCopySummary}
+                    style={{
+                      padding: '0.45rem 0.7rem',
+                      borderRadius: '8px',
+                      border: '1.5px solid #CBD5E1',
+                      backgroundColor: '#FFFFFF',
                       color: '#0F2C59',
                       fontWeight: '800',
-                      fontSize: '0.78rem',
+                      fontSize: '0.75rem',
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
@@ -1042,68 +1114,26 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
                     }}
                     title="Sao chép nội dung tóm tắt để dán gửi Zalo / Messenger"
                   >
-                    📋 Copy Gửi Zalo / Tin Nhắn
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleOpenNativeMail}
-                    style={{
-                      padding: '0.5rem 0.75rem',
-                      borderRadius: '8px',
-                      border: '1.5px solid #CBD5E1',
-                      backgroundColor: '#F8FAFC',
-                      color: '#0284C7',
-                      fontWeight: '800',
-                      fontSize: '0.78rem',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '0.35rem'
-                    }}
-                    title="Mở ứng dụng Outlook hoặc Mail trên Windows"
-                  >
-                    ✉️ Mở Ứng Dụng Mail Máy Tính
+                    📋 Copy Gửi Zalo
                   </button>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.3rem', borderTop: '1px solid #F1F5F9', paddingTop: '0.6rem' }}>
+                <div style={{ textAlign: 'right', marginTop: '0.2rem' }}>
                   <button
                     type="button"
                     onClick={() => setShowEmailModal(false)}
                     style={{
-                      padding: '0.45rem 0.9rem',
-                      borderRadius: '7px',
+                      padding: '0.35rem 0.8rem',
+                      borderRadius: '6px',
                       border: '1px solid #CBD5E1',
-                      backgroundColor: '#FFFFFF',
+                      backgroundColor: '#F8FAFC',
                       color: '#64748B',
                       fontWeight: '700',
-                      fontSize: '0.8rem',
+                      fontSize: '0.76rem',
                       cursor: 'pointer'
                     }}
                   >
                     Đóng
-                  </button>
-
-                  <button
-                    type="submit"
-                    disabled={sendingEmail}
-                    style={{
-                      padding: '0.45rem 1rem',
-                      borderRadius: '7px',
-                      border: 'none',
-                      backgroundColor: '#0F2C59',
-                      color: '#FFFFFF',
-                      fontWeight: '800',
-                      fontSize: '0.8rem',
-                      cursor: sendingEmail ? 'not-allowed' : 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.35rem'
-                    }}
-                  >
-                    {sendingEmail ? <><FaSpinner className="spinner" /> Đang gửi...</> : <>🤖 Gửi Ngầm Qua Máy Chủ</>}
                   </button>
                 </div>
               </div>

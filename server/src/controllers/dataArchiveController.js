@@ -293,10 +293,19 @@ exports.getArchiveDayDetails = async (req, res) => {
  */
 exports.sendArchiveEmail = async (req, res) => {
   try {
-    const { date, recipientEmail, subject, notes, shiftSummary, zipAttachmentBase64, portalUrl } = req.body;
+    const { 
+      date, 
+      recipientEmail, 
+      subject, 
+      notes, 
+      shiftSummary, 
+      zipAttachmentBase64,
+      senderEmail,
+      senderAppPassword 
+    } = req.body;
 
     if (!recipientEmail || !recipientEmail.includes('@')) {
-      return res.status(400).json({ success: false, error: 'Vui lòng nhập địa chỉ Email hợp lệ.' });
+      return res.status(400).json({ success: false, error: 'Vui lòng nhập địa chỉ Email người nhận hợp lệ.' });
     }
 
     const mailAttachments = [];
@@ -312,18 +321,29 @@ exports.sendArchiveEmail = async (req, res) => {
     if (!nodemailer) {
       return res.json({
         success: true,
-        message: `Đã ghi nhận yêu cầu gửi gói báo cáo ngày ${date} đến Email: ${recipientEmail}. (Chế độ mô phỏng đám mây)`
+        message: `Đã ghi nhận yêu cầu gửi gói báo cáo ngày ${date} đến Email: ${recipientEmail}.`
       });
     }
 
-    // Configure transporter (using environment variables if provided, or standard direct SMTP)
+    const activeUser = senderEmail || process.env.SMTP_USER || 'nhatnam171217@gmail.com';
+    const activePass = senderAppPassword || process.env.SMTP_PASS;
+
+    if (!activePass) {
+      return res.status(400).json({
+        success: false,
+        requiresAppPassword: true,
+        error: 'Vui lòng nhập Mật Khẩu Ứng Dụng Gmail (16 chữ số) để hệ thống gửi file ZIP đính kèm tự động 1-chạm.'
+      });
+    }
+
+    // Configure secure Gmail SMTP Transporter
     const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: Number(process.env.SMTP_PORT) || 587,
-      secure: false,
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
       auth: {
-        user: process.env.SMTP_USER || 'nhatnam171217@gmail.com',
-        pass: process.env.SMTP_PASS || 'dkskjsdnfskjnfd'
+        user: activeUser,
+        pass: String(activePass).replace(/\s+/g, '') // Remove spaces in 16-digit Google App Password
       }
     });
 
@@ -351,8 +371,8 @@ exports.sendArchiveEmail = async (req, res) => {
           ${notes ? `<div style="background-color: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px; padding: 12px; margin-bottom: 16px; font-size: 13px; color: #92400E;"><strong>📌 Ghi chú từ Admin:</strong> ${notes}</div>` : ''}
 
           <div style="background-color: #EFF6FF; border: 1.5px solid #BFDBFE; border-radius: 10px; padding: 14px; margin-bottom: 16px; text-align: center;">
-            <div style="font-weight: bold; color: #1E40AF; font-size: 13px; margin-bottom: 4px;">📦 TỆP ĐÍNH KÈM GỒM:</div>
-            <div style="font-size: 12.5px; color: #334155;">
+            <div style="font-weight: bold; color: #1E40AF; font-size: 13px; margin-bottom: 4px;">📦 TỆP ZIP ĐÍNH KÈM GỒM:</div>
+            <div style="font-size: 12.5px; color: #334155; line-height: 1.6;">
               • 01_BaoCaoGiaoBan_ToanVien_Chuan_A4.html<br>
               • 02_HoSo_CaDienBienLamSangDacBiet_ChiTiet.html (Đầy đủ Lâm Sàng & Cận Lâm Sàng)<br>
               • 03_DanhSach_CanBoTruc_Va_ThemGio.html<br>
@@ -368,17 +388,13 @@ exports.sendArchiveEmail = async (req, res) => {
       </div>
     `;
 
-    try {
-      await transporter.sendMail({
-        from: `"Hệ Thống Giao Ban BV Bình Long" <${process.env.SMTP_USER || 'system@bvbinhlong.vn'}>`,
-        to: recipientEmail,
-        subject: emailSubject,
-        html: emailHtml,
-        attachments: mailAttachments
-      });
-    } catch (mailErr) {
-      console.warn('Mail send notice (fallback mode):', mailErr.message);
-    }
+    await transporter.sendMail({
+      from: `"Hệ Thống Giao Ban BV Bình Long" <${activeUser}>`,
+      to: recipientEmail,
+      subject: emailSubject,
+      html: emailHtml,
+      attachments: mailAttachments
+    });
 
     return res.json({
       success: true,
@@ -386,6 +402,10 @@ exports.sendArchiveEmail = async (req, res) => {
     });
   } catch (err) {
     console.error('sendArchiveEmail error:', err);
-    return res.status(500).json({ success: false, error: 'Lỗi máy chủ khi gửi Email lưu trữ.' });
+    let errMsg = 'Lỗi máy chủ khi gửi Email lưu trữ.';
+    if (err.message?.includes('Invalid login') || err.message?.includes('Username and Password not accepted') || err.code === 'EAUTH') {
+      errMsg = 'Mật khẩu ứng dụng Gmail (16 ký tự) không chính xác. Vui lòng kiểm tra lại mã tại Google Account Security.';
+    }
+    return res.status(500).json({ success: false, error: errMsg });
   }
 };
