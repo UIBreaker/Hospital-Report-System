@@ -992,10 +992,10 @@ const PresentationPage = () => {
   const handleExportPowerPoint = async () => {
     try {
       setExportingPptx(true);
-      await exportPresentationToPowerPoint(slides, date || 'today');
+      await exportPresentationToPowerPoint(slides, date || 'today', reports);
     } catch (err) {
       console.error('Failed to export PPTX', err);
-      alert('Không thể xuất PowerPoint. Vui lòng thử lại.');
+      alert(`Không thể xuất PowerPoint: ${err.message || 'Lỗi xử lý file PPTX'}`);
     } finally {
       setExportingPptx(false);
     }
