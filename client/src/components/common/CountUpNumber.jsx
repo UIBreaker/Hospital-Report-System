@@ -18,6 +18,12 @@ const CountUpNumber = ({
   const rawTarget = end !== undefined ? end : (value !== undefined ? value : 0);
   const target = typeof rawTarget === 'number' ? rawTarget : (Number(rawTarget) || 0);
 
+  const [displayValue, setDisplayValue] = useState(target);
+  const [isPopping, setIsPopping] = useState(false);
+  const startValueRef = useRef(0);
+  const startTimeRef = useRef(null);
+  const animationFrameRef = useRef(null);
+
   useEffect(() => {
     const startVal = startValueRef.current;
     const endVal = target;
@@ -31,7 +37,6 @@ const CountUpNumber = ({
     setIsPopping(true);
     const popTimer = setTimeout(() => setIsPopping(false), 500);
 
-    const easeOutExpo = (t) => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t));
     const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
 
     const animate = (timestamp) => {
@@ -61,8 +66,8 @@ const CountUpNumber = ({
   }, [target, duration]);
 
   const formatted = decimals > 0
-    ? displayValue.toFixed(decimals)
-    : Math.round(displayValue).toString();
+    ? Number(displayValue || 0).toFixed(decimals)
+    : Math.round(Number(displayValue || 0)).toString();
 
   return (
     <span
