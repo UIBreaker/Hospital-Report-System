@@ -142,6 +142,13 @@ const PresentationPage = () => {
   const [showControls, setShowControls] = useState(true);
   const controlsIdleTimerRef = useRef(null);
 
+  // Top-left controls hover visibility state (Only show Slide List & AI Voice button when mouse hovers top-left corner)
+  const [isTopLeftHovered, setIsTopLeftHovered] = useState(false);
+
+  useEffect(() => {
+    setIsTopLeftHovered(false);
+  }, [currentSlide]);
+
   const registerUserActivity = () => {
     setShowControls(true);
     if (controlsIdleTimerRef.current) {
@@ -1254,63 +1261,77 @@ const PresentationPage = () => {
           padding: 0,
           transition: 'height 0.25s ease'
         }}>
-          {/* Floating Action Controls (Slide List & AI Voice Narrator) */}
-          <div style={{
-            position: 'absolute',
-            top: '1rem',
-            left: '1.25rem',
-            zIndex: 10,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.65rem',
-            opacity: (aiVoiceActive && !showControls) ? 0 : 1,
-            pointerEvents: (aiVoiceActive && !showControls) ? 'none' : 'auto',
-            transform: (aiVoiceActive && !showControls) ? 'translateY(-12px)' : 'translateY(0)',
-            transition: 'opacity 0.25s ease, transform 0.25s ease'
-          }}>
-            <button
-              type="button"
-              onClick={() => setShowSidebar(prev => !prev)}
-              style={{
-                backgroundColor: 'rgba(15, 44, 89, 0.88)',
-                color: '#FFFFFF',
-                border: '1px solid rgba(255, 255, 255, 0.25)',
-                borderRadius: '20px',
-                padding: '0.35rem 0.85rem',
-                fontSize: '0.78rem',
-                fontWeight: '800',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.45rem',
-                backdropFilter: 'blur(8px)',
-                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.12)',
-                transition: 'all 0.15s ease'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2563EB'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(15, 44, 89, 0.88)'}
-              title="Mở danh sách slide (Phím M hoặc S)"
-            >
-              <FaListUl style={{ fontSize: '0.78rem' }} />
-              <span>Danh sách ({slides.length})</span>
-            </button>
+          {/* Top-Left Hover Zone (Hotspot trigger for Slide List & AI Voice Narrator) */}
+          <div
+            onMouseEnter={() => setIsTopLeftHovered(true)}
+            onMouseLeave={() => setIsTopLeftHovered(false)}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              padding: '1rem 1.25rem 2rem 2rem',
+              zIndex: 50,
+              display: 'flex',
+              alignItems: 'center',
+              minWidth: '320px',
+              minHeight: '70px',
+              boxSizing: 'border-box'
+            }}
+          >
+            {/* Floating Action Controls - only visible when mouse hovers over top-left corner */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.65rem',
+              opacity: isTopLeftHovered ? 1 : 0,
+              pointerEvents: isTopLeftHovered ? 'auto' : 'none',
+              transform: isTopLeftHovered ? 'translateY(0)' : 'translateY(-10px)',
+              transition: 'opacity 0.25s ease, transform 0.25s ease'
+            }}>
+              <button
+                type="button"
+                onClick={() => setShowSidebar(prev => !prev)}
+                style={{
+                  backgroundColor: 'rgba(15, 44, 89, 0.88)',
+                  color: '#FFFFFF',
+                  border: '1px solid rgba(255, 255, 255, 0.25)',
+                  borderRadius: '20px',
+                  padding: '0.35rem 0.85rem',
+                  fontSize: '0.78rem',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.45rem',
+                  backdropFilter: 'blur(8px)',
+                  boxShadow: '0 4px 15px rgba(0, 0, 0, 0.12)',
+                  transition: 'all 0.15s ease'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2563EB'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(15, 44, 89, 0.88)'}
+                title="Mở danh sách slide (Phím M hoặc S)"
+              >
+                <FaListUl style={{ fontSize: '0.78rem' }} />
+                <span>Danh sách ({slides.length})</span>
+              </button>
 
-            {/* AI Voice Presenter Control */}
-            <AIVoicePresenterControl
-              isActive={aiVoiceActive}
-              onToggleActive={setAiVoiceActive}
-              showControls={showControls}
-              currentSlideIndex={currentSlide}
-              totalSlides={slides.length}
-              currentSlideTitle={slide.title}
-              currentScript={currentScript}
-              onNextSlide={handleNextSlide}
-              onReplaySlide={speakCurrentSlide}
-              autoAdvanceEnabled={autoAdvanceEnabled}
-              onToggleAutoAdvance={setAutoAdvanceEnabled}
-              transitionDelay={transitionDelay}
-              onChangeTransitionDelay={setTransitionDelay}
-            />
+              {/* AI Voice Presenter Control */}
+              <AIVoicePresenterControl
+                isActive={aiVoiceActive}
+                onToggleActive={setAiVoiceActive}
+                showControls={showControls}
+                currentSlideIndex={currentSlide}
+                totalSlides={slides.length}
+                currentSlideTitle={slide.title}
+                currentScript={currentScript}
+                onNextSlide={handleNextSlide}
+                onReplaySlide={speakCurrentSlide}
+                autoAdvanceEnabled={autoAdvanceEnabled}
+                onToggleAutoAdvance={setAutoAdvanceEnabled}
+                transitionDelay={transitionDelay}
+                onChangeTransitionDelay={setTransitionDelay}
+              />
+            </div>
           </div>
 
           {/* 100% Edge-to-Edge Slide Inner Container */}
