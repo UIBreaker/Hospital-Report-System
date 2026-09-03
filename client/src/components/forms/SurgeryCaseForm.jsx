@@ -12,7 +12,8 @@ const SurgeryCaseForm = ({ surgeryCases = [], setSurgeryCases }) => {
   const handleChange = useCallback((id, field, value) => {
     setSurgeryCases(prev =>
       prev.map(sc => {
-        if ((sc._id || sc.id) === id) {
+        const itemKey = sc._id || sc.id;
+        if (itemKey === id || String(itemKey) === String(id)) {
           return {
             ...sc,
             [field]: value,
@@ -65,7 +66,10 @@ const SurgeryCaseForm = ({ surgeryCases = [], setSurgeryCases }) => {
   }, [setSurgeryCases]);
 
   const removeCase = useCallback((id) => {
-    setSurgeryCases(prev => prev.filter(sc => sc._id !== id));
+    setSurgeryCases(prev => prev.filter(sc => {
+      const itemKey = sc._id || sc.id;
+      return itemKey !== id && String(itemKey) !== String(id);
+    }));
     setExpanded(prev => {
       const next = { ...prev };
       delete next[id];
@@ -110,7 +114,7 @@ const SurgeryCaseForm = ({ surgeryCases = [], setSurgeryCases }) => {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {surgeryCases.map((sCase, index) => {
-            const id = sCase._id || `legacy_sc_${index}`;
+            const id = sCase._id || sCase.id || `legacy_sc_${index}`;
             const isExpanded = expanded[id] !== false;
             return (
               <div

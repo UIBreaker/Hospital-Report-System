@@ -12,7 +12,8 @@ const DeathCaseForm = ({ deathCases = [], setDeathCases }) => {
   const handleChange = useCallback((id, field, value) => {
     setDeathCases(prev =>
       prev.map(dc => {
-        if ((dc._id || dc.id) === id) {
+        const itemKey = dc._id || dc.id;
+        if (itemKey === id || String(itemKey) === String(id)) {
           return {
             ...dc,
             [field]: value,
@@ -64,7 +65,10 @@ const DeathCaseForm = ({ deathCases = [], setDeathCases }) => {
   }, [setDeathCases]);
 
   const removeCase = useCallback((id) => {
-    setDeathCases(prev => prev.filter(dc => dc._id !== id));
+    setDeathCases(prev => prev.filter(dc => {
+      const itemKey = dc._id || dc.id;
+      return itemKey !== id && String(itemKey) !== String(id);
+    }));
     setExpanded(prev => {
       const next = { ...prev };
       delete next[id];
@@ -109,7 +113,7 @@ const DeathCaseForm = ({ deathCases = [], setDeathCases }) => {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {deathCases.map((dCase, index) => {
-            const id = dCase._id || `legacy_dc_${index}`;
+            const id = dCase._id || dCase.id || `legacy_dc_${index}`;
             const isExpanded = expanded[id] !== false;
             return (
               <div

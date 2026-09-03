@@ -338,10 +338,15 @@ const ReportPage = () => {
             return [];
           };
 
-          const rawTransfers = safeCaseArray(report.transferCases || report.transfer_cases || parsedData.transferCases || parsedData.transfer_cases);
-          const rawSurgeries = safeCaseArray(report.surgeryCases || report.surgery_cases || parsedData.surgeryCases || parsedData.surgery_cases);
-          const rawDeaths = safeCaseArray(report.deathCases || report.death_cases || parsedData.deathCases || parsedData.death_cases);
-          const rawCriticals = safeCaseArray(report.criticalCases || report.critical_cases || parsedData.criticalCases || parsedData.critical_cases);
+          const normalizeCaseItem = (item, prefix, idx) => ({
+            ...item,
+            _id: item._id || (item.id ? String(item.id) : `${prefix}_${idx}_${Date.now()}`)
+          });
+
+          const rawTransfers = safeCaseArray(report.transferCases || report.transfer_cases || parsedData.transferCases || parsedData.transfer_cases).map((c, i) => normalizeCaseItem(c, 'tc', i));
+          const rawSurgeries = safeCaseArray(report.surgeryCases || report.surgery_cases || parsedData.surgeryCases || parsedData.surgery_cases).map((c, i) => normalizeCaseItem(c, 'sc', i));
+          const rawDeaths = safeCaseArray(report.deathCases || report.death_cases || parsedData.deathCases || parsedData.death_cases).map((c, i) => normalizeCaseItem(c, 'dc', i));
+          const rawCriticals = safeCaseArray(report.criticalCases || report.critical_cases || parsedData.criticalCases || parsedData.critical_cases).map((c, i) => normalizeCaseItem(c, 'cc', i));
 
           setFormData(parsedData);
           setTransferCases(rawTransfers);
