@@ -21,7 +21,8 @@ import {
   FaDoorOpen,
   FaUserNurse,
   FaUserPlus,
-  FaMapMarkerAlt
+  FaMapMarkerAlt,
+  FaExchangeAlt
 } from 'react-icons/fa';
 import CaseImageUploader from '../../common/CaseImageUploader';
 import ReportDataViewer from '../common/ReportDataViewer';
@@ -107,7 +108,8 @@ const AdminReportDetailModal = ({
   handleRemoveDeathCase,
   handleAddCriticalCase,
   handleCriticalCaseChange,
-  handleRemoveCriticalCase
+  handleRemoveCriticalCase,
+  onOpenMoveReportModal
 }) => {
   const [mounted, setMounted] = useState(false);
 
@@ -276,6 +278,28 @@ const AdminReportDetailModal = ({
                     </button>
                   </>
                 )}
+
+                {/* Move Report Date button */}
+                <button
+                  className="btn btn-sm"
+                  type="button"
+                  onClick={() => onOpenMoveReportModal && onOpenMoveReportModal(modalDept)}
+                  style={{
+                    backgroundColor: '#EFF6FF',
+                    color: '#1D4ED8',
+                    border: '1.5px solid #BFDBFE',
+                    borderRadius: '6px',
+                    fontWeight: '700',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                    padding: '0.45rem 0.85rem',
+                    cursor: 'pointer'
+                  }}
+                  title="Chuyển báo cáo của khoa sang ngày khác nếu nộp nhầm ngày"
+                >
+                  <FaExchangeAlt /> Chuyển ngày
+                </button>
 
                 {/* Delete button */}
                 <button

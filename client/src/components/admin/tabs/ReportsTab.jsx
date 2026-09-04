@@ -23,8 +23,7 @@ import {
   FaNotesMedical,
   FaFilter,
   FaExclamationTriangle,
-  FaBolt,
-  FaExchangeAlt
+  FaBolt
 } from 'react-icons/fa';
 import { Notice } from '../../ui';
 import MedicalLoader from '../../common/MedicalLoader';
@@ -67,8 +66,7 @@ const ReportsTab = ({
   loading = false,
   error = '',
   onClearError,
-  onOpenDetailModal,
-  onOpenMoveModal
+  onOpenDetailModal
 }) => {
   const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'submitted' | 'unsubmitted' | 'has_cases'
 
@@ -611,45 +609,19 @@ const ReportsTab = ({
                     )}
                   </span>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    {isSubmitted && onOpenMoveModal && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onOpenMoveModal(dept);
-                        }}
-                        style={{
-                          backgroundColor: '#EFF6FF',
-                          color: '#1D4ED8',
-                          border: '1px solid #BFDBFE',
-                          borderRadius: '8px',
-                          padding: '0.2rem 0.5rem',
-                          fontSize: '0.72rem',
-                          fontWeight: '800',
-                          cursor: 'pointer',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '0.25rem'
-                        }}
-                        title="Chuyển báo cáo sang ngày khác nếu khoa nộp nhầm"
-                      >
-                        <FaExchangeAlt size={10} /> Chuyển
-                      </button>
-                    )}
-                    <span style={{
-                      color: isSubmitted ? '#0284C7' : '#DC2626',
-                      fontWeight: '800',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.3rem',
-                      backgroundColor: isSubmitted ? '#EFF6FF' : '#FEF2F2',
-                      padding: '0.2rem 0.55rem',
-                      borderRadius: '8px'
-                    }}>
-                      <FaEye size={12} /> {isSubmitted ? 'Xem chi tiết' : 'Xem & Nộp'}
-                    </span>
-                  </div>
+                  <span style={{
+                    color: isSubmitted ? '#0284C7' : '#DC2626',
+                    fontWeight: '800',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                    backgroundColor: isSubmitted ? '#EFF6FF' : '#FEF2F2',
+                    padding: '0.2rem 0.65rem',
+                    borderRadius: '8px',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    <FaEye size={12} /> {isSubmitted ? 'Xem chi tiết' : 'Xem & Nộp'}
+                  </span>
                 </div>
               </div>
             );

@@ -1495,14 +1495,6 @@ const AdminDashboard = () => {
                 error={error}
                 onClearError={() => setError('')}
                 onOpenDetailModal={handleOpenDetailModal}
-                onOpenMoveModal={(dept) => setDashboardMoveModal({
-                  isOpen: true,
-                  departmentCode: dept.departmentCode,
-                  departmentName: dept.departmentName || DEPARTMENT_NAMES[dept.departmentCode] || dept.departmentCode,
-                  currentDate: date,
-                  doctorName: dept.doctorName || '',
-                  nurseName: dept.nurseName || ''
-                })}
               />
             )}
             {activeTab === 'history' && (
@@ -1587,6 +1579,16 @@ const AdminDashboard = () => {
         handleAddCriticalCase={handleAddCriticalCase}
         handleCriticalCaseChange={handleCriticalCaseChange}
         handleRemoveCriticalCase={handleRemoveCriticalCase}
+        onOpenMoveReportModal={(dept) => {
+          setDashboardMoveModal({
+            isOpen: true,
+            departmentCode: dept.departmentCode,
+            departmentName: dept.departmentName || DEPARTMENT_NAMES[dept.departmentCode] || dept.departmentCode,
+            currentDate: modalReportDate || date,
+            doctorName: editHeader?.doctorName || dept.doctorName || '',
+            nurseName: editHeader?.nurseName || dept.nurseName || ''
+          });
+        }}
       />
 
       {/* High-Tech Security Lockdown & Unlock Modal */}
@@ -1629,6 +1631,7 @@ const AdminDashboard = () => {
         nurseName={dashboardMoveModal.nurseName}
         onSuccess={() => {
           fetchStatus();
+          setModalOpen(false);
         }}
       />
     </div>
