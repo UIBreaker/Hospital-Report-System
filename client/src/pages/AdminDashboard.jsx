@@ -34,6 +34,7 @@ import Footer from '../components/common/Footer';
 import AdminReportDetailModal from '../components/admin/modals/AdminReportDetailModal';
 import SecurityLockModal from '../components/admin/modals/SecurityLockModal';
 import VersionManageModal from '../components/admin/modals/VersionManageModal';
+import MoveReportModal from '../components/admin/modals/MoveReportModal';
 import MedicalLoader from '../components/common/MedicalLoader';
 import { normalizeImages } from '../utils/medicalFormatters';
 
@@ -140,6 +141,16 @@ const AdminDashboard = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showVersionManageModal, setShowVersionManageModal] = useState(false);
+
+  // Move Report Modal State
+  const [dashboardMoveModal, setDashboardMoveModal] = useState({
+    isOpen: false,
+    departmentCode: '',
+    departmentName: '',
+    currentDate: '',
+    doctorName: '',
+    nurseName: ''
+  });
 
   // Form State inside Modal
   const [editHeader, setEditHeader] = useState({
@@ -1484,6 +1495,14 @@ const AdminDashboard = () => {
                 error={error}
                 onClearError={() => setError('')}
                 onOpenDetailModal={handleOpenDetailModal}
+                onOpenMoveModal={(dept) => setDashboardMoveModal({
+                  isOpen: true,
+                  departmentCode: dept.departmentCode,
+                  departmentName: dept.departmentName || DEPARTMENT_NAMES[dept.departmentCode] || dept.departmentCode,
+                  currentDate: date,
+                  doctorName: dept.doctorName || '',
+                  nurseName: dept.nurseName || ''
+                })}
               />
             )}
             {activeTab === 'history' && (
@@ -1597,6 +1616,20 @@ const AdminDashboard = () => {
       <VersionManageModal
         isOpen={showVersionManageModal}
         onClose={() => setShowVersionManageModal(false)}
+      />
+
+      {/* Move Report Date Modal */}
+      <MoveReportModal
+        isOpen={dashboardMoveModal.isOpen}
+        onClose={() => setDashboardMoveModal(prev => ({ ...prev, isOpen: false }))}
+        departmentCode={dashboardMoveModal.departmentCode}
+        departmentName={dashboardMoveModal.departmentName}
+        currentDate={dashboardMoveModal.currentDate}
+        doctorName={dashboardMoveModal.doctorName}
+        nurseName={dashboardMoveModal.nurseName}
+        onSuccess={() => {
+          fetchStatus();
+        }}
       />
     </div>
   );

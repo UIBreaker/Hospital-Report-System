@@ -87,6 +87,33 @@ const getShiftReportHistory = async (req, res, next) => {
 
     const [rows] = await pool.execute(sql, queryParams);
 
+    // Fetch revision audit logs for these reports in a single query
+    const reportIds = rows.map(r => r.id);
+    const auditLogsByReport = new Map();
+    if (reportIds.length > 0) {
+      const placeholders = reportIds.map(() => '?').join(',');
+      const [logs] = await pool.execute(
+        `SELECT id, report_id, department_code, report_date, action_type, doctor_name, nurse_name, changes_summary, created_at
+         FROM report_audit_logs
+         WHERE report_id IN (${placeholders})
+         ORDER BY created_at ASC`,
+        reportIds
+      );
+      logs.forEach(l => {
+        if (!auditLogsByReport.has(l.report_id)) {
+          auditLogsByReport.set(l.report_id, []);
+        }
+        auditLogsByReport.get(l.report_id).push({
+          id: l.id,
+          actionType: l.action_type,
+          doctorName: l.doctor_name || '',
+          nurseName: l.nurse_name || '',
+          changesSummary: l.changes_summary || '',
+          createdAt: l.created_at
+        });
+      });
+    }
+
     // Process rows to compute deadline punctuality & stats
     const processedHistory = rows.map(r => {
       // Determine if submitted on time (Standard: Submitted before 07:30 AM on handover day)
@@ -120,6 +147,7 @@ const getShiftReportHistory = async (req, res, next) => {
         updatedAt: r.updated_at,
         avatarUrl: r.avatar_url || '',
         editCount: Number(r.edit_count || 0),
+        revisionLogs: auditLogsByReport.get(r.id) || [],
         isOnTime,
         caseCounts: {
           surgery: Number(r.surgery_count || 0),

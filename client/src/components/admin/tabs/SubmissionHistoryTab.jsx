@@ -25,11 +25,14 @@ import {
   FaHeartbeat,
   FaCross,
   FaLayerGroup,
-  FaWpforms
+  FaWpforms,
+  FaExchangeAlt
 } from 'react-icons/fa';
 import submissionHistoryService from '../../../services/submissionHistoryService';
 import MedicalLoader from '../../common/MedicalLoader';
 import CountUpNumber from '../../common/CountUpNumber';
+import MoveReportModal from '../modals/MoveReportModal';
+import ReportRevisionHistoryModal from '../modals/ReportRevisionHistoryModal';
 
 const parseUtcDate = (val) => {
   if (!val) return null;
@@ -117,6 +120,17 @@ const SubmissionHistoryTab = ({ onViewReportDetail, onPrintReport }) => {
 
   // Detail Modal for Custom Form Submissions
   const [viewingCustomSubmission, setViewingCustomSubmission] = useState(null);
+
+  // Move Report Modal & Revision History Modal
+  const [moveModalData, setMoveModalData] = useState({
+    isOpen: false,
+    departmentCode: '',
+    departmentName: '',
+    currentDate: '',
+    doctorName: '',
+    nurseName: ''
+  });
+  const [revisionModalReport, setRevisionModalReport] = useState(null);
 
   // Fetch Shift Reports History
   const fetchShiftHistory = async () => {
@@ -583,12 +597,12 @@ const SubmissionHistoryTab = ({ onViewReportDetail, onPrintReport }) => {
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.86rem' }}>
                   <thead>
                     <tr style={{ backgroundColor: '#F1F5F9', color: '#0F2C59', borderBottom: '2px solid #CBD5E1', textAlign: 'left' }}>
-                      <th style={{ padding: '0.75rem 1rem', width: '22%' }}>Thời Gian Nộp</th>
-                      <th style={{ padding: '0.75rem 1rem', width: '25%' }}>Khoa Phòng & Kíp Trực</th>
-                      <th style={{ padding: '0.75rem 1rem', width: '15%' }}>Ngày Ca Trực</th>
-                      <th style={{ padding: '0.75rem 1rem', width: '18%' }}>Ca Bệnh Đã Ghi Nhận</th>
-                      <th style={{ padding: '0.75rem 1rem', width: '10%' }}>Trạng Thái</th>
-                      <th style={{ padding: '0.75rem 1rem', width: '10%', textAlign: 'center' }}>Thao Tác</th>
+                      <th style={{ padding: '0.75rem 1rem', width: '25%' }}>Thời Gian Nộp & Lịch Sử</th>
+                      <th style={{ padding: '0.75rem 1rem', width: '22%' }}>Khoa Phòng & Kíp Trực</th>
+                      <th style={{ padding: '0.75rem 1rem', width: '13%' }}>Ngày Ca Trực</th>
+                      <th style={{ padding: '0.75rem 1rem', width: '16%' }}>Ca Bệnh Đã Ghi Nhận</th>
+                      <th style={{ padding: '0.75rem 1rem', width: '12%' }}>Trạng Thái & Sửa</th>
+                      <th style={{ padding: '0.75rem 1rem', width: '12%', textAlign: 'center' }}>Thao Tác</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -600,13 +614,22 @@ const SubmissionHistoryTab = ({ onViewReportDetail, onPrintReport }) => {
                           borderBottom: '1px solid #E2E8F0'
                         }}
                       >
-                        {/* 1. Time */}
+                        {/* 1. Time: Original and Latest Edit */}
                         <td style={{ padding: '0.75rem 1rem' }}>
-                          <div style={{ fontWeight: '800', color: '#0F2C59', fontSize: '0.88rem' }}>
-                            {formatTimeVN(item.createdAt)}
-                          </div>
-                          <div style={{ fontSize: '0.75rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '2px' }}>
-                            <FaClock style={{ color: '#2563EB' }} /> {getRelativeTimeVN(item.createdAt)}
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.82rem', color: '#166534', fontWeight: '800' }}>
+                              <span style={{ backgroundColor: '#DCFCE7', color: '#15803D', padding: '1px 6px', borderRadius: '4px', fontSize: '0.68rem', fontWeight: '900', border: '1px solid #86EFAC' }}>GỐC</span>
+                              <span>{formatTimeVN(item.createdAt)}</span>
+                            </div>
+                            {item.editCount > 0 && item.updatedAt && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: '#92400E', fontWeight: '800' }}>
+                                <span style={{ backgroundColor: '#FEF3C7', color: '#B45309', padding: '1px 6px', borderRadius: '4px', fontSize: '0.68rem', fontWeight: '900', border: '1px solid #FDE68A' }}>SỬA</span>
+                                <span>{formatTimeVN(item.updatedAt)}</span>
+                              </div>
+                            )}
+                            <div style={{ fontSize: '0.72rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '1px' }}>
+                              <FaClock style={{ color: '#2563EB' }} /> {getRelativeTimeVN(item.createdAt)}
+                            </div>
                           </div>
                         </td>
 
@@ -638,7 +661,7 @@ const SubmissionHistoryTab = ({ onViewReportDetail, onPrintReport }) => {
                           </div>
                         </td>
 
-                        {/* 5. Status */}
+                        {/* 5. Status & Revision Button */}
                         <td style={{ padding: '0.75rem 1rem' }}>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                             {item.isLocked ? (
@@ -651,9 +674,27 @@ const SubmissionHistoryTab = ({ onViewReportDetail, onPrintReport }) => {
                               </span>
                             )}
                             {item.editCount > 0 ? (
-                              <span style={{ backgroundColor: '#FEF9C3', color: '#854D0E', padding: '1px 6px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: '700' }}>
-                                Sửa {item.editCount} lần
-                              </span>
+                              <button
+                                type="button"
+                                onClick={() => setRevisionModalReport(item)}
+                                style={{
+                                  backgroundColor: '#FEF9C3',
+                                  color: '#854D0E',
+                                  border: '1px solid #FDE047',
+                                  padding: '2px 7px',
+                                  borderRadius: '6px',
+                                  fontSize: '0.72rem',
+                                  fontWeight: '800',
+                                  cursor: 'pointer',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.25rem',
+                                  transition: 'all 0.15s'
+                                }}
+                                title="Bấm để xem đầy đủ mốc ngày giờ các lần chỉnh sửa"
+                              >
+                                <FaHistory style={{ fontSize: '0.7rem' }} /> Sửa {item.editCount} lần ➔
+                              </button>
                             ) : (
                               <span style={{ color: '#94A3B8', fontSize: '0.7rem' }}>
                                 Bản gốc (Chưa sửa)
@@ -662,9 +703,9 @@ const SubmissionHistoryTab = ({ onViewReportDetail, onPrintReport }) => {
                           </div>
                         </td>
 
-                        {/* 6. Action */}
+                        {/* 6. Action: View, Move Date, Print */}
                         <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>
-                          <div style={{ display: 'flex', justifyContent: 'center', gap: '0.35rem' }}>
+                          <div style={{ display: 'flex', justifyContent: 'center', gap: '0.35rem', flexWrap: 'wrap' }}>
                             <button
                               type="button"
                               onClick={() => onViewReportDetail && onViewReportDetail(item.departmentCode, item.reportDate)}
@@ -684,6 +725,33 @@ const SubmissionHistoryTab = ({ onViewReportDetail, onPrintReport }) => {
                               title="Xem chi tiết báo cáo ca trực"
                             >
                               <FaEye /> Xem
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setMoveModalData({
+                                isOpen: true,
+                                departmentCode: item.departmentCode,
+                                departmentName: item.departmentName,
+                                currentDate: item.reportDate,
+                                doctorName: item.doctorName,
+                                nurseName: item.nurseName
+                              })}
+                              style={{
+                                backgroundColor: '#EFF6FF',
+                                color: '#1D4ED8',
+                                border: '1px solid #BFDBFE',
+                                borderRadius: '8px',
+                                padding: '0.35rem 0.55rem',
+                                fontWeight: '800',
+                                fontSize: '0.76rem',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.25rem'
+                              }}
+                              title="Chuyển báo cáo sang ngày khác nếu khoa nộp nhầm ngày"
+                            >
+                              <FaExchangeAlt /> Chuyển
                             </button>
                             <button
                               type="button"
@@ -1013,6 +1081,27 @@ const SubmissionHistoryTab = ({ onViewReportDetail, onPrintReport }) => {
           </div>
         </div>
       )}
+
+      {/* Modal Chuyển Ngày Báo Cáo */}
+      <MoveReportModal
+        isOpen={moveModalData.isOpen}
+        onClose={() => setMoveModalData(prev => ({ ...prev, isOpen: false }))}
+        departmentCode={moveModalData.departmentCode}
+        departmentName={moveModalData.departmentName}
+        currentDate={moveModalData.currentDate}
+        doctorName={moveModalData.doctorName}
+        nurseName={moveModalData.nurseName}
+        onSuccess={() => {
+          fetchShiftHistory();
+        }}
+      />
+
+      {/* Modal Lịch Sử Chỉnh Sửa Chi Tiết (Timeline) */}
+      <ReportRevisionHistoryModal
+        isOpen={Boolean(revisionModalReport)}
+        onClose={() => setRevisionModalReport(null)}
+        report={revisionModalReport}
+      />
 
     </div>
   );

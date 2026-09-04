@@ -979,6 +979,168 @@ const toggleLockAllReports = async (req, res, next) => {
   }
 };
 
+/**
+ * GET /api/admin/reports/check-target-date
+ * Kiểm tra xem ngày đích có thể nhận báo cáo chuyển đến hay không
+ * Query: departmentCode, targetDate
+ */
+const checkTargetDate = async (req, res, next) => {
+  try {
+    const { departmentCode, targetDate } = req.query;
+
+    if (!departmentCode || !targetDate) {
+      return res.status(400).json({ success: false, error: 'Thiếu thông tin khoa phòng hoặc ngày đích.' });
+    }
+
+    // 1. Kiểm tra xem khoa này đã nộp báo cáo ở ngày đích chưa
+    const [existingReport] = await pool.execute(
+      'SELECT id, doctor_name, nurse_name, created_at FROM reports WHERE department_code = ? AND report_date = ?',
+      [departmentCode, targetDate]
+    );
+
+    if (existingReport.length > 0) {
+      return res.json({
+        success: true,
+        canMove: false,
+        isExisting: true,
+        isLocked: false,
+        reason: `Khoa đã có báo cáo nộp ở ngày ${targetDate} (BS: ${existingReport[0].doctor_name || '—'}). Không thể chuyển đè lên.`
+      });
+    }
+
+    // 2. Kiểm tra xem ngày đích có đang bị khóa sổ không
+    const [lockedReports] = await pool.execute(
+      'SELECT COUNT(*) as locked_count FROM reports WHERE report_date = ? AND is_locked = 1',
+      [targetDate]
+    );
+    const lockedCount = Number(lockedReports[0]?.locked_count || 0);
+
+    if (lockedCount > 0) {
+      return res.json({
+        success: true,
+        canMove: false,
+        isExisting: false,
+        isLocked: true,
+        reason: `Ngày ${targetDate} hiện đang bị KHÓA SỔ GIAO BAN (${lockedCount} khoa đang khóa). Bắt buộc Admin phải mở khóa ngày đó trước khi chuyển.`
+      });
+    }
+
+    // 3. Đủ điều kiện chuyển
+    return res.json({
+      success: true,
+      canMove: true,
+      isExisting: false,
+      isLocked: false,
+      reason: `Ngày ${targetDate} hoàn toàn trống và chưa khóa sổ. Đủ điều kiện chuyển báo cáo!`
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * POST /api/admin/reports/move-date
+ * Chuyển báo cáo của khoa từ fromDate sang toDate
+ * Body: { departmentCode, fromDate, toDate }
+ */
+const moveReportDate = async (req, res, next) => {
+  const connection = await pool.getConnection();
+  try {
+    const { departmentCode, fromDate, toDate } = req.body;
+    const adminUser = req.user?.username || req.user?.doctor_name || 'Admin';
+    const clientIp = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || null;
+
+    if (!departmentCode || !fromDate || !toDate) {
+      return res.status(400).json({ success: false, error: 'Vui lòng cung cấp đầy đủ Mã khoa, Ngày nguồn và Ngày đích.' });
+    }
+
+    if (fromDate === toDate) {
+      return res.status(400).json({ success: false, error: 'Ngày đích phải khác ngày hiện tại của báo cáo.' });
+    }
+
+    await connection.beginTransaction();
+
+    // 1. Kiểm tra báo cáo nguồn
+    const [sourceReports] = await connection.execute(
+      'SELECT id, department_code, report_date, doctor_name, nurse_name FROM reports WHERE department_code = ? AND report_date = ? FOR UPDATE',
+      [departmentCode, fromDate]
+    );
+
+    if (sourceReports.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ success: false, error: `Không tìm thấy báo cáo của khoa ${departmentCode} vào ngày ${fromDate}.` });
+    }
+
+    const sourceReport = sourceReports[0];
+
+    // 2. Kiểm tra ngày đích: đã có báo cáo của khoa này chưa?
+    const [targetExisting] = await connection.execute(
+      'SELECT id FROM reports WHERE department_code = ? AND report_date = ?',
+      [departmentCode, toDate]
+    );
+
+    if (targetExisting.length > 0) {
+      await connection.rollback();
+      return res.status(400).json({
+        success: false,
+        error: `Khoa ${departmentCode} đã có báo cáo nộp ở ngày đích (${toDate}). Không được phép chuyển đè làm mất dữ liệu.`
+      });
+    }
+
+    // 3. Kiểm tra ngày đích có bị khóa sổ không
+    const [lockedCheck] = await connection.execute(
+      'SELECT COUNT(*) as locked_count FROM reports WHERE report_date = ? AND is_locked = 1',
+      [toDate]
+    );
+    if (Number(lockedCheck[0]?.locked_count || 0) > 0) {
+      await connection.rollback();
+      return res.status(403).json({
+        success: false,
+        error: `Ngày đích (${toDate}) đang bị KHÓA SỔ GIAO BAN. Vui lòng mở khóa sổ ngày đó trước khi chuyển.`
+      });
+    }
+
+    // 4. Thực hiện chuyển ngày trong reports
+    await connection.execute(
+      'UPDATE reports SET report_date = ?, updated_at = NOW() WHERE id = ?',
+      [toDate, sourceReport.id]
+    );
+
+    // 5. Cập nhật report_date trong report_audit_logs của report_id này
+    await connection.execute(
+      'UPDATE report_audit_logs SET report_date = ? WHERE report_id = ?',
+      [toDate, sourceReport.id]
+    );
+
+    // 6. Ghi lại Audit Log hành động chuyển ngày
+    const actionSummary = `[CHUYỂN NGÀY BÁO CÁO] Admin "${adminUser}" đã chuyển báo cáo khoa ${departmentCode} từ ngày ${fromDate} sang ngày ${toDate}. Kíp trực ban đầu: BS. ${sourceReport.doctor_name || '—'}, ĐD. ${sourceReport.nurse_name || '—'}`;
+    await connection.execute(
+      `INSERT INTO report_audit_logs 
+       (report_id, department_code, report_date, action_type, doctor_name, ip_address, changes_summary)
+       VALUES (?, ?, ?, 'UPDATE', ?, ?, ?)`,
+      [sourceReport.id, departmentCode, toDate, adminUser, clientIp, actionSummary]
+    );
+
+    await connection.commit();
+
+    res.json({
+      success: true,
+      message: `Đã chuyển báo cáo khoa ${departmentCode} từ ngày ${fromDate} sang ngày ${toDate} thành công!`,
+      data: {
+        reportId: sourceReport.id,
+        departmentCode,
+        fromDate,
+        toDate
+      }
+    });
+  } catch (error) {
+    await connection.rollback();
+    next(error);
+  } finally {
+    connection.release();
+  }
+};
+
 module.exports = { 
   getPresentationData, 
   getDepartmentStatus, 
@@ -992,5 +1154,7 @@ module.exports = {
   updateAccountDetails,
   createAccount,
   toggleReportLock,
-  toggleLockAllReports
+  toggleLockAllReports,
+  checkTargetDate,
+  moveReportDate
 };

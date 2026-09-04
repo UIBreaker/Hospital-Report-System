@@ -11,7 +11,9 @@ const {
   updateAccountPassword,
   createAccount,
   toggleReportLock,
-  toggleLockAllReports
+  toggleLockAllReports,
+  checkTargetDate,
+  moveReportDate
 } = require('../controllers/adminController');
 const {
   getAllSystemUsers,
@@ -53,9 +55,11 @@ router.put('/system-users/:id/status', auth, requireAdmin, toggleUserStatus);
 router.post('/system-users/:id/reset-password', auth, requireAdmin, adminResetPassword);
 router.delete('/system-users/:id', auth, requireAdmin, deleteSystemUser);
 
-// Locks
+// Locks & Date Movement
 router.put('/reports/:departmentCode/:date/toggle-lock', auth, requireAdmin, toggleReportLock);
 router.put('/reports/toggle-lock-all/:date', auth, requireAdmin, toggleLockAllReports);
+router.get('/reports/check-target-date', auth, requireAdmin, checkTargetDate);
+router.post('/reports/move-date', auth, requireAdmin, moveReportDate);
 
 // Version Changelog Management
 const { getChangelogHistory, publishChangelog, deleteChangelog } = require('../controllers/changelogController');
