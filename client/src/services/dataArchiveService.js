@@ -180,6 +180,8 @@ export const dataArchiveService = {
 
       Object.entries(rawForm).forEach(([k, v]) => {
         if (v === null || v === undefined || v === '' || k === '_id') return;
+        if (k === 'noiDungTruyenMau' && rawForm.truyenMau) return; // Deduplicate
+        if ((k === 'truyenMau' || k === 'noiDungTruyenMau') && isXN) return; // Handled directly in isXN table
         if (k === 'themGio' || k === 'tinhHinhChung' || k === 'ghiChu' || k === 'dienBien' || k === 'nhanSu' || k === 'dieuDuongTruc' || k === 'hienCoGhiChu' || k === 'hienConGhiChu' || k === 'truyenMau' || k === 'noiDungTruyenMau') {
           notesList.push({ label: translateFieldKey(k), value: String(v) });
           return;
@@ -220,6 +222,12 @@ export const dataArchiveService = {
                   <td class="lbl">Bệnh nhân Ngoại trú:</td><td class="val">${rawForm.ngoaiTru || 0}</td>
                   <td class="lbl"></td><td class="val"></td>
                 </tr>
+                ${(rawForm.truyenMau || rawForm.noiDungTruyenMau) ? `
+                <tr style="background-color: #FEF2F2;">
+                  <td class="lbl" style="color: #DC2626; font-weight: bold; width: 40%;">🩸 Nội dung truyền máu:</td>
+                  <td class="val" colspan="3" style="text-align: left; padding-left: 14px; color: #7F1D1D; white-space: pre-line;">${escapeHtml(rawForm.truyenMau || rawForm.noiDungTruyenMau)}</td>
+                </tr>
+                ` : ''}
               </tbody>
             </table>
           ` : is4CK ? `

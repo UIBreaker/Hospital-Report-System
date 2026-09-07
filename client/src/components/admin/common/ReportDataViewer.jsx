@@ -96,7 +96,13 @@ const ReportDataViewer = ({ data }) => {
   const arrayTables = [];
   const noteFields = [];
 
-  Object.entries(data).forEach(([key, val]) => {
+  // Deduplicate truyenMau & noiDungTruyenMau if both exist in data
+  const normalizedData = { ...data };
+  if (normalizedData.truyenMau && normalizedData.noiDungTruyenMau) {
+    delete normalizedData.noiDungTruyenMau;
+  }
+
+  Object.entries(normalizedData).forEach(([key, val]) => {
     if (val === null || val === undefined || val === '') return;
 
     if (Array.isArray(val)) {
@@ -195,16 +201,45 @@ const ReportDataViewer = ({ data }) => {
         );
       })}
 
-      {noteFields.map(({ key, val }) => (
-        <div key={key} style={{ padding: '0.85rem 1rem', backgroundColor: '#FFFBEB', borderRadius: '8px', border: '1px solid #FDE68A' }}>
-          <span style={{ fontSize: '0.75rem', color: '#92400E', fontWeight: '700', textTransform: 'uppercase', display: 'block', marginBottom: '0.35rem' }}>
-            📝 {FIELD_LABELS[key] || key}
-          </span>
-          <p style={{ margin: 0, fontSize: '0.9rem', color: '#78350F', whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
-            {typeof val === 'object' ? JSON.stringify(val, null, 2) : String(val)}
-          </p>
-        </div>
-      ))}
+      {noteFields.map(({ key, val }) => {
+        const isBlood = key === 'truyenMau' || key === 'noiDungTruyenMau';
+        return (
+          <div 
+            key={key} 
+            style={{ 
+              padding: '0.85rem 1rem', 
+              backgroundColor: isBlood ? '#FEF2F2' : '#FFFBEB', 
+              borderRadius: '8px', 
+              border: `1.5px solid ${isBlood ? '#FECACA' : '#FDE68A'}`,
+              borderLeft: `5px solid ${isBlood ? '#DC2626' : '#D97706'}`
+            }}
+          >
+            <span style={{ 
+              fontSize: '0.78rem', 
+              color: isBlood ? '#DC2626' : '#92400E', 
+              fontWeight: '800', 
+              textTransform: 'uppercase', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.35rem', 
+              marginBottom: '0.35rem' 
+            }}>
+              <span>{isBlood ? '🩸' : '📝'}</span>
+              <span>{FIELD_LABELS[key] || key}</span>
+            </span>
+            <p style={{ 
+              margin: 0, 
+              fontSize: '0.9rem', 
+              color: isBlood ? '#7F1D1D' : '#78350F', 
+              whiteSpace: 'pre-wrap', 
+              lineHeight: 1.5,
+              fontWeight: '600'
+            }}>
+              {typeof val === 'object' ? JSON.stringify(val, null, 2) : String(val)}
+            </p>
+          </div>
+        );
+      })}
     </div>
   );
 };
