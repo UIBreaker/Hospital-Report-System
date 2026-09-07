@@ -933,7 +933,9 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
 
                       Object.entries(rawForm).forEach(([k, v]) => {
                         if (v === null || v === undefined || v === '' || k === '_id') return;
-                        if (k === 'themGio' || k === 'nhanSu' || k === 'dieuDuongTruc' || k === 'hienCoGhiChu' || k === 'hienConGhiChu' || k === 'ghiChu' || k === 'tinhHinhChung') {
+                        if (k === 'noiDungTruyenMau' && rawForm.truyenMau) return; // Deduplicate
+                        if ((k === 'truyenMau' || k === 'noiDungTruyenMau') && isXN) return; // Displayed directly in isXN card
+                        if (k === 'themGio' || k === 'nhanSu' || k === 'dieuDuongTruc' || k === 'hienCoGhiChu' || k === 'hienConGhiChu' || k === 'ghiChu' || k === 'tinhHinhChung' || k === 'truyenMau' || k === 'noiDungTruyenMau') {
                           noteFields.push({ label: translateFieldKey(k), val: String(v) });
                           return;
                         }
@@ -977,6 +979,17 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
                                     <strong style={{ color: '#0F2C59' }}>{rawForm.ngoaiTru || 0}</strong>
                                   </div>
                                 </div>
+                                {(rawForm.truyenMau || rawForm.noiDungTruyenMau) && (
+                                  <div style={{ background: '#FEF2F2', padding: '6px 8px', borderRadius: '6px', border: '1px solid #FECACA', color: '#991B1B' }}>
+                                    <div style={{ fontWeight: '800', display: 'flex', alignItems: 'center', gap: '0.3rem', marginBottom: '2px' }}>
+                                      <span>🩸</span>
+                                      <span>Nội dung truyền máu:</span>
+                                    </div>
+                                    <div style={{ color: '#7F1D1D', whiteSpace: 'pre-line', fontSize: '0.76rem', lineHeight: 1.4, fontWeight: '600' }}>
+                                      {rawForm.truyenMau || rawForm.noiDungTruyenMau}
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                             ) : is4CK ? (
                               /* 2. KHOA LIÊN CHUYÊN KHOA */

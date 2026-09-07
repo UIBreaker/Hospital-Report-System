@@ -82,7 +82,9 @@ const XetNghiemForm = ({ formData, setFormData }) => {
             value={formData.truyenMau !== undefined && formData.truyenMau !== null ? formData.truyenMau : (formData.noiDungTruyenMau || '')} 
             onChange={(e) => {
               const val = e.target.value;
-              setFormData({ ...formData, truyenMau: val, noiDungTruyenMau: val });
+              const next = { ...formData, truyenMau: val };
+              if ('noiDungTruyenMau' in next) delete next.noiDungTruyenMau;
+              setFormData(next);
             }} 
             placeholder="Nhập nội dung truyền máu trong ca trực (Số lượng túi máu, nhóm máu, chế phẩm máu, khoa nhận, bệnh nhân, phản ứng sau truyền...)" 
             rows={4}
