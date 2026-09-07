@@ -73,6 +73,23 @@ const XetNghiemForm = ({ formData, setFormData }) => {
           />
         </div>
       </div>
+
+      <div className="form-section">
+        <h3 className="section-title">NỘI DUNG TRUYỀN MÁU</h3>
+        <div className="form-group full-width">
+          <label>Chi tiết cấp phát & truyền máu trong ca trực</label>
+          <textarea 
+            value={formData.truyenMau !== undefined && formData.truyenMau !== null ? formData.truyenMau : (formData.noiDungTruyenMau || '')} 
+            onChange={(e) => {
+              const val = e.target.value;
+              setFormData({ ...formData, truyenMau: val, noiDungTruyenMau: val });
+            }} 
+            placeholder="Nhập nội dung truyền máu trong ca trực (Số lượng túi máu, nhóm máu, chế phẩm máu, khoa nhận, bệnh nhân, phản ứng sau truyền...)" 
+            rows={4}
+            className="note-field"
+          />
+        </div>
+      </div>
     </div>
   );
 };

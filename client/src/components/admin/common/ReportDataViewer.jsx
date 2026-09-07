@@ -34,6 +34,8 @@ export const FIELD_LABELS = {
   bsSieuAm: 'BS trực Siêu âm',
   bsXquangCT: 'BS trực Xquang – CT Scan',
   themGio: 'Ghi chú trực thêm giờ',
+  truyenMau: 'Nội dung truyền máu',
+  noiDungTruyenMau: 'Nội dung truyền máu',
   nhanSu: 'Thành phần nhân sự ca trực',
   techniques: 'Thống kê kỹ thuật Chẩn đoán hình ảnh',
   tongSoCaMo: 'Tổng số ca mổ',
@@ -105,7 +107,7 @@ const ReportDataViewer = ({ data }) => {
       }
     } else if (typeof val === 'object') {
       nestedSections.push({ key, val });
-    } else if (typeof val === 'string' && val.length > 40) {
+    } else if (key === 'themGio' || key === 'ghiChu' || key === 'dienBien' || key === 'truyenMau' || key === 'noiDungTruyenMau' || (typeof val === 'string' && val.length > 40)) {
       noteFields.push({ key, val });
     } else {
       flatFields.push({ key, val });

@@ -79,6 +79,7 @@ const FIELD_LABELS = {
   bsTrucTNT: 'Bác sĩ trực Thận nhân tạo',
   keToa: 'Kê toa phòng khám',
   truyenMau: 'Truyền máu / Chế phẩm máu',
+  noiDungTruyenMau: 'Nội dung truyền máu',
   tieuPhau: 'Tiểu phẫu cấp cứu',
   boBot: 'Bó bột / Bất động xương',
   ccNgoaiVien: 'Cấp cứu ngoại viện (115)',
@@ -638,7 +639,7 @@ const generateHospitalExcelReport = async (date, deptUsers = [], detailedReports
 
       // Nhóm 1: Các chỉ số số học hoặc text trực tiếp
       Object.keys(rd).forEach((k) => {
-        if (['ghiChu', 'dienBien', 'themGio', 'techniques', 'hscc', 'tnt', 'pk21'].includes(k)) return;
+        if (['ghiChu', 'dienBien', 'themGio', 'truyenMau', 'noiDungTruyenMau', 'techniques', 'hscc', 'tnt', 'pk21'].includes(k)) return;
         const val = rd[k];
         if (typeof val === 'object' && val !== null) {
           // Object con lồng nhau
@@ -659,6 +660,8 @@ const generateHospitalExcelReport = async (date, deptUsers = [], detailedReports
     if (rd.themGio) addMetric('Diễn Biến Ca Trực', 'Ghi chú trực thêm giờ', rd.themGio, 'Ghi chú');
     if (rd.ghiChu) addMetric('Ghi Chú Khoa Phòng', 'Nội dung ghi chú', rd.ghiChu, 'Ghi chú');
     if (rd.dienBien) addMetric('Diễn Biến Ca Trực', 'Diễn biến bệnh phòng', rd.dienBien, 'Ghi chú');
+    if (rd.truyenMau) addMetric('Nội Dung Truyền Máu', 'Chi tiết truyền máu trong ca trực', rd.truyenMau, 'Ghi chú');
+    else if (rd.noiDungTruyenMau) addMetric('Nội Dung Truyền Máu', 'Chi tiết truyền máu trong ca trực', rd.noiDungTruyenMau, 'Ghi chú');
 
     // 4. Danh sách ca bệnh lâm sàng nếu khoa có
     const tCases = r.transferCases || [];

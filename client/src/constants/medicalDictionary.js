@@ -107,6 +107,8 @@ export const FIELD_LABELS = {
   // HSCC - TNT - PK21 details
   keToa: 'Kê toa',
   truyenMau: 'Truyền máu',
+  noiDungTruyenMau: 'Nội dung truyền máu',
+  xn_truyenMau: 'Nội dung truyền máu',
   tieuPhau: 'Tiểu phẫu',
   boBot: 'Bó bột',
   ccNgoaiVien: 'Cấp cứu ngoài viện',
