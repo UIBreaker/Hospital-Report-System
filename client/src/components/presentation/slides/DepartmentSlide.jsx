@@ -421,25 +421,39 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
       }}>
         {finalSections.length > 0 ? (
           finalSections.map((sec, idx) => {
-            // Note section
-            if (sec.type === 'note' || sec.type === 'personnel') {
+            // Note, Personnel or Blood Transfusion section
+            if (sec.type === 'note' || sec.type === 'personnel' || sec.type === 'blood_transfusion') {
+              const isBlood = sec.type === 'blood_transfusion';
+              const isPersonnel = sec.type === 'personnel';
+
               return (
                 <div key={idx} className="anim-info-pop anim-delay-2" style={{
-                  backgroundColor: sec.type === 'personnel' ? '#EFF6FF' : '#FFFBEB',
-                  border: `1.5px solid ${sec.type === 'personnel' ? '#BFDBFE' : '#FDE68A'}`,
+                  backgroundColor: isBlood ? '#FEF2F2' : (isPersonnel ? '#EFF6FF' : '#FFFBEB'),
+                  border: `1.5px solid ${isBlood ? '#FECACA' : (isPersonnel ? '#BFDBFE' : '#FDE68A')}`,
+                  borderLeft: isBlood ? '5px solid #DC2626' : (isPersonnel ? '5px solid #2563EB' : '5px solid #D97706'),
                   borderRadius: '12px',
                   padding: isFullscreen ? '0.75rem 1.15rem' : '0.55rem 0.85rem'
                 }}>
                   <div style={{
                     fontSize: isFullscreen ? '0.95rem' : '0.82rem',
                     fontWeight: '800',
-                    color: sec.type === 'personnel' ? '#1E40AF' : '#92400E',
+                    color: isBlood ? '#DC2626' : (isPersonnel ? '#1E40AF' : '#92400E'),
                     marginBottom: '0.25rem',
-                    textTransform: 'uppercase'
+                    textTransform: 'uppercase',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem'
                   }}>
-                    📌 {sec.title}
+                    <span>{isBlood ? '🩸' : '📌'}</span>
+                    <span>{sec.title}</span>
                   </div>
-                  <div style={{ fontSize: isFullscreen ? '1.05rem' : '0.92rem', color: '#1E293B', fontWeight: '600', lineHeight: 1.4 }}>
+                  <div style={{
+                    fontSize: isFullscreen ? '1.05rem' : '0.92rem',
+                    color: isBlood ? '#7F1D1D' : '#1E293B',
+                    fontWeight: '600',
+                    lineHeight: 1.5,
+                    whiteSpace: 'pre-line'
+                  }}>
                     {sec.value}
                   </div>
                 </div>

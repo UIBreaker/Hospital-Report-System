@@ -147,7 +147,7 @@ const MedicalPrintView = ({ date, reports = [], onClose }) => {
     Object.entries(repData).forEach(([k, v]) => {
       if (v === null || v === undefined || v === '' || k === '_id') return;
 
-      if (k === 'themGio' || k === 'tinhHinhChung' || k === 'ghiChu') {
+      if (k === 'themGio' || k === 'tinhHinhChung' || k === 'ghiChu' || k === 'truyenMau' || k === 'noiDungTruyenMau') {
         notes.push({ label: translateFieldKey(k), value: String(v) });
         return;
       }

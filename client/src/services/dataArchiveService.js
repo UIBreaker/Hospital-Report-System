@@ -180,7 +180,7 @@ export const dataArchiveService = {
 
       Object.entries(rawForm).forEach(([k, v]) => {
         if (v === null || v === undefined || v === '' || k === '_id') return;
-        if (k === 'themGio' || k === 'tinhHinhChung' || k === 'ghiChu' || k === 'dienBien' || k === 'nhanSu' || k === 'dieuDuongTruc' || k === 'hienCoGhiChu' || k === 'hienConGhiChu') {
+        if (k === 'themGio' || k === 'tinhHinhChung' || k === 'ghiChu' || k === 'dienBien' || k === 'nhanSu' || k === 'dieuDuongTruc' || k === 'hienCoGhiChu' || k === 'hienConGhiChu' || k === 'truyenMau' || k === 'noiDungTruyenMau') {
           notesList.push({ label: translateFieldKey(k), value: String(v) });
           return;
         }

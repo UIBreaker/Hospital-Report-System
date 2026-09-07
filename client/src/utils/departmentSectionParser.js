@@ -131,6 +131,14 @@ export const parseDepartmentSections = (reportData, deptCode = '') => {
       });
     }
 
+    if (data.truyenMau || data.noiDungTruyenMau) {
+      sections.push({
+        type: 'blood_transfusion',
+        title: 'NỘI DUNG TRUYỀN MÁU',
+        value: data.truyenMau || data.noiDungTruyenMau
+      });
+    }
+
     return sections;
   }
 
@@ -467,7 +475,7 @@ export const parseDepartmentSections = (reportData, deptCode = '') => {
     return 0;
   });
 
-  const noteKeys = ['themGio', 'tinhHinhChung', 'ghiChu', 'hienConGhiChu', 'hienCoGhiChu', 'chuyenVienTT', 'nhanSu', 'dieuDuongTruc'];
+  const noteKeys = ['themGio', 'tinhHinhChung', 'ghiChu', 'hienConGhiChu', 'hienCoGhiChu', 'chuyenVienTT', 'nhanSu', 'dieuDuongTruc', 'truyenMau', 'noiDungTruyenMau'];
 
   if (hasNestedObjects) {
     topKeys.forEach(k => {

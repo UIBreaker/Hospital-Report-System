@@ -93,7 +93,7 @@ const DepartmentPrintView = ({
     const sections = [], generalMetrics = [], notes = [];
     Object.entries(rawData).forEach(([k, v]) => {
       if (v === null || v === undefined || v === '' || k === '_id') return;
-      if (k === 'themGio' || k === 'tinhHinhChung' || k === 'ghiChu' || k === 'dienBien') {
+      if (k === 'themGio' || k === 'tinhHinhChung' || k === 'ghiChu' || k === 'dienBien' || k === 'truyenMau' || k === 'noiDungTruyenMau') {
         notes.push({ label: translateFieldKey(k), value: String(v) }); return;
       }
       if (typeof v === 'object' && !Array.isArray(v)) {
