@@ -924,22 +924,22 @@ const PresentationPage = () => {
     return { introSlide, deptGroups, endSlides };
   }, [slides, currentSlide]);
 
-  // Auto-expand current active slide's department whenever currentSlide changes
+  // Auto-expand current active slide's department whenever currentSlide changes (Single focus mode)
   useEffect(() => {
     const activeSlide = slides[currentSlide];
     if (activeSlide && activeSlide.deptCode) {
-      setExpandedDepts(prev => {
-        if (prev[activeSlide.deptCode]) return prev;
-        return { ...prev, [activeSlide.deptCode]: true };
-      });
+      setExpandedDepts({ [activeSlide.deptCode]: true });
     }
-  }, [currentSlide, slides]);
+  }, [currentSlide]);
 
   const toggleDept = (code) => {
-    setExpandedDepts(prev => ({
-      ...prev,
-      [code]: !prev[code]
-    }));
+    setExpandedDepts(prev => {
+      const isAlreadyOpen = !!prev[code];
+      if (isAlreadyOpen) {
+        return {};
+      }
+      return { [code]: true };
+    });
   };
 
   const expandAllDepts = () => {
@@ -1225,7 +1225,7 @@ const PresentationPage = () => {
           {/* Drawer Sidebar with 12 Departments Accordion */}
           <aside style={{
             position: 'relative',
-            width: '380px',
+            width: '400px',
             maxWidth: '92vw',
             height: '100%',
             backgroundColor: '#0A192F',
@@ -1384,11 +1384,14 @@ const PresentationPage = () => {
               {/* Scrollable 12 Departments Accordions List */}
               <div style={{
                 flex: 1,
+                minHeight: 0,
                 overflowY: 'auto',
+                overflowX: 'hidden',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '0.4rem',
-                paddingRight: '3px'
+                gap: '0.45rem',
+                paddingRight: '4px',
+                paddingBottom: '0.5rem'
               }}>
                 {/* 1. Mở Đầu (Title Slide) */}
                 {slideGroups.introSlide && (() => {
@@ -1406,14 +1409,18 @@ const PresentationPage = () => {
                         setShowSidebar(false);
                       }}
                       style={{
-                        padding: '0.55rem 0.75rem',
+                        flexShrink: 0,
+                        width: '100%',
+                        minHeight: '44px',
+                        boxSizing: 'border-box',
+                        padding: '0.6rem 0.85rem',
                         borderRadius: '8px',
                         cursor: 'pointer',
                         backgroundColor: isTitleActive ? '#2563EB' : 'rgba(255, 255, 255, 0.06)',
                         border: isTitleActive ? '1.5px solid #60A5FA' : '1px solid rgba(255, 255, 255, 0.12)',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '0.55rem',
+                        gap: '0.6rem',
                         textAlign: 'left',
                         boxShadow: isTitleActive ? '0 4px 12px rgba(37, 99, 235, 0.45)' : 'none',
                         color: isTitleActive ? '#FFFFFF' : '#E2E8F0',
@@ -1432,9 +1439,9 @@ const PresentationPage = () => {
                         }
                       }}
                     >
-                      <FaHospital style={{ color: '#38BDF8', fontSize: '0.9rem', flexShrink: 0 }} />
+                      <FaHospital style={{ color: '#38BDF8', fontSize: '0.95rem', flexShrink: 0 }} />
                       <span style={{ fontSize: '0.72rem', fontWeight: '900', color: '#93C5FD', minWidth: '18px' }}>#1</span>
-                      <span style={{ fontSize: '0.78rem', fontWeight: isTitleActive ? '900' : '700', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <span style={{ fontSize: '0.8rem', fontWeight: isTitleActive ? '900' : '700', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         BÁO CÁO GIAO BAN TOÀN VIỆN
                       </span>
                     </button>
@@ -1461,9 +1468,12 @@ const PresentationPage = () => {
                     <div
                       key={group.code}
                       style={{
+                        flexShrink: 0,
+                        width: '100%',
+                        boxSizing: 'border-box',
                         backgroundColor: group.hasActiveSlide ? 'rgba(30, 58, 138, 0.45)' : 'rgba(255, 255, 255, 0.05)',
                         border: group.hasActiveSlide ? '1.5px solid #38BDF8' : '1px solid rgba(255, 255, 255, 0.1)',
-                        borderLeft: group.hasActiveSlide ? '4px solid #38BDF8' : `4px solid ${group.theme?.main || '#3B82F6'}`,
+                        borderLeft: group.hasActiveSlide ? '5px solid #38BDF8' : `5px solid ${group.theme?.main || '#3B82F6'}`,
                         borderRadius: '8px',
                         overflow: 'hidden',
                         transition: 'all 0.15s ease'
@@ -1473,24 +1483,26 @@ const PresentationPage = () => {
                       <div
                         onClick={() => group.isSubmitted && toggleDept(group.code)}
                         style={{
-                          padding: '0.52rem 0.7rem',
+                          minHeight: '46px',
+                          boxSizing: 'border-box',
+                          padding: '0.55rem 0.8rem',
                           cursor: group.isSubmitted ? 'pointer' : 'default',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'space-between',
                           gap: '0.45rem',
                           userSelect: 'none',
-                          backgroundColor: group.hasActiveSlide ? 'rgba(56, 189, 248, 0.12)' : 'transparent'
+                          backgroundColor: group.hasActiveSlide ? 'rgba(56, 189, 248, 0.14)' : 'transparent'
                         }}
                         title={group.isSubmitted ? `Bấm để ${isExpanded ? 'thu gọn' : 'xổ ra'} slide khoa ${group.name}` : 'Khoa chưa nộp báo cáo'}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', minWidth: 0, flex: 1 }}>
-                          <span style={{ fontSize: '0.95rem', flexShrink: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0, flex: 1 }}>
+                          <span style={{ fontSize: '1rem', flexShrink: 0 }}>
                             {group.theme?.icon || '🏥'}
                           </span>
                           <div style={{ minWidth: 0, flex: 1 }}>
                             <div style={{
-                              fontSize: '0.77rem',
+                              fontSize: '0.8rem',
                               fontWeight: group.hasActiveSlide ? '900' : '700',
                               color: group.hasActiveSlide ? '#38BDF8' : '#FFFFFF',
                               whiteSpace: 'nowrap',
@@ -1500,7 +1512,7 @@ const PresentationPage = () => {
                               {group.orderIdx}. {group.name}
                             </div>
                             {group.hasActiveSlide && (
-                              <div style={{ fontSize: '0.64rem', color: '#6EE7B7', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '1px' }}>
+                              <div style={{ fontSize: '0.66rem', color: '#6EE7B7', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '1px' }}>
                                 <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10B981', boxShadow: '0 0 6px #10B981' }} />
                                 Đang trình chiếu
                               </div>
@@ -1513,9 +1525,9 @@ const PresentationPage = () => {
                             <span style={{
                               backgroundColor: group.hasActiveSlide ? '#2563EB' : 'rgba(255, 255, 255, 0.14)',
                               color: '#FFFFFF',
-                              fontSize: '0.66rem',
+                              fontSize: '0.68rem',
                               fontWeight: '800',
-                              padding: '0.12rem 0.45rem',
+                              padding: '0.14rem 0.5rem',
                               borderRadius: '10px'
                             }}>
                               {group.slideCount} slide
@@ -1524,9 +1536,9 @@ const PresentationPage = () => {
                             <span style={{
                               backgroundColor: 'rgba(239, 68, 68, 0.18)',
                               color: '#FCA5A5',
-                              fontSize: '0.64rem',
+                              fontSize: '0.66rem',
                               fontWeight: '700',
-                              padding: '0.12rem 0.42rem',
+                              padding: '0.14rem 0.45rem',
                               borderRadius: '8px'
                             }}>
                               Chưa nộp
@@ -1535,7 +1547,7 @@ const PresentationPage = () => {
                           {group.isSubmitted && (
                             <FaChevronDown style={{
                               color: group.hasActiveSlide ? '#38BDF8' : '#94A3B8',
-                              fontSize: '0.7rem',
+                              fontSize: '0.72rem',
                               transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
                               transition: 'transform 0.2s ease'
                             }} />
@@ -1546,12 +1558,12 @@ const PresentationPage = () => {
                       {/* Accordion Body: List of slides belonging to this department */}
                       {isExpanded && group.isSubmitted && (
                         <div style={{
-                          backgroundColor: 'rgba(0, 0, 0, 0.28)',
+                          backgroundColor: 'rgba(0, 0, 0, 0.35)',
                           borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-                          padding: '0.3rem 0.4rem',
+                          padding: '0.35rem 0.45rem',
                           display: 'flex',
                           flexDirection: 'column',
-                          gap: '0.22rem'
+                          gap: '0.25rem'
                         }}>
                           {matchingSlides.map((item) => {
                             const isActive = item.index === currentSlide;
@@ -1568,14 +1580,18 @@ const PresentationPage = () => {
                                   setShowSidebar(false);
                                 }}
                                 style={{
-                                  padding: '0.42rem 0.6rem',
+                                  flexShrink: 0,
+                                  minHeight: '36px',
+                                  width: '100%',
+                                  boxSizing: 'border-box',
+                                  padding: '0.45rem 0.65rem',
                                   borderRadius: '6px',
                                   cursor: 'pointer',
                                   backgroundColor: isActive ? '#2563EB' : 'transparent',
                                   border: 'none',
                                   display: 'flex',
                                   alignItems: 'center',
-                                  gap: '0.45rem',
+                                  gap: '0.5rem',
                                   textAlign: 'left',
                                   boxShadow: isActive ? '0 3px 10px rgba(37, 99, 235, 0.45)' : 'none',
                                   color: isActive ? '#FFFFFF' : '#CBD5E1',
@@ -1595,11 +1611,11 @@ const PresentationPage = () => {
                                 }}
                                 title={`Bấm để chuyển tới Slide #${item.index + 1}: ${subLabel}`}
                               >
-                                <span style={{ fontSize: '0.8rem', flexShrink: 0, opacity: isActive ? 1 : 0.85 }}>
+                                <span style={{ fontSize: '0.82rem', flexShrink: 0, opacity: isActive ? 1 : 0.85 }}>
                                   {getSlideIcon(item.slide.type)}
                                 </span>
                                 <span style={{
-                                  fontSize: '0.68rem',
+                                  fontSize: '0.7rem',
                                   fontWeight: '900',
                                   color: isActive ? '#FFFFFF' : '#94A3B8',
                                   minWidth: '24px',
@@ -1608,7 +1624,7 @@ const PresentationPage = () => {
                                   #{item.index + 1}
                                 </span>
                                 <span style={{
-                                  fontSize: '0.73rem',
+                                  fontSize: '0.75rem',
                                   fontWeight: isActive ? '800' : '500',
                                   whiteSpace: 'nowrap',
                                   overflow: 'hidden',
@@ -1644,14 +1660,18 @@ const PresentationPage = () => {
                         setShowSidebar(false);
                       }}
                       style={{
-                        padding: '0.55rem 0.75rem',
+                        flexShrink: 0,
+                        width: '100%',
+                        minHeight: '44px',
+                        boxSizing: 'border-box',
+                        padding: '0.6rem 0.85rem',
                         borderRadius: '8px',
                         cursor: 'pointer',
                         backgroundColor: isActive ? '#2563EB' : 'rgba(255, 255, 255, 0.06)',
                         border: isActive ? '1.5px solid #60A5FA' : '1px solid rgba(255, 255, 255, 0.12)',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '0.55rem',
+                        gap: '0.6rem',
                         textAlign: 'left',
                         boxShadow: isActive ? '0 4px 12px rgba(37, 99, 235, 0.45)' : 'none',
                         color: isActive ? '#FFFFFF' : '#E2E8F0',
@@ -1670,13 +1690,13 @@ const PresentationPage = () => {
                         }
                       }}
                     >
-                      <span style={{ fontSize: '0.85rem', flexShrink: 0 }}>
+                      <span style={{ fontSize: '0.88rem', flexShrink: 0 }}>
                         {getSlideIcon(item.slide.type)}
                       </span>
                       <span style={{ fontSize: '0.72rem', fontWeight: '900', color: '#93C5FD', minWidth: '18px' }}>
                         #{item.index + 1}
                       </span>
-                      <span style={{ fontSize: '0.78rem', fontWeight: isActive ? '900' : '700', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <span style={{ fontSize: '0.8rem', fontWeight: isActive ? '900' : '700', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {subLabel}
                       </span>
                     </button>
