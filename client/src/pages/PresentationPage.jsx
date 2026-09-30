@@ -378,10 +378,11 @@ const PresentationPage = () => {
 
       // =========================================================================
       // 2. DEPARTMENT DATA SLIDES
-      // Tách riêng các slide to rõ cho HSCC-TNT và YHCT-PHCN
+      // Tách riêng các slide to rõ cho HSCC-TNT, YHCT-PHCN và Khoa Sản
       // =========================================================================
       const isHsccTnt = (r.department_code || '').toLowerCase() === 'hscc_tnt' || (rawData.hscc && rawData.tnt);
       const isYhctPhcn = (r.department_code || '').toLowerCase() === 'yhct_phcn' || (rawData.noiTru && rawData.ngoaiTru && rawData.keToa);
+      const isSan = (r.department_code || '').toLowerCase() === 'san' || (rawData.choSanh !== undefined || rawData.sanhThuong !== undefined || rawData.sanhHut !== undefined);
 
       if (isHsccTnt) {
         const hsccSections = parseDepartmentSections(rawData, r.department_code);
@@ -583,6 +584,109 @@ const PresentationPage = () => {
             theme,
             report: r,
             sections: otherSections,
+            doctorName: r.doctor_name,
+            nurseName: r.nurse_name,
+            overtimeStaff: r.overtime_staff,
+            room: r.room,
+            shiftTime: r.shift_time,
+            formData: rawData,
+            transferCases,
+            surgeryCases,
+            deathCases,
+            criticalCases
+          });
+        }
+      } else if (isSan) {
+        const sanSections = parseDepartmentSections(rawData, r.department_code);
+
+        // Slide 2.1: Chỉ số nội trú chung
+        const secNoiTru = sanSections.find(sec => sec.title?.includes('NỘI TRÚ CHUNG'));
+        if (secNoiTru) {
+          s.push({
+            type: 'department',
+            title: `${deptName} – CHỈ SỐ NỘI TRÚ CHUNG`,
+            subTitle: 'CHỈ SỐ NỘI TRÚ CHUNG',
+            deptCode: r.department_code,
+            deptName,
+            theme,
+            report: r,
+            sections: [secNoiTru],
+            doctorName: r.doctor_name,
+            nurseName: r.nurse_name,
+            overtimeStaff: r.overtime_staff,
+            room: r.room,
+            shiftTime: r.shift_time,
+            formData: rawData,
+            transferCases,
+            surgeryCases,
+            deathCases,
+            criticalCases
+          });
+        }
+
+        // Slide 2.2: Chỉ số sản khoa đặc thù
+        const secDacThu = sanSections.find(sec => sec.title?.includes('SẢN KHOA ĐẶC THÙ'));
+        if (secDacThu) {
+          s.push({
+            type: 'department',
+            title: `${deptName} – CHỈ SỐ SẢN KHOA ĐẶC THÙ`,
+            subTitle: 'CHỈ SỐ SẢN KHOA ĐẶC THÙ',
+            deptCode: r.department_code,
+            deptName,
+            theme,
+            report: r,
+            sections: [secDacThu],
+            doctorName: r.doctor_name,
+            nurseName: r.nurse_name,
+            overtimeStaff: r.overtime_staff,
+            room: r.room,
+            shiftTime: r.shift_time,
+            formData: rawData,
+            transferCases,
+            surgeryCases,
+            deathCases,
+            criticalCases
+          });
+        }
+
+        // Slide 2.3: Ghi chú / Thêm giờ (nếu có)
+        const otherSections = sanSections.filter(sec => 
+          !sec.title?.includes('NỘI TRÚ CHUNG') &&
+          !sec.title?.includes('SẢN KHOA ĐẶC THÙ')
+        );
+        if (otherSections.length > 0) {
+          s.push({
+            type: 'department',
+            title: `${deptName} – GHI CHÚ & THÊM GIỜ`,
+            subTitle: 'GHI CHÚ & THÊM GIỜ CA TRỰC',
+            deptCode: r.department_code,
+            deptName,
+            theme,
+            report: r,
+            sections: otherSections,
+            doctorName: r.doctor_name,
+            nurseName: r.nurse_name,
+            overtimeStaff: r.overtime_staff,
+            room: r.room,
+            shiftTime: r.shift_time,
+            formData: rawData,
+            transferCases,
+            surgeryCases,
+            deathCases,
+            criticalCases
+          });
+        }
+
+        // Fallback: nếu không có cả 2 section
+        if (!secNoiTru && !secDacThu && otherSections.length === 0) {
+          s.push({
+            type: 'department',
+            title: deptName,
+            deptCode: r.department_code,
+            deptName,
+            theme,
+            report: r,
+            sections: sanSections,
             doctorName: r.doctor_name,
             nurseName: r.nurse_name,
             overtimeStaff: r.overtime_staff,

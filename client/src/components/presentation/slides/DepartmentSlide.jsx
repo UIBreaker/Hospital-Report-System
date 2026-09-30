@@ -91,10 +91,14 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
   let maxRowCount = 0;
   finalSections.forEach(sec => {
     if (sec.tableRows) maxRowCount = Math.max(maxRowCount, sec.tableRows.length);
-    else if (sec.items) maxRowCount = Math.max(maxRowCount, Math.ceil(sec.items.length / 2));
+    else if (sec.items) {
+      const isPaired = sec.items.length >= 8;
+      const count = isPaired ? Math.ceil(sec.items.length / 2) : sec.items.length;
+      maxRowCount = Math.max(maxRowCount, count);
+    }
   });
 
-  const isDenseTable = maxRowCount >= 6;
+  const isDenseTable = maxRowCount >= 7;
   const isSingleSection = finalSections.length === 1;
   const FONT_SECTION_HEADER = isFullscreen ? (isDenseTable ? '1.18rem' : '1.38rem') : (isDenseTable ? '0.96rem' : '1.12rem');
   const FONT_TH = isFullscreen ? (isDenseTable ? '1.08rem' : '1.25rem') : (isDenseTable ? '0.88rem' : '1.02rem');
@@ -108,7 +112,7 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
     const items = section.items || [];
     if (items.length === 0) return null;
 
-    const isPaired2Col = items.length >= 6;
+    const isPaired2Col = items.length >= 8;
 
     if (isPaired2Col) {
       // Split items into 2 columns
