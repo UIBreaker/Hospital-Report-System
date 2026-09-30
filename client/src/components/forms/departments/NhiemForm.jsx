@@ -53,26 +53,14 @@ const NhiemForm = ({ formData, setFormData, transferCases, setTransferCases }) =
           </div>
 
           <div className="form-group">
-            <label>Chuyển viện</label>
+            <label>Xuất viện</label>
             <input 
               type="number" 
               min="0" 
               step="1" 
-              value={formData.chuyenVien || ''} 
-              onChange={(e) => handleChange('chuyenVien', e.target.value)} 
-              placeholder="Nhập số ca chuyển viện"
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Chuyển khoa Sản</label>
-            <input 
-              type="number" 
-              min="0" 
-              step="1" 
-              value={formData.chuyenKhoaSan || ''} 
-              onChange={(e) => handleChange('chuyenKhoaSan', e.target.value)} 
-              placeholder="Nhập số ca chuyển Sản"
+              value={formData.xuatVien || ''} 
+              onChange={(e) => handleChange('xuatVien', e.target.value)} 
+              placeholder="Nhập số ca xuất viện"
             />
           </div>
 
@@ -85,6 +73,30 @@ const NhiemForm = ({ formData, setFormData, transferCases, setTransferCases }) =
               value={formData.xinXuatVien || ''} 
               onChange={(e) => handleChange('xinXuatVien', e.target.value)} 
               placeholder="Nhập số ca xin xuất viện"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Chuyển viện</label>
+            <input 
+              type="number" 
+              min="0" 
+              step="1" 
+              value={formData.chuyenVien || ''} 
+              onChange={(e) => handleChange('chuyenVien', e.target.value)} 
+              placeholder="Nhập số ca chuyển viện"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Chuyển khoa</label>
+            <input 
+              type="number" 
+              min="0" 
+              step="1" 
+              value={formData.chuyenKhoa !== undefined ? formData.chuyenKhoa : (formData.chuyenKhoaSan || '')} 
+              onChange={(e) => handleChange('chuyenKhoa', e.target.value)} 
+              placeholder="Nhập số ca chuyển khoa"
             />
           </div>
 

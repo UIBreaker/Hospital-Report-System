@@ -354,7 +354,8 @@ export const parseDepartmentSections = (reportData, deptCode = '') => {
   }
 
   // ================= 5. KHOA NHIỄM (NHIEM) =================
-  if (normalizedDept === 'nhiem' || data.chuyenKhoaSan !== undefined || data.xinXuatVien !== undefined) {
+  // Thứ tự: bệnh cũ -> bệnh mới -> xuất viện -> chuyển viện -> chuyển khoa -> hiện còn điều trị
+  if (normalizedDept === 'nhiem' || data.chuyenKhoaSan !== undefined || (data.xinXuatVien !== undefined && !data.hauPhau && !data.choSanh && !data.sanhThuong)) {
     if (data.dieuDuongTruc) {
       sections.push({
         type: 'personnel',
@@ -365,12 +366,16 @@ export const parseDepartmentSections = (reportData, deptCode = '') => {
 
     const nhiemMetrics = [];
     if (data.benhCu !== undefined && data.benhCu !== '') nhiemMetrics.push({ key: 'benhCu', label: 'Bệnh cũ', value: String(data.benhCu) });
-    if (data.benhMoi !== undefined && data.benhMoi !== '') nhiemMetrics.push({ key: 'benhMoi', label: 'Bệnh mới nhập viện', value: String(data.benhMoi) });
-    if (data.hienCon !== undefined && data.hienCon !== '') nhiemMetrics.push({ key: 'hienCon', label: 'Hiện còn điều trị', value: String(data.hienCon) });
-    if (data.xuatVien !== undefined && data.xuatVien !== '') nhiemMetrics.push({ key: 'xuatVien', label: 'Xuất viện', value: String(data.xuatVien) });
+    if (data.benhMoi !== undefined && data.benhMoi !== '') nhiemMetrics.push({ key: 'benhMoi', label: 'Bệnh mới', value: String(data.benhMoi) });
+    const xv = data.xuatVien !== undefined && data.xuatVien !== '' ? data.xuatVien : data.xinXuatVien;
+    if (xv !== undefined && xv !== '') nhiemMetrics.push({ key: 'xuatVien', label: 'Xuất viện', value: String(xv) });
     if (data.chuyenVien !== undefined && data.chuyenVien !== '') nhiemMetrics.push({ key: 'chuyenVien', label: 'Chuyển viện', value: String(data.chuyenVien) });
-    if (data.xinXuatVien !== undefined && data.xinXuatVien !== '') nhiemMetrics.push({ key: 'xinXuatVien', label: 'Xin xuất viện', value: String(data.xinXuatVien) });
-    if (data.chuyenKhoaSan !== undefined && data.chuyenKhoaSan !== '') nhiemMetrics.push({ key: 'chuyenKhoaSan', label: 'Chuyển khoa Sản', value: String(data.chuyenKhoaSan) });
+    const ck = data.chuyenKhoa !== undefined && data.chuyenKhoa !== '' ? data.chuyenKhoa : data.chuyenKhoaSan;
+    if (ck !== undefined && ck !== '') nhiemMetrics.push({ key: 'chuyenKhoa', label: 'Chuyển khoa', value: String(ck) });
+    if (data.hienCon !== undefined && data.hienCon !== '') nhiemMetrics.push({ key: 'hienCon', label: 'Hiện còn điều trị', value: String(data.hienCon) });
+    if (data.xuatVien !== undefined && data.xuatVien !== '' && data.xinXuatVien !== undefined && data.xinXuatVien !== '') {
+      nhiemMetrics.push({ key: 'xinXuatVien', label: 'Xin xuất viện', value: String(data.xinXuatVien) });
+    }
 
     if (nhiemMetrics.length > 0) {
       sections.push({
@@ -379,22 +384,168 @@ export const parseDepartmentSections = (reportData, deptCode = '') => {
       });
     }
 
-    if (data.themGio) {
+    if (data.themGio) sections.push({ type: 'note', title: 'THÊM GIỜ & GHI CHÚ', value: data.themGio });
+    if (data.tinhHinhChung) sections.push({ type: 'note', title: 'TÌNH HÌNH CHUNG CA TRỰC', value: data.tinhHinhChung });
+    return sections;
+  }
+
+  // ================= 5.1. KHOA NỘI (NOI) =================
+  // Thứ tự: bệnh cũ -> bệnh mới -> xuất viện -> chuyển viện -> hiện còn
+  if (normalizedDept === 'noi' || (normalizedDept.includes('noi') && !normalizedDept.includes('yhct') && !normalizedDept.includes('tru') && !normalizedDept.includes('lck') && !normalizedDept.includes('ngoai'))) {
+    const noiMetrics = [];
+    if (data.benhCu !== undefined && data.benhCu !== '') noiMetrics.push({ key: 'benhCu', label: 'Bệnh cũ', value: String(data.benhCu) });
+    if (data.benhMoi !== undefined && data.benhMoi !== '') noiMetrics.push({ key: 'benhMoi', label: 'Bệnh mới', value: String(data.benhMoi) });
+    const xv = data.xuatVien !== undefined && data.xuatVien !== '' ? data.xuatVien : data.benhXuat;
+    if (xv !== undefined && xv !== '') noiMetrics.push({ key: 'xuatVien', label: 'Xuất viện', value: String(xv) });
+    const cv = data.chuyenVien !== undefined && data.chuyenVien !== '' ? data.chuyenVien : data.benhChuyenVien;
+    if (cv !== undefined && cv !== '') noiMetrics.push({ key: 'chuyenVien', label: 'Chuyển viện', value: String(cv) });
+    const hc = data.hienCon !== undefined && data.hienCon !== '' ? data.hienCon : data.hienCo;
+    if (hc !== undefined && hc !== '') noiMetrics.push({ key: 'hienCon', label: 'Hiện còn', value: String(hc) });
+    if (data.chuyenKhoa !== undefined && data.chuyenKhoa !== '') noiMetrics.push({ key: 'chuyenKhoa', label: 'Chuyển khoa', value: String(data.chuyenKhoa) });
+
+    if (noiMetrics.length > 0) {
       sections.push({
-        type: 'note',
-        title: 'THÊM GIỜ & GHI CHÚ',
-        value: data.themGio
+        title: 'THỐNG KÊ HOẠT ĐỘNG KHOA NỘI',
+        items: noiMetrics
       });
     }
 
-    if (data.tinhHinhChung) {
+    if (data.themGio) sections.push({ type: 'note', title: 'THÊM GIỜ & GHI CHÚ', value: data.themGio });
+    if (data.tinhHinhChung) sections.push({ type: 'note', title: 'TÌNH HÌNH CHUNG CA TRỰC', value: data.tinhHinhChung });
+    return sections;
+  }
+
+  // ================= 5.2. KHOA SẢN (SAN) =================
+  // Thứ tự: bệnh cũ -> bệnh mới -> xuất viện -> chuyển viện -> hiện còn
+  if (normalizedDept === 'san' || data.choSanh !== undefined || data.sanhThuong !== undefined || data.sanhHut !== undefined) {
+    const sanMetrics = [];
+    if (data.benhCu !== undefined && data.benhCu !== '') sanMetrics.push({ key: 'benhCu', label: 'Bệnh cũ', value: String(data.benhCu) });
+    if (data.benhMoi !== undefined && data.benhMoi !== '') sanMetrics.push({ key: 'benhMoi', label: 'Bệnh mới', value: String(data.benhMoi) });
+    const xv = data.benhXuat !== undefined && data.benhXuat !== '' ? data.benhXuat : data.xuatVien;
+    if (xv !== undefined && xv !== '') sanMetrics.push({ key: 'xuatVien', label: 'Xuất viện', value: String(xv) });
+    const cv = data.benhChuyenVien !== undefined && data.benhChuyenVien !== '' ? data.benhChuyenVien : data.chuyenVien;
+    if (cv !== undefined && cv !== '') sanMetrics.push({ key: 'chuyenVien', label: 'Chuyển viện', value: String(cv) });
+    const hc = data.hienCo !== undefined && data.hienCo !== '' ? data.hienCo : data.hienCon;
+    if (hc !== undefined && hc !== '') sanMetrics.push({ key: 'hienCon', label: 'Hiện còn', value: String(hc) });
+    if (data.benhChuyenKhoa !== undefined && data.benhChuyenKhoa !== '') sanMetrics.push({ key: 'benhChuyenKhoa', label: 'Chuyển khoa', value: String(data.benhChuyenKhoa) });
+
+    if (sanMetrics.length > 0) {
       sections.push({
-        type: 'note',
-        title: 'TÌNH HÌNH CHUNG CA TRỰC',
-        value: data.tinhHinhChung
+        title: 'CHỈ SỐ NỘI TRÚ CHUNG',
+        items: sanMetrics
       });
     }
 
+    const sanDacThu = [];
+    if (data.hauPhau !== undefined && data.hauPhau !== '') sanDacThu.push({ key: 'hauPhau', label: 'Hậu phẫu', value: String(data.hauPhau) });
+    if (data.tongSoKham !== undefined && data.tongSoKham !== '') sanDacThu.push({ key: 'tongSoKham', label: 'Tổng số khám', value: String(data.tongSoKham) });
+    if (data.sanhThuong !== undefined && data.sanhThuong !== '') sanDacThu.push({ key: 'sanhThuong', label: 'Sanh thường', value: String(data.sanhThuong) });
+    if (data.sanhHut !== undefined && data.sanhHut !== '') sanDacThu.push({ key: 'sanhHut', label: 'Sanh hút / Giúp sinh', value: String(data.sanhHut) });
+    if (data.choSanh !== undefined && data.choSanh !== '') sanDacThu.push({ key: 'choSanh', label: 'Chờ sanh', value: String(data.choSanh) });
+    if (data.sieuAm !== undefined && data.sieuAm !== '') sanDacThu.push({ key: 'sieuAm', label: 'Siêu âm sản', value: String(data.sieuAm) });
+    if (data.datThaoVong !== undefined && data.datThaoVong !== '') sanDacThu.push({ key: 'datThaoVong', label: 'Đặt và tháo vòng', value: String(data.datThaoVong) });
+    if (data.chuyenVienNgoaiTru !== undefined && data.chuyenVienNgoaiTru !== '') sanDacThu.push({ key: 'chuyenVienNgoaiTru', label: 'Chuyển viện ngoại trú', value: String(data.chuyenVienNgoaiTru) });
+
+    if (sanDacThu.length > 0) {
+      sections.push({
+        title: 'CHỈ SỐ SẢN KHOA ĐẶC THÙ',
+        items: sanDacThu
+      });
+    }
+
+    if (data.themGio) sections.push({ type: 'note', title: 'THÊM GIỜ & GHI CHÚ', value: data.themGio });
+    if (data.tinhHinhChung) sections.push({ type: 'note', title: 'TÌNH HÌNH CHUNG CA TRỰC', value: data.tinhHinhChung });
+    return sections;
+  }
+
+  // ================= 5.3. KHOA NHI (NHI) =================
+  // Thứ tự: bệnh cũ -> bệnh mới (cấp cứu) -> bệnh mới (phòng khám) -> xuất viện -> PK -> Hiện có tại khoa
+  if (normalizedDept === 'nhi' || data.benhMoi_cc !== undefined || data.benhMoi_pk !== undefined) {
+    const nhiMetrics = [];
+    if (data.benhCu !== undefined && data.benhCu !== '') nhiMetrics.push({ key: 'benhCu', label: 'Bệnh cũ', value: String(data.benhCu) });
+    if (data.benhMoi_cc !== undefined && data.benhMoi_cc !== '') nhiMetrics.push({ key: 'benhMoi_cc', label: 'Bệnh mới (Cấp cứu)', value: String(data.benhMoi_cc) });
+    if (data.benhMoi_pk !== undefined && data.benhMoi_pk !== '') nhiMetrics.push({ key: 'benhMoi_pk', label: 'Bệnh mới (Phòng khám)', value: String(data.benhMoi_pk) });
+    const xv = data.xuat !== undefined && data.xuat !== '' ? data.xuat : data.xuatVien;
+    if (xv !== undefined && xv !== '') nhiMetrics.push({ key: 'xuatVien', label: 'Xuất viện', value: String(xv) });
+    if (data.pk !== undefined && data.pk !== '') {
+      const pkVal = data.pkGhiChu ? `${data.pk} (${data.pkGhiChu})` : String(data.pk);
+      nhiMetrics.push({ key: 'pk', label: 'PK', value: pkVal });
+    }
+    const hc = data.hienCo !== undefined && data.hienCo !== '' ? data.hienCo : data.hienCon;
+    if (hc !== undefined && hc !== '') {
+      const hcVal = data.hienCoGhiChu ? `${hc} (${data.hienCoGhiChu})` : String(hc);
+      nhiMetrics.push({ key: 'hienCo', label: 'Hiện có tại khoa', value: hcVal });
+    }
+    if (data.chuyenVien !== undefined && data.chuyenVien !== '') nhiMetrics.push({ key: 'chuyenVien', label: 'Chuyển viện', value: String(data.chuyenVien) });
+
+    if (nhiMetrics.length > 0) {
+      sections.push({
+        title: 'THỐNG KÊ HOẠT ĐỘNG KHOA NHI',
+        items: nhiMetrics
+      });
+    }
+
+    if (data.themGio) sections.push({ type: 'note', title: 'THÊM GIỜ & GHI CHÚ', value: data.themGio });
+    if (data.tinhHinhChung) sections.push({ type: 'note', title: 'TÌNH HÌNH CHUNG CA TRỰC', value: data.tinhHinhChung });
+    return sections;
+  }
+
+  // ================= 5.4. KHOA CHẤN THƯƠNG CHỈNH HÌNH (CTCH) =================
+  // Thứ tự: bệnh cũ -> bệnh mới -> xuất viện -> chuyển viện -> hiện còn
+  if (normalizedDept.includes('ctch')) {
+    const ctchMetrics = [];
+    if (data.benhCu !== undefined && data.benhCu !== '') ctchMetrics.push({ key: 'benhCu', label: 'Bệnh cũ', value: String(data.benhCu) });
+    if (data.benhMoi !== undefined && data.benhMoi !== '') ctchMetrics.push({ key: 'benhMoi', label: 'Bệnh mới', value: String(data.benhMoi) });
+    const xv = data.benhXuat !== undefined && data.benhXuat !== '' ? data.benhXuat : data.xuatVien;
+    if (xv !== undefined && xv !== '') ctchMetrics.push({ key: 'xuatVien', label: 'Xuất viện', value: String(xv) });
+    const cv = data.benhChuyenVien !== undefined && data.benhChuyenVien !== '' ? data.benhChuyenVien : data.chuyenVien;
+    if (cv !== undefined && cv !== '') ctchMetrics.push({ key: 'chuyenVien', label: 'Chuyển viện', value: String(cv) });
+    const hc = data.hienCon !== undefined && data.hienCon !== '' ? data.hienCon : data.hienCo;
+    if (hc !== undefined && hc !== '') ctchMetrics.push({ key: 'hienCon', label: 'Hiện còn', value: String(hc) });
+    const ck = data.benhChuyenKhoa !== undefined && data.benhChuyenKhoa !== '' ? data.benhChuyenKhoa : data.chuyenKhoa;
+    if (ck !== undefined && ck !== '') ctchMetrics.push({ key: 'benhChuyenKhoa', label: 'Chuyển khoa', value: String(ck) });
+    if (data.tuVong !== undefined && data.tuVong !== '') ctchMetrics.push({ key: 'tuVong', label: 'Tử vong', value: String(data.tuVong) });
+
+    if (ctchMetrics.length > 0) {
+      sections.push({
+        title: 'THỐNG KÊ BỆNH NHÂN NỘI TRÚ CTCH',
+        items: ctchMetrics
+      });
+    }
+
+    if (data.hienConGhiChu) sections.push({ type: 'note', title: 'GHI CHÚ HIỆN CÒN', value: data.hienConGhiChu });
+    if (data.themGio) sections.push({ type: 'note', title: 'THÊM GIỜ & GHI CHÚ', value: data.themGio });
+    if (data.tinhHinhChung) sections.push({ type: 'note', title: 'TÌNH HÌNH CHUNG CA TRỰC', value: data.tinhHinhChung });
+    return sections;
+  }
+
+  // ================= 5.5. KHOA NGOẠI TỔNG HỢP (NGOAI_TH) =================
+  // Thứ tự: bệnh cũ -> bệnh mới -> hậu phẫu -> bệnh xuất -> bệnh chuyển khoa -> bệnh chuyển viện -> tử vong -> hiện còn điều trị
+  if (normalizedDept.includes('ngoai') && !normalizedDept.includes('yhct')) {
+    const ngoaiMetrics = [];
+    if (data.benhCu !== undefined && data.benhCu !== '') ngoaiMetrics.push({ key: 'benhCu', label: 'Bệnh cũ', value: String(data.benhCu) });
+    if (data.benhMoi !== undefined && data.benhMoi !== '') ngoaiMetrics.push({ key: 'benhMoi', label: 'Bệnh mới', value: String(data.benhMoi) });
+    if (data.hauPhau !== undefined && data.hauPhau !== '') ngoaiMetrics.push({ key: 'hauPhau', label: 'Hậu phẫu', value: String(data.hauPhau) });
+    const xv = data.benhXuat !== undefined && data.benhXuat !== '' ? data.benhXuat : data.xuatVien;
+    if (xv !== undefined && xv !== '') ngoaiMetrics.push({ key: 'benhXuat', label: 'Bệnh xuất', value: String(xv) });
+    const ck = data.benhChuyenKhoa !== undefined && data.benhChuyenKhoa !== '' ? data.benhChuyenKhoa : data.chuyenKhoa;
+    if (ck !== undefined && ck !== '') ngoaiMetrics.push({ key: 'benhChuyenKhoa', label: 'Bệnh chuyển khoa', value: String(ck) });
+    const cv = data.benhChuyenVien !== undefined && data.benhChuyenVien !== '' ? data.benhChuyenVien : data.chuyenVien;
+    if (cv !== undefined && cv !== '') ngoaiMetrics.push({ key: 'benhChuyenVien', label: 'Bệnh chuyển viện', value: String(cv) });
+    if (data.tuVong !== undefined && data.tuVong !== '') ngoaiMetrics.push({ key: 'tuVong', label: 'Tử vong', value: String(data.tuVong) });
+    const hc = data.hienCon !== undefined && data.hienCon !== '' ? data.hienCon : data.hienCo;
+    if (hc !== undefined && hc !== '') ngoaiMetrics.push({ key: 'hienCon', label: 'Hiện còn điều trị', value: String(hc) });
+    if (data.tongSoKham !== undefined && data.tongSoKham !== '') ngoaiMetrics.push({ key: 'tongSoKham', label: 'Tổng số khám bệnh', value: String(data.tongSoKham) });
+
+    if (ngoaiMetrics.length > 0) {
+      sections.push({
+        title: 'THỐNG KÊ HOẠT ĐỘNG KHOA NGOẠI TỔNG HỢP',
+        items: ngoaiMetrics
+      });
+    }
+
+    if (data.themGio) sections.push({ type: 'note', title: 'THÊM GIỜ & GHI CHÚ', value: data.themGio });
+    if (data.tinhHinhChung) sections.push({ type: 'note', title: 'TÌNH HÌNH CHUNG CA TRỰC', value: data.tinhHinhChung });
     return sections;
   }
 

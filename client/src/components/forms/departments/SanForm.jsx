@@ -17,8 +17,8 @@ const SanForm = ({ formData, setFormData, transferCases, setTransferCases }) => 
           <div className="form-group"><label>Bệnh mới</label><input type="number" min="0" step="1" value={formData.benhMoi || ''} onChange={(e) => handleChange('benhMoi', e.target.value)} /></div>
           <div className="form-group"><label>Bệnh xuất</label><input type="number" min="0" step="1" value={formData.benhXuat || ''} onChange={(e) => handleChange('benhXuat', e.target.value)} /></div>
           <div className="form-group"><label>Bệnh chuyển viện</label><input type="number" min="0" step="1" value={formData.benhChuyenVien || ''} onChange={(e) => handleChange('benhChuyenVien', e.target.value)} /></div>
+          <div className="form-group"><label>Hiện còn điều trị</label><input type="number" min="0" step="1" value={formData.hienCo || ''} onChange={(e) => handleChange('hienCo', e.target.value)} /></div>
           <div className="form-group"><label>Bệnh chuyển khoa</label><input type="number" min="0" step="1" value={formData.benhChuyenKhoa || ''} onChange={(e) => handleChange('benhChuyenKhoa', e.target.value)} /></div>
-          <div className="form-group"><label>Hiện có</label><input type="number" min="0" step="1" value={formData.hienCo || ''} onChange={(e) => handleChange('hienCo', e.target.value)} /></div>
         </div>
       </div>
 

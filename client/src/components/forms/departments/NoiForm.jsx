@@ -80,18 +80,6 @@ const NoiForm = ({ doctorName, formData = {}, setFormData = () => {}, transferCa
           </div>
 
           <div className="form-group">
-            <label>Chuyển khoa</label>
-            <input 
-              type="number" 
-              min="0" 
-              step="1" 
-              value={formData.chuyenKhoa ?? ''} 
-              onChange={(e) => handleChange('chuyenKhoa', e.target.value)} 
-              placeholder="VD: 0" 
-            />
-          </div>
-
-          <div className="form-group">
             <label>Xuất viện</label>
             <input 
               type="number" 
@@ -100,6 +88,18 @@ const NoiForm = ({ doctorName, formData = {}, setFormData = () => {}, transferCa
               value={formData.xuatVien ?? ''} 
               onChange={(e) => handleChange('xuatVien', e.target.value)} 
               placeholder="VD: 9" 
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Chuyển viện (Số ca)</label>
+            <input 
+              type="number" 
+              min="0" 
+              step="1" 
+              value={formData.chuyenVien ?? ''} 
+              onChange={(e) => handleChange('chuyenVien', e.target.value)} 
+              placeholder="VD: 0" 
             />
           </div>
 
@@ -136,13 +136,13 @@ const NoiForm = ({ doctorName, formData = {}, setFormData = () => {}, transferCa
           </div>
 
           <div className="form-group">
-            <label>Chuyển viện (Số ca)</label>
+            <label>Chuyển khoa</label>
             <input 
               type="number" 
               min="0" 
               step="1" 
-              value={formData.chuyenVien ?? ''} 
-              onChange={(e) => handleChange('chuyenVien', e.target.value)} 
+              value={formData.chuyenKhoa ?? ''} 
+              onChange={(e) => handleChange('chuyenKhoa', e.target.value)} 
               placeholder="VD: 0" 
             />
           </div>

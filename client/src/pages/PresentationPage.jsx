@@ -21,7 +21,6 @@ import { parseDepartmentSections } from '../utils/departmentSectionParser';
 import TitleSlide from '../components/presentation/slides/TitleSlide';
 import DepartmentIntroSlide from '../components/presentation/slides/DepartmentIntroSlide';
 import DepartmentSlide from '../components/presentation/slides/DepartmentSlide';
-import ClinicalCasesOverviewSlide from '../components/presentation/slides/ClinicalCasesOverviewSlide';
 import TransferSlide from '../components/presentation/slides/TransferSlide';
 import SurgerySlide from '../components/presentation/slides/SurgerySlide';
 import DeathSlide from '../components/presentation/slides/DeathSlide';
@@ -621,25 +620,7 @@ const PresentationPage = () => {
       }
 
       // =========================================================================
-      // 3. CLINICAL CASES OVERVIEW SLIDE (CHỈ XUẤT HIỆN KHI KHOA CÓ CA LÂM SÀNG)
-      // =========================================================================
-      const hasClinicalCases = transferCases.length > 0 || surgeryCases.length > 0 || criticalCases.length > 0 || deathCases.length > 0;
-      if (hasClinicalCases) {
-        s.push({
-          type: 'clinical_overview',
-          title: `CÁC CA BỆNH LÂM SÀNG TẠI KHOA – ${deptName}`,
-          deptCode: r.department_code,
-          deptName,
-          transferCases,
-          surgeryCases,
-          criticalCases,
-          deathCases,
-          totalCases: transferCases.length + surgeryCases.length + criticalCases.length + deathCases.length
-        });
-      }
-
-      // =========================================================================
-      // 4. DETAILED CASE SLIDES (TRANSFER, SURGERY, DEATH, CRITICAL, IMAGES)
+      // 3. DETAILED CASE SLIDES (TRANSFER, SURGERY, DEATH, CRITICAL, IMAGES)
       // =========================================================================
 
       // 4.1 Transfer Case Slides
@@ -962,8 +943,6 @@ const PresentationPage = () => {
         return 'Giới thiệu ca trực & Nhân sự';
       case 'department':
         return s.subTitle || s.title || 'Số liệu chuyên môn';
-      case 'clinical_overview':
-        return `Tổng hợp ca bệnh lâm sàng (${s.totalCases || 0} ca)`;
       case 'transfer': {
         const pName = s.transferCase?.patient_name || s.transferCase?.patientName;
         return `Ca chuyển viện ${s.caseIndex}${pName ? `: ${pName}` : ''} (Tiếp nhận)`;
@@ -1005,7 +984,6 @@ const PresentationPage = () => {
     if (type === 'title') return <FaHospital style={{ color: '#38BDF8' }} />;
     if (type === 'dept_intro') return <FaUserMd style={{ color: '#FDE047' }} />;
     if (type === 'department') return <FaFileAlt style={{ color: '#93C5FD' }} />;
-    if (type === 'clinical_overview') return <FaClipboardList style={{ color: '#34D399' }} />;
     if (type?.includes('transfer')) return <FaAmbulance style={{ color: '#F59E0B' }} />;
     if (type?.includes('surgery')) return <FaProcedures style={{ color: '#38BDF8' }} />;
     if (type?.includes('critical')) return <FaHeartbeat style={{ color: '#A855F7' }} />;
@@ -1860,12 +1838,7 @@ const PresentationPage = () => {
                 <DepartmentSlide slide={slide} isFullscreen={true} />
               )}
 
-              {/* 4. Clinical Cases Overview Slide */}
-              {slide.type === 'clinical_overview' && (
-                <ClinicalCasesOverviewSlide slide={slide} isFullscreen={true} />
-              )}
-
-              {/* 5. Transfer Case Slide (Overview, Clinical & Progress) */}
+              {/* 4. Transfer Case Slide (Overview, Clinical & Progress) */}
               {(slide.type === 'transfer' || slide.type === 'transfer_clinical' || slide.type === 'transfer_progress') && (
                 <TransferSlide slide={slide} isFullscreen={true} />
               )}

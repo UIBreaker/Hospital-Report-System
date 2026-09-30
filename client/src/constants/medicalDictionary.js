@@ -153,10 +153,17 @@ export const FIELD_LABELS = {
   // Khoa Nhi
   benhMoi_pk: 'Bệnh mới (Phòng khám)',
   benhMoi_cc: 'Bệnh mới (Cấp cứu)',
+  pk: 'PK',
+  xuat: 'Xuất viện',
 
   // Khoa Nhiễm
-  chuyenKhoaSan: 'Chuyển khoa Sản',
+  chuyenKhoaSan: 'Chuyển khoa',
   xinXuatVien: 'Xin xuất viện',
+
+  // Khoa Ngoại TH / CTCH / Sản aliases
+  benhXuat: 'Bệnh xuất',
+  benhChuyenVien: 'Bệnh chuyển viện',
+  benhChuyenKhoa: 'Bệnh chuyển khoa',
 
   // Khoa Xét Nghiệm / CĐHA
   tongXetNghiem: 'Tổng số xét nghiệm',

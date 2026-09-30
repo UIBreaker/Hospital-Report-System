@@ -27,18 +27,6 @@ const NhiForm = ({ formData, setFormData, transferCases, setTransferCases }) => 
           </div>
 
           <div className="form-group">
-            <label>Bệnh mới (Từ Phòng khám)</label>
-            <input 
-              type="number" 
-              min="0" 
-              step="1" 
-              value={formData.benhMoi_pk || ''} 
-              onChange={(e) => handleChange('benhMoi_pk', e.target.value)} 
-              placeholder="Nhập số bệnh mới từ PK"
-            />
-          </div>
-
-          <div className="form-group">
             <label>Bệnh mới (Từ Cấp cứu)</label>
             <input 
               type="number" 
@@ -51,14 +39,14 @@ const NhiForm = ({ formData, setFormData, transferCases, setTransferCases }) => 
           </div>
 
           <div className="form-group">
-            <label>Chuyển viện</label>
+            <label>Bệnh mới (Từ Phòng khám)</label>
             <input 
               type="number" 
               min="0" 
               step="1" 
-              value={formData.chuyenVien || ''} 
-              onChange={(e) => handleChange('chuyenVien', e.target.value)} 
-              placeholder="Nhập số chuyển viện"
+              value={formData.benhMoi_pk || ''} 
+              onChange={(e) => handleChange('benhMoi_pk', e.target.value)} 
+              placeholder="Nhập số bệnh mới từ PK"
             />
           </div>
 
@@ -68,9 +56,21 @@ const NhiForm = ({ formData, setFormData, transferCases, setTransferCases }) => 
               type="number" 
               min="0" 
               step="1" 
-              value={formData.xuat || ''} 
+              value={formData.xuat !== undefined ? formData.xuat : (formData.xuatVien || '')} 
               onChange={(e) => handleChange('xuat', e.target.value)} 
               placeholder="Nhập số ca xuất viện"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Chuyển viện</label>
+            <input 
+              type="number" 
+              min="0" 
+              step="1" 
+              value={formData.chuyenVien || ''} 
+              onChange={(e) => handleChange('chuyenVien', e.target.value)} 
+              placeholder="Nhập số chuyển viện"
             />
           </div>
         </div>
