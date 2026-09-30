@@ -468,13 +468,11 @@ export const parseDepartmentSections = (reportData, deptCode = '') => {
     const xv = data.xuat !== undefined && data.xuat !== '' ? data.xuat : data.xuatVien;
     if (xv !== undefined && xv !== '') nhiMetrics.push({ key: 'xuatVien', label: 'Xuất viện', value: String(xv) });
     if (data.pk !== undefined && data.pk !== '') {
-      const pkVal = data.pkGhiChu ? `${data.pk} (${data.pkGhiChu})` : String(data.pk);
-      nhiMetrics.push({ key: 'pk', label: 'PK', value: pkVal });
+      nhiMetrics.push({ key: 'pk', label: 'PK', value: String(data.pk) });
     }
     const hc = data.hienCo !== undefined && data.hienCo !== '' ? data.hienCo : data.hienCon;
     if (hc !== undefined && hc !== '') {
-      const hcVal = data.hienCoGhiChu ? `${hc} (${data.hienCoGhiChu})` : String(hc);
-      nhiMetrics.push({ key: 'hienCo', label: 'Hiện có tại khoa', value: hcVal });
+      nhiMetrics.push({ key: 'hienCo', label: 'Hiện có tại khoa', value: String(hc) });
     }
     if (data.chuyenVien !== undefined && data.chuyenVien !== '') nhiMetrics.push({ key: 'chuyenVien', label: 'Chuyển viện', value: String(data.chuyenVien) });
 
@@ -485,6 +483,20 @@ export const parseDepartmentSections = (reportData, deptCode = '') => {
       });
     }
 
+    if (data.hienCoGhiChu) {
+      sections.push({
+        type: 'note',
+        title: 'GHI CHÚ HIỆN CÓ TẠI KHOA',
+        value: data.hienCoGhiChu
+      });
+    }
+    if (data.pkGhiChu) {
+      sections.push({
+        type: 'note',
+        title: 'GHI CHÚ PHÒNG KHÁM (PK)',
+        value: data.pkGhiChu
+      });
+    }
     if (data.themGio) sections.push({ type: 'note', title: 'THÊM GIỜ & GHI CHÚ', value: data.themGio });
     if (data.tinhHinhChung) sections.push({ type: 'note', title: 'TÌNH HÌNH CHUNG CA TRỰC', value: data.tinhHinhChung });
     return sections;
