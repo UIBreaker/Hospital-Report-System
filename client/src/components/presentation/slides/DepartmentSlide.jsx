@@ -87,18 +87,23 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
     }
   }
 
+  const noteSections = finalSections.filter(sec => sec.type === 'note' || sec.type === 'personnel' || sec.type === 'blood_transfusion');
+  const tableSections = finalSections.filter(sec => sec.type !== 'note' && sec.type !== 'personnel' && sec.type !== 'blood_transfusion');
+  const hasNotes = noteSections.length > 0;
+  const hasTable = tableSections.length > 0;
+
   // Large-scale auto font scaling for high impact
   let maxRowCount = 0;
-  finalSections.forEach(sec => {
+  tableSections.forEach(sec => {
     if (sec.tableRows) maxRowCount = Math.max(maxRowCount, sec.tableRows.length);
     else if (sec.items) {
-      const isPaired = sec.items.length >= 8;
+      const isPaired = hasNotes ? (sec.items.length >= 4) : (sec.items.length >= 7);
       const count = isPaired ? Math.ceil(sec.items.length / 2) : sec.items.length;
       maxRowCount = Math.max(maxRowCount, count);
     }
   });
 
-  const isDenseTable = maxRowCount >= 7;
+  const isDenseTable = maxRowCount >= 7 || (hasNotes && maxRowCount >= 4);
   const isSingleSection = finalSections.length === 1;
   const FONT_SECTION_HEADER = isFullscreen ? (isDenseTable ? '1.18rem' : '1.38rem') : (isDenseTable ? '0.96rem' : '1.12rem');
   const FONT_TH = isFullscreen ? (isDenseTable ? '1.08rem' : '1.25rem') : (isDenseTable ? '0.88rem' : '1.02rem');
@@ -112,7 +117,7 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
     const items = section.items || [];
     if (items.length === 0) return null;
 
-    const isPaired2Col = items.length >= 8;
+    const isPaired2Col = hasNotes ? (items.length >= 4) : (items.length >= 7);
 
     if (isPaired2Col) {
       // Split items into 2 columns
@@ -128,7 +133,7 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
       }
 
       return (
-        <div key={sIdx} style={{ marginBottom: '0.4rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <div key={sIdx} style={{ marginBottom: hasNotes ? '0.25rem' : '0.4rem', flex: hasNotes ? '0 0 auto' : (isSingleSection ? 1 : '0 0 auto'), display: 'flex', flexDirection: 'column' }}>
           {section.title && !subTitle && (
             <div style={{
               fontSize: FONT_SECTION_HEADER, fontWeight: '900', color: '#0F2C59',
@@ -144,7 +149,7 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
             width: '100%', borderCollapse: 'separate', borderSpacing: 0,
             borderRadius: '14px', overflow: 'hidden', border: '1.5px solid #CBD5E1',
             boxShadow: '0 4px 18px rgba(15, 44, 89, 0.05)',
-            flex: 1
+            flex: hasNotes ? '0 0 auto' : (isSingleSection ? 1 : '0 0 auto')
           }}>
             <thead>
               <tr style={{ backgroundColor: '#0F2C59', color: '#FFFFFF' }}>
@@ -225,7 +230,7 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
 
     // Full-Width Single-Column Table
     return (
-      <div key={sIdx} style={{ marginBottom: '0.4rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <div key={sIdx} style={{ marginBottom: hasNotes ? '0.25rem' : '0.4rem', flex: hasNotes ? '0 0 auto' : (isSingleSection ? 1 : '0 0 auto'), display: 'flex', flexDirection: 'column' }}>
         {section.title && !subTitle && (
           <div style={{
             fontSize: FONT_SECTION_HEADER, fontWeight: '900', color: '#0F2C59',
@@ -241,7 +246,7 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
           width: '100%', borderCollapse: 'separate', borderSpacing: 0,
           borderRadius: '14px', overflow: 'hidden', border: '1.5px solid #CBD5E1',
           boxShadow: '0 4px 18px rgba(15, 44, 89, 0.05)',
-          flex: 1
+          flex: hasNotes ? '0 0 auto' : (isSingleSection ? 1 : '0 0 auto')
         }}>
           <thead>
             <tr style={{ backgroundColor: '#0F2C59', color: '#FFFFFF' }}>
@@ -356,32 +361,138 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
         <img src="/logo.png" alt="Logo" style={{ width: isFullscreen ? '44px' : '34px', height: isFullscreen ? '44px' : '34px', objectFit: 'contain', flexShrink: 0 }} />
       </div>
 
-      {/* 2. Main Tables Container */}
+      {/* 2. Main Tables & Notes Container */}
       <div style={{
-        display: 'flex', flexDirection: 'column', gap: '0.55rem',
+        display: 'flex', flexDirection: 'column', gap: isFullscreen ? '0.55rem' : '0.4rem',
         flex: 1, minHeight: 0, justifyContent: 'flex-start',
         overflowY: 'auto'
       }}>
-        {finalSections.length > 0 ? (
-          finalSections.map((sec, idx) => {
-            // Note, Personnel or Blood Transfusion section
-            if (sec.type === 'note' || sec.type === 'personnel' || sec.type === 'blood_transfusion') {
+        {tableSections.map((sec, idx) => {
+          // Custom table (like GMHS, LCK, Techniques, or Standard Items)
+          if (sec.tableType === 'custom_table' || sec.tableType === 'techniques') {
+            const headers = sec.headers || [];
+            const rows = sec.tableRows || [];
+            const rowKeys = sec.rowKeys || [];
+
+            return (
+              <div key={idx} className="anim-info-pop anim-delay-2" style={{ marginBottom: hasNotes ? '0.25rem' : '0.4rem', flex: hasNotes ? '0 0 auto' : (isSingleSection ? 1 : '0 0 auto'), display: 'flex', flexDirection: 'column' }}>
+                {sec.title && !subTitle && (
+                  <div style={{
+                    fontSize: FONT_SECTION_HEADER, fontWeight: '900', color: '#0F2C59',
+                    backgroundColor: '#EFF6FF', padding: '0.4rem 0.95rem', borderRadius: '8px',
+                    borderLeft: '5.5px solid #2563EB', marginBottom: '0.45rem',
+                    textTransform: 'uppercase', letterSpacing: '0.5px'
+                  }}>
+                    {sec.title}
+                  </div>
+                )}
+
+                <table style={{
+                  width: '100%', borderCollapse: 'separate', borderSpacing: 0,
+                  borderRadius: '14px', overflow: 'hidden', border: '1.5px solid #CBD5E1',
+                  boxShadow: '0 4px 18px rgba(15, 44, 89, 0.05)',
+                  flex: hasNotes ? '0 0 auto' : (isSingleSection ? 1 : '0 0 auto')
+                }}>
+                  <thead>
+                    <tr style={{ backgroundColor: '#0F2C59', color: '#FFFFFF' }}>
+                      <th style={{ padding: PAD_TH, textAlign: 'center', width: '6%', fontWeight: '800', fontSize: FONT_TH }}>STT</th>
+                      {headers.map((h, hIdx) => (
+                        <th key={hIdx} style={{
+                          padding: PAD_TH,
+                          textAlign: hIdx === 0 ? 'left' : 'center',
+                          fontWeight: '800',
+                          fontSize: FONT_TH
+                        }}>
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((row, rIdx) => {
+                      const isTotal = row.isTotal;
+                      return (
+                        <tr key={rIdx} style={{
+                          backgroundColor: isTotal ? '#EFF6FF' : (rIdx % 2 === 0 ? '#FFFFFF' : '#F8FAFC'),
+                          fontWeight: isTotal ? '900' : 'normal',
+                          borderBottom: '1px solid #E2E8F0'
+                        }}>
+                          <td style={{ padding: PAD_TD, textAlign: 'center', fontWeight: '800', color: isTotal ? '#1E40AF' : '#64748B', fontSize: FONT_TD_LABEL }}>
+                            {rIdx + 1}
+                          </td>
+                          {rowKeys.map((k, kIdx) => {
+                            const val = row[k] !== undefined ? row[k] : '—';
+                            const isFirst = kIdx === 0;
+
+                            return (
+                              <td key={kIdx} style={{
+                                padding: PAD_TD,
+                                textAlign: isFirst ? 'left' : 'center',
+                                fontWeight: isTotal ? '900' : (isFirst ? '800' : '700'),
+                                color: isTotal ? '#1E3A8A' : '#0F2C59',
+                                fontSize: FONT_TD_LABEL
+                              }}>
+                                {!isFirst && val !== '—' ? (
+                                  <span style={{
+                                    backgroundColor: isTotal ? '#1E40AF' : '#EFF6FF',
+                                    color: isTotal ? '#FFFFFF' : '#1E40AF',
+                                    border: isTotal ? '1.5px solid #1D4ED8' : '1.5px solid #BFDBFE',
+                                    padding: isFullscreen ? '0.22rem 0.95rem' : '0.15rem 0.75rem',
+                                    borderRadius: '8px',
+                                    fontWeight: '900',
+                                    fontSize: FONT_BADGE,
+                                    fontFamily: "'Roboto Mono', monospace",
+                                    display: 'inline-block',
+                                    minWidth: '42px',
+                                    boxShadow: isTotal ? '0 2px 8px rgba(30, 64, 175, 0.25)' : 'none'
+                                  }}>
+                                    {formatValueBadge(val)}
+                                  </span>
+                                ) : (
+                                  val
+                                )}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            );
+          }
+
+          // Standard item list
+          return renderItemTable(sec, idx);
+        })}
+
+        {/* Note / Personnel / Blood Transfusion Cards */}
+        {noteSections.length > 0 && (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: noteSections.length > 1 ? 'repeat(auto-fit, minmax(320px, 1fr))' : '1fr',
+            gap: isFullscreen ? '0.55rem' : '0.4rem',
+            flexShrink: 0
+          }}>
+            {noteSections.map((sec, nIdx) => {
               const isBlood = sec.type === 'blood_transfusion';
               const isPersonnel = sec.type === 'personnel';
 
               return (
-                <div key={idx} className="anim-info-pop anim-delay-2" style={{
+                <div key={nIdx} className="anim-info-pop anim-delay-2" style={{
                   backgroundColor: isBlood ? '#FEF2F2' : (isPersonnel ? '#EFF6FF' : '#FFFBEB'),
                   border: `1.5px solid ${isBlood ? '#FECACA' : (isPersonnel ? '#BFDBFE' : '#FDE68A')}`,
                   borderLeft: isBlood ? '5px solid #DC2626' : (isPersonnel ? '5px solid #2563EB' : '5px solid #D97706'),
                   borderRadius: '12px',
-                  padding: isFullscreen ? '0.85rem 1.3rem' : '0.65rem 0.95rem'
+                  padding: isFullscreen ? (hasTable ? '0.65rem 1.15rem' : '0.85rem 1.3rem') : (hasTable ? '0.42rem 0.85rem' : '0.65rem 0.95rem'),
+                  flexShrink: 0
                 }}>
                   <div style={{
-                    fontSize: isFullscreen ? '1.08rem' : '0.92rem',
+                    fontSize: isFullscreen ? (hasTable ? '1.02rem' : '1.08rem') : (hasTable ? '0.86rem' : '0.92rem'),
                     fontWeight: '800',
                     color: isBlood ? '#DC2626' : (isPersonnel ? '#1E40AF' : '#92400E'),
-                    marginBottom: '0.35rem',
+                    marginBottom: '0.2rem',
                     textTransform: 'uppercase',
                     display: 'flex',
                     alignItems: 'center',
@@ -391,117 +502,21 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
                     <span>{sec.title}</span>
                   </div>
                   <div style={{
-                    fontSize: isFullscreen ? '1.22rem' : '1.05rem',
+                    fontSize: isFullscreen ? (hasTable ? '1.14rem' : '1.22rem') : (hasTable ? '0.96rem' : '1.05rem'),
                     color: isBlood ? '#7F1D1D' : '#1E293B',
                     fontWeight: '600',
-                    lineHeight: 1.55,
+                    lineHeight: 1.45,
                     whiteSpace: 'pre-line'
                   }}>
                     {sec.value}
                   </div>
                 </div>
               );
-            }
+            })}
+          </div>
+        )}
 
-            // Custom table (like GMHS, LCK, Techniques, or Standard Items)
-            if (sec.tableType === 'custom_table' || sec.tableType === 'techniques') {
-              const headers = sec.headers || [];
-              const rows = sec.tableRows || [];
-              const rowKeys = sec.rowKeys || [];
-
-              return (
-                <div key={idx} className="anim-info-pop anim-delay-2" style={{ marginBottom: '0.4rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                  {sec.title && !subTitle && (
-                    <div style={{
-                      fontSize: FONT_SECTION_HEADER, fontWeight: '900', color: '#0F2C59',
-                      backgroundColor: '#EFF6FF', padding: '0.4rem 0.95rem', borderRadius: '8px',
-                      borderLeft: '5.5px solid #2563EB', marginBottom: '0.45rem',
-                      textTransform: 'uppercase', letterSpacing: '0.5px'
-                    }}>
-                      {sec.title}
-                    </div>
-                  )}
-
-                  <table style={{
-                    width: '100%', borderCollapse: 'separate', borderSpacing: 0,
-                    borderRadius: '14px', overflow: 'hidden', border: '1.5px solid #CBD5E1',
-                    boxShadow: '0 4px 18px rgba(15, 44, 89, 0.05)',
-                    flex: 1
-                  }}>
-                    <thead>
-                      <tr style={{ backgroundColor: '#0F2C59', color: '#FFFFFF' }}>
-                        <th style={{ padding: PAD_TH, textAlign: 'center', width: '6%', fontWeight: '800', fontSize: FONT_TH }}>STT</th>
-                        {headers.map((h, hIdx) => (
-                          <th key={hIdx} style={{
-                            padding: PAD_TH,
-                            textAlign: hIdx === 0 ? 'left' : 'center',
-                            fontWeight: '800',
-                            fontSize: FONT_TH
-                          }}>
-                            {h}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {rows.map((row, rIdx) => {
-                        const isTotal = row.isTotal;
-                        return (
-                          <tr key={rIdx} style={{
-                            backgroundColor: isTotal ? '#EFF6FF' : (rIdx % 2 === 0 ? '#FFFFFF' : '#F8FAFC'),
-                            fontWeight: isTotal ? '900' : 'normal',
-                            borderBottom: '1px solid #E2E8F0'
-                          }}>
-                            <td style={{ padding: PAD_TD, textAlign: 'center', fontWeight: '800', color: isTotal ? '#1E40AF' : '#64748B', fontSize: FONT_TD_LABEL }}>
-                              {rIdx + 1}
-                            </td>
-                            {rowKeys.map((k, kIdx) => {
-                              const val = row[k] !== undefined ? row[k] : '—';
-                              const isFirst = kIdx === 0;
-
-                              return (
-                                <td key={kIdx} style={{
-                                  padding: PAD_TD,
-                                  textAlign: isFirst ? 'left' : 'center',
-                                  fontWeight: isTotal ? '900' : (isFirst ? '800' : '700'),
-                                  color: isTotal ? '#1E3A8A' : '#0F2C59',
-                                  fontSize: FONT_TD_LABEL
-                                }}>
-                                  {!isFirst && val !== '—' ? (
-                                    <span style={{
-                                      backgroundColor: isTotal ? '#1E40AF' : '#EFF6FF',
-                                      color: isTotal ? '#FFFFFF' : '#1E40AF',
-                                      border: isTotal ? '1.5px solid #1D4ED8' : '1.5px solid #BFDBFE',
-                                      padding: isFullscreen ? '0.22rem 0.95rem' : '0.15rem 0.75rem',
-                                      borderRadius: '8px',
-                                      fontWeight: '900',
-                                      fontSize: FONT_BADGE,
-                                      fontFamily: "'Roboto Mono', monospace",
-                                      display: 'inline-block',
-                                      minWidth: '42px',
-                                      boxShadow: isTotal ? '0 2px 8px rgba(30, 64, 175, 0.25)' : 'none'
-                                    }}>
-                                      {formatValueBadge(val)}
-                                    </span>
-                                  ) : (
-                                    val
-                                  )}
-                                </td>
-                              );
-                            })}
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              );
-            }
-
-            // Standard item list
-            return renderItemTable(sec, idx);
-          })
-        ) : (
+        {finalSections.length === 0 && (
           <div style={{
             padding: '2rem',
             textAlign: 'center',
