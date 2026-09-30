@@ -56,3 +56,7 @@ server/src/config/init-staff.js
 import-hospital-staff.js
 init-modules.js
 verify-modules.js
+
+# Graphify Knowledge Graph
+graphify-out/
+.graphify/
