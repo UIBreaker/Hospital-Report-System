@@ -22,13 +22,13 @@ const TransferSlide = ({ slide, isFullscreen }) => {
     : 'DIỄN BIẾN QUÁ TRÌNH CHUYỂN TUYẾN';
 
   const FONT_DEPT = isFullscreen ? '2.2rem' : '1.75rem';
-  const FONT_BADGE = isFullscreen ? '1.15rem' : '0.96rem';
-  const FONT_PT_NAME = isFullscreen ? '1.65rem' : '1.38rem';
-  const FONT_PT_INFO = isFullscreen ? '1.18rem' : '0.98rem';
-  const FONT_DIAG_TITLE = isFullscreen ? '1.2rem' : '1.02rem';
-  const FONT_DIAG_TEXT = isFullscreen ? '2.1rem' : '1.75rem';
-  const FONT_SECTION_TITLE = isFullscreen ? '1.35rem' : '1.15rem';
-  const FONT_BODY = isFullscreen ? '1.55rem' : '1.32rem';
+  const FONT_BADGE = isFullscreen ? '1.18rem' : '0.98rem';
+  const FONT_PT_NAME = isFullscreen ? '1.85rem' : '1.48rem';
+  const FONT_PT_INFO = isFullscreen ? '1.25rem' : '1.05rem';
+  const FONT_DIAG_TITLE = isFullscreen ? '1.25rem' : '1.05rem';
+  const FONT_DIAG_TEXT = isFullscreen ? '2.3rem' : '1.85rem';
+  const FONT_SECTION_TITLE = isFullscreen ? '1.45rem' : '1.22rem';
+  const FONT_BODY = isFullscreen ? '1.85rem' : '1.5rem';
   const LINE_H = '1.65';
 
   return (
@@ -87,7 +87,11 @@ const TransferSlide = ({ slide, isFullscreen }) => {
             boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
           }}>
             <FaAmbulance />
-            <span>CA CHUYỂN VIỆN {slide.caseIndex}/{slide.totalCases} • {partTitle}</span>
+            <span>
+              CA CHUYỂN VIỆN {slide.caseIndex}/{slide.totalCases}
+              {!isOverview && (tc.patient_name || tc.patientName) ? ` • BN: ${(tc.patient_name || tc.patientName).toUpperCase()}${ageFormatted ? ` (${ageFormatted})` : ''}` : ''}
+              {' '}• {partTitle}
+            </span>
           </div>
         </div>
 
@@ -98,55 +102,57 @@ const TransferSlide = ({ slide, isFullscreen }) => {
         />
       </div>
 
-      {/* 2. ZONE 2: THANH THÔNG TIN BỆNH NHÂN */}
-      <div 
-        className="anim-info-pop anim-delay-1"
-        style={{
-          backgroundColor: '#FEF3C7',
-          border: '2px solid #FDE68A',
-          borderLeft: '8px solid #D97706',
-          borderRadius: '12px',
-          padding: isFullscreen ? '0.6rem 1.25rem' : '0.42rem 0.95rem',
-          display: 'flex',
-          alignItems: 'center',
-          gap: isFullscreen ? '1.5rem' : '1rem',
-          flexWrap: 'wrap',
-          flexShrink: 0,
-          boxShadow: '0 2px 8px rgba(217,119,6,0.1)'
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span style={{ fontSize: isFullscreen ? '1.15rem' : '0.98rem', fontWeight: '800', color: '#92400E' }}>BỆNH NHÂN:</span>
-          <span style={{ fontSize: FONT_PT_NAME, fontWeight: '900', color: '#78350F', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            {tc.patient_name || tc.patientName || 'BỆNH NHÂN CHUYỂN VIỆN'}
-          </span>
+      {/* 2. ZONE 2: THANH THÔNG TIN BỆNH NHÂN (CHỈ HIỂN THỊ Ở SLIDE ĐẦU TIẾP NHẬN) */}
+      {isOverview && (
+        <div 
+          className="anim-info-pop anim-delay-1"
+          style={{
+            backgroundColor: '#FEF3C7',
+            border: '2px solid #FDE68A',
+            borderLeft: '8px solid #D97706',
+            borderRadius: '12px',
+            padding: isFullscreen ? '0.6rem 1.25rem' : '0.42rem 0.95rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: isFullscreen ? '1.5rem' : '1rem',
+            flexWrap: 'wrap',
+            flexShrink: 0,
+            boxShadow: '0 2px 8px rgba(217,119,6,0.1)'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ fontSize: isFullscreen ? '1.15rem' : '0.98rem', fontWeight: '800', color: '#92400E' }}>BỆNH NHÂN:</span>
+            <span style={{ fontSize: FONT_PT_NAME, fontWeight: '900', color: '#78350F', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              {tc.patient_name || tc.patientName || 'BỆNH NHÂN CHUYỂN VIỆN'}
+            </span>
+          </div>
+
+          {ageFormatted && (
+            <span style={{
+              backgroundColor: '#D97706',
+              color: '#FFFFFF',
+              padding: '0.2rem 0.85rem',
+              borderRadius: '20px',
+              fontWeight: '900',
+              fontSize: FONT_PT_INFO
+            }}>
+              {ageFormatted}
+            </span>
+          )}
+
+          {tc.address && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#92400E', fontWeight: '700', fontSize: FONT_PT_INFO }}>
+              <FaMapMarkerAlt /> <span>{tc.address}</span>
+            </div>
+          )}
+
+          {(tc.admission_time || tc.admissionTime) && (
+            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#78350F', fontWeight: '800', fontSize: FONT_PT_INFO }}>
+              <FaClock style={{ color: '#D97706' }} /> <span>Giờ vào viện: <strong>{tc.admission_time || tc.admissionTime}</strong></span>
+            </div>
+          )}
         </div>
-
-        {ageFormatted && (
-          <span style={{
-            backgroundColor: '#D97706',
-            color: '#FFFFFF',
-            padding: '0.2rem 0.85rem',
-            borderRadius: '20px',
-            fontWeight: '900',
-            fontSize: FONT_PT_INFO
-          }}>
-            {ageFormatted}
-          </span>
-        )}
-
-        {tc.address && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#92400E', fontWeight: '700', fontSize: FONT_PT_INFO }}>
-            <FaMapMarkerAlt /> <span>{tc.address}</span>
-          </div>
-        )}
-
-        {(tc.admission_time || tc.admissionTime) && (
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#78350F', fontWeight: '800', fontSize: FONT_PT_INFO }}>
-            <FaClock style={{ color: '#D97706' }} /> <span>Giờ vào viện: <strong>{tc.admission_time || tc.admissionTime}</strong></span>
-          </div>
-        )}
-      </div>
+      )}
 
       {/* 3. ZONE 3: NỘI DUNG CHUYÊN MÔN THEO TỪNG SLIDE RIÊNG BIỆT */}
       {isOverview && (
@@ -243,26 +249,6 @@ const TransferSlide = ({ slide, isFullscreen }) => {
       {isClinical && (
         /* SLIDE 2: CHI TIẾT LÂM SÀNG & CẬN LÂM SÀNG */
         <div style={{ display: 'flex', flexDirection: 'column', gap: isFullscreen ? '0.75rem' : '0.55rem', flex: 1, minHeight: 0 }}>
-          {/* Chẩn đoán tóm tắt */}
-          <div style={{
-            backgroundColor: '#FEF3C7',
-            border: '2px solid #F59E0B',
-            borderLeft: '8px solid #D97706',
-            borderRadius: '12px',
-            padding: isFullscreen ? '0.65rem 1.25rem' : '0.45rem 1rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.85rem',
-            flexShrink: 0
-          }}>
-            <span style={{ fontSize: isFullscreen ? '1.1rem' : '0.95rem', fontWeight: '900', color: '#92400E', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
-              🏥 CHẨN ĐOÁN:
-            </span>
-            <span style={{ fontSize: isFullscreen ? '1.55rem' : '1.3rem', fontWeight: '900', color: '#78350F' }}>
-              {cleanDiagnosis}
-            </span>
-          </div>
-
           {/* 2 Khối lớn: Lâm sàng & Cận lâm sàng chiếm trọn màn hình */}
           <div style={{
             display: 'grid',
@@ -277,13 +263,13 @@ const TransferSlide = ({ slide, isFullscreen }) => {
               border: '2px solid #FDE68A',
               borderLeft: '8px solid #D97706',
               borderRadius: '14px',
-              padding: isFullscreen ? '1.1rem 1.4rem' : '0.85rem 1.1rem',
+              padding: isFullscreen ? '1.25rem 1.6rem' : '0.95rem 1.25rem',
               display: 'flex',
               flexDirection: 'column',
               overflowY: 'auto',
               boxShadow: '0 4px 14px rgba(0,0,0,0.03)'
             }}>
-              <div style={{ fontSize: FONT_SECTION_TITLE, fontWeight: '900', color: '#92400E', textTransform: 'uppercase', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+              <div style={{ fontSize: FONT_SECTION_TITLE, fontWeight: '900', color: '#92400E', textTransform: 'uppercase', marginBottom: '0.65rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
                 <FaStethoscope /> LÂM SÀNG & TRIỆU CHỨNG KHÁM
               </div>
               <div style={{ fontSize: FONT_BODY, lineHeight: LINE_H, color: '#0F172A', fontWeight: '600' }}>
@@ -297,13 +283,13 @@ const TransferSlide = ({ slide, isFullscreen }) => {
               border: '2px solid #FDE68A',
               borderLeft: '8px solid #B45309',
               borderRadius: '14px',
-              padding: isFullscreen ? '1.1rem 1.4rem' : '0.85rem 1.1rem',
+              padding: isFullscreen ? '1.25rem 1.6rem' : '0.95rem 1.25rem',
               display: 'flex',
               flexDirection: 'column',
               overflowY: 'auto',
               boxShadow: '0 4px 14px rgba(0,0,0,0.03)'
             }}>
-              <div style={{ fontSize: FONT_SECTION_TITLE, fontWeight: '900', color: '#92400E', textTransform: 'uppercase', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+              <div style={{ fontSize: FONT_SECTION_TITLE, fontWeight: '900', color: '#92400E', textTransform: 'uppercase', marginBottom: '0.65rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
                 <FaFlask /> CẬN LÂM SÀNG, X-QUANG & XÉT NGHIỆM
               </div>
               <div style={{ fontSize: FONT_BODY, lineHeight: LINE_H, color: '#0F172A', fontWeight: '600' }}>
@@ -318,35 +304,19 @@ const TransferSlide = ({ slide, isFullscreen }) => {
         /* SLIDE 3: DIỄN BIẾN & CHUYỂN VIỆN */
         <div style={{ display: 'flex', flexDirection: 'column', gap: isFullscreen ? '0.75rem' : '0.55rem', flex: 1, minHeight: 0 }}>
           <div style={{
-            backgroundColor: '#FEF3C7',
-            borderRadius: '12px',
-            border: '2.5px solid #F59E0B',
-            borderLeft: '9px solid #D97706',
-            padding: isFullscreen ? '0.95rem 1.4rem' : '0.75rem 1.1rem',
-            flexShrink: 0
-          }}>
-            <div style={{ fontSize: FONT_DIAG_TITLE, fontWeight: '900', color: '#92400E', textTransform: 'uppercase', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-              <FaFileMedical /> CHẨN ĐOÁN KHI CHUYỂN VIỆN
-            </div>
-            <div style={{ fontSize: FONT_DIAG_TEXT, fontWeight: '900', color: '#78350F', lineHeight: '1.25' }}>
-              {cleanDiagnosis}
-            </div>
-          </div>
-
-          <div style={{
             backgroundColor: '#FFFDF5',
             borderRadius: '14px',
             border: '2px solid #FDE68A',
             borderLeft: '8px solid #B45309',
-            padding: isFullscreen ? '1.5rem 1.8rem' : '1.1rem 1.35rem',
+            padding: isFullscreen ? '1.6rem 2.2rem' : '1.2rem 1.6rem',
             flex: 1,
             overflowY: 'auto',
             boxShadow: '0 4px 14px rgba(0,0,0,0.03)'
           }}>
-            <div style={{ fontSize: isFullscreen ? '1.45rem' : '1.25rem', fontWeight: '900', color: '#92400E', textTransform: 'uppercase', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+            <div style={{ fontSize: isFullscreen ? '1.6rem' : '1.35rem', fontWeight: '900', color: '#92400E', textTransform: 'uppercase', marginBottom: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
               <FaAmbulance /> QUÁ TRÌNH DIỄN BIẾN & XỬ TRÍ CHUYỂN TUYẾN
             </div>
-            <div style={{ fontSize: isFullscreen ? '1.65rem' : '1.38rem', lineHeight: '1.75', color: '#0F172A', fontWeight: '600' }}>
+            <div style={{ fontSize: isFullscreen ? '1.85rem' : '1.5rem', lineHeight: '1.75', color: '#0F172A', fontWeight: '600' }}>
               {tc.progress_notes || tc.progressNotes || '—'}
             </div>
           </div>

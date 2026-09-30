@@ -1,7 +1,6 @@
 import React from 'react';
-import { getMetricStyle, formatPatientAge } from '../../../utils/medicalFormatters';
 import { parseDepartmentSections } from '../../../utils/departmentSectionParser';
-import { FaUserMd, FaUserNurse, FaClock, FaDoorOpen, FaHospital, FaAmbulance, FaProcedures, FaSkullCrossbones, FaHeartbeat } from 'react-icons/fa';
+import { FaHospital, FaAmbulance, FaProcedures, FaSkullCrossbones, FaHeartbeat } from 'react-icons/fa';
 
 // Helper to format number into 2-digit padded string (e.g. 8 -> '08') if appropriate
 const formatValueBadge = (val) => {
@@ -41,10 +40,6 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
   const deptName = slide.deptName || slide.title || 'Khoa Phòng';
   const subTitle = slide.subTitle || '';
   const report = slide.report || {};
-  const doctorName = slide.doctorName || report.doctor_name || '';
-  const nurseName = slide.nurseName || report.nurse_name || '';
-  const overtimeStaff = slide.overtimeStaff || report.overtime_staff || [];
-  const room = slide.room || report.room || '';
   const formData = slide.formData || (typeof report.report_data === 'string' ? JSON.parse(report.report_data || '{}') : report.report_data) || {};
   const theme = slide.theme || { main: '#2563EB', bg: '#EFF6FF', border: '#BFDBFE', icon: '🏥' };
 
@@ -92,10 +87,6 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
     }
   }
 
-  const safeOvertime = Array.isArray(overtimeStaff)
-    ? overtimeStaff
-    : (typeof overtimeStaff === 'string' ? (() => { try { return JSON.parse(overtimeStaff); } catch { return []; } })() : []);
-
   // Large-scale auto font scaling for high impact
   let maxRowCount = 0;
   finalSections.forEach(sec => {
@@ -105,12 +96,12 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
 
   const isDenseTable = maxRowCount >= 6;
   const isSingleSection = finalSections.length === 1;
-  const FONT_SECTION_HEADER = isFullscreen ? (isDenseTable ? '1.05rem' : '1.22rem') : (isDenseTable ? '0.88rem' : '0.98rem');
-  const FONT_TH = isFullscreen ? (isDenseTable ? '0.95rem' : '1.12rem') : (isDenseTable ? '0.8rem' : '0.88rem');
-  const FONT_TD_LABEL = isFullscreen ? (isDenseTable ? '1.05rem' : '1.22rem') : (isDenseTable ? '0.86rem' : '0.92rem');
-  const FONT_BADGE = isFullscreen ? (isDenseTable ? '1.25rem' : '1.5rem') : (isDenseTable ? '1.02rem' : '1.12rem');
-  const PAD_TH = isFullscreen ? (isDenseTable ? '0.5rem 0.85rem' : '0.8rem 1.15rem') : (isDenseTable ? '0.35rem 0.65rem' : '0.5rem 0.75rem');
-  const PAD_TD = isFullscreen ? (isDenseTable ? '0.42rem 0.85rem' : '0.7rem 1.15rem') : (isDenseTable ? '0.3rem 0.65rem' : '0.45rem 0.7rem');
+  const FONT_SECTION_HEADER = isFullscreen ? (isDenseTable ? '1.18rem' : '1.38rem') : (isDenseTable ? '0.96rem' : '1.12rem');
+  const FONT_TH = isFullscreen ? (isDenseTable ? '1.08rem' : '1.25rem') : (isDenseTable ? '0.88rem' : '1.02rem');
+  const FONT_TD_LABEL = isFullscreen ? (isDenseTable ? '1.2rem' : '1.45rem') : (isDenseTable ? '0.98rem' : '1.18rem');
+  const FONT_BADGE = isFullscreen ? (isDenseTable ? '1.45rem' : '1.85rem') : (isDenseTable ? '1.18rem' : '1.42rem');
+  const PAD_TH = isFullscreen ? (isDenseTable ? '0.65rem 1rem' : '0.95rem 1.4rem') : (isDenseTable ? '0.45rem 0.75rem' : '0.65rem 0.95rem');
+  const PAD_TD = isFullscreen ? (isDenseTable ? '0.55rem 1rem' : '0.85rem 1.4rem') : (isDenseTable ? '0.38rem 0.75rem' : '0.6rem 0.95rem');
 
   // Render a Universal Medical Table for any list of items
   const renderItemTable = (section, sIdx) => {
@@ -285,7 +276,7 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
                       {formatValueBadge(item.value)}
                     </span>
                   </td>
-                  <td style={{ padding: PAD_TD, textAlign: 'center', fontSize: isFullscreen ? '1.05rem' : '0.88rem', fontWeight: '700', color: '#10B981' }}>
+                  <td style={{ padding: PAD_TD, textAlign: 'center', fontSize: isFullscreen ? (isDenseTable ? '1.12rem' : '1.25rem') : (isDenseTable ? '0.92rem' : '1.02rem'), fontWeight: '700', color: '#10B981' }}>
                     ✓ Đã ghi nhận
                   </td>
                 </tr>
@@ -361,59 +352,7 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
         <img src="/logo.png" alt="Logo" style={{ width: isFullscreen ? '44px' : '34px', height: isFullscreen ? '44px' : '34px', objectFit: 'contain', flexShrink: 0 }} />
       </div>
 
-      {/* 2. Staff Banner */}
-      <div 
-        className="anim-info-pop anim-delay-1"
-        style={{
-          display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap',
-          backgroundColor: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '10px',
-          padding: isFullscreen ? '0.4rem 0.95rem' : '0.3rem 0.75rem', flexShrink: 0,
-          boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
-        }}
-      >
-        {doctorName ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', backgroundColor: '#EFF6FF', padding: '0.2rem 0.65rem', borderRadius: '6px', border: '1px solid #BFDBFE' }}>
-            <FaUserMd style={{ color: '#2563EB' }} />
-            <span style={{ fontSize: isFullscreen ? '0.94rem' : '0.82rem', color: '#1E40AF', fontWeight: '700' }}>
-              BS trực: <strong style={{ color: '#0F2C59' }}>{doctorName}</strong>
-            </span>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', backgroundColor: '#F1F5F9', padding: '0.2rem 0.65rem', borderRadius: '6px' }}>
-            <FaUserMd style={{ color: '#64748B' }} />
-            <span style={{ fontSize: isFullscreen ? '0.94rem' : '0.82rem', color: '#64748B', fontWeight: '600' }}>
-              BS trực: <em>Chưa cập nhật</em>
-            </span>
-          </div>
-        )}
-
-        {nurseName && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', backgroundColor: '#F0FDF4', padding: '0.2rem 0.65rem', borderRadius: '6px', border: '1px solid #BBF7D0' }}>
-            <FaUserNurse style={{ color: '#16A34A' }} />
-            <span style={{ fontSize: isFullscreen ? '0.94rem' : '0.82rem', color: '#166534', fontWeight: '700' }}>
-              Điều dưỡng: <strong style={{ color: '#14532D' }}>{nurseName}</strong>
-            </span>
-          </div>
-        )}
-
-        {safeOvertime.length > 0 && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', backgroundColor: '#FFF7ED', padding: '0.2rem 0.65rem', borderRadius: '6px', border: '1px solid #FDE68A' }}>
-            <FaClock style={{ color: '#D97706' }} />
-            <span style={{ fontSize: isFullscreen ? '0.94rem' : '0.82rem', color: '#92400E', fontWeight: '700' }}>
-              Tăng cường: <strong style={{ color: '#78350F' }}>{safeOvertime.map(o => `${o.staffName || ''} (${o.time || ''})`).filter(s => s.trim() !== '()').join('; ')}</strong>
-            </span>
-          </div>
-        )}
-
-        {room && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', backgroundColor: '#FAF5FF', padding: '0.2rem 0.65rem', borderRadius: '6px', border: '1px solid #DDD6FE', marginLeft: 'auto' }}>
-            <FaDoorOpen style={{ color: '#9333EA' }} />
-            <span style={{ fontSize: isFullscreen ? '0.94rem' : '0.82rem', color: '#6B21A8', fontWeight: '800' }}>Phòng: {room}</span>
-          </div>
-        )}
-      </div>
-
-      {/* 3. Main Tables Container */}
+      {/* 2. Main Tables Container */}
       <div style={{
         display: 'flex', flexDirection: 'column', gap: '0.55rem',
         flex: 1, minHeight: 0, justifyContent: 'flex-start',
@@ -432,26 +371,26 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
                   border: `1.5px solid ${isBlood ? '#FECACA' : (isPersonnel ? '#BFDBFE' : '#FDE68A')}`,
                   borderLeft: isBlood ? '5px solid #DC2626' : (isPersonnel ? '5px solid #2563EB' : '5px solid #D97706'),
                   borderRadius: '12px',
-                  padding: isFullscreen ? '0.75rem 1.15rem' : '0.55rem 0.85rem'
+                  padding: isFullscreen ? '0.85rem 1.3rem' : '0.65rem 0.95rem'
                 }}>
                   <div style={{
-                    fontSize: isFullscreen ? '0.95rem' : '0.82rem',
+                    fontSize: isFullscreen ? '1.08rem' : '0.92rem',
                     fontWeight: '800',
                     color: isBlood ? '#DC2626' : (isPersonnel ? '#1E40AF' : '#92400E'),
-                    marginBottom: '0.25rem',
+                    marginBottom: '0.35rem',
                     textTransform: 'uppercase',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.4rem'
+                    gap: '0.45rem'
                   }}>
                     <span>{isBlood ? '🩸' : '📌'}</span>
                     <span>{sec.title}</span>
                   </div>
                   <div style={{
-                    fontSize: isFullscreen ? '1.05rem' : '0.92rem',
+                    fontSize: isFullscreen ? '1.22rem' : '1.05rem',
                     color: isBlood ? '#7F1D1D' : '#1E293B',
                     fontWeight: '600',
-                    lineHeight: 1.5,
+                    lineHeight: 1.55,
                     whiteSpace: 'pre-line'
                   }}>
                     {sec.value}

@@ -20,13 +20,13 @@ const DeathSlide = ({ slide, isFullscreen }) => {
     : 'TIỀN SỬ, LÂM SÀNG & CẬN LÂM SÀNG / ECG';
 
   const FONT_DEPT = isFullscreen ? '2.2rem' : '1.75rem';
-  const FONT_BADGE = isFullscreen ? '1.15rem' : '0.96rem';
-  const FONT_PT_NAME = isFullscreen ? '1.65rem' : '1.38rem';
-  const FONT_PT_INFO = isFullscreen ? '1.18rem' : '0.98rem';
-  const FONT_DIAG_TITLE = isFullscreen ? '1.2rem' : '1.02rem';
-  const FONT_DIAG_TEXT = isFullscreen ? '2.1rem' : '1.75rem';
-  const FONT_SECTION_TITLE = isFullscreen ? '1.35rem' : '1.15rem';
-  const FONT_BODY = isFullscreen ? '1.55rem' : '1.32rem';
+  const FONT_BADGE = isFullscreen ? '1.18rem' : '0.98rem';
+  const FONT_PT_NAME = isFullscreen ? '1.85rem' : '1.48rem';
+  const FONT_PT_INFO = isFullscreen ? '1.25rem' : '1.05rem';
+  const FONT_DIAG_TITLE = isFullscreen ? '1.25rem' : '1.05rem';
+  const FONT_DIAG_TEXT = isFullscreen ? '2.3rem' : '1.85rem';
+  const FONT_SECTION_TITLE = isFullscreen ? '1.45rem' : '1.22rem';
+  const FONT_BODY = isFullscreen ? '1.85rem' : '1.5rem';
   const LINE_H = '1.65';
 
   return (
@@ -85,7 +85,11 @@ const DeathSlide = ({ slide, isFullscreen }) => {
             boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
           }}>
             <FaSkullCrossbones />
-            <span>HỒ SƠ TỬ VONG {slide.caseIndex}/{slide.totalCases} • {partTitle}</span>
+            <span>
+              HỒ SƠ TỬ VONG {slide.caseIndex}/{slide.totalCases}
+              {!isOverview && (dc.patient_name || dc.patientName) ? ` • BN: ${(dc.patient_name || dc.patientName).toUpperCase()}${ageFormatted ? ` (${ageFormatted})` : ''}` : ''}
+              {' '}• {partTitle}
+            </span>
           </div>
         </div>
 
@@ -96,55 +100,57 @@ const DeathSlide = ({ slide, isFullscreen }) => {
         />
       </div>
 
-      {/* 2. ZONE 2: THANH THÔNG TIN BỆNH NHÂN */}
-      <div 
-        className="anim-info-pop anim-delay-1"
-        style={{
-          backgroundColor: '#FEE2E2',
-          border: '2px solid #FECACA',
-          borderLeft: '8px solid #DC2626',
-          borderRadius: '12px',
-          padding: isFullscreen ? '0.6rem 1.25rem' : '0.42rem 0.95rem',
-          display: 'flex',
-          alignItems: 'center',
-          gap: isFullscreen ? '1.5rem' : '1rem',
-          flexWrap: 'wrap',
-          flexShrink: 0,
-          boxShadow: '0 2px 8px rgba(220,38,38,0.1)'
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span style={{ fontSize: isFullscreen ? '1.15rem' : '0.98rem', fontWeight: '800', color: '#991B1B' }}>BỆNH NHÂN:</span>
-          <span style={{ fontSize: FONT_PT_NAME, fontWeight: '900', color: '#7F1D1D', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            {dc.patient_name || dc.patientName || 'BỆNH NHÂN TỬ VONG'}
-          </span>
+      {/* 2. ZONE 2: THANH THÔNG TIN BỆNH NHÂN (CHỈ HIỂN THỊ Ở SLIDE ĐẦU) */}
+      {isOverview && (
+        <div 
+          className="anim-info-pop anim-delay-1"
+          style={{
+            backgroundColor: '#FEE2E2',
+            border: '2px solid #FECACA',
+            borderLeft: '8px solid #DC2626',
+            borderRadius: '12px',
+            padding: isFullscreen ? '0.6rem 1.25rem' : '0.42rem 0.95rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: isFullscreen ? '1.5rem' : '1rem',
+            flexWrap: 'wrap',
+            flexShrink: 0,
+            boxShadow: '0 2px 8px rgba(220,38,38,0.1)'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ fontSize: isFullscreen ? '1.15rem' : '0.98rem', fontWeight: '800', color: '#991B1B' }}>BỆNH NHÂN:</span>
+            <span style={{ fontSize: FONT_PT_NAME, fontWeight: '900', color: '#7F1D1D', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              {dc.patient_name || dc.patientName || 'BỆNH NHÂN TỬ VONG'}
+            </span>
+          </div>
+
+          {ageFormatted && (
+            <span style={{
+              backgroundColor: '#DC2626',
+              color: '#FFFFFF',
+              padding: '0.2rem 0.85rem',
+              borderRadius: '20px',
+              fontWeight: '900',
+              fontSize: FONT_PT_INFO
+            }}>
+              {ageFormatted}
+            </span>
+          )}
+
+          {dc.address && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#991B1B', fontWeight: '700', fontSize: FONT_PT_INFO }}>
+              <FaMapMarkerAlt /> <span>{dc.address}</span>
+            </div>
+          )}
+
+          {(dc.admission_time || dc.admissionTime) && (
+            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#7F1D1D', fontWeight: '800', fontSize: FONT_PT_INFO }}>
+              <FaClock style={{ color: '#DC2626' }} /> <span>Giờ vào viện: <strong>{dc.admission_time || dc.admissionTime}</strong></span>
+            </div>
+          )}
         </div>
-
-        {ageFormatted && (
-          <span style={{
-            backgroundColor: '#DC2626',
-            color: '#FFFFFF',
-            padding: '0.2rem 0.85rem',
-            borderRadius: '20px',
-            fontWeight: '900',
-            fontSize: FONT_PT_INFO
-          }}>
-            {ageFormatted}
-          </span>
-        )}
-
-        {dc.address && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#991B1B', fontWeight: '700', fontSize: FONT_PT_INFO }}>
-            <FaMapMarkerAlt /> <span>{dc.address}</span>
-          </div>
-        )}
-
-        {(dc.admission_time || dc.admissionTime) && (
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#7F1D1D', fontWeight: '800', fontSize: FONT_PT_INFO }}>
-            <FaClock style={{ color: '#DC2626' }} /> <span>Giờ vào viện: <strong>{dc.admission_time || dc.admissionTime}</strong></span>
-          </div>
-        )}
-      </div>
+      )}
 
       {/* 3. ZONE 3: NỘI DUNG TỬ VONG */}
       {isOverview && (
@@ -240,25 +246,6 @@ const DeathSlide = ({ slide, isFullscreen }) => {
       {isClinical && (
         /* SLIDE 2: TIỀN SỬ, LÂM SÀNG & CẬN LÂM SÀNG / ECG */
         <div style={{ display: 'flex', flexDirection: 'column', gap: isFullscreen ? '0.75rem' : '0.55rem', flex: 1, minHeight: 0 }}>
-          <div style={{
-            backgroundColor: '#FEE2E2',
-            border: '2px solid #EF4444',
-            borderLeft: '8px solid #DC2626',
-            borderRadius: '12px',
-            padding: isFullscreen ? '0.65rem 1.25rem' : '0.45rem 1rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.85rem',
-            flexShrink: 0
-          }}>
-            <span style={{ fontSize: isFullscreen ? '1.1rem' : '0.95rem', fontWeight: '900', color: '#991B1B', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
-              🚨 CHẨN ĐOÁN:
-            </span>
-            <span style={{ fontSize: isFullscreen ? '1.55rem' : '1.3rem', fontWeight: '900', color: '#7F1D1D' }}>
-              {cleanDiagnosis}
-            </span>
-          </div>
-
           <div style={{
             display: 'grid',
             gridTemplateColumns: (hasSymptoms || hasHistory) && hasTests ? '1.1fr 1.3fr' : '1fr',
