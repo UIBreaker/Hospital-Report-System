@@ -103,14 +103,44 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
     }
   });
 
-  const isDenseTable = maxRowCount >= 7 || (hasNotes && maxRowCount >= 4);
+  // Tiered auto font and padding scaling for optimal screen utilization
+  const isFewRows = maxRowCount <= 4;
+  const isMediumRows = maxRowCount > 4 && maxRowCount <= 6;
+  const isDenseTable = maxRowCount >= 7;
+
+  const FONT_SECTION_HEADER = isFullscreen 
+    ? (isFewRows ? '1.45rem' : isMediumRows ? '1.32rem' : '1.18rem')
+    : (isFewRows ? '1.25rem' : isMediumRows ? '1.12rem' : '0.96rem');
+
+  const FONT_TH = isFullscreen 
+    ? (isFewRows ? '1.32rem' : isMediumRows ? '1.22rem' : '1.08rem')
+    : (isFewRows ? '1.12rem' : isMediumRows ? '1.02rem' : '0.88rem');
+
+  const FONT_TD_LABEL = isFullscreen 
+    ? (isFewRows ? '1.65rem' : isMediumRows ? '1.45rem' : '1.2rem')
+    : (isFewRows ? '1.38rem' : isMediumRows ? '1.22rem' : '0.98rem');
+
+  const FONT_BADGE = isFullscreen 
+    ? (isFewRows ? '2.1rem' : isMediumRows ? '1.85rem' : '1.45rem')
+    : (isFewRows ? '1.75rem' : isMediumRows ? '1.5rem' : '1.18rem');
+
+  const PAD_TH = isFullscreen 
+    ? (isFewRows ? '1.1rem 1.6rem' : isMediumRows ? '0.9rem 1.4rem' : '0.65rem 1rem')
+    : (isFewRows ? '0.8rem 1.25rem' : isMediumRows ? '0.6rem 0.95rem' : '0.45rem 0.75rem');
+
+  const PAD_TD = isFullscreen 
+    ? (isFewRows ? '1.1rem 1.6rem' : isMediumRows ? '0.8rem 1.4rem' : '0.55rem 1rem')
+    : (isFewRows ? '0.85rem 1.25rem' : isMediumRows ? '0.6rem 0.95rem' : '0.38rem 0.75rem');
+
+  const PAD_BADGE = isFullscreen
+    ? (isFewRows ? '0.38rem 1.35rem' : '0.25rem 1.15rem')
+    : (isFewRows ? '0.3rem 1.15rem' : '0.2rem 0.95rem');
+
+  const BADGE_MIN_WIDTH = isFullscreen
+    ? (isFewRows ? '68px' : '58px')
+    : (isFewRows ? '58px' : '48px');
+
   const isSingleSection = finalSections.length === 1;
-  const FONT_SECTION_HEADER = isFullscreen ? (isDenseTable ? '1.18rem' : '1.38rem') : (isDenseTable ? '0.96rem' : '1.12rem');
-  const FONT_TH = isFullscreen ? (isDenseTable ? '1.08rem' : '1.25rem') : (isDenseTable ? '0.88rem' : '1.02rem');
-  const FONT_TD_LABEL = isFullscreen ? (isDenseTable ? '1.2rem' : '1.45rem') : (isDenseTable ? '0.98rem' : '1.18rem');
-  const FONT_BADGE = isFullscreen ? (isDenseTable ? '1.45rem' : '1.85rem') : (isDenseTable ? '1.18rem' : '1.42rem');
-  const PAD_TH = isFullscreen ? (isDenseTable ? '0.65rem 1rem' : '0.95rem 1.4rem') : (isDenseTable ? '0.45rem 0.75rem' : '0.65rem 0.95rem');
-  const PAD_TD = isFullscreen ? (isDenseTable ? '0.55rem 1rem' : '0.85rem 1.4rem') : (isDenseTable ? '0.38rem 0.75rem' : '0.6rem 0.95rem');
 
   // Render a Universal Medical Table for any list of items
   const renderItemTable = (section, sIdx) => {
@@ -180,13 +210,13 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
                         backgroundColor: lStyle.bg,
                         color: lStyle.color,
                         border: `1.5px solid ${lStyle.border}`,
-                        padding: '0.2rem 0.95rem',
+                        padding: PAD_BADGE,
                         borderRadius: '10px',
                         fontWeight: '900',
                         fontSize: FONT_BADGE,
                         fontFamily: "'Roboto Mono', monospace",
                         display: 'inline-block',
-                        minWidth: '48px',
+                        minWidth: BADGE_MIN_WIDTH,
                         boxShadow: '0 2px 6px rgba(0,0,0,0.03)'
                       }}>
                         {formatValueBadge(row.left.value)}
@@ -206,13 +236,13 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
                           backgroundColor: rStyle.bg,
                           color: rStyle.color,
                           border: `1.5px solid ${rStyle.border}`,
-                          padding: '0.2rem 0.95rem',
+                          padding: PAD_BADGE,
                           borderRadius: '10px',
                           fontWeight: '900',
                           fontSize: FONT_BADGE,
                           fontFamily: "'Roboto Mono', monospace",
                           display: 'inline-block',
-                          minWidth: '48px',
+                          minWidth: BADGE_MIN_WIDTH,
                           boxShadow: '0 2px 6px rgba(0,0,0,0.03)'
                         }}>
                           {formatValueBadge(row.right.value)}
@@ -273,13 +303,13 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
                       backgroundColor: style.bg,
                       color: style.color,
                       border: `1.5px solid ${style.border}`,
-                      padding: '0.25rem 1.15rem',
+                      padding: PAD_BADGE,
                       borderRadius: '10px',
                       fontWeight: '900',
                       fontSize: FONT_BADGE,
                       fontFamily: "'Roboto Mono', monospace",
                       display: 'inline-block',
-                      minWidth: '58px',
+                      minWidth: BADGE_MIN_WIDTH,
                       boxShadow: '0 2px 6px rgba(0,0,0,0.03)'
                     }}>
                       {formatValueBadge(item.value)}
@@ -472,8 +502,9 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
           <div style={{
             display: 'grid',
             gridTemplateColumns: noteSections.length > 1 ? 'repeat(auto-fit, minmax(320px, 1fr))' : '1fr',
-            gap: isFullscreen ? '0.55rem' : '0.4rem',
-            flexShrink: 0
+            gap: isFullscreen ? '0.65rem' : '0.45rem',
+            flex: 1,
+            minHeight: 0
           }}>
             {noteSections.map((sec, nIdx) => {
               const isBlood = sec.type === 'blood_transfusion';
@@ -482,31 +513,38 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
               return (
                 <div key={nIdx} className="anim-info-pop anim-delay-2" style={{
                   backgroundColor: isBlood ? '#FEF2F2' : (isPersonnel ? '#EFF6FF' : '#FFFBEB'),
-                  border: `1.5px solid ${isBlood ? '#FECACA' : (isPersonnel ? '#BFDBFE' : '#FDE68A')}`,
-                  borderLeft: isBlood ? '5px solid #DC2626' : (isPersonnel ? '5px solid #2563EB' : '5px solid #D97706'),
-                  borderRadius: '12px',
-                  padding: isFullscreen ? (hasTable ? '0.65rem 1.15rem' : '0.85rem 1.3rem') : (hasTable ? '0.42rem 0.85rem' : '0.65rem 0.95rem'),
-                  flexShrink: 0
+                  border: `2px solid ${isBlood ? '#FECACA' : (isPersonnel ? '#BFDBFE' : '#FDE68A')}`,
+                  borderLeft: isBlood ? '7px solid #DC2626' : (isPersonnel ? '7px solid #2563EB' : '7px solid #D97706'),
+                  borderRadius: '14px',
+                  padding: isFullscreen ? '1.1rem 1.6rem' : '0.85rem 1.35rem',
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  boxShadow: '0 4px 16px rgba(217, 119, 6, 0.08)'
                 }}>
                   <div style={{
-                    fontSize: isFullscreen ? (hasTable ? '1.02rem' : '1.08rem') : (hasTable ? '0.86rem' : '0.92rem'),
-                    fontWeight: '800',
+                    fontSize: isFullscreen ? '1.35rem' : '1.15rem',
+                    fontWeight: '900',
                     color: isBlood ? '#DC2626' : (isPersonnel ? '#1E40AF' : '#92400E'),
-                    marginBottom: '0.2rem',
+                    marginBottom: '0.45rem',
                     textTransform: 'uppercase',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.45rem'
+                    gap: '0.55rem',
+                    flexShrink: 0
                   }}>
-                    <span>{isBlood ? '🩸' : '📌'}</span>
+                    <span style={{ fontSize: isFullscreen ? '1.5rem' : '1.25rem' }}>{isBlood ? '🩸' : '📌'}</span>
                     <span>{sec.title}</span>
                   </div>
                   <div style={{
-                    fontSize: isFullscreen ? (hasTable ? '1.14rem' : '1.22rem') : (hasTable ? '0.96rem' : '1.05rem'),
+                    fontSize: isFullscreen ? '1.85rem' : '1.45rem',
                     color: isBlood ? '#7F1D1D' : '#1E293B',
-                    fontWeight: '600',
-                    lineHeight: 1.45,
-                    whiteSpace: 'pre-line'
+                    fontWeight: '700',
+                    lineHeight: 1.5,
+                    whiteSpace: 'pre-line',
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'center'
                   }}>
                     {sec.value}
                   </div>
