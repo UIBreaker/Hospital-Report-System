@@ -132,10 +132,25 @@ export const buildCaseSlides = ({
     caseItem
   };
 
-  // Determine if fits on 1 slide:
-  // Prioritize 1 single slide whenever content can fit (up to 950 chars, max item <= 600 chars)
-  // Only split into 2 slides when truly necessary to prevent overflowing/scrollbars
-  const fitsSingleSlide = totalLength <= 950 && maxItemLength <= 600;
+  // Estimate visual lines required on a 16:9 presentation display:
+  // Each item occupies at least 1 line for bullet + label + text.
+  // Each ~80 characters beyond that adds a wrapped line.
+  const estimatedLines = activeItems.reduce((acc, it) => {
+    const textLen = (it.label || '').length + (it.value || '').length;
+    const lines = Math.max(1, Math.ceil(textLen / 80));
+    return acc + lines;
+  }, 0);
+
+  // Determine if fits safely on 1 single slide without ANY risk of bottom cutoff:
+  // A slide with large presentation fonts can safely hold up to 7 visual lines.
+  // If content has > 7 lines, or >= 7 bullet items with any detailed field (> 120 chars),
+  // or total text > 380 chars, it MUST cleanly split into 2 slides (Phase 1 & Phase 2).
+  const fitsSingleSlide = (
+    estimatedLines <= 7 &&
+    activeItems.length <= 6 &&
+    totalLength <= 380 &&
+    maxItemLength <= 160
+  );
 
   if (fitsSingleSlide) {
     slides.push({

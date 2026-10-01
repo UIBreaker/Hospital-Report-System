@@ -120,23 +120,29 @@ const ClinicalCaseSlide = ({ slide = {}, isFullscreen = true }) => {
     }
   }
 
-  // Calculate dynamic typography scale to ensure NO scrollbar while maximizing legibility
+  // Calculate dynamic typography scale based on estimated lines & item count
   const totalLength = items.reduce((acc, it) => acc + (it.value || '').length + (it.label || '').length, 0);
   const itemCount = items.length;
 
-  // Ultra-legible typography for large projection screens and distance viewing
-  let dynamicFontSize = isFullscreen ? '2.05rem' : '1.5rem';
-  let dynamicLineHeight = '1.65';
-  let dynamicGap = isFullscreen ? '1.2rem' : '0.8rem';
+  const estimatedLines = items.reduce((acc, it) => {
+    const textLen = (it.label || '').length + (it.value || '').length;
+    const lines = Math.max(1, Math.ceil(textLen / 80));
+    return acc + lines;
+  }, 0);
 
-  if (totalLength > 750) {
-    dynamicFontSize = isFullscreen ? '1.52rem' : '1.18rem';
-    dynamicLineHeight = '1.5';
-    dynamicGap = isFullscreen ? '0.75rem' : '0.5rem';
-  } else if (totalLength > 450) {
-    dynamicFontSize = isFullscreen ? '1.75rem' : '1.32rem';
-    dynamicLineHeight = '1.58';
-    dynamicGap = isFullscreen ? '0.95rem' : '0.65rem';
+  // Large-scale presentation typography
+  let dynamicFontSize = isFullscreen ? '1.95rem' : '1.45rem';
+  let dynamicLineHeight = '1.6';
+  let dynamicGap = isFullscreen ? '1.05rem' : '0.75rem';
+
+  if (estimatedLines >= 10 || totalLength > 480) {
+    dynamicFontSize = isFullscreen ? '1.42rem' : '1.1rem';
+    dynamicLineHeight = '1.44';
+    dynamicGap = isFullscreen ? '0.55rem' : '0.38rem';
+  } else if (estimatedLines >= 7 || totalLength > 300) {
+    dynamicFontSize = isFullscreen ? '1.65rem' : '1.25rem';
+    dynamicLineHeight = '1.52';
+    dynamicGap = isFullscreen ? '0.8rem' : '0.55rem';
   }
 
   const partSuffix = slide.partSuffix || (slide.totalParts > 1 ? `(Phần ${slide.partIndex}/${slide.totalParts})` : '');
@@ -150,10 +156,10 @@ const ClinicalCaseSlide = ({ slide = {}, isFullscreen = true }) => {
       width: '100%',
       backgroundColor: '#FFFFFF',
       borderRadius: '16px',
-      padding: isFullscreen ? '1.2rem 2rem' : '0.9rem 1.2rem',
+      padding: isFullscreen ? '1.1rem 1.8rem' : '0.85rem 1.1rem',
       boxSizing: 'border-box',
       boxShadow: '0 8px 30px rgba(15, 44, 89, 0.08)',
-      gap: isFullscreen ? '0.65rem' : '0.45rem',
+      gap: isFullscreen ? '0.45rem' : '0.3rem',
       overflow: 'hidden'
     }}>
       {/* 1. Header Banner */}
@@ -230,14 +236,14 @@ const ClinicalCaseSlide = ({ slide = {}, isFullscreen = true }) => {
       {/* 2. Main Title (Centered) */}
       <div style={{
         textAlign: 'center',
-        fontSize: isFullscreen ? '2.8rem' : '2.0rem',
+        fontSize: isFullscreen ? '2.5rem' : '1.85rem',
         fontWeight: '900',
         color: theme.main,
         textTransform: 'uppercase',
         letterSpacing: '1px',
-        marginTop: isFullscreen ? '0.15rem' : '0.1rem',
-        marginBottom: isFullscreen ? '0.35rem' : '0.2rem',
-        lineHeight: 1.2,
+        marginTop: '0.1rem',
+        marginBottom: isFullscreen ? '0.25rem' : '0.15rem',
+        lineHeight: 1.15,
         flexShrink: 0
       }}>
         {theme.title}
@@ -245,17 +251,17 @@ const ClinicalCaseSlide = ({ slide = {}, isFullscreen = true }) => {
 
       {/* 3. Case & Patient Header (Bold Numbered Line) */}
       <div style={{
-        fontSize: isFullscreen ? '2.1rem' : '1.55rem',
+        fontSize: isFullscreen ? '1.95rem' : '1.45rem',
         fontWeight: '900',
         color: '#0F2C59',
-        borderBottom: `3px solid ${theme.border}`,
-        paddingBottom: isFullscreen ? '0.55rem' : '0.35rem',
-        marginBottom: isFullscreen ? '0.55rem' : '0.35rem',
+        borderBottom: `2.5px solid ${theme.border}`,
+        paddingBottom: isFullscreen ? '0.45rem' : '0.3rem',
+        marginBottom: isFullscreen ? '0.45rem' : '0.3rem',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
-        gap: '0.6rem',
+        gap: '0.5rem',
         flexShrink: 0
       }}>
         <span>
@@ -272,7 +278,7 @@ const ClinicalCaseSlide = ({ slide = {}, isFullscreen = true }) => {
         minHeight: 0,
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: (itemCount <= 5 || totalLength < 350) ? 'space-evenly' : 'flex-start',
+        justifyContent: (itemCount <= 4 && estimatedLines <= 5) ? 'space-evenly' : 'flex-start',
         gap: dynamicGap,
         overflow: 'hidden'
       }}>

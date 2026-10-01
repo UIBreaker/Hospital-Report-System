@@ -2,7 +2,7 @@
  * Central Medical Formatters & Utility Functions
  * TTYT Khu Vực Bình Long
  */
-import { FIELD_LABELS } from '../constants/medicalDictionary';
+import { FIELD_LABELS } from '../constants/medicalDictionary.js';
 
 export const getLabel = (key) => {
   return FIELD_LABELS[key] || key
