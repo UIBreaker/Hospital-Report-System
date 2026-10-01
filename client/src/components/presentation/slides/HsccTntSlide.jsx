@@ -43,12 +43,12 @@ const HsccTntSlide = ({ slide, isFullscreen = true }) => {
   const tongSoKhamDisplay = rawTongKham !== '' ? formatValueBadge(rawTongKham) : '—';
 
   // Sizing definitions for high-impact projector display
-  const FONT_TH = isFullscreen ? '1.12rem' : '0.92rem';
-  const FONT_ROW_HEADER = isFullscreen ? '1.45rem' : '1.2rem';
-  const FONT_METRIC = isFullscreen ? '1.5rem' : '1.18rem';
-  const FONT_NOTE = isFullscreen ? '1.02rem' : '0.85rem';
-  const PAD_TH = isFullscreen ? '0.7rem 0.5rem' : '0.5rem 0.35rem';
-  const PAD_TD = isFullscreen ? '0.65rem 0.5rem' : '0.45rem 0.35rem';
+  const FONT_TH = isFullscreen ? '1.25rem' : '1.02rem';
+  const FONT_ROW_HEADER = isFullscreen ? '1.65rem' : '1.35rem';
+  const FONT_METRIC = isFullscreen ? '1.75rem' : '1.35rem';
+  const FONT_NOTE = isFullscreen ? '1.18rem' : '0.95rem';
+  const PAD_TH = isFullscreen ? '0.75rem 0.5rem' : '0.5rem 0.35rem';
+  const PAD_TD = isFullscreen ? '0.7rem 0.5rem' : '0.45rem 0.35rem';
 
   const renderBadge = (val, category) => {
     if (val === null || val === undefined || val === '' || val === '-') {
