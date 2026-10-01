@@ -42,37 +42,7 @@ const PersonalCustomFormsPortal = () => {
   const [activeView, setActiveView] = useState('list');
   const [selectedFormCode, setSelectedFormCode] = useState('');
   const [isReadOnlySubmissions, setIsReadOnlySubmissions] = useState(false);
-
-  const fetchAccessibleForms = async () => {
-    setLoading(true);
-    try {
-      const res = await customFormService.getAllForms();
-      if (res && res.success) {
-        // Filter forms accessible to this user
-        const accessible = (res.data || []).filter(f => {
-          if (!f.is_active) return false;
-          const perms = f.permissions || [];
-          if (perms.length === 0) return true;
-          return perms.some(p => {
-            if (p.target_type === 'all') return true;
-            if (p.target_type === 'user' && p.target_value === user?.username) return true;
-            if (p.target_type === 'role' && ['staff', 'personal'].includes(p.target_value)) return true;
-            if (p.target_type === 'department' && p.target_value === 'personal') return true;
-            return false;
-          });
-        });
-        setForms(accessible);
-      }
-    } catch (err) {
-      console.error('Error fetching accessible forms:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchAccessibleForms();
-  }, [user]);
+  const [hasAutoRedirected, setHasAutoRedirected] = useState(false);
 
   // Kiểm tra quyền phân bổ cho tài khoản hiện tại đối với từng biểu mẫu
   const getUserFormPermission = (form) => {
@@ -117,8 +87,50 @@ const PersonalCustomFormsPortal = () => {
     setSelectedFormCode('');
     setIsReadOnlySubmissions(false);
     setActiveView('list');
-    fetchAccessibleForms();
   };
+
+  const fetchAccessibleForms = async () => {
+    setLoading(true);
+    try {
+      const res = await customFormService.getAllForms();
+      if (res && res.success) {
+        // Filter forms accessible to this user
+        const accessible = (res.data || []).filter(f => {
+          if (!f.is_active) return false;
+          const perms = f.permissions || [];
+          if (perms.length === 0) return true;
+          return perms.some(p => {
+            if (p.target_type === 'all') return true;
+            if (p.target_type === 'user' && p.target_value === user?.username) return true;
+            if (p.target_type === 'role' && ['staff', 'personal'].includes(p.target_value)) return true;
+            if (p.target_type === 'department' && p.target_value === 'personal') return true;
+            return false;
+          });
+        });
+        setForms(accessible);
+
+        // Tự động vào biểu mẫu ngay nếu tài khoản chỉ có duy nhất 1 biểu mẫu
+        if (accessible.length === 1 && !hasAutoRedirected) {
+          const singleForm = accessible[0];
+          const perm = getUserFormPermission(singleForm);
+          setHasAutoRedirected(true);
+          if (perm === 'view' || singleForm.form_type === 'tracker') {
+            handleViewSubmissions(singleForm.code, perm === 'view');
+          } else {
+            handleFillForm(singleForm.code);
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching accessible forms:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAccessibleForms();
+  }, [user]);
 
   const filteredForms = forms.filter(f => 
     (f.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||

@@ -157,6 +157,14 @@ const DynamicFormSubmissions = ({ formCode: propFormCode, onBack, readOnly = fal
     return formMeta.schema_json.filter(f => f && f.type && (f.type.startsWith('tracker_') || f.type === 'tracker'));
   }, [formMeta]);
 
+  // Pure input fields (excluding tracker and section fields)
+  const inputFields = useMemo(() => {
+    if (!formMeta || !Array.isArray(formMeta.schema_json)) return [];
+    return formMeta.schema_json.filter(f => f && f.type !== 'section' && !f.type.startsWith('tracker_') && f.type !== 'tracker');
+  }, [formMeta]);
+
+  const isPureTracker = trackerFields.length > 0 && inputFields.length === 0;
+
   // Detect all unique keys in submitted data across all submissions
   const allSubmissionKeys = useMemo(() => {
     const keys = new Set();
@@ -432,135 +440,139 @@ const DynamicFormSubmissions = ({ formCode: propFormCode, onBack, readOnly = fal
           </div>
         </div>
 
-        {/* 4 View Modes Toggle */}
+        {/* Actions & View Modes */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <div style={{
-            display: 'flex',
-            backgroundColor: '#F1F5F9',
-            borderRadius: '14px',
-            padding: '4px',
-            border: '1px solid #CBD5E1',
-            gap: '2px'
-          }}>
-            {/* 1. XEM TRỰC QUAN */}
-            <button
-              type="button"
-              onClick={() => setViewMode('visual')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.45rem',
-                backgroundColor: viewMode === 'visual' ? '#0F2C59' : 'transparent',
-                color: viewMode === 'visual' ? '#FFFFFF' : '#475569',
-                border: 'none',
-                borderRadius: '10px',
-                padding: '0.5rem 0.95rem',
-                fontSize: '0.84rem',
-                fontWeight: '800',
-                cursor: 'pointer',
-                boxShadow: viewMode === 'visual' ? '0 4px 12px rgba(15, 44, 89, 0.25)' : 'none',
-                transition: 'all 0.15s ease'
-              }}
-              title="Xem bảng phân tích trực quan và toàn bộ thẻ hồ sơ chi tiết"
-            >
-              <FaChartBar style={{ color: viewMode === 'visual' ? '#38BDF8' : '#64748B' }} /> Xem Trực Quan
-            </button>
+          {!isPureTracker && (
+            <div style={{
+              display: 'flex',
+              backgroundColor: '#F1F5F9',
+              borderRadius: '14px',
+              padding: '4px',
+              border: '1px solid #CBD5E1',
+              gap: '2px'
+            }}>
+              {/* 1. XEM TRỰC QUAN */}
+              <button
+                type="button"
+                onClick={() => setViewMode('visual')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.45rem',
+                  backgroundColor: viewMode === 'visual' ? '#0F2C59' : 'transparent',
+                  color: viewMode === 'visual' ? '#FFFFFF' : '#475569',
+                  border: 'none',
+                  borderRadius: '10px',
+                  padding: '0.5rem 0.95rem',
+                  fontSize: '0.84rem',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  boxShadow: viewMode === 'visual' ? '0 4px 12px rgba(15, 44, 89, 0.25)' : 'none',
+                  transition: 'all 0.15s ease'
+                }}
+                title="Xem bảng phân tích trực quan và toàn bộ thẻ hồ sơ chi tiết"
+              >
+                <FaChartBar style={{ color: viewMode === 'visual' ? '#38BDF8' : '#64748B' }} /> Xem Trực Quan
+              </button>
 
-            {/* 2. BẢNG MA TRẬN CỘT */}
-            <button
-              type="button"
-              onClick={() => setViewMode('grid')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.45rem',
-                backgroundColor: viewMode === 'grid' ? '#0F2C59' : 'transparent',
-                color: viewMode === 'grid' ? '#FFFFFF' : '#475569',
-                border: 'none',
-                borderRadius: '10px',
-                padding: '0.5rem 0.95rem',
-                fontSize: '0.84rem',
-                fontWeight: '800',
-                cursor: 'pointer',
-                boxShadow: viewMode === 'grid' ? '0 4px 12px rgba(15, 44, 89, 0.25)' : 'none',
-                transition: 'all 0.15s ease'
-              }}
-              title="Bảng dữ liệu đầy đủ tất cả các cột"
-            >
-              <FaTable style={{ color: viewMode === 'grid' ? '#38BDF8' : '#64748B' }} /> Bảng Dữ Liệu
-            </button>
+              {/* 2. BẢNG MA TRẬN CỘT */}
+              <button
+                type="button"
+                onClick={() => setViewMode('grid')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.45rem',
+                  backgroundColor: viewMode === 'grid' ? '#0F2C59' : 'transparent',
+                  color: viewMode === 'grid' ? '#FFFFFF' : '#475569',
+                  border: 'none',
+                  borderRadius: '10px',
+                  padding: '0.5rem 0.95rem',
+                  fontSize: '0.84rem',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  boxShadow: viewMode === 'grid' ? '0 4px 12px rgba(15, 44, 89, 0.25)' : 'none',
+                  transition: 'all 0.15s ease'
+                }}
+                title="Bảng dữ liệu đầy đủ tất cả các cột"
+              >
+                <FaTable style={{ color: viewMode === 'grid' ? '#38BDF8' : '#64748B' }} /> Bảng Dữ Liệu
+              </button>
 
-            {/* 3. PHIẾU BÁO CÁO IN */}
-            <button
-              type="button"
-              onClick={() => setViewMode('dossier')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.45rem',
-                backgroundColor: viewMode === 'dossier' ? '#0F2C59' : 'transparent',
-                color: viewMode === 'dossier' ? '#FFFFFF' : '#475569',
-                border: 'none',
-                borderRadius: '10px',
-                padding: '0.5rem 0.95rem',
-                fontSize: '0.84rem',
-                fontWeight: '800',
-                cursor: 'pointer',
-                boxShadow: viewMode === 'dossier' ? '0 4px 12px rgba(15, 44, 89, 0.25)' : 'none',
-                transition: 'all 0.15s ease'
-              }}
-              title="Định dạng phiếu giao ban tổng hợp in ấn chuẩn bệnh viện"
-            >
-              <FaRegFileAlt style={{ color: viewMode === 'dossier' ? '#38BDF8' : '#64748B' }} /> Phiếu Tổng Hợp
-            </button>
+              {/* 3. PHIẾU BÁO CÁO IN */}
+              <button
+                type="button"
+                onClick={() => setViewMode('dossier')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.45rem',
+                  backgroundColor: viewMode === 'dossier' ? '#0F2C59' : 'transparent',
+                  color: viewMode === 'dossier' ? '#FFFFFF' : '#475569',
+                  border: 'none',
+                  borderRadius: '10px',
+                  padding: '0.5rem 0.95rem',
+                  fontSize: '0.84rem',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  boxShadow: viewMode === 'dossier' ? '0 4px 12px rgba(15, 44, 89, 0.25)' : 'none',
+                  transition: 'all 0.15s ease'
+                }}
+                title="Định dạng phiếu giao ban tổng hợp in ấn chuẩn bệnh viện"
+              >
+                <FaRegFileAlt style={{ color: viewMode === 'dossier' ? '#38BDF8' : '#64748B' }} /> Phiếu Tổng Hợp
+              </button>
 
-            {/* 4. THU GỌN */}
-            <button
-              type="button"
-              onClick={() => setViewMode('compact')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.45rem',
-                backgroundColor: viewMode === 'compact' ? '#0F2C59' : 'transparent',
-                color: viewMode === 'compact' ? '#FFFFFF' : '#475569',
-                border: 'none',
-                borderRadius: '10px',
-                padding: '0.5rem 0.95rem',
-                fontSize: '0.84rem',
-                fontWeight: '800',
-                cursor: 'pointer',
-                boxShadow: viewMode === 'compact' ? '0 4px 12px rgba(15, 44, 89, 0.25)' : 'none',
-                transition: 'all 0.15s ease'
-              }}
-              title="Bảng hành chính rút gọn"
-            >
-              <FaList style={{ color: viewMode === 'compact' ? '#38BDF8' : '#64748B' }} /> Thu Gọn
-            </button>
-          </div>
+              {/* 4. THU GỌN */}
+              <button
+                type="button"
+                onClick={() => setViewMode('compact')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.45rem',
+                  backgroundColor: viewMode === 'compact' ? '#0F2C59' : 'transparent',
+                  color: viewMode === 'compact' ? '#FFFFFF' : '#475569',
+                  border: 'none',
+                  borderRadius: '10px',
+                  padding: '0.5rem 0.95rem',
+                  fontSize: '0.84rem',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  boxShadow: viewMode === 'compact' ? '0 4px 12px rgba(15, 44, 89, 0.25)' : 'none',
+                  transition: 'all 0.15s ease'
+                }}
+                title="Bảng hành chính rút gọn"
+              >
+                <FaList style={{ color: viewMode === 'compact' ? '#38BDF8' : '#64748B' }} /> Thu Gọn
+              </button>
+            </div>
+          )}
 
           {/* Export Actions */}
-          <button
-            type="button"
-            onClick={handleExportExcel}
-            style={{
-              backgroundColor: '#10B981',
-              color: '#FFFFFF',
-              border: 'none',
-              borderRadius: '10px',
-              padding: '0.5rem 0.95rem',
-              fontWeight: '800',
-              fontSize: '0.84rem',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)'
-            }}
-            title="Xuất file Excel CSV"
-          >
-            <FaFileExcel /> Xuất Excel
-          </button>
+          {!isPureTracker && (
+            <button
+              type="button"
+              onClick={handleExportExcel}
+              style={{
+                backgroundColor: '#10B981',
+                color: '#FFFFFF',
+                border: 'none',
+                borderRadius: '10px',
+                padding: '0.5rem 0.95rem',
+                fontWeight: '800',
+                fontSize: '0.84rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)'
+              }}
+              title="Xuất file Excel CSV"
+            >
+              <FaFileExcel /> Xuất Excel
+            </button>
+          )}
 
           <button
             type="button"
@@ -605,8 +617,8 @@ const DynamicFormSubmissions = ({ formCode: propFormCode, onBack, readOnly = fal
         </div>
       </div>
 
-      {/* READ-ONLY BANNER NOTICE */}
-      {isReadOnly && (
+      {/* READ-ONLY BANNER NOTICE (CHỈ HIỂN THỊ KHI CÓ SUBMISSIONS NHẬP LIỆU) */}
+      {isReadOnly && !isPureTracker && (
         <div style={{
           backgroundColor: '#EFF6FF',
           border: '1.5px solid #BFDBFE',
@@ -635,148 +647,152 @@ const DynamicFormSubmissions = ({ formCode: propFormCode, onBack, readOnly = fal
       )}
 
       {/* 2. STATS KPI CARDS */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-        gap: '1rem'
-      }}>
-        <div style={{ backgroundColor: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0', padding: '1rem 1.3rem', boxShadow: '0 4px 14px rgba(15, 44, 89, 0.04)', display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
-          <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem' }}>
-            <FaClipboardList />
+      {!isPureTracker && (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gap: '1rem'
+        }}>
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0', padding: '1rem 1.3rem', boxShadow: '0 4px 14px rgba(15, 44, 89, 0.04)', display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
+            <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem' }}>
+              <FaClipboardList />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.74rem', color: '#64748B', fontWeight: '800', textTransform: 'uppercase' }}>TỔNG SỐ BẢN GHI</div>
+              <div style={{ fontSize: '1.4rem', fontWeight: '900', color: '#0F2C59' }}>{submissions.length}</div>
+            </div>
           </div>
-          <div>
-            <div style={{ fontSize: '0.74rem', color: '#64748B', fontWeight: '800', textTransform: 'uppercase' }}>TỔNG SỐ BẢN GHI</div>
-            <div style={{ fontSize: '1.4rem', fontWeight: '900', color: '#0F2C59' }}>{submissions.length}</div>
-          </div>
-        </div>
 
-        <div style={{ backgroundColor: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0', padding: '1rem 1.3rem', boxShadow: '0 4px 14px rgba(15, 44, 89, 0.04)', display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
-          <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: '#DCFCE7', color: '#16A34A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem' }}>
-            <FaCalendarAlt />
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0', padding: '1rem 1.3rem', boxShadow: '0 4px 14px rgba(15, 44, 89, 0.04)', display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
+            <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: '#DCFCE7', color: '#16A34A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem' }}>
+              <FaCalendarAlt />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.74rem', color: '#64748B', fontWeight: '800', textTransform: 'uppercase' }}>BẢN GHI HÔM NAY</div>
+              <div style={{ fontSize: '1.4rem', fontWeight: '900', color: '#16A34A' }}>{todayCount}</div>
+            </div>
           </div>
-          <div>
-            <div style={{ fontSize: '0.74rem', color: '#64748B', fontWeight: '800', textTransform: 'uppercase' }}>BẢN GHI HÔM NAY</div>
-            <div style={{ fontSize: '1.4rem', fontWeight: '900', color: '#16A34A' }}>{todayCount}</div>
-          </div>
-        </div>
 
-        <div style={{ backgroundColor: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0', padding: '1rem 1.3rem', boxShadow: '0 4px 14px rgba(15, 44, 89, 0.04)', display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
-          <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: '#FEF3C7', color: '#D97706', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem' }}>
-            <FaUsers />
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0', padding: '1rem 1.3rem', boxShadow: '0 4px 14px rgba(15, 44, 89, 0.04)', display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
+            <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: '#FEF3C7', color: '#D97706', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem' }}>
+              <FaUsers />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.74rem', color: '#64748B', fontWeight: '800', textTransform: 'uppercase' }}>NGƯỜI NỘP</div>
+              <div style={{ fontSize: '1.4rem', fontWeight: '900', color: '#D97706' }}>{uniqueSubmitters}</div>
+            </div>
           </div>
-          <div>
-            <div style={{ fontSize: '0.74rem', color: '#64748B', fontWeight: '800', textTransform: 'uppercase' }}>NGƯỜI NỘP</div>
-            <div style={{ fontSize: '1.4rem', fontWeight: '900', color: '#D97706' }}>{uniqueSubmitters}</div>
-          </div>
-        </div>
 
-        <div style={{ backgroundColor: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0', padding: '1rem 1.3rem', boxShadow: '0 4px 14px rgba(15, 44, 89, 0.04)', display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
-          <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: '#F3E8FF', color: '#7E22CE', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem' }}>
-            <FaLayerGroup />
-          </div>
-          <div>
-            <div style={{ fontSize: '0.74rem', color: '#64748B', fontWeight: '800', textTransform: 'uppercase' }}>SỐ CỘT DỮ LIỆU</div>
-            <div style={{ fontSize: '1.4rem', fontWeight: '900', color: '#7E22CE' }}>{schemaFields.length}</div>
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '16px', border: '1px solid #E2E8F0', padding: '1rem 1.3rem', boxShadow: '0 4px 14px rgba(15, 44, 89, 0.04)', display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
+            <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: '#F3E8FF', color: '#7E22CE', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem' }}>
+              <FaLayerGroup />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.74rem', color: '#64748B', fontWeight: '800', textTransform: 'uppercase' }}>SỐ CỘT DỮ LIỆU</div>
+              <div style={{ fontSize: '1.4rem', fontWeight: '900', color: '#7E22CE' }}>{schemaFields.length}</div>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* 3. TOOLBAR: SEARCH & DATE FILTER */}
-      <div style={{
-        backgroundColor: '#FFFFFF',
-        borderRadius: '16px',
-        border: '1px solid #E2E8F0',
-        padding: '1rem 1.4rem',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: '0.85rem',
-        boxShadow: '0 2px 8px rgba(15, 44, 89, 0.03)'
-      }}>
-        {/* Search */}
-        <div style={{ position: 'relative', width: '100%', maxWidth: '340px' }}>
-          <FaSearch style={{ position: 'absolute', top: '50%', left: '0.85rem', transform: 'translateY(-50%)', color: '#94A3B8' }} />
-          <input
-            type="text"
-            placeholder="Tìm kiếm nội dung, tên, xã phường..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '0.55rem 0.85rem 0.55rem 2.3rem',
-              borderRadius: '10px',
-              border: '1.5px solid #CBD5E1',
-              fontSize: '0.86rem',
-              outline: 'none',
-              boxSizing: 'border-box'
-            }}
-          />
-        </div>
-
-        {/* Filters */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
-          {departmentsList.length > 1 && (
-            <select
-              value={selectedDept}
-              onChange={(e) => setSelectedDept(e.target.value)}
+      {!isPureTracker && (
+        <div style={{
+          backgroundColor: '#FFFFFF',
+          borderRadius: '16px',
+          border: '1px solid #E2E8F0',
+          padding: '1rem 1.4rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '0.85rem',
+          boxShadow: '0 2px 8px rgba(15, 44, 89, 0.03)'
+        }}>
+          {/* Search */}
+          <div style={{ position: 'relative', width: '100%', maxWidth: '340px' }}>
+            <FaSearch style={{ position: 'absolute', top: '50%', left: '0.85rem', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+            <input
+              type="text"
+              placeholder="Tìm kiếm nội dung, tên, xã phường..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               style={{
-                padding: '0.5rem 0.85rem',
+                width: '100%',
+                padding: '0.55rem 0.85rem 0.55rem 2.3rem',
                 borderRadius: '10px',
                 border: '1.5px solid #CBD5E1',
-                fontSize: '0.84rem',
-                fontWeight: '700',
-                color: '#0F2C59',
-                backgroundColor: '#F8FAFC',
+                fontSize: '0.86rem',
                 outline: 'none',
-                cursor: 'pointer'
+                boxSizing: 'border-box'
               }}
-            >
-              <option value="all">-- Tất cả đơn vị / khoa ({departmentsList.length}) --</option>
-              {departmentsList.map(d => (
-                <option key={d} value={d}>{d}</option>
-              ))}
-            </select>
-          )}
-
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.45rem',
-            backgroundColor: '#EFF6FF',
-            border: '1.5px solid #BFDBFE',
-            padding: '0.35rem 0.75rem',
-            borderRadius: '10px'
-          }}>
-            <FaCalendarAlt style={{ color: '#2563EB', fontSize: '0.85rem' }} />
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              style={{ border: 'none', background: 'transparent', fontWeight: '800', color: '#1E40AF', outline: 'none', fontSize: '0.86rem', cursor: 'pointer' }}
             />
           </div>
 
-          {selectedDate && (
-            <button
-              type="button"
-              onClick={() => setSelectedDate('')}
-              style={{
-                backgroundColor: '#F1F5F9',
-                border: '1px solid #CBD5E1',
-                borderRadius: '8px',
-                padding: '0.45rem 0.75rem',
-                fontSize: '0.8rem',
-                fontWeight: '700',
-                cursor: 'pointer',
-                color: '#334155'
-              }}
-            >
-              Xem tất cả ngày
-            </button>
-          )}
+          {/* Filters */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexWrap: 'wrap' }}>
+            {departmentsList.length > 1 && (
+              <select
+                value={selectedDept}
+                onChange={(e) => setSelectedDept(e.target.value)}
+                style={{
+                  padding: '0.5rem 0.85rem',
+                  borderRadius: '10px',
+                  border: '1.5px solid #CBD5E1',
+                  fontSize: '0.84rem',
+                  fontWeight: '700',
+                  color: '#0F2C59',
+                  backgroundColor: '#F8FAFC',
+                  outline: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="all">-- Tất cả đơn vị / khoa ({departmentsList.length}) --</option>
+                {departmentsList.map(d => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
+              </select>
+            )}
+
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              backgroundColor: '#EFF6FF',
+              border: '1.5px solid #BFDBFE',
+              padding: '0.35rem 0.75rem',
+              borderRadius: '10px'
+            }}>
+              <FaCalendarAlt style={{ color: '#2563EB', fontSize: '0.85rem' }} />
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                style={{ border: 'none', background: 'transparent', fontWeight: '800', color: '#1E40AF', outline: 'none', fontSize: '0.86rem', cursor: 'pointer' }}
+              />
+            </div>
+
+            {selectedDate && (
+              <button
+                type="button"
+                onClick={() => setSelectedDate('')}
+                style={{
+                  backgroundColor: '#F1F5F9',
+                  border: '1px solid #CBD5E1',
+                  borderRadius: '8px',
+                  padding: '0.45rem 0.75rem',
+                  fontSize: '0.8rem',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  color: '#334155'
+                }}
+              >
+                Xem tất cả ngày
+              </button>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* LIVE TRACKER WIDGETS (TỰ ĐỘNG HIỂN THỊ DỮ LIỆU BỆNH VIỆN THỜI GIAN THỰC) */}
       {trackerFields.length > 0 && (
@@ -795,7 +811,7 @@ const DynamicFormSubmissions = ({ formCode: propFormCode, onBack, readOnly = fal
       )}
 
       {/* LEGACY DATA PRESERVATION & DISCOVERY BANNER */}
-      {legacyKeys.length > 0 && (
+      {legacyKeys.length > 0 && !isPureTracker && (
         <div style={{
           backgroundColor: '#F0FDF4',
           border: '1.5px solid #BBF7D0',
@@ -843,8 +859,9 @@ const DynamicFormSubmissions = ({ formCode: propFormCode, onBack, readOnly = fal
         </div>
       )}
 
-      {/* 4. MAIN VIEWS */}
-      {loading ? (
+      {/* 4. MAIN VIEWS (CHỈ DÀNH CHO FORM CÓ BẢN GHI NHẬP LIỆU) */}
+      {!isPureTracker && (
+        loading ? (
         <MedicalLoader 
           text="Đang nạp dữ liệu trực quan..." 
           subtext="TTYT Khu Vực Bình Long • CSDL Báo Cáo Chuyên Môn"
@@ -1620,7 +1637,7 @@ const DynamicFormSubmissions = ({ formCode: propFormCode, onBack, readOnly = fal
             </div>
           )}
         </>
-      )}
+      ))}
 
       {/* 5. SUBMISSION DETAIL MODAL */}
       {selectedSubmission && (

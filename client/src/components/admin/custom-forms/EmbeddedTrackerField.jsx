@@ -20,7 +20,13 @@ import {
   FaUserNurse,
   FaCheckCircle,
   FaSkullCrossbones,
-  FaExclamationTriangle
+  FaExclamationTriangle,
+  FaFileExcel,
+  FaPrint,
+  FaThLarge,
+  FaList,
+  FaFilter,
+  FaLayerGroup
 } from 'react-icons/fa';
 import customFormService from '../../../services/customFormService';
 
@@ -39,6 +45,46 @@ const formatPatientAge = (val) => {
   return s;
 };
 
+const parseOvertimeTimeAndReason = (raw) => {
+  if (!raw || raw === '—') return { time: '—', reason: '—' };
+  const str = String(raw).trim();
+  const colonMatch = str.match(/^([0-9hg\s\-\(\):]+?):\s*(.+)$/i);
+  if (colonMatch && colonMatch[2].length > 2) {
+    return { time: colonMatch[1].trim(), reason: colonMatch[2].trim() };
+  }
+  const spaceMatch = str.match(/^(\d+[\s]*(?:h|giờ|g)(?:\s*\([^\)]+\))?)\s+(.+)$/i);
+  if (spaceMatch && spaceMatch[2].length > 2) {
+    return { time: spaceMatch[1].trim(), reason: spaceMatch[2].trim() };
+  }
+  return { time: str, reason: '—' };
+};
+
+const getDeptBadgeStyle = (deptName) => {
+  const name = (deptName || '').toLowerCase();
+  if (name.includes('hồi sức') || name.includes('cấp cứu') || name.includes('hscc') || name.includes('thận')) {
+    return { bg: '#EFF6FF', border: '#BFDBFE', text: '#1E40AF', icon: '⚡' };
+  }
+  if (name.includes('ngoại') || name.includes('phẫu')) {
+    return { bg: '#ECFDF5', border: '#A7F3D0', text: '#065F46', icon: '🔪' };
+  }
+  if (name.includes('nhiễm')) {
+    return { bg: '#FEF3C7', border: '#FDE68A', text: '#92400E', icon: '🦠' };
+  }
+  if (name.includes('chấn thương') || name.includes('ctch')) {
+    return { bg: '#FFF7ED', border: '#FED7AA', text: '#9A3412', icon: '🦴' };
+  }
+  if (name.includes('nhi')) {
+    return { bg: '#FDF2F8', border: '#FBCFE8', text: '#9D174D', icon: '👶' };
+  }
+  if (name.includes('hình ảnh') || name.includes('cdha') || name.includes('x-quang')) {
+    return { bg: '#FAF5FF', border: '#E9D5FF', text: '#6B21A8', icon: '🔬' };
+  }
+  if (name.includes('sản')) {
+    return { bg: '#FFF1F2', border: '#FECDD3', text: '#BE123C', icon: '🤰' };
+  }
+  return { bg: '#F1F5F9', border: '#CBD5E1', text: '#334155', icon: '🏢' };
+};
+
 const EmbeddedTrackerField = ({
   field,
   themeColor = '#2563EB',
@@ -52,6 +98,43 @@ const EmbeddedTrackerField = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCaseTab, setActiveCaseTab] = useState(field.caseFilter || 'all');
   const [expandedCaseId, setExpandedCaseId] = useState(null);
+  const [overtimeViewMode, setOvertimeViewMode] = useState('table'); // 'table' | 'grouped' | 'cards'
+  const [selectedOvertimeDept, setSelectedOvertimeDept] = useState('all');
+
+  const handleExportOvertimeExcel = (staffList, dateStr) => {
+    if (!staffList || staffList.length === 0) {
+      alert('Không có dữ liệu cán bộ thêm giờ để xuất file.');
+      return;
+    }
+    const headers = ['STT', 'Khoa / Phòng', 'Họ Tên Cán Bộ', 'Thời Gian / Số Giờ', 'Nội Dung / Lý Do Tăng Cường', 'Bác Sĩ Trực Ca', 'Phòng', 'Ngày Báo Cáo'];
+    const rows = staffList.map((s, idx) => {
+      const { time, reason } = parseOvertimeTimeAndReason(s.time);
+      return [
+        idx + 1,
+        s.department_name || s.department_code || '',
+        s.staff_name || '',
+        time || '',
+        reason !== '—' ? reason : '',
+        s.doctor_name || '',
+        s.room !== '—' ? s.room : '',
+        formatDateVN(dateStr)
+      ];
+    });
+
+    const csvContent = '\uFEFF' + [
+      headers.map(h => `"${String(h).replace(/"/g, '""')}"`).join(','),
+      ...rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(','))
+    ].join('\r\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `DanhSach_CanBoThemGio_${dateStr}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // Sync date if parent date changes
   useEffect(() => {
@@ -235,81 +318,727 @@ const EmbeddedTrackerField = ({
         ) : (
           <>
             {/* ========================================================================= */}
-            {/* A. TRACKER: OVERTIME STAFF                                                */}
+            {/* A. TRACKER: OVERTIME STAFF (CÁN BỘ TRỰC TĂNG CƯỜNG & THÊM GIỜ)           */}
             {/* ========================================================================= */}
             {field.type === 'tracker_overtime' && (() => {
               const staffList = Array.isArray(data?.data) ? data.data : [];
+
+              // Map departments and counts for fast synthesis
+              const deptsMap = {};
+              staffList.forEach(s => {
+                const dName = s.department_name || s.department_code || 'Khác';
+                deptsMap[dName] = (deptsMap[dName] || 0) + 1;
+              });
+              const deptEntries = Object.entries(deptsMap).sort((a, b) => b[1] - a[1]);
+
+              // Filtered list by search and department filter
               const filtered = staffList.filter(s => {
+                const dName = s.department_name || s.department_code || 'Khác';
+                if (selectedOvertimeDept !== 'all' && dName !== selectedOvertimeDept) return false;
                 if (!searchQuery.trim()) return true;
                 const q = searchQuery.toLowerCase();
                 return (s.staff_name || '').toLowerCase().includes(q) ||
                   (s.department_name || '').toLowerCase().includes(q) ||
                   (s.doctor_name || '').toLowerCase().includes(q) ||
+                  (s.time || '').toLowerCase().includes(q) ||
                   (s.room || '').toLowerCase().includes(q);
               });
 
+              // Group by department for grouped view
+              const groupedByDept = {};
+              filtered.forEach(s => {
+                const dName = s.department_name || s.department_code || 'Khác';
+                if (!groupedByDept[dName]) groupedByDept[dName] = [];
+                groupedByDept[dName].push(s);
+              });
+
               return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                  {/* Summary Ribbon & Search */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
-                    <div style={{ fontSize: '0.86rem', fontWeight: '800', color: '#0F2C59' }}>
-                      Tổng số: <strong style={{ color: '#2563EB' }}>{staffList.length} cán bộ</strong> tăng cường & thêm giờ ({data?.total_departments || 0} khoa phòng) ngày {formatDateVN(targetDate)}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+
+                  {/* 1. TOP EXECUTIVE BAR: METRICS, VIEW MODES & ACTIONS */}
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: '0.75rem',
+                    backgroundColor: '#F8FAFC',
+                    border: '1.5px solid #E2E8F0',
+                    borderRadius: '14px',
+                    padding: '0.75rem 1rem'
+                  }}>
+                    {/* Left: Summary Metrics */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+                      <span style={{
+                        backgroundColor: '#EFF6FF',
+                        border: '1px solid #BFDBFE',
+                        color: '#1E40AF',
+                        padding: '0.35rem 0.75rem',
+                        borderRadius: '20px',
+                        fontSize: '0.84rem',
+                        fontWeight: '800',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.35rem'
+                      }}>
+                        <FaUsers style={{ color: '#2563EB' }} /> Tổng: <strong>{staffList.length} cán bộ</strong>
+                      </span>
+
+                      <span style={{
+                        backgroundColor: '#ECFDF5',
+                        border: '1px solid #A7F3D0',
+                        color: '#065F46',
+                        padding: '0.35rem 0.75rem',
+                        borderRadius: '20px',
+                        fontSize: '0.84rem',
+                        fontWeight: '800',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.35rem'
+                      }}>
+                        <FaHospital style={{ color: '#10B981' }} /> <strong>{deptEntries.length} khoa phòng</strong>
+                      </span>
+
+                      <span style={{
+                        backgroundColor: '#FEF3C7',
+                        border: '1px solid #FDE68A',
+                        color: '#92400E',
+                        padding: '0.35rem 0.75rem',
+                        borderRadius: '20px',
+                        fontSize: '0.84rem',
+                        fontWeight: '800',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.35rem'
+                      }}>
+                        <FaCalendarAlt style={{ color: '#D97706' }} /> Ngày {formatDateVN(targetDate)}
+                      </span>
                     </div>
-                    <div style={{ minWidth: '220px', position: 'relative' }}>
-                      <FaSearch style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8', fontSize: '0.78rem' }} />
-                      <input
-                        type="text"
-                        placeholder="Tìm kiếm cán bộ, khoa..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        style={{ width: '100%', padding: '0.4rem 0.65rem 0.4rem 2rem', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '0.8rem', outline: 'none', boxSizing: 'border-box' }}
-                      />
+
+                    {/* Right: View Mode Toggle & Excel / Print */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      {/* View Switcher */}
+                      <div style={{
+                        display: 'flex',
+                        backgroundColor: '#E2E8F0',
+                        padding: '3px',
+                        borderRadius: '10px',
+                        gap: '2px'
+                      }}>
+                        <button
+                          type="button"
+                          onClick={() => setOvertimeViewMode('table')}
+                          style={{
+                            backgroundColor: overtimeViewMode === 'table' ? '#0F2C59' : 'transparent',
+                            color: overtimeViewMode === 'table' ? '#FFFFFF' : '#475569',
+                            border: 'none',
+                            borderRadius: '8px',
+                            padding: '0.35rem 0.65rem',
+                            fontSize: '0.78rem',
+                            fontWeight: '800',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.3rem',
+                            transition: 'all 0.15s ease'
+                          }}
+                          title="Chế độ Bảng Tổng Hợp Chi Tiết (Khuyên dùng)"
+                        >
+                          <FaTable /> Bảng Tổng Hợp
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setOvertimeViewMode('grouped')}
+                          style={{
+                            backgroundColor: overtimeViewMode === 'grouped' ? '#0F2C59' : 'transparent',
+                            color: overtimeViewMode === 'grouped' ? '#FFFFFF' : '#475569',
+                            border: 'none',
+                            borderRadius: '8px',
+                            padding: '0.35rem 0.65rem',
+                            fontSize: '0.78rem',
+                            fontWeight: '800',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.3rem',
+                            transition: 'all 0.15s ease'
+                          }}
+                          title="Gom nhóm danh sách theo từng Khoa/Phòng"
+                        >
+                          <FaLayerGroup /> Theo Khoa
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setOvertimeViewMode('cards')}
+                          style={{
+                            backgroundColor: overtimeViewMode === 'cards' ? '#0F2C59' : 'transparent',
+                            color: overtimeViewMode === 'cards' ? '#FFFFFF' : '#475569',
+                            border: 'none',
+                            borderRadius: '8px',
+                            padding: '0.35rem 0.65rem',
+                            fontSize: '0.78rem',
+                            fontWeight: '800',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.3rem',
+                            transition: 'all 0.15s ease'
+                          }}
+                          title="Hiển thị dạng thẻ lưới trực quan"
+                        >
+                          <FaThLarge /> Dạng Thẻ
+                        </button>
+                      </div>
+
+                      {/* Export Excel */}
+                      <button
+                        type="button"
+                        onClick={() => handleExportOvertimeExcel(filtered, targetDate)}
+                        style={{
+                          backgroundColor: '#10B981',
+                          color: '#FFFFFF',
+                          border: 'none',
+                          borderRadius: '8px',
+                          padding: '0.4rem 0.75rem',
+                          fontSize: '0.78rem',
+                          fontWeight: '800',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          boxShadow: '0 2px 6px rgba(16, 185, 129, 0.25)'
+                        }}
+                        title="Xuất bảng Excel cán bộ thêm giờ ngày hiện tại"
+                      >
+                        <FaFileExcel /> Xuất Excel
+                      </button>
+
+                      {/* Print */}
+                      <button
+                        type="button"
+                        onClick={() => window.print()}
+                        style={{
+                          backgroundColor: '#0284C7',
+                          color: '#FFFFFF',
+                          border: 'none',
+                          borderRadius: '8px',
+                          padding: '0.4rem 0.65rem',
+                          fontSize: '0.78rem',
+                          fontWeight: '800',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.3rem'
+                        }}
+                        title="In danh sách cán bộ thêm giờ"
+                      >
+                        <FaPrint /> In
+                      </button>
                     </div>
                   </div>
 
-                  {filtered.length === 0 ? (
-                    <div style={{ backgroundColor: '#F8FAFC', border: '1px dashed #CBD5E1', borderRadius: '12px', padding: '1.5rem', textAlign: 'center', color: '#64748B', fontSize: '0.84rem' }}>
-                      Không có cán bộ trực tăng cường hoặc thêm giờ nào trong ngày {formatDateVN(targetDate)}.
-                    </div>
-                  ) : (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '0.75rem' }}>
-                      {filtered.map((s, sIdx) => (
-                        <div
-                          key={sIdx}
+                  {/* 2. SEARCH & DEPARTMENT FILTER CHIPS */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.6rem' }}>
+                      {/* Search Input */}
+                      <div style={{ position: 'relative', width: '100%', maxWidth: '360px' }}>
+                        <FaSearch style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8', fontSize: '0.8rem' }} />
+                        <input
+                          type="text"
+                          placeholder="Tìm cán bộ, khoa, lý do, bác sĩ..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
                           style={{
-                            backgroundColor: '#F8FAFC',
-                            border: '1.5px solid #E2E8F0',
-                            borderLeft: `4px solid ${themeColor}`,
-                            borderRadius: '12px',
-                            padding: '0.75rem 1rem',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '0.35rem',
-                            boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
+                            width: '100%',
+                            padding: '0.45rem 0.75rem 0.45rem 2.1rem',
+                            borderRadius: '10px',
+                            border: '1.5px solid #CBD5E1',
+                            fontSize: '0.82rem',
+                            outline: 'none',
+                            boxSizing: 'border-box',
+                            backgroundColor: '#FFFFFF'
+                          }}
+                        />
+                      </div>
+
+                      {searchQuery && (
+                        <div style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: '700' }}>
+                          Tìm thấy: <strong style={{ color: '#2563EB' }}>{filtered.length}</strong> / {staffList.length} cán bộ
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Department Filter Chips */}
+                    {deptEntries.length > 1 && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '0.76rem', fontWeight: '800', color: '#64748B', display: 'flex', alignItems: 'center', gap: '0.25rem', marginRight: '0.25rem' }}>
+                          <FaFilter style={{ color: '#2563EB' }} /> Lọc Khoa:
+                        </span>
+
+                        <button
+                          type="button"
+                          onClick={() => setSelectedOvertimeDept('all')}
+                          style={{
+                            backgroundColor: selectedOvertimeDept === 'all' ? '#0F2C59' : '#FFFFFF',
+                            color: selectedOvertimeDept === 'all' ? '#FFFFFF' : '#334155',
+                            border: selectedOvertimeDept === 'all' ? '1.5px solid #0F2C59' : '1px solid #CBD5E1',
+                            borderRadius: '20px',
+                            padding: '0.2rem 0.65rem',
+                            fontSize: '0.76rem',
+                            fontWeight: '800',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease'
                           }}
                         >
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ fontSize: '0.74rem', fontWeight: '800', color: '#64748B', textTransform: 'uppercase' }}>
-                              🏢 {s.department_name}
-                            </span>
-                            <span style={{ backgroundColor: '#FEF3C7', color: '#92400E', padding: '0.15rem 0.5rem', borderRadius: '6px', fontSize: '0.72rem', fontWeight: '800' }}>
-                              ⏰ {s.time}
-                            </span>
-                          </div>
+                          Tất cả ({staffList.length})
+                        </button>
 
-                          <div style={{ fontSize: '0.96rem', fontWeight: '900', color: '#0F2C59', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                            <FaUserMd style={{ color: themeColor, fontSize: '0.88rem' }} />
-                            <span>{s.staff_name}</span>
-                          </div>
+                        {deptEntries.map(([dName, count]) => {
+                          const badge = getDeptBadgeStyle(dName);
+                          const isSelected = selectedOvertimeDept === dName;
+                          return (
+                            <button
+                              key={dName}
+                              type="button"
+                              onClick={() => setSelectedOvertimeDept(isSelected ? 'all' : dName)}
+                              style={{
+                                backgroundColor: isSelected ? badge.text : badge.bg,
+                                color: isSelected ? '#FFFFFF' : badge.text,
+                                border: `1.5px solid ${badge.border}`,
+                                borderRadius: '20px',
+                                padding: '0.2rem 0.65rem',
+                                fontSize: '0.76rem',
+                                fontWeight: '800',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.3rem',
+                                transition: 'all 0.15s ease'
+                              }}
+                            >
+                              <span>{badge.icon}</span>
+                              <span>{dName}</span>
+                              <span style={{
+                                backgroundColor: isSelected ? 'rgba(255,255,255,0.3)' : '#FFFFFF',
+                                color: isSelected ? '#FFFFFF' : badge.text,
+                                padding: '0 5px',
+                                borderRadius: '10px',
+                                fontSize: '0.7rem'
+                              }}>{count}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
 
-                          <div style={{ fontSize: '0.78rem', color: '#475569', display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #E2E8F0', paddingTop: '0.35rem', marginTop: '0.2rem' }}>
-                            <span>Phòng: <strong>{s.room}</strong></span>
-                            <span>BS trực: <strong>{s.doctor_name || '—'}</strong></span>
+                  {/* 3. MAIN DATA RENDERING */}
+                  {filtered.length === 0 ? (
+                    <div style={{
+                      backgroundColor: '#F8FAFC',
+                      border: '1.5px dashed #CBD5E1',
+                      borderRadius: '16px',
+                      padding: '2.5rem 1.5rem',
+                      textAlign: 'center',
+                      color: '#64748B'
+                    }}>
+                      <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>☕</div>
+                      <div style={{ fontWeight: '800', fontSize: '0.96rem', color: '#0F2C59' }}>
+                        Không có cán bộ trực tăng cường hoặc thêm giờ nào
+                      </div>
+                      <div style={{ fontSize: '0.84rem', marginTop: '0.25rem' }}>
+                        {selectedOvertimeDept !== 'all' ? `Tại khoa "${selectedOvertimeDept}" vào ngày ${formatDateVN(targetDate)}.` : `Trong ngày ${formatDateVN(targetDate)}.`}
+                      </div>
+                    </div>
+                  ) : overtimeViewMode === 'table' ? (
+                    /* ----------------------------------------------------------------- */
+                    /* VIEW MODE 1: EXECUTIVE TABLE VIEW (DEFAULT - DỄ NHÌN, DỄ TỔNG HỢP)  */
+                    /* ----------------------------------------------------------------- */
+                    <div style={{
+                      backgroundColor: '#FFFFFF',
+                      borderRadius: '16px',
+                      border: '1.5px solid #E2E8F0',
+                      overflow: 'hidden',
+                      boxShadow: '0 4px 14px rgba(15, 44, 89, 0.04)'
+                    }}>
+                      <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.86rem' }}>
+                          <thead>
+                            <tr style={{
+                              background: 'linear-gradient(135deg, #0F2C59 0%, #1E3A8A 100%)',
+                              color: '#FFFFFF'
+                            }}>
+                              <th style={{ padding: '0.85rem 0.75rem', width: '48px', textAlign: 'center', fontWeight: '800', borderRight: '1px solid rgba(255,255,255,0.1)' }}>STT</th>
+                              <th style={{ padding: '0.85rem 1rem', width: '22%', fontWeight: '800', borderRight: '1px solid rgba(255,255,255,0.1)' }}>KHOA / PHÒNG</th>
+                              <th style={{ padding: '0.85rem 1rem', width: '20%', fontWeight: '800', borderRight: '1px solid rgba(255,255,255,0.1)' }}>CÁN BỘ TĂNG CƯỜNG</th>
+                              <th style={{ padding: '0.85rem 1rem', width: '14%', fontWeight: '800', borderRight: '1px solid rgba(255,255,255,0.1)' }}>THỜI GIAN</th>
+                              <th style={{ padding: '0.85rem 1rem', width: '24%', fontWeight: '800', borderRight: '1px solid rgba(255,255,255,0.1)' }}>NỘI DUNG / LÝ DO TĂNG CƯỜNG</th>
+                              <th style={{ padding: '0.85rem 1rem', width: '13%', fontWeight: '800', borderRight: '1px solid rgba(255,255,255,0.1)' }}>BÁC SĨ TRỰC</th>
+                              <th style={{ padding: '0.85rem 0.75rem', width: '7%', textAlign: 'center', fontWeight: '800' }}>PHÒNG</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {filtered.map((s, idx) => {
+                              const badge = getDeptBadgeStyle(s.department_name);
+                              const parsed = parseOvertimeTimeAndReason(s.time);
+                              const isEven = idx % 2 === 0;
+                              return (
+                                <tr
+                                  key={idx}
+                                  style={{
+                                    borderBottom: '1px solid #E2E8F0',
+                                    backgroundColor: isEven ? '#FFFFFF' : '#F8FAFC',
+                                    transition: 'background-color 0.15s ease'
+                                  }}
+                                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#EFF6FF'}
+                                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = isEven ? '#FFFFFF' : '#F8FAFC'}
+                                >
+                                  {/* STT */}
+                                  <td style={{ padding: '0.85rem 0.75rem', textAlign: 'center', fontWeight: '800', color: '#64748B' }}>
+                                    {idx + 1}
+                                  </td>
+
+                                  {/* Khoa/Phòng */}
+                                  <td style={{ padding: '0.85rem 1rem' }}>
+                                    <span style={{
+                                      backgroundColor: badge.bg,
+                                      color: badge.text,
+                                      border: `1px solid ${badge.border}`,
+                                      borderRadius: '8px',
+                                      padding: '0.3rem 0.65rem',
+                                      fontSize: '0.78rem',
+                                      fontWeight: '800',
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '0.35rem'
+                                    }}>
+                                      <span>{badge.icon}</span>
+                                      <span>{s.department_name || s.department_code}</span>
+                                    </span>
+                                  </td>
+
+                                  {/* Họ Tên Cán Bộ */}
+                                  <td style={{ padding: '0.85rem 1rem' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                                      <div style={{
+                                        width: '28px',
+                                        height: '28px',
+                                        borderRadius: '50%',
+                                        backgroundColor: '#EFF6FF',
+                                        color: '#2563EB',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: '0.78rem',
+                                        flexShrink: 0
+                                      }}>
+                                        <FaUserMd />
+                                      </div>
+                                      <strong style={{ fontSize: '0.94rem', color: '#0F2C59' }}>
+                                        {s.staff_name}
+                                      </strong>
+                                    </div>
+                                  </td>
+
+                                  {/* Thời Gian / Số Giờ */}
+                                  <td style={{ padding: '0.85rem 1rem' }}>
+                                    <span style={{
+                                      backgroundColor: '#FEF3C7',
+                                      color: '#92400E',
+                                      border: '1px solid #FDE68A',
+                                      borderRadius: '8px',
+                                      padding: '0.3rem 0.65rem',
+                                      fontSize: '0.82rem',
+                                      fontWeight: '800',
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '0.3rem',
+                                      whiteSpace: 'nowrap'
+                                    }}>
+                                      <FaClock style={{ fontSize: '0.75rem', color: '#D97706' }} />
+                                      {parsed.time}
+                                    </span>
+                                  </td>
+
+                                  {/* Nội Dung / Lý Do Tăng Cường */}
+                                  <td style={{ padding: '0.85rem 1rem' }}>
+                                    {parsed.reason && parsed.reason !== '—' ? (
+                                      <div style={{
+                                        color: '#1E293B',
+                                        fontWeight: '600',
+                                        lineHeight: 1.4,
+                                        backgroundColor: '#F1F5F9',
+                                        padding: '0.35rem 0.65rem',
+                                        borderRadius: '8px',
+                                        border: '1px solid #E2E8F0'
+                                      }}>
+                                        {parsed.reason}
+                                      </div>
+                                    ) : (
+                                      <span style={{ color: '#94A3B8', fontStyle: 'italic', fontSize: '0.8rem' }}>
+                                        (Trực tăng cường thường quy ca trực)
+                                      </span>
+                                    )}
+                                  </td>
+
+                                  {/* Bác Sĩ Trực Ca */}
+                                  <td style={{ padding: '0.85rem 1rem', color: '#334155', fontWeight: '700' }}>
+                                    {s.doctor_name || '—'}
+                                  </td>
+
+                                  {/* Phòng */}
+                                  <td style={{ padding: '0.85rem 0.75rem', textAlign: 'center', color: '#64748B', fontWeight: '600' }}>
+                                    {s.room !== '—' && s.room ? s.room : '—'}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  ) : overtimeViewMode === 'grouped' ? (
+                    /* ----------------------------------------------------------------- */
+                    /* VIEW MODE 2: GROUPED BY DEPARTMENT (GOM NHÓM THEO KHOA/PHÒNG)     */
+                    /* ----------------------------------------------------------------- */
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      {Object.entries(groupedByDept).map(([dName, dStaffList]) => {
+                        const badge = getDeptBadgeStyle(dName);
+                        return (
+                          <div
+                            key={dName}
+                            style={{
+                              backgroundColor: '#FFFFFF',
+                              borderRadius: '16px',
+                              border: `1.5px solid ${badge.border}`,
+                              borderLeft: `6px solid ${badge.text}`,
+                              boxShadow: '0 3px 12px rgba(15, 44, 89, 0.04)',
+                              overflow: 'hidden'
+                            }}
+                          >
+                            {/* Department Card Header */}
+                            <div style={{
+                              backgroundColor: badge.bg,
+                              padding: '0.75rem 1.25rem',
+                              borderBottom: `1px solid ${badge.border}`,
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              flexWrap: 'wrap',
+                              gap: '0.5rem'
+                            }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <span style={{ fontSize: '1.2rem' }}>{badge.icon}</span>
+                                <span style={{ fontWeight: '900', color: badge.text, fontSize: '0.96rem', textTransform: 'uppercase' }}>
+                                  {dName}
+                                </span>
+                                <span style={{
+                                  backgroundColor: '#FFFFFF',
+                                  color: badge.text,
+                                  fontWeight: '800',
+                                  fontSize: '0.74rem',
+                                  padding: '0.15rem 0.55rem',
+                                  borderRadius: '20px',
+                                  border: `1px solid ${badge.border}`
+                                }}>
+                                  {dStaffList.length} cán bộ
+                                </span>
+                              </div>
+
+                              <div style={{ fontSize: '0.8rem', color: '#475569' }}>
+                                BS trực ca: <strong style={{ color: '#0F2C59' }}>{dStaffList[0]?.doctor_name || '—'}</strong>
+                              </div>
+                            </div>
+
+                            {/* Department Staff Rows */}
+                            <div style={{ padding: '0.85rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                              {dStaffList.map((s, sIdx) => {
+                                const parsed = parseOvertimeTimeAndReason(s.time);
+                                return (
+                                  <div
+                                    key={sIdx}
+                                    style={{
+                                      backgroundColor: '#F8FAFC',
+                                      borderRadius: '12px',
+                                      border: '1px solid #E2E8F0',
+                                      padding: '0.75rem 1rem',
+                                      display: 'flex',
+                                      justifyContent: 'space-between',
+                                      alignItems: 'center',
+                                      flexWrap: 'wrap',
+                                      gap: '0.75rem'
+                                    }}
+                                  >
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                                      <div style={{
+                                        width: '32px',
+                                        height: '32px',
+                                        borderRadius: '50%',
+                                        backgroundColor: '#EFF6FF',
+                                        color: '#2563EB',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: '0.85rem'
+                                      }}>
+                                        <FaUserMd />
+                                      </div>
+                                      <div>
+                                        <div style={{ fontWeight: '900', fontSize: '0.94rem', color: '#0F2C59' }}>
+                                          {s.staff_name}
+                                        </div>
+                                        {parsed.reason && parsed.reason !== '—' && (
+                                          <div style={{ fontSize: '0.8rem', color: '#475569', marginTop: '2px' }}>
+                                            📝 {parsed.reason}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                                      <span style={{
+                                        backgroundColor: '#FEF3C7',
+                                        color: '#92400E',
+                                        border: '1px solid #FDE68A',
+                                        borderRadius: '8px',
+                                        padding: '0.3rem 0.65rem',
+                                        fontSize: '0.82rem',
+                                        fontWeight: '800'
+                                      }}>
+                                        ⏰ {parsed.time}
+                                      </span>
+
+                                      {s.room && s.room !== '—' && (
+                                        <span style={{ fontSize: '0.78rem', color: '#64748B', fontWeight: '600' }}>
+                                          Phòng: {s.room}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    /* ----------------------------------------------------------------- */
+                    /* VIEW MODE 3: MODERN GRID CARDS VIEW (THẺ LƯỚI TRỰC QUAN HIỆN ĐẠI)  */
+                    /* ----------------------------------------------------------------- */
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))', gap: '0.85rem' }}>
+                      {filtered.map((s, sIdx) => {
+                        const badge = getDeptBadgeStyle(s.department_name);
+                        const parsed = parseOvertimeTimeAndReason(s.time);
+                        return (
+                          <div
+                            key={sIdx}
+                            style={{
+                              backgroundColor: '#FFFFFF',
+                              border: '1.5px solid #E2E8F0',
+                              borderLeft: `5px solid ${badge.text}`,
+                              borderRadius: '14px',
+                              padding: '0.9rem 1.1rem',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '0.55rem',
+                              boxShadow: '0 3px 10px rgba(15, 44, 89, 0.04)',
+                              transition: 'transform 0.15s ease, box-shadow 0.15s ease'
+                            }}
+                            onMouseOver={(e) => {
+                              e.currentTarget.style.transform = 'translateY(-2px)';
+                              e.currentTarget.style.boxShadow = '0 6px 18px rgba(15, 44, 89, 0.08)';
+                            }}
+                            onMouseOut={(e) => {
+                              e.currentTarget.style.transform = 'translateY(0)';
+                              e.currentTarget.style.boxShadow = '0 3px 10px rgba(15, 44, 89, 0.04)';
+                            }}
+                          >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.4rem' }}>
+                              <span style={{
+                                backgroundColor: badge.bg,
+                                color: badge.text,
+                                border: `1px solid ${badge.border}`,
+                                borderRadius: '6px',
+                                padding: '0.2rem 0.55rem',
+                                fontSize: '0.74rem',
+                                fontWeight: '800',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.3rem'
+                              }}>
+                                <span>{badge.icon}</span>
+                                <span>{s.department_name || s.department_code}</span>
+                              </span>
+
+                              <span style={{
+                                backgroundColor: '#FEF3C7',
+                                color: '#92400E',
+                                border: '1px solid #FDE68A',
+                                padding: '0.2rem 0.55rem',
+                                borderRadius: '6px',
+                                fontSize: '0.78rem',
+                                fontWeight: '800'
+                              }}>
+                                ⏰ {parsed.time}
+                              </span>
+                            </div>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginTop: '0.15rem' }}>
+                              <div style={{
+                                width: '28px',
+                                height: '28px',
+                                borderRadius: '50%',
+                                backgroundColor: '#EFF6FF',
+                                color: '#2563EB',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '0.8rem',
+                                flexShrink: 0
+                              }}>
+                                <FaUserMd />
+                              </div>
+                              <span style={{ fontSize: '1rem', fontWeight: '900', color: '#0F2C59' }}>
+                                {s.staff_name}
+                              </span>
+                            </div>
+
+                            {parsed.reason && parsed.reason !== '—' && (
+                              <div style={{
+                                backgroundColor: '#F8FAFC',
+                                border: '1px solid #E2E8F0',
+                                borderRadius: '8px',
+                                padding: '0.4rem 0.6rem',
+                                fontSize: '0.8rem',
+                                color: '#334155',
+                                fontWeight: '600',
+                                lineHeight: 1.35
+                              }}>
+                                📝 {parsed.reason}
+                              </div>
+                            )}
+
+                            <div style={{
+                              fontSize: '0.76rem',
+                              color: '#64748B',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              borderTop: '1px solid #F1F5F9',
+                              paddingTop: '0.45rem',
+                              marginTop: 'auto'
+                            }}>
+                              <span>BS trực: <strong style={{ color: '#334155' }}>{s.doctor_name || '—'}</strong></span>
+                              <span>Phòng: <strong style={{ color: '#334155' }}>{s.room || '—'}</strong></span>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
+
                 </div>
               );
             })()}
