@@ -523,8 +523,8 @@ const KhoaNhiSlide = ({ slide = {}, isFullscreen = true }) => {
           gap: '0.65rem',
           flexShrink: 0
         }}>
-          <span style={{ fontSize: isFullscreen ? '1.2rem' : '1.0rem' }}>📌</span>
-          <span style={{ fontSize: isFullscreen ? '1.12rem' : '0.92rem', fontWeight: '700', color: '#92400E' }}>
+          <span style={{ fontSize: isFullscreen ? '1.4rem' : '1.15rem' }}>📌</span>
+          <span style={{ fontSize: isFullscreen ? '1.32rem' : '1.05rem', fontWeight: '700', color: '#92400E' }}>
             <strong>Ghi chú ca trực:</strong> {extraNote}
           </span>
         </div>

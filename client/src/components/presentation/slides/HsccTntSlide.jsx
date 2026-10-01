@@ -46,7 +46,7 @@ const HsccTntSlide = ({ slide, isFullscreen = true }) => {
   const FONT_TH = isFullscreen ? '1.25rem' : '1.02rem';
   const FONT_ROW_HEADER = isFullscreen ? '1.65rem' : '1.35rem';
   const FONT_METRIC = isFullscreen ? '1.75rem' : '1.35rem';
-  const FONT_NOTE = isFullscreen ? '1.18rem' : '0.95rem';
+  const FONT_NOTE = isFullscreen ? '1.42rem' : '1.15rem';
   const PAD_TH = isFullscreen ? '0.75rem 0.5rem' : '0.5rem 0.35rem';
   const PAD_TD = isFullscreen ? '0.7rem 0.5rem' : '0.45rem 0.35rem';
 
@@ -91,15 +91,15 @@ const HsccTntSlide = ({ slide, isFullscreen = true }) => {
         alignItems: 'center',
         gap: '0.45rem',
         fontSize: FONT_NOTE,
-        lineHeight: isFullscreen ? 1.45 : 1.35,
+        lineHeight: isFullscreen ? 1.4 : 1.3,
         color: '#1E293B'
       }}>
-        <span style={{ color: '#475569', fontWeight: '700' }}>• {label}:</span>
+        <span style={{ color: '#334155', fontWeight: '800' }}>• {label}:</span>
         <span style={{
           fontWeight: '900',
           color: isSpecialAlert ? '#DC2626' : '#0F2C59',
           fontFamily: "'Roboto Mono', monospace",
-          fontSize: isFullscreen ? '1.08rem' : '0.9rem'
+          fontSize: isFullscreen ? '1.45rem' : '1.18rem'
         }}>
           {formatValueBadge(val)}
         </span>
@@ -386,7 +386,7 @@ const HsccTntSlide = ({ slide, isFullscreen = true }) => {
                 <div style={{
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: isFullscreen ? '0.35rem' : '0.2rem'
+                  gap: isFullscreen ? '0.45rem' : '0.3rem'
                 }}>
                   {renderNoteItem('CTĐK', tnt.tnt_ctdk || tnt.ctdk)}
                   {renderNoteItem('Nội trú', tnt.tnt_noiTru || tnt.noiTru)}
@@ -437,7 +437,7 @@ const HsccTntSlide = ({ slide, isFullscreen = true }) => {
                 <div style={{
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: isFullscreen ? '0.35rem' : '0.2rem'
+                  gap: isFullscreen ? '0.45rem' : '0.3rem'
                 }}>
                   {renderNoteItem('Tổng số', pk21.pk21_tongSo || pk21.pk21_tongSoKham || pk21.tongSo)}
                   {renderNoteItem('Nhập viện', pk21.pk21_nhapVien || pk21.nhapVien)}
