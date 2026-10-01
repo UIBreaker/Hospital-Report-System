@@ -17,9 +17,9 @@ export const calcTotalVisualLines = (items = []) => {
 
 /**
  * Intelligently chunks items into slide pages so that no slide exceeds maxLinesPerSlide.
- * Default maxLinesPerSlide is 10 lines (safe capacity on 16:9 widescreen presentation).
+ * Default maxLinesPerSlide is 8 lines (safe capacity with projector-grade 2.08rem typography).
  */
-export const paginateItemsIntelligently = (items = [], maxLinesPerSlide = 10) => {
+export const paginateItemsIntelligently = (items = [], maxLinesPerSlide = 8) => {
   const pages = [];
   let currentPage = [];
   let currentLines = 0;
@@ -48,11 +48,11 @@ export const paginateItemsIntelligently = (items = [], maxLinesPerSlide = 10) =>
 
 /**
  * Orphan item prevention:
- * Consolidates any slide page that has only 1 short item (lines <= 2) into
+ * Consolidates any slide page that has only 1 item into
  * a neighboring slide page if that neighbor has sufficient space.
  * This guarantees items like 'Chẩn đoán' or 'Xử trí' never sit stranded alone on an empty slide!
  */
-export const consolidateSlidePages = (pages = [], maxLinesPerSlide = 10) => {
+export const consolidateSlidePages = (pages = [], maxLinesPerSlide = 9) => {
   if (pages.length <= 1) return pages;
 
   const result = [];
@@ -60,8 +60,8 @@ export const consolidateSlidePages = (pages = [], maxLinesPerSlide = 10) => {
     const current = pages[i];
     const currentLines = calcTotalVisualLines(current);
 
-    // If current page is an orphan (only 1 item with <= 2 lines):
-    if (current.length === 1 && currentLines <= 2) {
+    // If current page is an orphan (only 1 item):
+    if (current.length === 1) {
       // 1. Try to merge into the previous page in result if it fits
       if (result.length > 0) {
         const prev = result[result.length - 1];
@@ -129,10 +129,10 @@ export const buildCaseSlides = ({
   let p2Subtitle = '';
 
   if (caseType === 'transfer') {
-    p1Subtitle = 'PHẦN 1: TIẾP NHẬN & CHẨN ĐOÁN';
-    p2Subtitle = 'PHẦN 2: XỬ TRÍ & DIỄN BIẾN';
-    phase1Keys = ['admission_time', 'reason', 'clinical_symptoms', 'clinical_tests', 'diagnosis'];
-    phase2Keys = ['initial_treatment', 'progress_notes'];
+    p1Subtitle = 'PHẦN 1: TIẾP NHẬN & LÂM SÀNG';
+    p2Subtitle = 'PHẦN 2: CHẨN ĐOÁN & XỬ TRÍ';
+    phase1Keys = ['admission_time', 'reason', 'clinical_symptoms', 'clinical_tests'];
+    phase2Keys = ['diagnosis', 'initial_treatment', 'progress_notes'];
     configs = [
       { key: 'admission_time', val: caseItem.admission_time || caseItem.admissionTime, label: 'Giờ ngày vào viện' },
       { key: 'reason', val: caseItem.reason, label: 'Lí do vào viện' },
@@ -143,10 +143,10 @@ export const buildCaseSlides = ({
       { key: 'progress_notes', val: caseItem.progress_notes || caseItem.progressNotes, label: 'Diễn biến' }
     ];
   } else if (caseType === 'surgery') {
-    p1Subtitle = 'PHẦN 1: TIẾP NHẬN & TIỀN PHẪU';
-    p2Subtitle = 'PHẦN 2: HỘI CHẨN & HẬU PHẪU';
-    phase1Keys = ['admission_time', 'reason', 'clinical_symptoms', 'clinical_tests', 'preoperative_diagnosis'];
-    phase2Keys = ['consultation_order', 'postoperative_diagnosis', 'current_status'];
+    p1Subtitle = 'PHẦN 1: TIẾP NHẬN & LÂM SÀNG';
+    p2Subtitle = 'PHẦN 2: CHẨN ĐOÁN & HẬU PHẪU';
+    phase1Keys = ['admission_time', 'reason', 'clinical_symptoms', 'clinical_tests'];
+    phase2Keys = ['preoperative_diagnosis', 'consultation_order', 'postoperative_diagnosis', 'current_status'];
     configs = [
       { key: 'admission_time', val: caseItem.admission_time || caseItem.admissionTime, label: 'Giờ ngày vào viện' },
       { key: 'reason', val: caseItem.reason, label: 'Lí do vào viện' },
@@ -158,10 +158,10 @@ export const buildCaseSlides = ({
       { key: 'current_status', val: caseItem.current_status || caseItem.currentStatus, label: 'Tình Trạng Hiện Tại (Hậu Phẫu)' }
     ];
   } else if (caseType === 'critical') {
-    p1Subtitle = 'PHẦN 1: TIẾP NHẬN & CHẨN ĐOÁN';
-    p2Subtitle = 'PHẦN 2: DIỄN BIẾN & ĐIỀU TRỊ';
-    phase1Keys = ['admission_time', 'medical_history', 'clinical_symptoms', 'clinical_tests', 'diagnosis'];
-    phase2Keys = ['condition_summary', 'treatment', 'notes'];
+    p1Subtitle = 'PHẦN 1: TIẾP NHẬN & LÂM SÀNG';
+    p2Subtitle = 'PHẦN 2: CHẨN ĐOÁN & ĐIỀU TRỊ';
+    phase1Keys = ['admission_time', 'medical_history', 'clinical_symptoms', 'clinical_tests'];
+    phase2Keys = ['diagnosis', 'condition_summary', 'treatment', 'notes'];
     configs = [
       { key: 'admission_time', val: caseItem.admission_time || caseItem.admissionTime, label: 'Giờ ngày vào viện' },
       { key: 'medical_history', val: caseItem.medical_history || caseItem.medicalHistory, label: 'Tiền căn bệnh' },
@@ -254,19 +254,20 @@ export const buildCaseSlides = ({
     const p2Effective = p2Items.length > 0 ? p2Items : activeItems.slice(Math.ceil(activeItems.length / 2));
 
     const p1Lines = calcTotalVisualLines(p1Effective);
+    const p2Lines = calcTotalVisualLines(p2Effective);
 
     let allPages = [];
 
-    // If Phase 1 fits within 10 lines (like Nguyễn Thị Oánh with 9 lines),
-    // keep Phase 1 together on Slide 1 and Phase 2 on Slide 2!
-    if (p1Lines <= 10) {
+    // If both Phase 1 and Phase 2 fit within 9 lines,
+    // keep Phase 1 cleanly on Slide 1 and Phase 2 (with Diagnosis at top) on Slide 2!
+    if (p1Lines <= 9 && p2Lines <= 9) {
       allPages = [p1Effective, p2Effective];
     } else {
-      // Phase 1 is very long (> 10 lines, like Hồ Thị Chờ with 15 lines):
+      // Phase 1 or Phase 2 is very long (> 9 lines):
       // Intelligently paginate Phase 1 and Phase 2, then consolidate any orphan pages
-      const p1Pages = paginateItemsIntelligently(p1Effective, 10);
-      const p2Pages = paginateItemsIntelligently(p2Effective, 10);
-      allPages = consolidateSlidePages([...p1Pages, ...p2Pages], 10);
+      const p1Pages = paginateItemsIntelligently(p1Effective, 8);
+      const p2Pages = paginateItemsIntelligently(p2Effective, 8);
+      allPages = consolidateSlidePages([...p1Pages, ...p2Pages], 9);
     }
 
     const totalParts = allPages.length;
