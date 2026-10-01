@@ -17,10 +17,9 @@ export const calcTotalVisualLines = (items = []) => {
 
 /**
  * Intelligently chunks items into slide pages so that no slide exceeds maxLinesPerSlide.
- * If adding the next item would cause the slide to exceed the line budget (touching/submerging bottom),
- * that item is automatically pushed to the next slide page!
+ * Default maxLinesPerSlide is 10 lines (safe capacity on 16:9 widescreen presentation).
  */
-export const paginateItemsIntelligently = (items = [], maxLinesPerSlide = 8) => {
+export const paginateItemsIntelligently = (items = [], maxLinesPerSlide = 10) => {
   const pages = [];
   let currentPage = [];
   let currentLines = 0;
@@ -29,7 +28,7 @@ export const paginateItemsIntelligently = (items = [], maxLinesPerSlide = 8) => 
     const itemLines = estimateItemVisualLines(item);
 
     // If adding this item exceeds budget and current page already has content:
-    // It touched the bottom -> move to next page!
+    // Move to next page!
     if (currentPage.length > 0 && (currentLines + itemLines > maxLinesPerSlide)) {
       pages.push(currentPage);
       currentPage = [item];
@@ -45,6 +44,49 @@ export const paginateItemsIntelligently = (items = [], maxLinesPerSlide = 8) => 
   }
 
   return pages;
+};
+
+/**
+ * Orphan item prevention:
+ * Consolidates any slide page that has only 1 short item (lines <= 2) into
+ * a neighboring slide page if that neighbor has sufficient space.
+ * This guarantees items like 'Chẩn đoán' or 'Xử trí' never sit stranded alone on an empty slide!
+ */
+export const consolidateSlidePages = (pages = [], maxLinesPerSlide = 10) => {
+  if (pages.length <= 1) return pages;
+
+  const result = [];
+  for (let i = 0; i < pages.length; i++) {
+    const current = pages[i];
+    const currentLines = calcTotalVisualLines(current);
+
+    // If current page is an orphan (only 1 item with <= 2 lines):
+    if (current.length === 1 && currentLines <= 2) {
+      // 1. Try to merge into the previous page in result if it fits
+      if (result.length > 0) {
+        const prev = result[result.length - 1];
+        const prevLines = calcTotalVisualLines(prev);
+        if (prevLines + currentLines <= maxLinesPerSlide) {
+          prev.push(...current);
+          continue;
+        }
+      }
+
+      // 2. Or try to merge into the next page if there is one and it fits
+      if (i + 1 < pages.length) {
+        const next = pages[i + 1];
+        const nextLines = calcTotalVisualLines(next);
+        if (nextLines + currentLines <= maxLinesPerSlide) {
+          next.unshift(...current);
+          continue;
+        }
+      }
+    }
+
+    result.push([...current]);
+  }
+
+  return result;
 };
 
 /**
@@ -211,11 +253,22 @@ export const buildCaseSlides = ({
     const p1Effective = p1Items.length > 0 ? p1Items : activeItems.slice(0, Math.ceil(activeItems.length / 2));
     const p2Effective = p2Items.length > 0 ? p2Items : activeItems.slice(Math.ceil(activeItems.length / 2));
 
-    // Intelligently check line capacity for each phase (max 8 visual lines per slide)
-    const p1Pages = paginateItemsIntelligently(p1Effective, 8);
-    const p2Pages = paginateItemsIntelligently(p2Effective, 8);
+    const p1Lines = calcTotalVisualLines(p1Effective);
 
-    const allPages = [...p1Pages, ...p2Pages];
+    let allPages = [];
+
+    // If Phase 1 fits within 10 lines (like Nguyễn Thị Oánh with 9 lines),
+    // keep Phase 1 together on Slide 1 and Phase 2 on Slide 2!
+    if (p1Lines <= 10) {
+      allPages = [p1Effective, p2Effective];
+    } else {
+      // Phase 1 is very long (> 10 lines, like Hồ Thị Chờ with 15 lines):
+      // Intelligently paginate Phase 1 and Phase 2, then consolidate any orphan pages
+      const p1Pages = paginateItemsIntelligently(p1Effective, 10);
+      const p2Pages = paginateItemsIntelligently(p2Effective, 10);
+      allPages = consolidateSlidePages([...p1Pages, ...p2Pages], 10);
+    }
+
     const totalParts = allPages.length;
 
     allPages.forEach((pageItems, pIdx) => {
@@ -227,28 +280,16 @@ export const buildCaseSlides = ({
       if (totalParts === 2) {
         partSubtitle = partIndex === 1 ? p1Subtitle : p2Subtitle;
       } else if (totalParts === 3) {
-        if (p1Pages.length === 2) {
-          // Phase 1 split into 2 parts (e.g. detailed lâm sàng & cận lâm sàng like Hồ Thị Chờ)
-          if (partIndex === 1) {
-            partSubtitle = 'PHẦN 1: TIẾP NHẬN & LÂM SÀNG';
-          } else if (partIndex === 2) {
-            partSubtitle = caseType === 'surgery' 
-              ? 'PHẦN 2: CẬN LÂM SÀNG & TIỀN PHẪU' 
-              : 'PHẦN 2: CẬN LÂM SÀNG & CHẨN ĐOÁN';
-          } else {
-            partSubtitle = caseType === 'surgery'
-              ? 'PHẦN 3: HỘI CHẨN & HẬU PHẪU'
-              : (caseType === 'death' ? 'PHẦN 3: XỬ TRÍ & KẾT QUẢ' : 'PHẦN 3: XỬ TRÍ & DIỄN BIẾN');
-          }
+        if (partIndex === 1) {
+          partSubtitle = 'PHẦN 1: TIẾP NHẬN & LÂM SÀNG';
+        } else if (partIndex === 2) {
+          partSubtitle = caseType === 'surgery' 
+            ? 'PHẦN 2: CẬN LÂM SÀNG & TIỀN PHẪU' 
+            : 'PHẦN 2: CẬN LÂM SÀNG & CHẨN ĐOÁN';
         } else {
-          // Phase 2 split into 2 parts
-          if (partIndex === 1) {
-            partSubtitle = p1Subtitle;
-          } else if (partIndex === 2) {
-            partSubtitle = 'PHẦN 2: XỬ TRÍ ĐIỀU TRỊ';
-          } else {
-            partSubtitle = 'PHẦN 3: DIỄN BIẾN & THEO DÕI';
-          }
+          partSubtitle = caseType === 'surgery'
+            ? 'PHẦN 3: HỘI CHẨN & HẬU PHẪU'
+            : (caseType === 'death' ? 'PHẦN 3: XỬ TRÍ & KẾT QUẢ' : 'PHẦN 3: XỬ TRÍ & DIỄN BIẾN');
         }
       } else {
         // 4+ parts fallback: descriptive labels
