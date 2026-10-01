@@ -22,6 +22,8 @@ import TitleSlide from '../components/presentation/slides/TitleSlide';
 import DepartmentIntroSlide from '../components/presentation/slides/DepartmentIntroSlide';
 import DepartmentSlide from '../components/presentation/slides/DepartmentSlide';
 import HsccTntSlide from '../components/presentation/slides/HsccTntSlide';
+import ClinicalCaseSlide from '../components/presentation/slides/ClinicalCaseSlide';
+import { buildCaseSlides } from '../utils/clinicalCasePaginator';
 import TransferSlide from '../components/presentation/slides/TransferSlide';
 import SurgerySlide from '../components/presentation/slides/SurgerySlide';
 import DeathSlide from '../components/presentation/slides/DeathSlide';
@@ -673,174 +675,54 @@ const PresentationPage = () => {
 
       // 4.1 Transfer Case Slides
       transferCases.forEach((tc, tcIdx) => {
-        s.push({
-          type: 'transfer',
-          title: `CA CHUYỂN VIỆN ${tcIdx + 1} (TIẾP NHẬN & XỬ TRÍ) – ${deptName}`,
-          deptCode: r.department_code,
-          deptName,
-          transferCase: tc,
+        const caseSlides = buildCaseSlides({
+          caseType: 'transfer',
+          caseItem: tc,
           caseIndex: tcIdx + 1,
-          totalCases: transferCases.length
+          totalCases: transferCases.length,
+          deptCode: r.department_code,
+          deptName
         });
-
-        if (tc.clinical_symptoms || tc.clinicalSymptoms || tc.clinical_tests || tc.clinicalTests) {
-          s.push({
-            type: 'transfer_clinical',
-            title: `CA CHUYỂN VIỆN ${tcIdx + 1} (LÂM SÀNG & CLS) – ${deptName}`,
-            deptCode: r.department_code,
-            deptName,
-            transferCase: tc,
-            caseIndex: tcIdx + 1,
-            totalCases: transferCases.length
-          });
-        }
-
-        if (tc.progress_notes || tc.progressNotes) {
-          s.push({
-            type: 'transfer_progress',
-            title: `DIỄN BIẾN CHUYỂN VIỆN ${tcIdx + 1} – ${deptName}`,
-            deptCode: r.department_code,
-            deptName,
-            transferCase: tc,
-            caseIndex: tcIdx + 1,
-            totalCases: transferCases.length
-          });
-        }
-
-        const normImgs = normalizeImages(tc.images);
-        normImgs.forEach((imgObj, imgIdx) => {
-          s.push({
-            type: 'case_image',
-            title: `HÌNH ẢNH CA CHUYỂN VIỆN ${tcIdx + 1} (${imgIdx + 1}/${normImgs.length}) – ${deptName}`,
-            deptCode: r.department_code,
-            deptName,
-            caseType: 'transfer',
-            caseItem: tc,
-            image: imgObj,
-            imgIndex: imgIdx + 1,
-            totalImages: normImgs.length
-          });
-        });
+        s.push(...caseSlides);
       });
 
       // 4.2 Surgery Case Slides
       surgeryCases.forEach((sc, scIdx) => {
-        s.push({
-          type: 'surgery',
-          title: `CA PHẪU THUẬT ${scIdx + 1} (CHẨN ĐOÁN & LỆNH MỔ) – ${deptName}`,
-          deptCode: r.department_code,
-          deptName,
-          surgeryCase: sc,
+        const caseSlides = buildCaseSlides({
+          caseType: 'surgery',
+          caseItem: sc,
           caseIndex: scIdx + 1,
-          totalCases: surgeryCases.length
+          totalCases: surgeryCases.length,
+          deptCode: r.department_code,
+          deptName
         });
-
-        if (sc.clinical_symptoms || sc.clinicalSymptoms || sc.clinical_tests || sc.clinicalTests) {
-          s.push({
-            type: 'surgery_clinical',
-            title: `CA PHẪU THUẬT ${scIdx + 1} (LÂM SÀNG & CLS) – ${deptName}`,
-            deptCode: r.department_code,
-            deptName,
-            surgeryCase: sc,
-            caseIndex: scIdx + 1,
-            totalCases: surgeryCases.length
-          });
-        }
-
-        const normImgs = normalizeImages(sc.images);
-        normImgs.forEach((imgObj, imgIdx) => {
-          s.push({
-            type: 'case_image',
-            title: `HÌNH ẢNH CA PHẪU THUẬT ${scIdx + 1} (${imgIdx + 1}/${normImgs.length}) – ${deptName}`,
-            deptCode: r.department_code,
-            deptName,
-            caseType: 'surgery',
-            caseItem: sc,
-            image: imgObj,
-            imgIndex: imgIdx + 1,
-            totalImages: normImgs.length
-          });
-        });
+        s.push(...caseSlides);
       });
 
       // 4.3 Mortality / Death Case Slides
       deathCases.forEach((dc, dcIdx) => {
-        s.push({
-          type: 'death',
-          title: `CA TỬ VONG ${dcIdx + 1} (CHẨN ĐOÁN & CẤP CỨU) – ${deptName}`,
-          deptCode: r.department_code,
-          deptName,
-          deathCase: dc,
+        const caseSlides = buildCaseSlides({
+          caseType: 'death',
+          caseItem: dc,
           caseIndex: dcIdx + 1,
-          totalCases: deathCases.length
+          totalCases: deathCases.length,
+          deptCode: r.department_code,
+          deptName
         });
-
-        if (dc.clinical_symptoms || dc.clinicalSymptoms || dc.clinical_tests || dc.clinicalTests || dc.medical_history || dc.medicalHistory) {
-          s.push({
-            type: 'death_clinical',
-            title: `CA TỬ VONG ${dcIdx + 1} (TIỀN SỬ, LÂM SÀNG & ECG) – ${deptName}`,
-            deptCode: r.department_code,
-            deptName,
-            deathCase: dc,
-            caseIndex: dcIdx + 1,
-            totalCases: deathCases.length
-          });
-        }
-
-        const normImgs = normalizeImages(dc.images);
-        normImgs.forEach((imgObj, imgIdx) => {
-          s.push({
-            type: 'case_image',
-            title: `HÌNH ẢNH CA TỬ VONG ${dcIdx + 1} (${imgIdx + 1}/${normImgs.length}) – ${deptName}`,
-            deptCode: r.department_code,
-            deptName,
-            caseType: 'death',
-            caseItem: dc,
-            image: imgObj,
-            imgIndex: imgIdx + 1,
-            totalImages: normImgs.length
-          });
-        });
+        s.push(...caseSlides);
       });
 
       // 4.4 Critical Care Case Slides
       criticalCases.forEach((cc, ccIdx) => {
-        s.push({
-          type: 'critical',
-          title: `CA BỆNH NẶNG ${ccIdx + 1} (CHẨN ĐOÁN & XỬ TRÍ) – ${deptName}`,
-          deptCode: r.department_code,
-          deptName,
-          criticalCase: cc,
+        const caseSlides = buildCaseSlides({
+          caseType: 'critical',
+          caseItem: cc,
           caseIndex: ccIdx + 1,
-          totalCases: criticalCases.length
+          totalCases: criticalCases.length,
+          deptCode: r.department_code,
+          deptName
         });
-
-        if (cc.clinical_symptoms || cc.clinicalSymptoms || cc.clinical_tests || cc.clinicalTests || cc.medical_history || cc.medicalHistory) {
-          s.push({
-            type: 'critical_clinical',
-            title: `CA BỆNH NẶNG ${ccIdx + 1} (LÂM SÀNG & XÉT NGHIỆM) – ${deptName}`,
-            deptCode: r.department_code,
-            deptName,
-            criticalCase: cc,
-            caseIndex: ccIdx + 1,
-            totalCases: criticalCases.length
-          });
-        }
-
-        const normImgs = normalizeImages(cc.images);
-        normImgs.forEach((imgObj, imgIdx) => {
-          s.push({
-            type: 'case_image',
-            title: `HÌNH ẢNH CA BỆNH NẶNG ${ccIdx + 1} (${imgIdx + 1}/${normImgs.length}) – ${deptName}`,
-            deptCode: r.department_code,
-            deptName,
-            caseType: 'critical',
-            caseItem: cc,
-            image: imgObj,
-            imgIndex: imgIdx + 1,
-            totalImages: normImgs.length
-          });
-        });
+        s.push(...caseSlides);
       });
     });
 
