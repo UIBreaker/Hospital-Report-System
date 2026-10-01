@@ -145,6 +145,7 @@ const ClinicalCaseSlide = ({ slide = {}, isFullscreen = true }) => {
 
   const partSuffix = slide.partSuffix || (slide.totalParts > 1 ? `(Phần ${slide.partIndex}/${slide.totalParts})` : '');
   const partSubtitle = slide.partSubtitle || '';
+  const isFirstPart = !slide.partIndex || slide.partIndex === 1;
 
   return (
     <div style={{
@@ -247,28 +248,36 @@ const ClinicalCaseSlide = ({ slide = {}, isFullscreen = true }) => {
         {theme.title}
       </div>
 
-      {/* 3. Case & Patient Header (Bold Numbered Line) */}
-      <div style={{
-        fontSize: isFullscreen ? '2.2rem' : '1.6rem',
-        fontWeight: '900',
-        color: '#0F2C59',
-        borderBottom: `2.5px solid ${theme.border}`,
-        paddingBottom: isFullscreen ? '0.45rem' : '0.3rem',
-        marginBottom: isFullscreen ? '0.45rem' : '0.3rem',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: '0.5rem',
-        flexShrink: 0
-      }}>
-        <span>
-          <span style={{ color: theme.main, fontWeight: '900' }}>{caseNum}/</span> {pName.toUpperCase()}
-          {ageFormatted ? `, ${ageFormatted}` : ''}
-          {pAddress ? `, ${pAddress}` : ''}
-          {partSuffix ? ` ${partSuffix}` : ''}
-        </span>
-      </div>
+      {/* 3. Case & Patient Header (Bold Numbered Line) - Only on first slide part to preserve vertical space */}
+      {isFirstPart ? (
+        <div style={{
+          fontSize: isFullscreen ? '2.2rem' : '1.6rem',
+          fontWeight: '900',
+          color: '#0F2C59',
+          borderBottom: `2.5px solid ${theme.border}`,
+          paddingBottom: isFullscreen ? '0.45rem' : '0.3rem',
+          marginBottom: isFullscreen ? '0.45rem' : '0.3rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '0.5rem',
+          flexShrink: 0
+        }}>
+          <span>
+            <span style={{ color: theme.main, fontWeight: '900' }}>{caseNum}/</span> {pName.toUpperCase()}
+            {ageFormatted ? `, ${ageFormatted}` : ''}
+            {pAddress ? `, ${pAddress}` : ''}
+            {partSuffix ? ` ${partSuffix}` : ''}
+          </span>
+        </div>
+      ) : (
+        <div style={{
+          borderBottom: `2px solid ${theme.border}`,
+          marginBottom: isFullscreen ? '0.65rem' : '0.45rem',
+          flexShrink: 0
+        }} />
+      )}
 
       {/* 4. Sequential Bullet Items Container */}
       <div style={{
