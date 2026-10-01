@@ -112,6 +112,7 @@ export const FIELD_LABELS = {
   tieuPhau: 'Tiểu phẫu',
   boBot: 'Bó bột',
   ccNgoaiVien: 'Cấp cứu ngoài viện',
+  tronVien: 'Trốn viện',
   bsTrucTNT: 'Bác sĩ trực TNT',
   tnt_benhCu: 'Bệnh cũ (TNT)',
   tnt_benhMoi: 'Bệnh mới (TNT)',

@@ -1,6 +1,7 @@
 import React from 'react';
 import { parseDepartmentSections } from '../../../utils/departmentSectionParser';
 import { FaHospital, FaAmbulance, FaProcedures, FaSkullCrossbones, FaHeartbeat } from 'react-icons/fa';
+import HsccTntSlide from './HsccTntSlide';
 
 // Helper to format number into 2-digit padded string (e.g. 8 -> '08') if appropriate
 const formatValueBadge = (val) => {
@@ -42,6 +43,13 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
   const report = slide.report || {};
   const formData = slide.formData || (typeof report.report_data === 'string' ? JSON.parse(report.report_data || '{}') : report.report_data) || {};
   const theme = slide.theme || { main: '#2563EB', bg: '#EFF6FF', border: '#BFDBFE', icon: '🏥' };
+
+  // If this is HSCC - TNT and not an explicit note slide, render unified HsccTntSlide
+  const isHsccTnt = (slide.deptCode || report.department_code || '').toLowerCase() === 'hscc_tnt' || (formData.hscc && formData.tnt);
+  const isExplicitNoteSlide = slide.sections && slide.sections.length === 1 && (slide.sections[0].type === 'note' || slide.sections[0].title?.includes('GHI CHÚ'));
+  if (isHsccTnt && !isExplicitNoteSlide) {
+    return <HsccTntSlide slide={slide} isFullscreen={isFullscreen} />;
+  }
 
   const safeArray = (v) => {
     if (Array.isArray(v)) return v;

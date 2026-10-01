@@ -78,6 +78,7 @@ const HoiSucCapCuuForm = ({ doctorName, formData = {}, setFormData = () => {}, t
             <div className="form-group"><label>Tiểu phẫu</label><input type="number" min="0" step="1" value={hscc.tieuPhau || ''} onChange={(e) => handleHsccChange('tieuPhau', e.target.value)} /></div>
             <div className="form-group"><label>Bó bột</label><input type="number" min="0" step="1" value={hscc.boBot || ''} onChange={(e) => handleHsccChange('boBot', e.target.value)} /></div>
             <div className="form-group"><label>CC ngoại viện</label><input type="number" min="0" step="1" value={hscc.ccNgoaiVien || ''} onChange={(e) => handleHsccChange('ccNgoaiVien', e.target.value)} /></div>
+            <div className="form-group"><label>Trốn viện</label><input type="number" min="0" step="1" value={hscc.tronVien || ''} onChange={(e) => handleHsccChange('tronVien', e.target.value)} placeholder="0" /></div>
           </div>
         </div>
       </div>

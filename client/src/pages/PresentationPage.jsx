@@ -21,6 +21,7 @@ import { parseDepartmentSections } from '../utils/departmentSectionParser';
 import TitleSlide from '../components/presentation/slides/TitleSlide';
 import DepartmentIntroSlide from '../components/presentation/slides/DepartmentIntroSlide';
 import DepartmentSlide from '../components/presentation/slides/DepartmentSlide';
+import HsccTntSlide from '../components/presentation/slides/HsccTntSlide';
 import TransferSlide from '../components/presentation/slides/TransferSlide';
 import SurgerySlide from '../components/presentation/slides/SurgerySlide';
 import DeathSlide from '../components/presentation/slides/DeathSlide';
@@ -385,99 +386,42 @@ const PresentationPage = () => {
       const isSan = (r.department_code || '').toLowerCase() === 'san' || (rawData.choSanh !== undefined || rawData.sanhThuong !== undefined || rawData.sanhHut !== undefined);
 
       if (isHsccTnt) {
-        const hsccSections = parseDepartmentSections(rawData, r.department_code);
-        
-        // Slide 2.1: Tổng Số Khám (HSCC • TNT • PK 21)
-        const secTongKham = hsccSections.find(sec => sec.title?.includes('TỔNG SỐ KHÁM'));
-        if (secTongKham) {
-          s.push({
-            type: 'department',
-            title: `${deptName} – TỔNG SỐ KHÁM`,
-            subTitle: 'TỔNG SỐ KHÁM (HSCC • TNT • PHÒNG KHÁM 21)',
-            deptCode: r.department_code,
-            deptName,
-            theme,
-            report: r,
-            sections: [secTongKham],
-            doctorName: r.doctor_name,
-            nurseName: r.nurse_name,
-            overtimeStaff: r.overtime_staff,
-            room: r.room,
-            shiftTime: r.shift_time,
-            formData: rawData,
-            transferCases,
-            surgeryCases,
-            deathCases,
-            criticalCases
-          });
-        }
+        // Slide 2: Single unified slide for HSCC - TNT - PK 21 (Matching Image 3)
+        s.push({
+          type: 'department_hscc_tnt',
+          title: `${deptName} – TỔNG SỐ KHÁM & HOẠT ĐỘNG CHUYÊN MÔN`,
+          subTitle: 'HSCC • THẬN NHÂN TẠO • PHÒNG KHÁM 21',
+          deptCode: r.department_code || 'hscc_tnt',
+          deptName,
+          theme,
+          report: r,
+          doctorName: r.doctor_name,
+          nurseName: r.nurse_name,
+          overtimeStaff: r.overtime_staff,
+          room: r.room,
+          shiftTime: r.shift_time,
+          formData: rawData,
+          transferCases,
+          surgeryCases,
+          deathCases,
+          criticalCases
+        });
 
-        // Slide 2.2: Khối Hồi Sức Cấp Cứu (HSCC)
-        const secHSCC = hsccSections.find(sec => sec.title?.includes('HỒI SỨC CẤP CỨU'));
-        if (secHSCC) {
-          s.push({
-            type: 'department',
-            title: `${deptName} – KHỐI HỒI SỨC CẤP CỨU`,
-            subTitle: 'KHỐI HỒI SỨC CẤP CỨU (HSCC)',
-            deptCode: r.department_code,
-            deptName,
-            theme,
-            report: r,
-            sections: [secHSCC],
-            doctorName: r.doctor_name,
-            nurseName: r.nurse_name,
-            overtimeStaff: r.overtime_staff,
-            room: r.room,
-            shiftTime: r.shift_time,
-            formData: rawData,
-            transferCases,
-            surgeryCases,
-            deathCases,
-            criticalCases
-          });
-        }
-
-        // Slide 2.3: Khối Thận Nhân Tạo (TNT)
-        const secTNT = hsccSections.find(sec => sec.title?.includes('THẬN NHÂN TẠO'));
-        if (secTNT) {
-          s.push({
-            type: 'department',
-            title: `${deptName} – KHỐI THẬN NHÂN TẠO`,
-            subTitle: 'KHỐI THẬN NHÂN TẠO (TNT)',
-            deptCode: r.department_code,
-            deptName,
-            theme,
-            report: r,
-            sections: [secTNT],
-            doctorName: r.doctor_name,
-            nurseName: r.nurse_name,
-            overtimeStaff: r.overtime_staff,
-            room: r.room,
-            shiftTime: r.shift_time,
-            formData: rawData,
-            transferCases,
-            surgeryCases,
-            deathCases,
-            criticalCases
-          });
-        }
-
-        // Slide 2.4: Ghi chú / Diễn biến thêm giờ (nếu có)
-        const otherSections = hsccSections.filter(sec => 
-          !sec.title?.includes('TỔNG SỐ KHÁM') &&
-          !sec.title?.includes('HỒI SỨC CẤP CỨU') &&
-          !sec.title?.includes('THẬN NHÂN TẠO')
-        );
-        if (otherSections.length > 0) {
+        // Slide 2.2: Ghi chú / Diễn biến thêm giờ (chỉ nếu có nội dung thực tế)
+        if (rawData.themGio && String(rawData.themGio).trim() !== '') {
           s.push({
             type: 'department',
             title: `${deptName} – GHI CHÚ & THÊM GIỜ`,
             subTitle: 'GHI CHÚ & THÊM GIỜ CA TRỰC',
-            deptCode: r.department_code,
+            deptCode: r.department_code || 'hscc_tnt',
             deptName,
             theme,
             report: r,
-            sections: otherSections,
+            sections: [{
+              type: 'note',
+              title: 'THÊM GIỜ & GHI CHÚ DIỄN BIẾN',
+              value: rawData.themGio
+            }],
             doctorName: r.doctor_name,
             nurseName: r.nurse_name,
             overtimeStaff: r.overtime_staff,
@@ -1087,7 +1031,7 @@ const PresentationPage = () => {
   const getSlideIcon = (type) => {
     if (type === 'title') return <FaHospital style={{ color: '#38BDF8' }} />;
     if (type === 'dept_intro') return <FaUserMd style={{ color: '#FDE047' }} />;
-    if (type === 'department') return <FaFileAlt style={{ color: '#93C5FD' }} />;
+    if (type === 'department' || type === 'department_hscc_tnt') return <FaFileAlt style={{ color: '#93C5FD' }} />;
     if (type?.includes('transfer')) return <FaAmbulance style={{ color: '#F59E0B' }} />;
     if (type?.includes('surgery')) return <FaProcedures style={{ color: '#38BDF8' }} />;
     if (type?.includes('critical')) return <FaHeartbeat style={{ color: '#A855F7' }} />;
@@ -1938,6 +1882,9 @@ const PresentationPage = () => {
               )}
 
               {/* 3. Department Data Overview Slide */}
+              {slide.type === 'department_hscc_tnt' && (
+                <HsccTntSlide slide={slide} isFullscreen={true} />
+              )}
               {slide.type === 'department' && (
                 <DepartmentSlide slide={slide} isFullscreen={true} />
               )}
