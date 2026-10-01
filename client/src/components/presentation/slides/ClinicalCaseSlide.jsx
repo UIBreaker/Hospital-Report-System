@@ -131,18 +131,23 @@ const ClinicalCaseSlide = ({ slide = {}, isFullscreen = true }) => {
   }, 0);
 
   // Large-scale presentation typography
-  let dynamicFontSize = isFullscreen ? '1.95rem' : '1.45rem';
-  let dynamicLineHeight = '1.6';
-  let dynamicGap = isFullscreen ? '1.05rem' : '0.75rem';
+  let dynamicFontSize = isFullscreen ? '2.15rem' : '1.58rem';
+  let dynamicLineHeight = '1.65';
+  let dynamicGap = isFullscreen ? '1.2rem' : '0.85rem';
 
-  if (estimatedLines >= 10 || totalLength > 480) {
-    dynamicFontSize = isFullscreen ? '1.42rem' : '1.1rem';
-    dynamicLineHeight = '1.44';
-    dynamicGap = isFullscreen ? '0.55rem' : '0.38rem';
-  } else if (estimatedLines >= 7 || totalLength > 300) {
-    dynamicFontSize = isFullscreen ? '1.65rem' : '1.25rem';
-    dynamicLineHeight = '1.52';
-    dynamicGap = isFullscreen ? '0.8rem' : '0.55rem';
+  if (itemCount <= 3 && estimatedLines <= 4) {
+    // Ultra-large font for Slide 2 (Xử trí & Diễn biến) or very brief slides
+    dynamicFontSize = isFullscreen ? '2.4rem' : '1.75rem';
+    dynamicLineHeight = '1.7';
+    dynamicGap = isFullscreen ? '1.5rem' : '1.0rem';
+  } else if (estimatedLines >= 9 || totalLength > 480) {
+    dynamicFontSize = isFullscreen ? '1.58rem' : '1.18rem';
+    dynamicLineHeight = '1.48';
+    dynamicGap = isFullscreen ? '0.65rem' : '0.45rem';
+  } else if (estimatedLines >= 6 || totalLength > 280) {
+    dynamicFontSize = isFullscreen ? '1.82rem' : '1.35rem';
+    dynamicLineHeight = '1.55';
+    dynamicGap = isFullscreen ? '0.85rem' : '0.6rem';
   }
 
   const partSuffix = slide.partSuffix || (slide.totalParts > 1 ? `(Phần ${slide.partIndex}/${slide.totalParts})` : '');
@@ -176,7 +181,7 @@ const ClinicalCaseSlide = ({ slide = {}, isFullscreen = true }) => {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: isFullscreen ? '0.95rem' : '0.65rem', flexWrap: 'wrap' }}>
           <div style={{
-            fontSize: isFullscreen ? '1.65rem' : '1.25rem',
+            fontSize: isFullscreen ? '1.75rem' : '1.3rem',
             fontWeight: '900',
             color: '#FFFFFF',
             textTransform: 'uppercase',
@@ -185,7 +190,7 @@ const ClinicalCaseSlide = ({ slide = {}, isFullscreen = true }) => {
             alignItems: 'center',
             gap: '0.65rem'
           }}>
-            <FaHospital style={{ color: '#38BDF8', fontSize: isFullscreen ? '1.75rem' : '1.35rem' }} />
+            <FaHospital style={{ color: '#38BDF8', fontSize: isFullscreen ? '1.85rem' : '1.4rem' }} />
             <span>{slide.deptName || 'KHOA LÂM SÀNG'}</span>
           </div>
 
@@ -194,7 +199,7 @@ const ClinicalCaseSlide = ({ slide = {}, isFullscreen = true }) => {
             color: '#FFFFFF',
             padding: isFullscreen ? '0.35rem 1.05rem' : '0.22rem 0.75rem',
             borderRadius: '999px',
-            fontSize: isFullscreen ? '1.05rem' : '0.82rem',
+            fontSize: isFullscreen ? '1.12rem' : '0.85rem',
             fontWeight: '900',
             letterSpacing: '0.5px',
             display: 'flex',
@@ -210,7 +215,7 @@ const ClinicalCaseSlide = ({ slide = {}, isFullscreen = true }) => {
 
           {partSubtitle && (
             <span style={{
-              fontSize: isFullscreen ? '0.95rem' : '0.78rem',
+              fontSize: isFullscreen ? '1.02rem' : '0.82rem',
               backgroundColor: 'rgba(255,255,255,0.15)',
               color: '#E0F2FE',
               padding: '0.22rem 0.75rem',
@@ -236,7 +241,7 @@ const ClinicalCaseSlide = ({ slide = {}, isFullscreen = true }) => {
       {/* 2. Main Title (Centered) */}
       <div style={{
         textAlign: 'center',
-        fontSize: isFullscreen ? '2.5rem' : '1.85rem',
+        fontSize: isFullscreen ? '2.8rem' : '2.0rem',
         fontWeight: '900',
         color: theme.main,
         textTransform: 'uppercase',
@@ -251,7 +256,7 @@ const ClinicalCaseSlide = ({ slide = {}, isFullscreen = true }) => {
 
       {/* 3. Case & Patient Header (Bold Numbered Line) */}
       <div style={{
-        fontSize: isFullscreen ? '1.95rem' : '1.45rem',
+        fontSize: isFullscreen ? '2.2rem' : '1.6rem',
         fontWeight: '900',
         color: '#0F2C59',
         borderBottom: `2.5px solid ${theme.border}`,

@@ -43,7 +43,7 @@ export const buildCaseSlides = ({
     p1Subtitle = 'PHẦN 1: TIẾP NHẬN & CHẨN ĐOÁN';
     p2Subtitle = 'PHẦN 2: XỬ TRÍ & DIỄN BIẾN';
     phase1Keys = ['admission_time', 'reason', 'clinical_symptoms', 'clinical_tests', 'diagnosis'];
-    phase2Keys = ['diagnosis', 'initial_treatment', 'progress_notes'];
+    phase2Keys = ['initial_treatment', 'progress_notes'];
     configs = [
       { key: 'admission_time', val: caseItem.admission_time || caseItem.admissionTime, label: 'Giờ ngày vào viện' },
       { key: 'reason', val: caseItem.reason, label: 'Lí do vào viện' },
@@ -57,7 +57,7 @@ export const buildCaseSlides = ({
     p1Subtitle = 'PHẦN 1: TIẾP NHẬN & TIỀN PHẪU';
     p2Subtitle = 'PHẦN 2: HỘI CHẨN & HẬU PHẪU';
     phase1Keys = ['admission_time', 'reason', 'clinical_symptoms', 'clinical_tests', 'preoperative_diagnosis'];
-    phase2Keys = ['preoperative_diagnosis', 'consultation_order', 'postoperative_diagnosis', 'current_status'];
+    phase2Keys = ['consultation_order', 'postoperative_diagnosis', 'current_status'];
     configs = [
       { key: 'admission_time', val: caseItem.admission_time || caseItem.admissionTime, label: 'Giờ ngày vào viện' },
       { key: 'reason', val: caseItem.reason, label: 'Lí do vào viện' },
@@ -72,7 +72,7 @@ export const buildCaseSlides = ({
     p1Subtitle = 'PHẦN 1: TIẾP NHẬN & CHẨN ĐOÁN';
     p2Subtitle = 'PHẦN 2: DIỄN BIẾN & ĐIỀU TRỊ';
     phase1Keys = ['admission_time', 'medical_history', 'clinical_symptoms', 'clinical_tests', 'diagnosis'];
-    phase2Keys = ['diagnosis', 'condition_summary', 'treatment', 'notes'];
+    phase2Keys = ['condition_summary', 'treatment', 'notes'];
     configs = [
       { key: 'admission_time', val: caseItem.admission_time || caseItem.admissionTime, label: 'Giờ ngày vào viện' },
       { key: 'medical_history', val: caseItem.medical_history || caseItem.medicalHistory, label: 'Tiền căn bệnh' },
@@ -170,13 +170,7 @@ export const buildCaseSlides = ({
     const p2Items = activeItems.filter(it => phase2Keys.includes(it.key));
 
     const slide1Items = p1Items.length > 0 ? p1Items : activeItems.slice(0, Math.ceil(activeItems.length / 2));
-    let slide2Items = p2Items.length > 0 ? p2Items : activeItems.slice(Math.ceil(activeItems.length / 2));
-
-    // Ensure Slide 2 has the diagnosis bullet for immediate clinical context
-    const diagItem = activeItems.find(it => it.key === 'diagnosis' || it.key === 'preoperative_diagnosis');
-    if (diagItem && !slide2Items.some(it => it.key === 'diagnosis' || it.key === 'preoperative_diagnosis')) {
-      slide2Items = [diagItem, ...slide2Items];
-    }
+    const slide2Items = p2Items.length > 0 ? p2Items : activeItems.slice(Math.ceil(activeItems.length / 2));
 
     slides.push({
       ...baseSlideData,
