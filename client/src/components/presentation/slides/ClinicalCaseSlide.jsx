@@ -131,12 +131,12 @@ const ClinicalCaseSlide = ({ slide = {}, isFullscreen = true }) => {
   }, 0);
 
   // Unified projector-grade typography across all slides & parts
-  // Base scale: 2.08rem in fullscreen (~33.3px), large and crisp for projector viewing
+  // Base scale: 2.25rem in fullscreen (~36px), large and crisp for projector viewing
   const isExtremeDense = estimatedLines >= 11 || totalLength > 550;
   const dynamicFontSize = isExtremeDense
-    ? (isFullscreen ? '1.82rem' : '1.35rem')
-    : (isFullscreen ? '2.08rem' : '1.52rem');
-  const dynamicLineHeight = '1.52';
+    ? (isFullscreen ? '1.95rem' : '1.45rem')
+    : (isFullscreen ? '2.25rem' : '1.65rem');
+  const dynamicLineHeight = '1.48';
 
   // Dynamic gap distributes fewer items gracefully without altering font size
   const dynamicGap = (itemCount <= 3 && estimatedLines <= 4)
