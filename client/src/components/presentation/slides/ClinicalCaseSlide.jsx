@@ -130,29 +130,18 @@ const ClinicalCaseSlide = ({ slide = {}, isFullscreen = true }) => {
     return acc + lines;
   }, 0);
 
-  // Large-scale presentation typography
-  let dynamicFontSize = isFullscreen ? '2.15rem' : '1.58rem';
-  let dynamicLineHeight = '1.65';
-  let dynamicGap = isFullscreen ? '1.2rem' : '0.85rem';
+  // Unified projector-grade typography across all slides & parts
+  // Base scale: 2.08rem in fullscreen (~33.3px), large and crisp for projector viewing
+  const isExtremeDense = estimatedLines >= 11 || totalLength > 550;
+  const dynamicFontSize = isExtremeDense
+    ? (isFullscreen ? '1.82rem' : '1.35rem')
+    : (isFullscreen ? '2.08rem' : '1.52rem');
+  const dynamicLineHeight = '1.52';
 
-  if (itemCount <= 3 && estimatedLines <= 4) {
-    // Ultra-large font for Slide 2/3 (Xử trí & Diễn biến) or very brief slides
-    dynamicFontSize = isFullscreen ? '2.4rem' : '1.75rem';
-    dynamicLineHeight = '1.7';
-    dynamicGap = isFullscreen ? '1.5rem' : '1.0rem';
-  } else if (estimatedLines >= 9 || totalLength > 480) {
-    dynamicFontSize = isFullscreen ? '1.52rem' : '1.15rem';
-    dynamicLineHeight = '1.45';
-    dynamicGap = isFullscreen ? '0.55rem' : '0.4rem';
-  } else if (estimatedLines >= 7 || totalLength > 320) {
-    dynamicFontSize = isFullscreen ? '1.75rem' : '1.3rem';
-    dynamicLineHeight = '1.5';
-    dynamicGap = isFullscreen ? '0.75rem' : '0.55rem';
-  } else if (estimatedLines >= 5 || totalLength > 220) {
-    dynamicFontSize = isFullscreen ? '1.85rem' : '1.38rem';
-    dynamicLineHeight = '1.55';
-    dynamicGap = isFullscreen ? '0.9rem' : '0.65rem';
-  }
+  // Dynamic gap distributes fewer items gracefully without altering font size
+  const dynamicGap = (itemCount <= 3 && estimatedLines <= 4)
+    ? (isFullscreen ? '1.6rem' : '1.15rem')
+    : (itemCount <= 5 ? (isFullscreen ? '1.15rem' : '0.85rem') : (isFullscreen ? '0.85rem' : '0.65rem'));
 
   const partSuffix = slide.partSuffix || (slide.totalParts > 1 ? `(Phần ${slide.partIndex}/${slide.totalParts})` : '');
   const partSubtitle = slide.partSubtitle || '';
