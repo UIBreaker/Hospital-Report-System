@@ -2,6 +2,7 @@ import React from 'react';
 import { parseDepartmentSections } from '../../../utils/departmentSectionParser';
 import { FaHospital, FaAmbulance, FaProcedures, FaSkullCrossbones, FaHeartbeat } from 'react-icons/fa';
 import HsccTntSlide from './HsccTntSlide';
+import KhoaNhiSlide from './KhoaNhiSlide';
 
 // Helper to format number into 2-digit padded string (e.g. 8 -> '08') if appropriate
 const formatValueBadge = (val) => {
@@ -49,6 +50,12 @@ const DepartmentSlide = ({ slide, isFullscreen }) => {
   const isExplicitNoteSlide = slide.sections && slide.sections.length === 1 && (slide.sections[0].type === 'note' || slide.sections[0].title?.includes('GHI CHÚ'));
   if (isHsccTnt && !isExplicitNoteSlide) {
     return <HsccTntSlide slide={slide} isFullscreen={isFullscreen} />;
+  }
+
+  // If this is Khoa Nhi and not an explicit note slide, render unified KhoaNhiSlide (Image 2 design)
+  const isNhi = (slide.deptCode || report.department_code || '').toLowerCase() === 'nhi' || (formData.benhMoi_cc !== undefined || formData.benhMoi_pk !== undefined);
+  if (isNhi && !isExplicitNoteSlide) {
+    return <KhoaNhiSlide slide={slide} isFullscreen={isFullscreen} />;
   }
 
   const safeArray = (v) => {

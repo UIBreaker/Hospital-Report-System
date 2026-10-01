@@ -136,18 +136,22 @@ const ClinicalCaseSlide = ({ slide = {}, isFullscreen = true }) => {
   let dynamicGap = isFullscreen ? '1.2rem' : '0.85rem';
 
   if (itemCount <= 3 && estimatedLines <= 4) {
-    // Ultra-large font for Slide 2 (Xử trí & Diễn biến) or very brief slides
+    // Ultra-large font for Slide 2/3 (Xử trí & Diễn biến) or very brief slides
     dynamicFontSize = isFullscreen ? '2.4rem' : '1.75rem';
     dynamicLineHeight = '1.7';
     dynamicGap = isFullscreen ? '1.5rem' : '1.0rem';
   } else if (estimatedLines >= 9 || totalLength > 480) {
-    dynamicFontSize = isFullscreen ? '1.58rem' : '1.18rem';
-    dynamicLineHeight = '1.48';
-    dynamicGap = isFullscreen ? '0.65rem' : '0.45rem';
-  } else if (estimatedLines >= 6 || totalLength > 280) {
-    dynamicFontSize = isFullscreen ? '1.82rem' : '1.35rem';
+    dynamicFontSize = isFullscreen ? '1.52rem' : '1.15rem';
+    dynamicLineHeight = '1.45';
+    dynamicGap = isFullscreen ? '0.55rem' : '0.4rem';
+  } else if (estimatedLines >= 7 || totalLength > 320) {
+    dynamicFontSize = isFullscreen ? '1.75rem' : '1.3rem';
+    dynamicLineHeight = '1.5';
+    dynamicGap = isFullscreen ? '0.75rem' : '0.55rem';
+  } else if (estimatedLines >= 5 || totalLength > 220) {
+    dynamicFontSize = isFullscreen ? '1.85rem' : '1.38rem';
     dynamicLineHeight = '1.55';
-    dynamicGap = isFullscreen ? '0.85rem' : '0.6rem';
+    dynamicGap = isFullscreen ? '0.9rem' : '0.65rem';
   }
 
   const partSuffix = slide.partSuffix || (slide.totalParts > 1 ? `(Phần ${slide.partIndex}/${slide.totalParts})` : '');

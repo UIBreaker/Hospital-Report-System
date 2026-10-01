@@ -1,6 +1,53 @@
 import { formatPatientAge, normalizeImages } from './medicalFormatters.js';
 
 /**
+ * Estimates visual line count of a bullet item on a 16:9 widescreen presentation display.
+ * Standard projector width comfortably holds ~85 Vietnamese characters per line.
+ */
+export const estimateItemVisualLines = (item) => {
+  const text = `${item.label || ''}: ${item.value || ''}`;
+  const charLen = text.length;
+  if (charLen <= 85) return 1;
+  return 1 + Math.ceil((charLen - 85) / 85);
+};
+
+export const calcTotalVisualLines = (items = []) => {
+  return items.reduce((acc, it) => acc + estimateItemVisualLines(it), 0);
+};
+
+/**
+ * Intelligently chunks items into slide pages so that no slide exceeds maxLinesPerSlide.
+ * If adding the next item would cause the slide to exceed the line budget (touching/submerging bottom),
+ * that item is automatically pushed to the next slide page!
+ */
+export const paginateItemsIntelligently = (items = [], maxLinesPerSlide = 8) => {
+  const pages = [];
+  let currentPage = [];
+  let currentLines = 0;
+
+  for (const item of items) {
+    const itemLines = estimateItemVisualLines(item);
+
+    // If adding this item exceeds budget and current page already has content:
+    // It touched the bottom -> move to next page!
+    if (currentPage.length > 0 && (currentLines + itemLines > maxLinesPerSlide)) {
+      pages.push(currentPage);
+      currentPage = [item];
+      currentLines = itemLines;
+    } else {
+      currentPage.push(item);
+      currentLines += itemLines;
+    }
+  }
+
+  if (currentPage.length > 0) {
+    pages.push(currentPage);
+  }
+
+  return pages;
+};
+
+/**
  * Builds sequentially formatted, scrollbar-free clinical case slides
  * Following the exact bullet point order requested by TTYT Bình Long:
  * 
@@ -118,6 +165,7 @@ export const buildCaseSlides = ({
 
   const totalLength = activeItems.reduce((acc, it) => acc + it.value.length + it.label.length, 0);
   const maxItemLength = Math.max(...activeItems.map(it => it.value.length), 0);
+  const estimatedLines = calcTotalVisualLines(activeItems);
 
   const baseSlideData = {
     deptCode,
@@ -132,24 +180,15 @@ export const buildCaseSlides = ({
     caseItem
   };
 
-  // Estimate visual lines required on a 16:9 presentation display:
-  // Each item occupies at least 1 line for bullet + label + text.
-  // Each ~80 characters beyond that adds a wrapped line.
-  const estimatedLines = activeItems.reduce((acc, it) => {
-    const textLen = (it.label || '').length + (it.value || '').length;
-    const lines = Math.max(1, Math.ceil(textLen / 80));
-    return acc + lines;
-  }, 0);
-
   // Determine if fits safely on 1 single slide without ANY risk of bottom cutoff:
   // A slide with large presentation fonts can safely hold up to 7 visual lines.
-  // If content has > 7 lines, or >= 7 bullet items with any detailed field (> 120 chars),
-  // or total text > 380 chars, it MUST cleanly split into 2 slides (Phase 1 & Phase 2).
+  // If content has > 7 lines, or total text > 320 chars, or detailed field (> 140 chars),
+  // it must cleanly paginate into multiple slides.
   const fitsSingleSlide = (
     estimatedLines <= 7 &&
-    activeItems.length <= 6 &&
-    totalLength <= 380 &&
-    maxItemLength <= 160
+    activeItems.length <= 7 &&
+    totalLength <= 320 &&
+    maxItemLength <= 140
   );
 
   if (fitsSingleSlide) {
@@ -165,35 +204,70 @@ export const buildCaseSlides = ({
       partSuffix: ''
     });
   } else {
-    // Split into 2 slides cleanly
+    // Medical phase breakdown
     const p1Items = activeItems.filter(it => phase1Keys.includes(it.key));
     const p2Items = activeItems.filter(it => phase2Keys.includes(it.key));
 
-    const slide1Items = p1Items.length > 0 ? p1Items : activeItems.slice(0, Math.ceil(activeItems.length / 2));
-    const slide2Items = p2Items.length > 0 ? p2Items : activeItems.slice(Math.ceil(activeItems.length / 2));
+    const p1Effective = p1Items.length > 0 ? p1Items : activeItems.slice(0, Math.ceil(activeItems.length / 2));
+    const p2Effective = p2Items.length > 0 ? p2Items : activeItems.slice(Math.ceil(activeItems.length / 2));
 
-    slides.push({
-      ...baseSlideData,
-      type: caseType,
-      title: `${caseType.toUpperCase()} #${caseIndex} (${p1Subtitle}) – ${deptName}`,
-      caseType,
-      bulletItems: slide1Items,
-      totalParts: 2,
-      partIndex: 1,
-      partSubtitle: p1Subtitle,
-      partSuffix: '(Phần 1/2)'
-    });
+    // Intelligently check line capacity for each phase (max 8 visual lines per slide)
+    const p1Pages = paginateItemsIntelligently(p1Effective, 8);
+    const p2Pages = paginateItemsIntelligently(p2Effective, 8);
 
-    slides.push({
-      ...baseSlideData,
-      type: caseType,
-      title: `${caseType.toUpperCase()} #${caseIndex} (${p2Subtitle}) – ${deptName}`,
-      caseType,
-      bulletItems: slide2Items,
-      totalParts: 2,
-      partIndex: 2,
-      partSubtitle: p2Subtitle,
-      partSuffix: '(Phần 2/2)'
+    const allPages = [...p1Pages, ...p2Pages];
+    const totalParts = allPages.length;
+
+    allPages.forEach((pageItems, pIdx) => {
+      const partIndex = pIdx + 1;
+      const partSuffix = `(Phần ${partIndex}/${totalParts})`;
+
+      // Dynamic smart subtitle generation based on total parts and phase position
+      let partSubtitle = '';
+      if (totalParts === 2) {
+        partSubtitle = partIndex === 1 ? p1Subtitle : p2Subtitle;
+      } else if (totalParts === 3) {
+        if (p1Pages.length === 2) {
+          // Phase 1 split into 2 parts (e.g. detailed lâm sàng & cận lâm sàng like Hồ Thị Chờ)
+          if (partIndex === 1) {
+            partSubtitle = 'PHẦN 1: TIẾP NHẬN & LÂM SÀNG';
+          } else if (partIndex === 2) {
+            partSubtitle = caseType === 'surgery' 
+              ? 'PHẦN 2: CẬN LÂM SÀNG & TIỀN PHẪU' 
+              : 'PHẦN 2: CẬN LÂM SÀNG & CHẨN ĐOÁN';
+          } else {
+            partSubtitle = caseType === 'surgery'
+              ? 'PHẦN 3: HỘI CHẨN & HẬU PHẪU'
+              : (caseType === 'death' ? 'PHẦN 3: XỬ TRÍ & KẾT QUẢ' : 'PHẦN 3: XỬ TRÍ & DIỄN BIẾN');
+          }
+        } else {
+          // Phase 2 split into 2 parts
+          if (partIndex === 1) {
+            partSubtitle = p1Subtitle;
+          } else if (partIndex === 2) {
+            partSubtitle = 'PHẦN 2: XỬ TRÍ ĐIỀU TRỊ';
+          } else {
+            partSubtitle = 'PHẦN 3: DIỄN BIẾN & THEO DÕI';
+          }
+        }
+      } else {
+        // 4+ parts fallback: descriptive labels
+        const firstLabel = pageItems[0]?.label || '';
+        const lastLabel = pageItems[pageItems.length - 1]?.label || '';
+        partSubtitle = `PHẦN ${partIndex}/${totalParts}: ${firstLabel.toUpperCase()}${firstLabel !== lastLabel ? ' – ' + lastLabel.toUpperCase() : ''}`;
+      }
+
+      slides.push({
+        ...baseSlideData,
+        type: caseType,
+        title: `${caseType.toUpperCase()} #${caseIndex} (${partSubtitle}) – ${deptName}`,
+        caseType,
+        bulletItems: pageItems,
+        totalParts,
+        partIndex,
+        partSubtitle,
+        partSuffix
+      });
     });
   }
 

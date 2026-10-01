@@ -22,6 +22,7 @@ import TitleSlide from '../components/presentation/slides/TitleSlide';
 import DepartmentIntroSlide from '../components/presentation/slides/DepartmentIntroSlide';
 import DepartmentSlide from '../components/presentation/slides/DepartmentSlide';
 import HsccTntSlide from '../components/presentation/slides/HsccTntSlide';
+import KhoaNhiSlide from '../components/presentation/slides/KhoaNhiSlide';
 import ClinicalCaseSlide from '../components/presentation/slides/ClinicalCaseSlide';
 import { buildCaseSlides } from '../utils/clinicalCasePaginator';
 import TransferSlide from '../components/presentation/slides/TransferSlide';
@@ -384,6 +385,7 @@ const PresentationPage = () => {
       // Tách riêng các slide to rõ cho HSCC-TNT, YHCT-PHCN và Khoa Sản
       // =========================================================================
       const isHsccTnt = (r.department_code || '').toLowerCase() === 'hscc_tnt' || (rawData.hscc && rawData.tnt);
+      const isNhi = (r.department_code || '').toLowerCase() === 'nhi' || (rawData.benhMoi_cc !== undefined || rawData.benhMoi_pk !== undefined);
       const isYhctPhcn = (r.department_code || '').toLowerCase() === 'yhct_phcn' || (rawData.noiTru && rawData.ngoaiTru && rawData.keToa);
       const isSan = (r.department_code || '').toLowerCase() === 'san' || (rawData.choSanh !== undefined || rawData.sanhThuong !== undefined || rawData.sanhHut !== undefined);
 
@@ -416,6 +418,54 @@ const PresentationPage = () => {
             title: `${deptName} – GHI CHÚ & THÊM GIỜ`,
             subTitle: 'GHI CHÚ & THÊM GIỜ CA TRỰC',
             deptCode: r.department_code || 'hscc_tnt',
+            deptName,
+            theme,
+            report: r,
+            sections: [{
+              type: 'note',
+              title: 'THÊM GIỜ & GHI CHÚ DIỄN BIẾN',
+              value: rawData.themGio
+            }],
+            doctorName: r.doctor_name,
+            nurseName: r.nurse_name,
+            overtimeStaff: r.overtime_staff,
+            room: r.room,
+            shiftTime: r.shift_time,
+            formData: rawData,
+            transferCases,
+            surgeryCases,
+            deathCases,
+            criticalCases
+          });
+        }
+      } else if (isNhi) {
+        // Slide Khoa Nhi: Thiết kế 6 cột chuẩn theo ảnh mẫu số 2
+        s.push({
+          type: 'department_nhi',
+          title: `${deptName} – BÁO CÁO HOẠT ĐỘNG CHUYÊN MÔN`,
+          subTitle: 'NỘI TRÚ • PHÒNG KHÁM NHI',
+          deptCode: r.department_code || 'nhi',
+          deptName,
+          theme,
+          report: r,
+          doctorName: r.doctor_name,
+          nurseName: r.nurse_name,
+          overtimeStaff: r.overtime_staff,
+          room: r.room,
+          shiftTime: r.shift_time,
+          formData: rawData,
+          transferCases,
+          surgeryCases,
+          deathCases,
+          criticalCases
+        });
+
+        if (rawData.themGio && String(rawData.themGio).trim() !== '') {
+          s.push({
+            type: 'department',
+            title: `${deptName} – GHI CHÚ & THÊM GIỜ`,
+            subTitle: 'GHI CHÚ & THÊM GIỜ CA TRỰC',
+            deptCode: r.department_code || 'nhi',
             deptName,
             theme,
             report: r,
@@ -913,7 +963,7 @@ const PresentationPage = () => {
   const getSlideIcon = (type) => {
     if (type === 'title') return <FaHospital style={{ color: '#38BDF8' }} />;
     if (type === 'dept_intro') return <FaUserMd style={{ color: '#FDE047' }} />;
-    if (type === 'department' || type === 'department_hscc_tnt') return <FaFileAlt style={{ color: '#93C5FD' }} />;
+    if (type === 'department' || type === 'department_hscc_tnt' || type === 'department_nhi') return <FaFileAlt style={{ color: '#93C5FD' }} />;
     if (type?.includes('transfer')) return <FaAmbulance style={{ color: '#F59E0B' }} />;
     if (type?.includes('surgery')) return <FaProcedures style={{ color: '#38BDF8' }} />;
     if (type?.includes('critical')) return <FaHeartbeat style={{ color: '#A855F7' }} />;
@@ -1766,6 +1816,9 @@ const PresentationPage = () => {
               {/* 3. Department Data Overview Slide */}
               {slide.type === 'department_hscc_tnt' && (
                 <HsccTntSlide slide={slide} isFullscreen={true} />
+              )}
+              {slide.type === 'department_nhi' && (
+                <KhoaNhiSlide slide={slide} isFullscreen={true} />
               )}
               {slide.type === 'department' && (
                 <DepartmentSlide slide={slide} isFullscreen={true} />
