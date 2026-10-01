@@ -130,24 +130,16 @@ const ClinicalCaseSlide = ({ slide = {}, isFullscreen = true }) => {
     return acc + lines;
   }, 0);
 
-  // Large-scale presentation typography
-  let dynamicFontSize = isFullscreen ? '2.15rem' : '1.58rem';
-  let dynamicLineHeight = '1.65';
-  let dynamicGap = isFullscreen ? '1.2rem' : '0.85rem';
+  // Unified, projector-grade presentation typography
+  // Part 1 and Part 2 use the exact same large font size
+  let dynamicFontSize = isFullscreen ? '2.2rem' : '1.6rem';
+  let dynamicLineHeight = '1.62';
+  let dynamicGap = isFullscreen ? '1.15rem' : '0.8rem';
 
-  if (itemCount <= 3 && estimatedLines <= 4) {
-    // Ultra-large font for Slide 2 (Xử trí & Diễn biến) or very brief slides
-    dynamicFontSize = isFullscreen ? '2.4rem' : '1.75rem';
-    dynamicLineHeight = '1.7';
-    dynamicGap = isFullscreen ? '1.5rem' : '1.0rem';
-  } else if (estimatedLines >= 9 || totalLength > 480) {
-    dynamicFontSize = isFullscreen ? '1.58rem' : '1.18rem';
-    dynamicLineHeight = '1.48';
-    dynamicGap = isFullscreen ? '0.65rem' : '0.45rem';
-  } else if (estimatedLines >= 6 || totalLength > 280) {
-    dynamicFontSize = isFullscreen ? '1.82rem' : '1.35rem';
-    dynamicLineHeight = '1.55';
-    dynamicGap = isFullscreen ? '0.85rem' : '0.6rem';
+  if (estimatedLines >= 10 || totalLength > 520) {
+    dynamicFontSize = isFullscreen ? '1.75rem' : '1.28rem';
+    dynamicLineHeight = '1.5';
+    dynamicGap = isFullscreen ? '0.7rem' : '0.5rem';
   }
 
   const partSuffix = slide.partSuffix || (slide.totalParts > 1 ? `(Phần ${slide.partIndex}/${slide.totalParts})` : '');
