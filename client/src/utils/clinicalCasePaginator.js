@@ -133,8 +133,9 @@ export const buildCaseSlides = ({
   };
 
   // Determine if fits on 1 slide:
-  // <= 400 chars total, <= 6 items, and no single item > 220 chars
-  const fitsSingleSlide = totalLength <= 400 && activeItems.length <= 6 && maxItemLength <= 220;
+  // Prioritize 1 single slide whenever content can fit (up to 950 chars, max item <= 600 chars)
+  // Only split into 2 slides when truly necessary to prevent overflowing/scrollbars
+  const fitsSingleSlide = totalLength <= 950 && maxItemLength <= 600;
 
   if (fitsSingleSlide) {
     slides.push({

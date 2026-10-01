@@ -124,18 +124,18 @@ const ClinicalCaseSlide = ({ slide = {}, isFullscreen = true }) => {
   const totalLength = items.reduce((acc, it) => acc + (it.value || '').length + (it.label || '').length, 0);
   const itemCount = items.length;
 
-  let dynamicFontSize = isFullscreen ? '1.35rem' : '1.05rem';
-  let dynamicLineHeight = '1.6';
-  let dynamicGap = isFullscreen ? '0.75rem' : '0.5rem';
+  let dynamicFontSize = isFullscreen ? '1.65rem' : '1.25rem';
+  let dynamicLineHeight = '1.65';
+  let dynamicGap = isFullscreen ? '1.05rem' : '0.7rem';
 
-  if (totalLength > 500 || itemCount >= 7) {
-    dynamicFontSize = isFullscreen ? '1.15rem' : '0.92rem';
-    dynamicLineHeight = '1.45';
-    dynamicGap = isFullscreen ? '0.45rem' : '0.35rem';
-  } else if (totalLength > 320 || itemCount >= 5) {
-    dynamicFontSize = isFullscreen ? '1.25rem' : '0.98rem';
-    dynamicLineHeight = '1.52';
-    dynamicGap = isFullscreen ? '0.6rem' : '0.42rem';
+  if (totalLength > 750) {
+    dynamicFontSize = isFullscreen ? '1.32rem' : '1.05rem';
+    dynamicLineHeight = '1.5';
+    dynamicGap = isFullscreen ? '0.65rem' : '0.45rem';
+  } else if (totalLength > 450) {
+    dynamicFontSize = isFullscreen ? '1.48rem' : '1.15rem';
+    dynamicLineHeight = '1.58';
+    dynamicGap = isFullscreen ? '0.85rem' : '0.55rem';
   }
 
   const partSuffix = slide.partSuffix || (slide.totalParts > 1 ? `(Phần ${slide.partIndex}/${slide.totalParts})` : '');
@@ -229,13 +229,13 @@ const ClinicalCaseSlide = ({ slide = {}, isFullscreen = true }) => {
       {/* 2. Main Title (Centered) */}
       <div style={{
         textAlign: 'center',
-        fontSize: isFullscreen ? '2.1rem' : '1.6rem',
+        fontSize: isFullscreen ? '2.4rem' : '1.75rem',
         fontWeight: '900',
         color: theme.main,
         textTransform: 'uppercase',
         letterSpacing: '1px',
         marginTop: isFullscreen ? '0.2rem' : '0.1rem',
-        marginBottom: isFullscreen ? '0.2rem' : '0.1rem',
+        marginBottom: isFullscreen ? '0.35rem' : '0.2rem',
         lineHeight: 1.2,
         flexShrink: 0
       }}>
@@ -244,12 +244,12 @@ const ClinicalCaseSlide = ({ slide = {}, isFullscreen = true }) => {
 
       {/* 3. Case & Patient Header (Bold Numbered Line) */}
       <div style={{
-        fontSize: isFullscreen ? '1.55rem' : '1.25rem',
+        fontSize: isFullscreen ? '1.75rem' : '1.35rem',
         fontWeight: '900',
         color: '#0F2C59',
         borderBottom: `2.5px solid ${theme.border}`,
-        paddingBottom: isFullscreen ? '0.45rem' : '0.35rem',
-        marginBottom: isFullscreen ? '0.4rem' : '0.25rem',
+        paddingBottom: isFullscreen ? '0.5rem' : '0.35rem',
+        marginBottom: isFullscreen ? '0.5rem' : '0.3rem',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -271,7 +271,7 @@ const ClinicalCaseSlide = ({ slide = {}, isFullscreen = true }) => {
         minHeight: 0,
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'flex-start',
+        justifyContent: (itemCount <= 5 || totalLength < 350) ? 'space-evenly' : 'flex-start',
         gap: dynamicGap,
         overflow: 'hidden'
       }}>
@@ -281,7 +281,7 @@ const ClinicalCaseSlide = ({ slide = {}, isFullscreen = true }) => {
             style={{
               display: 'flex',
               alignItems: 'flex-start',
-              gap: isFullscreen ? '0.75rem' : '0.5rem',
+              gap: isFullscreen ? '0.85rem' : '0.55rem',
               fontSize: dynamicFontSize,
               lineHeight: dynamicLineHeight,
               color: '#1E293B'
@@ -291,8 +291,8 @@ const ClinicalCaseSlide = ({ slide = {}, isFullscreen = true }) => {
             <span style={{
               color: theme.main,
               fontWeight: '900',
-              fontSize: isFullscreen ? '1.4rem' : '1.15rem',
-              lineHeight: 1.2,
+              fontSize: isFullscreen ? `calc(${dynamicFontSize} * 1.15)` : dynamicFontSize,
+              lineHeight: dynamicLineHeight,
               userSelect: 'none',
               flexShrink: 0
             }}>
@@ -304,7 +304,7 @@ const ClinicalCaseSlide = ({ slide = {}, isFullscreen = true }) => {
               <strong style={{
                 color: item.isHighlight ? theme.dark : '#0F2C59',
                 fontWeight: '800',
-                marginRight: '0.35rem'
+                marginRight: '0.45rem'
               }}>
                 {item.label}:
               </strong>
