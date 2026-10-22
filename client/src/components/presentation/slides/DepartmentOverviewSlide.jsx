@@ -1,25 +1,22 @@
 import React from 'react';
-import { FaHospital, FaCalculator } from 'react-icons/fa';
+import { FaHospital } from 'react-icons/fa';
 import { formatDate } from '../../../utils/medicalFormatters';
 import { OVERVIEW_COLUMNS, totalDepartmentOverview } from '../../../utils/departmentOverview';
 import './DepartmentOverviewSlide.css';
-
-const UNIT_NAMES = {
-  lck: 'Liên CK', xn: 'Xét nghiệm', cdha: 'CĐHA',
-  hscc_tnt: 'HSCC – TNT', noi: 'Nội', nhi: 'Nhi', nhiem: 'Nhiễm',
-  san: 'Sản', yhct_phcn: 'YHCT – PHCN', ngoai_th: 'Ngoại TH',
-  ctch: 'CTCH', gmhs: 'Gây mê hồi sức',
-};
 
 const DepartmentOverviewSlide = ({ slide }) => {
   const { rows = [], selectedDate } = slide;
   const submittedCount = rows.filter(row => row.submitted).length;
   const totals = totalDepartmentOverview(rows);
-  const groups = [rows.slice(0, 6), rows.slice(6)];
-  const renderValue = (value, column) => value === null ? (
+  const unitName = row => ({
+    hscc_tnt: 'HSCC – Thận nhân tạo',
+    yhct_phcn: 'YHCT – Phục hồi chức năng',
+    lck: 'Liên chuyên khoa (4CK)',
+  }[row.code] || row.name.replace(/^Khoa /, ''));
+  const renderValue = (value, column, isTotal = false) => value === null ? (
     <span className="department-overview__missing" aria-label="Chưa có số liệu">—</span>
   ) : (
-    <span className={`department-overview__badge tone-${column.tone}${value === 0 ? ' is-zero' : ''}${column.key === 'tuVong' && value > 0 ? ' is-alert' : ''}`}>
+    <span className={`department-overview__badge tone-${column.tone}${value === 0 && !isTotal ? ' is-zero' : ''}${column.key === 'tuVong' && value > 0 ? ' is-alert' : ''}`}>
       {value.toLocaleString('vi-VN')}
     </span>
   );
@@ -30,58 +27,61 @@ const DepartmentOverviewSlide = ({ slide }) => {
         <div className="department-overview__heading">
           <FaHospital aria-hidden="true" />
           <div>
-            <h2 id="department-overview-title">TỔNG QUAN 12 KHOA</h2>
-            <p>THỐNG KÊ BỆNH NHÂN TRONG CA TRỰC</p>
+            <p>BÁO CÁO GIAO BAN TOÀN VIỆN</p>
+            <h2 id="department-overview-title">TỔNG QUAN HOẠT ĐỘNG 12 KHOA</h2>
           </div>
         </div>
         <div className="department-overview__date">
           <strong>{formatDate(selectedDate)}</strong>
-          <span><i className="department-overview__status" /> <b>{submittedCount}/12</b> khoa đã nộp</span>
+          <span><i className="department-overview__status is-submitted" /> <b>{submittedCount}/12</b> khoa đã nộp</span>
         </div>
       </header>
 
-      <div className="department-overview__panels">
-        {groups.map((group, groupIndex) => (
-          <div className="department-overview__table-wrap" key={groupIndex}>
-            <table aria-label={`Số liệu bệnh nhân các khoa ${groupIndex * 6 + 1} đến ${groupIndex * 6 + group.length}`}>
-              <colgroup><col style={{ width: '25%' }} />{OVERVIEW_COLUMNS.map(column => <col key={column.key} />)}</colgroup>
-              <thead>
-                <tr>
-                  <th scope="col">ĐƠN VỊ</th>
-                  {OVERVIEW_COLUMNS.map(column => <th key={column.key} scope="col" className={`column-${column.key}`}>{column.label}</th>)}
-                </tr>
-              </thead>
-              <tbody>
-                {group.map((row, index) => (
-                  <tr key={row.code}>
-                    <th scope="row" aria-label={row.name} title={`${row.name} · ${row.submitted ? 'Đã nộp' : 'Chưa nộp'} báo cáo`}>
-                      <span className="department-overview__unit">
-                        <span className={`department-overview__order${row.submitted ? '' : ' is-pending'}`} aria-label={row.submitted ? 'Đã nộp' : 'Chưa nộp'}>{String(groupIndex * 6 + index + 1).padStart(2, '0')}</span>
-                        <span>{UNIT_NAMES[row.code] || row.name}</span>
-                      </span>
-                    </th>
-                    {OVERVIEW_COLUMNS.map(column => <td key={column.key} className={`column-${column.key}`}>{renderValue(row.metrics[column.key], column)}</td>)}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ))}
+      <div className="department-overview__table-wrap">
+        <table aria-label="Số liệu bệnh nhân của 12 khoa trong ca trực">
+          <colgroup>
+            <col style={{ width: '30%' }} />
+            {OVERVIEW_COLUMNS.map(column => <col key={column.key} />)}
+          </colgroup>
+          <thead>
+            <tr>
+              <th scope="col">ĐƠN VỊ</th>
+              {OVERVIEW_COLUMNS.map(column => <th key={column.key} scope="col" className={`column-${column.key}`}>{column.label}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, index) => (
+              <tr key={row.code}>
+                <th scope="row" title={row.submitted ? row.name : `${row.name} — Chưa nộp báo cáo`}>
+                  <span className="department-overview__unit">
+                    <span className={`department-overview__order${row.submitted ? ' is-submitted' : ''}`} aria-label={row.submitted ? 'Đã nộp báo cáo' : 'Chưa nộp báo cáo'}>{String(index + 1).padStart(2, '0')}</span>
+                    <span>{unitName(row)}</span>
+                  </span>
+                </th>
+                {OVERVIEW_COLUMNS.map(column => {
+                  const value = row.metrics[column.key];
+                  return (
+                    <td key={column.key} className={`column-${column.key}`}>
+                      {renderValue(value, column)}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr>
+              <th scope="row"><span className="department-overview__sum" aria-hidden="true">Σ</span> TỔNG CỘNG</th>
+              {OVERVIEW_COLUMNS.map(column => (
+                <td key={column.key} className={`column-${column.key}`}>{renderValue(totals[column.key], column, true)}</td>
+              ))}
+            </tr>
+          </tfoot>
+        </table>
       </div>
 
-      <section className="department-overview__totals" aria-label="Tổng cộng số liệu đã báo cáo của 12 khoa">
-        <div className="department-overview__totals-heading"><FaCalculator aria-hidden="true" /> TỔNG CỘNG 12 KHOA <span>Cộng theo từng chỉ số đã báo cáo</span></div>
-        <dl>
-          {OVERVIEW_COLUMNS.map(column => (
-            <div key={column.key} className={`department-overview__total tone-${column.tone}`}>
-              <dt>{column.label}</dt>
-              <dd>{renderValue(totals[column.key], column)}</dd>
-            </div>
-          ))}
-        </dl>
-      </section>
       <footer className="department-overview__footer">
-        <span>— Chưa có số liệu · Số 0: không phát sinh · STT vàng: chưa nộp</span>
+        <span><b>—</b> Chưa có số liệu · Tổng cộng các số đã báo cáo, không cộng ô trống.</span>
         <span>HSCC–TNT: 2 khối · YHCT–PHCN: nội trú · GMHS: hồi tỉnh</span>
       </footer>
     </section>

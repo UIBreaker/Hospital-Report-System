@@ -5,58 +5,55 @@
   flex: 1;
   min-height: 0;
   height: 100%;
-  gap: 12px;
+  gap: 10px;
   color: #0f2c59;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-  --overview-purple: #7c3aed;
-  --overview-blue: #1e40af;
-  --overview-green: #047857;
-  --overview-amber: #b45309;
-  --overview-red: #b91c1c;
 }
-.department-overview__header { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-shrink: 0; padding: clamp(12px, 1.8cqh, 20px) 24px; background: #0f2c59; color: #fff; border-radius: 12px; box-shadow: 0 4px 15px #0f2c5933; }
-.department-overview__heading { display: flex; align-items: center; gap: 16px; }
-.department-overview__heading > svg { font-size: clamp(26px, 4cqh, 40px); color: #38bdf8; flex-shrink: 0; }
-.department-overview__heading h2 { margin: 0; color: #fff; font-size: clamp(23px, 3.6cqh, 38px); font-weight: 900; line-height: 1.15; }
-.department-overview__heading p { display: inline-block; margin: 6px 0 0; padding: 3px 10px; border: 1px solid #38bdf84d; border-radius: 20px; background: #38bdf826; color: #7dd3fc; font-size: clamp(10px, 1.5cqh, 15px); font-weight: 750; letter-spacing: .5px; }
-.department-overview__date { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; font-size: clamp(12px, 1.9cqh, 20px); white-space: nowrap; }
-.department-overview__date > span { display: flex; align-items: center; gap: 5px; color: #d1fae5; font-size: .9em; }
-.department-overview__status { width: 7px; height: 7px; border-radius: 50%; background: #34d399; }
-.department-overview__panels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; flex: 1; min-height: 0; }
-.department-overview__table-wrap { min-height: 0; overflow: hidden; border: 1.5px solid #cbd5e1; border-radius: 12px; box-shadow: 0 4px 18px #0f2c590a; }
+.department-overview__header { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-shrink: 0; padding: clamp(10px, 1.5cqh, 18px) 22px; background: #0f2c59; color: #fff; border-radius: 12px; box-shadow: 0 4px 15px #0f2c5926; }
+.department-overview__heading { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.department-overview__heading > svg { font-size: clamp(24px, 4cqh, 38px); color: #38bdf8; flex-shrink: 0; }
+.department-overview__heading p { margin: 0 0 4px; color: #93c5fd; font-size: clamp(11px, 1.6cqh, 16px); font-weight: 700; letter-spacing: 1.3px; }
+.department-overview__heading h2 { margin: 0; color: #fff; font-size: clamp(20px, 3.4cqh, 36px); font-weight: 900; line-height: 1.15; letter-spacing: -.5px; }
+.department-overview__date { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; font-size: clamp(12px, 1.85cqh, 19px); white-space: nowrap; }
+.department-overview__date > span { display: flex; align-items: center; gap: 5px; color: #d1fae5; font-size: .88em; }
+.department-overview__status { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #fbbf24; }
+.department-overview__status.is-submitted { background: #34d399; }
+.department-overview__table-wrap { flex: 1; min-height: 0; overflow: hidden; border: 1px solid #cbd5e1; border-radius: 14px; box-shadow: 0 4px 18px #0f2c590a; }
 .department-overview table { width: 100%; height: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
-.department-overview thead th { background: #0f2c59; color: #fff; height: 2.7em; padding: 6px 3px; font-size: clamp(14px, 2.2cqh, 23px); font-weight: 800; line-height: 1.3; border-right: 1px solid #ffffff26; }
-.department-overview thead th:first-child { text-align: left; padding-left: 14px; }
-.department-overview tbody th { background: #1e3a8a; color: #fff; text-align: left; padding: 3px 10px; font-size: clamp(17px, 2.8cqh, 29px); line-height: 1.25; font-weight: 800; }
-.department-overview tbody tr { background: #fff; height: 14.5%; }
-.department-overview tbody tr:nth-child(even) { background: #f5f8fc; }
-.department-overview tbody tr + tr > * { border-top: 1px solid #cbd5e1; }
-.department-overview td { text-align: center; padding: 2px; border-left: 1px solid #e2e8f0; }
-.department-overview__unit { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
-.department-overview__order { color: #bfdbfe; font-size: 11px; font-weight: 700; letter-spacing: 1px; }
-.department-overview__order.is-pending { color: #fcd34d; }
-.department-overview__badge { display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; min-width: 1.65em; padding: .16em .12em; border: 1px solid; border-radius: 8px; font-family: 'Roboto Mono', 'Consolas', monospace; font-size: clamp(26px, 4.5cqh, 48px); font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; letter-spacing: -1px; }
-.department-overview .tone-purple { --metric-color: #7c3aed; --metric-bg: #faf5ff; --metric-border: #ddd6fe; }
-.department-overview .tone-blue { --metric-color: #1e40af; --metric-bg: #eff6ff; --metric-border: #bfdbfe; }
-.department-overview .tone-green { --metric-color: #047857; --metric-bg: #ecfdf5; --metric-border: #a7f3d0; }
-.department-overview .tone-amber { --metric-color: #b45309; --metric-bg: #fffbeb; --metric-border: #fde68a; }
-.department-overview .tone-red { --metric-color: #b91c1c; --metric-bg: #fef2f2; --metric-border: #fecaca; }
-.department-overview__badge { color: var(--metric-color); background: var(--metric-bg); border-color: var(--metric-border); }
-.department-overview__badge.is-zero { color: #64748b; background: #f8fafc; border-color: #e2e8f0; font-weight: 650; }
-.department-overview__badge.is-alert { color: #b91c1c; background: #fee2e2; border-color: #fca5a5; }
-.department-overview__missing { color: #94a3b8; font-size: clamp(20px, 3cqh, 32px); font-weight: 600; }
-.department-overview__totals { flex-shrink: 0; border: 1.5px solid #bfdbfe; border-left: 6px solid #2563eb; border-radius: 12px; background: #eff6ff; padding: clamp(8px, 1.3cqh, 14px) 14px; }
-.department-overview__totals-heading { display: flex; align-items: center; gap: 8px; font-size: clamp(13px, 1.9cqh, 20px); font-weight: 900; }
-.department-overview__totals-heading > span { margin-left: auto; font-size: .72em; font-weight: 600; color: #475569; }
-.department-overview__totals dl { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; margin: 8px 0 0; }
-.department-overview__total { border: 1px solid var(--metric-border); border-radius: 8px; text-align: center; background: #fff; padding: 5px 2px; }
-.department-overview__total dt { font-size: clamp(12px, 1.8cqh, 19px); font-weight: 750; color: #334155; }
-.department-overview__total dd { margin: 3px 0 0; }
-.department-overview__total .department-overview__badge { min-width: 0; border: 0; background: transparent; padding: 0; font-size: clamp(26px, 4cqh, 44px); font-weight: 900; }
-.department-overview__footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 2px 16px; flex-shrink: 0; color: #64748b; font-size: clamp(10px, 1.4cqh, 14px); line-height: 1.3; }
-@container (max-width: 1100px) {
-  .department-overview__panels { gap: 10px; }
-  .department-overview tbody th { padding-inline: 7px; font-size: 17px; }
-  .department-overview__badge { font-size: 24px; min-width: 1.5em; }
-  .department-overview thead th { font-size: 13px; }
+.department-overview thead th { background: #0f2c59; color: #fff; padding: clamp(7px, 1.3cqh, 15px) 3px; font-size: clamp(15px, 2.4cqh, 26px); font-weight: 800; line-height: 1.2; border-right: 1px solid #ffffff1f; }
+.department-overview thead th:first-child { text-align: left; padding-left: 20px; }
+.department-overview tbody th { color: #0f2c59; text-align: left; padding: 2px 14px; font-size: clamp(18px, 2.8cqh, 29px); line-height: 1.15; font-weight: 750; }
+.department-overview tbody tr { background: #fff; }
+.department-overview tbody tr:nth-child(even) { background: #f4f7fb; }
+.department-overview tbody tr + tr > * { border-top: 1px solid #e2e8f0; }
+.department-overview td { text-align: center; padding: 1px 3px; border-left: 1px solid #e2e8f066; }
+.department-overview tbody .column-hienCon { background: #eff6ff; border-inline: 1px solid #bfdbfe; }
+.department-overview__unit { display: flex; align-items: center; gap: 12px; }
+.department-overview__order { display: inline-flex; align-items: center; justify-content: center; min-width: 1.8em; height: 1.7em; border-radius: 6px; color: #92400e; background: transparent; font-size: .7em; font-weight: 800; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+.department-overview__order.is-submitted { color: #64748b; background: transparent; }
+.department-overview__badge { display: inline-block; padding: 1px 5px; font-size: clamp(24px, 4.1cqh, 42px); font-weight: 850; font-variant-numeric: tabular-nums; line-height: 1.05; letter-spacing: -.7px; }
+.department-overview__badge.tone-purple { color: #0f2c59; }
+.department-overview__badge.tone-blue { color: #0f2c59; }
+.department-overview__badge.tone-green { color: #0f2c59; }
+.department-overview__badge.tone-amber { color: #0f2c59; }
+.department-overview__badge.tone-red { color: #0f2c59; }
+.department-overview__badge.is-zero { color: #475569; font-weight: 700; }
+.department-overview__badge.is-alert { color: #b91c1c; background: #fee2e2; border-radius: 7px; min-width: 1.5em; }
+.department-overview__missing { color: #94a3b8; font-size: clamp(18px, 2.5cqh, 28px); font-weight: 500; }
+.department-overview tfoot th, .department-overview tfoot td { background: #0f2c59; color: #fff; border-top: 3px solid #38bdf8; padding: clamp(7px, 1.3cqh, 15px) 3px; }
+.department-overview tfoot th { text-align: left; padding-left: 20px; font-size: clamp(17px, 2.6cqh, 28px); font-weight: 900; }
+.department-overview__sum { margin-right: 10px; color: #38bdf8; font-size: 1.2em; }
+.department-overview tfoot .department-overview__badge { color: #fff; font-size: clamp(26px, 4.4cqh, 46px); font-weight: 900; }
+.department-overview tfoot .column-hienCon { background: #1e3a6b; }
+.department-overview tfoot .is-alert { background: #991b1b; }
+.department-overview__footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 2px 16px; flex-shrink: 0; color: #475569; font-size: clamp(11px, 1.7cqh, 17px); line-height: 1.3; }
+@container (max-width: 1000px) {
+  .department-overview__header { padding-inline: 14px; }
+  .department-overview__heading { gap: 8px; }
+  .department-overview__heading h2 { font-size: 23px; }
+  .department-overview__date { font-size: 12px; }
+  .department-overview tbody th { padding-inline: 9px; font-size: 17px; }
+  .department-overview__unit { gap: 6px; }
+  .department-overview thead th { font-size: 16px; }
 }
+.department-overview tbody .column-hienCon .department-overview__badge { color: #1d4ed8; }
