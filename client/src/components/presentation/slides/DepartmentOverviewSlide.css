@@ -57,3 +57,28 @@
   .department-overview thead th { font-size: 16px; }
 }
 .department-overview tbody .column-hienCon .department-overview__badge { color: #7c3aed; }
+
+/* Separate clinical patient flow from diagnostic activity counts. */
+.department-overview { gap: 7px; }
+.department-overview__header { padding-block: clamp(8px, 1.2cqh, 14px); }
+.department-overview__heading p { margin-bottom: 2px; }
+.department-overview__heading h2 { font-size: clamp(20px, 3cqh, 32px); }
+.department-overview__clinical thead th { font-size: clamp(13px, 2cqh, 22px); padding-block: 6px; }
+.department-overview__clinical tbody th { font-size: clamp(17px, 2.3cqh, 25px); }
+.department-overview__clinical .department-overview__badge { font-size: clamp(23px, 3.5cqh, 36px); }
+.department-overview__clinical tfoot th { font-size: clamp(16px, 2.2cqh, 24px); }
+.department-overview__clinical tfoot th, .department-overview__clinical tfoot td { padding-block: 5px; }
+.department-overview__clinical tfoot .department-overview__badge { font-size: clamp(23px, min(3.5cqh, 2.6cqw), 36px); }
+.department-overview__support { flex: 0 0 auto; border-radius: 10px; }
+.department-overview__support table { height: auto; }
+.department-overview__support thead th { padding: 4px 8px; font-size: clamp(13px, 1.9cqh, 20px); }
+.department-overview__support tbody th { padding: 3px 14px; font-size: clamp(16px, 2.1cqh, 22px); }
+.department-overview__support .department-overview__badge { font-size: clamp(20px, 2.7cqh, 28px); line-height: 1.05; }
+.department-overview__support tfoot th, .department-overview__support tfoot td { padding: 3px 8px; border-top-width: 2px; }
+.department-overview__support tfoot th { padding-left: 14px; font-size: clamp(14px, 1.9cqh, 20px); }
+.department-overview__support tfoot .department-overview__badge { font-size: clamp(20px, 2.7cqh, 28px); }
+.department-overview__daily { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; flex-shrink: 0; }
+.department-overview__daily > div { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 5px 14px; border: 1px solid #bfdbfe; border-left: 5px solid #2563eb; border-radius: 9px; background: #eff6ff; }
+.department-overview__daily > div > span:first-child { font-size: clamp(12px, 1.9cqh, 20px); font-weight: 850; color: #0f2c59; }
+.department-overview__daily .department-overview__badge { font-size: clamp(26px, 3.6cqh, 38px); font-weight: 900; }
+.department-overview__footer { font-size: clamp(10px, 1.35cqh, 14px); }

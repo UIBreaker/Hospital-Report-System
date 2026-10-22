@@ -1,5 +1,5 @@
 import { normalizeMedicalSpeechText } from './medicalPhonetics';
-import { OVERVIEW_COLUMNS, totalDepartmentOverview } from '../utils/departmentOverview';
+import { OVERVIEW_COLUMNS, SUPPORT_COLUMNS, SUPPORT_DEPARTMENT_CODES, totalDepartmentOverview } from '../utils/departmentOverview';
 
 /**
  * Format patient age into natural spoken phrase
@@ -49,16 +49,26 @@ export const generateSlideNarrationScript = (slide, context = {}) => {
     // 2. HOSPITAL-WIDE SUMMARY SLIDE (Bảng tổng hợp toàn viện)
     case 'department_overview': {
       const rows = slide.rows || [];
+      const clinicalRows = rows.filter(row => !SUPPORT_DEPARTMENT_CODES.includes(row.code));
+      const supportRows = rows.filter(row => SUPPORT_DEPARTMENT_CODES.includes(row.code));
       parts.push(`Bảng tổng quan số liệu bệnh nhân của 12 khoa. Đã có ${rows.filter(row => row.submitted).length} khoa nộp báo cáo.`);
-      rows.filter(row => row.submitted).forEach(row => {
+      clinicalRows.filter(row => row.submitted).forEach(row => {
         const metrics = OVERVIEW_COLUMNS.filter(({ key }) => row.metrics[key] !== null)
           .map(({ key, label }) => `${label.toLowerCase()} ${row.metrics[key]}`);
         if (metrics.length) parts.push(`${row.name}: ${metrics.join(', ')}.`);
       });
-      const totals = totalDepartmentOverview(rows);
+      const totals = totalDepartmentOverview(clinicalRows);
       const totalMetrics = OVERVIEW_COLUMNS.filter(({ key }) => totals[key] !== null)
         .map(({ key, label }) => `${label.toLowerCase()} ${totals[key]}`);
       if (totalMetrics.length) parts.push(`Tổng cộng các số đã báo cáo: ${totalMetrics.join(', ')}.`);
+      supportRows.filter(row => row.submitted).forEach(row => {
+        const metrics = SUPPORT_COLUMNS.filter(({ key }) => row.metrics[key] !== null)
+          .map(({ key, label }) => `${label.toLowerCase()} ${row.metrics[key]}`);
+        if (metrics.length) parts.push(`${row.name}: ${metrics.join(', ')}.`);
+      });
+      if (slide.dailyIntakeTotal !== null && slide.dailyIntakeTotal !== undefined) {
+        parts.push(`Tổng khám và tiếp nhận toàn ngày là ${slide.dailyIntakeTotal} lượt, cùng cách tính trên slide mở đầu. Đây là chỉ tiêu khác với tổng số khám bệnh của bảng lâm sàng.`);
+      }
       parts.push('Dấu gạch ngang là chưa có số liệu. HSCC và Thận nhân tạo được cộng hai khối. Y học cổ truyền lấy số liệu nội trú. Gây mê hồi sức hiển thị số hiện còn hồi tỉnh.');
       break;
     }

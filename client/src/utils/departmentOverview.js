@@ -5,11 +5,19 @@ export const OVERVIEW_COLUMNS = [
   { key: 'benhCu', label: 'Bệnh cũ', tone: 'purple' },
   { key: 'benhMoi', label: 'Bệnh mới', tone: 'blue' },
   { key: 'xuatVien', label: 'Xuất viện', tone: 'green' },
-  { key: 'ngoaiTru', label: 'Ngoại trú', tone: 'blue' },
   { key: 'chuyenVien', label: 'Chuyển viện', tone: 'amber' },
   { key: 'chuyenKhoa', label: 'Chuyển khoa', tone: 'amber' },
-  { key: 'hienCon', label: 'Hiện còn', tone: 'purple' },
   { key: 'tuVong', label: 'Tử vong', tone: 'red' },
+  { key: 'hienCon', label: 'Hiện còn', tone: 'purple' },
+  { key: 'ngoaiTru', label: 'Ngoại trú', tone: 'blue' },
+];
+
+export const SUPPORT_DEPARTMENT_CODES = ['xn', 'cdha'];
+export const SUPPORT_COLUMNS = [
+  { key: 'tongSoTiepNhan', label: 'Tổng số tiếp nhận', tone: 'blue' },
+  { key: 'baoHiem', label: 'BHYT', tone: 'green' },
+  { key: 'noiTru', label: 'Nội trú', tone: 'purple' },
+  { key: 'ngoaiTru', label: 'Ngoại trú', tone: 'blue' },
 ];
 
 const readCount = (...values) => {
@@ -35,8 +43,8 @@ const sumCounts = (...values) => {
   return counts.length ? counts.reduce((sum, value) => sum + value, 0) : null;
 };
 
-export const totalDepartmentOverview = (rows = []) => Object.fromEntries(
-  OVERVIEW_COLUMNS.map(({ key }) => [
+export const totalDepartmentOverview = (rows = [], columns = OVERVIEW_COLUMNS) => Object.fromEntries(
+  columns.map(({ key }) => [
     key, sumCounts(...rows.map(row => row.metrics[key]).filter(value => Number.isFinite(value))),
   ]),
 );
@@ -65,6 +73,17 @@ export const buildDepartmentOverview = (reports = []) => DEPARTMENT_ORDER.map(co
   if (!data || typeof data !== 'object') data = {};
 
   let metrics = readMetrics(data);
+  if (SUPPORT_DEPARTMENT_CODES.includes(code)) {
+    const techniques = code === 'cdha' && Array.isArray(data.techniques)
+      ? data.techniques.filter(item => item && typeof item === 'object') : [];
+    for (const [key, sourceKey] of [
+      ['tongSoTiepNhan', 'tongSo'], ['baoHiem', 'baoHiem'], ['noiTru', 'noiTru'], ['ngoaiTru', 'ngoaiTru'],
+    ]) {
+      metrics[key] = techniques.length
+        ? sumCounts(...techniques.map(item => readCount(item[sourceKey])))
+        : readCount(data[sourceKey], key === 'tongSoTiepNhan' ? data.tongXetNghiem : undefined);
+    }
+  }
   if (code === 'hscc_tnt') {
     const hscc = readMetrics(data.hscc || {});
     const tnt = readMetrics(data.tnt || {}, 'tnt_');

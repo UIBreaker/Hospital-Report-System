@@ -803,6 +803,7 @@ const PresentationPage = () => {
       s[0].summary = summaryData;
       s[0].reportsCount = sortedReports.length;
     }
+    s[1].dailyIntakeTotal = summaryData.tongSoKham;
 
     // 5. Hospital-Wide Summary Slide
     if (sortedReports.length > 0) {
