@@ -68,6 +68,13 @@ export const generateSlideNarrationScript = (slide, context = {}) => {
         if (metrics.length) parts.push(`${row.name}: ${metrics.join(', ')}.`);
       });
       if (slide.dailyIntakeTotal !== null && slide.dailyIntakeTotal !== undefined) {
+        const breakdown = slide.dailyIntakeBreakdown || [];
+        if (breakdown.length) {
+          parts.push(`Cách tính tổng toàn ngày: ${breakdown.map(group => `${group.value} ${group.label.toLowerCase()}`).join(', cộng ')}.`);
+          breakdown.filter(group => ['admission', 'other'].includes(group.kind)).forEach(group => {
+            parts.push(`${group.kind === 'admission' ? 'Số bệnh mới dùng thay số khám' : group.label} gồm ${group.sources.map(source => `${source.label} ${source.value}`).join(', ')}.`);
+          });
+        }
         parts.push(`Tổng khám và tiếp nhận toàn ngày là ${slide.dailyIntakeTotal} lượt, cùng cách tính trên slide mở đầu. Đây là chỉ tiêu khác với tổng số khám bệnh của bảng lâm sàng.`);
       }
       parts.push('Dấu gạch ngang là chưa có số liệu. Hồi sức cấp cứu và Thận nhân tạo được trình bày riêng. Lượt chạy thận không phải lượt khám bệnh. Y học cổ truyền lấy số liệu nội trú. Gây mê hồi sức hiển thị số hiện còn hồi tỉnh.');

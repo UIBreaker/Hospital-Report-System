@@ -3,11 +3,16 @@ import { OVERVIEW_COLUMNS, SUPPORT_COLUMNS, SUPPORT_DEPARTMENT_CODES, totalDepar
 import './DepartmentOverviewSlide.css';
 
 const DepartmentOverviewSlide = ({ slide }) => {
-  const { rows = [], dailyIntakeTotal = null } = slide;
+  const { rows = [], dailyIntakeTotal = null, dailyIntakeBreakdown = [] } = slide;
   const clinicalRows = rows.filter(row => !SUPPORT_DEPARTMENT_CODES.includes(row.code));
   const supportRows = rows.filter(row => SUPPORT_DEPARTMENT_CODES.includes(row.code));
   const totals = totalDepartmentOverview(clinicalRows);
   const supportTotals = totalDepartmentOverview(supportRows, SUPPORT_COLUMNS);
+  const extraSources = dailyIntakeBreakdown.filter(group => ['admission', 'other'].includes(group.kind));
+  const sourceText = source => {
+    const label = { noi: 'Nội', nhiem: 'Nhiễm', ctch: 'CTCH', lck: 'LCK', san: 'Sản', nhi: 'Nhi', ngoai_th: 'Ngoại TH', yhct_phcn: 'YHCT', gmhs: 'GMHS' }[source.deptCode] || source.label;
+    return `${label} ${source.value.toLocaleString('vi-VN')}`;
+  };
   const unitName = row => ({
     yhct_phcn: 'YHCT – Phục hồi chức năng',
     lck: 'Liên chuyên khoa (4CK)',
@@ -80,15 +85,28 @@ const DepartmentOverviewSlide = ({ slide }) => {
         </table>
       </div>
 
-      <div className="department-overview__daily" aria-label="Tổng số trong ngày">
-        <div><span>TỔNG SỐ KHÁM BỆNH</span>{renderValue(totals.tongSoKham, OVERVIEW_COLUMNS[0])}</div>
-        <div><span>TỔNG KHÁM / TIẾP NHẬN TOÀN NGÀY</span>{renderValue(dailyIntakeTotal, OVERVIEW_COLUMNS[0])}</div>
-      </div>
-
-      <footer className="department-overview__footer">
-        <span><b>—</b> Chưa có số liệu · Lượt chạy thận được tính ở tiếp nhận, không phải khám bệnh.</span>
-        <span>Khám/tiếp nhận toàn ngày: cùng cách tính slide mở đầu; không phải số khám bệnh.</span>
-      </footer>
+      <section className="department-overview__formula" aria-label="Cách tính tổng khám và tiếp nhận toàn ngày">
+        <div className="department-overview__formula-steps">
+          {dailyIntakeBreakdown.map((group, index) => (
+            <React.Fragment key={group.kind}>
+              {index > 0 && <span className="department-overview__operator" aria-hidden="true">+</span>}
+              <div className={`department-overview__term tone-${group.tone}`} title={group.sources.map(sourceText).join(' + ')}>
+                {renderValue(group.value, group)}
+                <span>{group.kind === 'other' ? 'Khác' : group.label}{group.kind === 'admission' ? '*' : ''}</span>
+              </div>
+            </React.Fragment>
+          ))}
+          {dailyIntakeBreakdown.length > 0 && <span className="department-overview__operator" aria-hidden="true">=</span>}
+          <div className="department-overview__term department-overview__result" aria-label="Tổng khám và tiếp nhận toàn ngày">
+            {renderValue(dailyIntakeTotal, OVERVIEW_COLUMNS[0])}
+            <span>Tổng/ngày</span>
+          </div>
+        </div>
+        <div className="department-overview__formula-sources">
+          {extraSources.map(group => <span key={group.kind}><b>{group.kind === 'admission' ? '* Bệnh mới thay số khám' : 'Khác'}:</b> {group.sources.map(sourceText).join(' + ')}</span>)}
+          <span>Khám/tiếp nhận: lượt, không phải số người.</span>
+        </div>
+      </section>
     </section>
   );
 };
