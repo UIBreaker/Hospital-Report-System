@@ -27,16 +27,16 @@
 .department-overview tbody tr:nth-child(even) { background: #f4f7fb; }
 .department-overview tbody tr + tr > * { border-top: 1px solid #e2e8f0; }
 .department-overview td { text-align: center; padding: 1px 3px; border-left: 1px solid #e2e8f066; }
-.department-overview tbody .column-hienCon { background: #eff6ff; border-inline: 1px solid #bfdbfe; }
+.department-overview tbody .column-hienCon { background: #faf5ff; border-inline: 1px solid #ddd6fe; }
 .department-overview__unit { display: flex; align-items: center; gap: 12px; }
 .department-overview__order { display: inline-flex; align-items: center; justify-content: center; min-width: 1.8em; height: 1.7em; border-radius: 6px; color: #92400e; background: transparent; font-size: .7em; font-weight: 800; font-variant-numeric: tabular-nums; flex-shrink: 0; }
 .department-overview__order.is-submitted { color: #64748b; background: transparent; }
 .department-overview__badge { display: inline-block; padding: 1px 5px; font-size: clamp(24px, 4.1cqh, 42px); font-weight: 850; font-variant-numeric: tabular-nums; line-height: 1.05; letter-spacing: -.7px; }
-.department-overview__badge.tone-purple { color: #0f2c59; }
-.department-overview__badge.tone-blue { color: #0f2c59; }
-.department-overview__badge.tone-green { color: #0f2c59; }
-.department-overview__badge.tone-amber { color: #0f2c59; }
-.department-overview__badge.tone-red { color: #0f2c59; }
+.department-overview__badge.tone-purple { color: #7c3aed; }
+.department-overview__badge.tone-blue { color: #1e40af; }
+.department-overview__badge.tone-green { color: #047857; }
+.department-overview__badge.tone-amber { color: #b45309; }
+.department-overview__badge.tone-red { color: #dc2626; }
 .department-overview__badge.is-zero { color: #475569; font-weight: 700; }
 .department-overview__badge.is-alert { color: #b91c1c; background: #fee2e2; border-radius: 7px; min-width: 1.5em; }
 .department-overview__missing { color: #94a3b8; font-size: clamp(18px, 2.5cqh, 28px); font-weight: 500; }
@@ -56,4 +56,4 @@
   .department-overview__unit { gap: 6px; }
   .department-overview thead th { font-size: 16px; }
 }
-.department-overview tbody .column-hienCon .department-overview__badge { color: #1d4ed8; }
+.department-overview tbody .column-hienCon .department-overview__badge { color: #7c3aed; }
