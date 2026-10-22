@@ -62,7 +62,7 @@ const readMetrics = (data = {}, prefix = '') => ({
 });
 
 // Only project saved report values; never recalculate or write patient balances.
-export const buildDepartmentOverview = (reports = []) => DEPARTMENT_ORDER.map(code => {
+export const buildDepartmentOverview = (reports = []) => DEPARTMENT_ORDER.flatMap(code => {
   const report = reports.find(item => item.department_code === code);
   let data = report?.report_data || {};
   try {
@@ -87,15 +87,21 @@ export const buildDepartmentOverview = (reports = []) => DEPARTMENT_ORDER.map(co
   if (code === 'hscc_tnt') {
     const hscc = readMetrics(data.hscc || {});
     const tnt = readMetrics(data.tnt || {}, 'tnt_');
-    metrics = Object.fromEntries(OVERVIEW_COLUMNS.map(({ key }) => [
-      key, sumCounts(hscc[key], tnt[key]) ?? metrics[key],
-    ]));
-    metrics.tongSoKham = sumCounts(
-      hscc.tongSoKham,
-      readExaminations(data.tnt?.tnt_tongSoKham, data.tnt?.tongSoKham, data.tnt?.tnt_ctdk, data.tnt?.ctdk),
-      readExaminations(data.pk21?.pk21_tongSo, data.pk21?.pk21_tongSoKham, data.pk21?.tongSo),
-    ) ?? metrics.tongSoKham;
-    metrics.ngoaiTru = sumCounts(hscc.ngoaiTru, tnt.ngoaiTru, readCount(data.pk21?.pk21_ngoaiTru)) ?? metrics.ngoaiTru;
+    hscc.tongSoKham = readExaminations(hscc.tongSoKham, data.hscc?.tongSo);
+    // Dialysis sessions belong to activity/intake, never the examination column.
+    tnt.tongSoKham = readExaminations(tnt.tongSoKham, data.tnt?.tongSoKham);
+    const unitRow = (unitCode, name, unitMetrics) => ({
+      code: unitCode, departmentCode: code, name, submitted: Boolean(report), metrics: unitMetrics,
+    });
+    const units = [unitRow('hscc', 'Hồi sức cấp cứu', hscc), unitRow('tnt', 'Thận nhân tạo', tnt)];
+    const pk21 = {
+      ...readMetrics(),
+      tongSoKham: readExaminations(data.pk21?.pk21_tongSo, data.pk21?.pk21_tongSoKham, data.pk21?.tongSo),
+      ngoaiTru: readCount(data.pk21?.pk21_ngoaiTru),
+      chuyenVien: readCount(data.pk21?.pk21_chuyenVien),
+    };
+    if (Object.values(pk21).some(value => value !== null)) units.push(unitRow('pk21', 'Phòng khám 21', pk21));
+    return units;
   } else if (code === 'yhct_phcn') {
     metrics = {
       ...readMetrics(data.noiTru || {}),
@@ -126,5 +132,5 @@ export const buildDepartmentOverview = (reports = []) => DEPARTMENT_ORDER.map(co
     if (metrics[key] === null && Array.isArray(cases) && cases.length > 0) metrics[key] = cases.length;
   }
 
-  return { code, name: DEPARTMENT_NAMES[code], submitted: Boolean(report), metrics };
+  return { code, departmentCode: code, name: DEPARTMENT_NAMES[code], submitted: Boolean(report), metrics };
 });
