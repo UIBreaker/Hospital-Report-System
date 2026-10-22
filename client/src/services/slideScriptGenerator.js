@@ -1,4 +1,5 @@
 import { normalizeMedicalSpeechText } from './medicalPhonetics';
+import { OVERVIEW_COLUMNS, totalDepartmentOverview } from '../utils/departmentOverview';
 
 /**
  * Format patient age into natural spoken phrase
@@ -58,6 +59,10 @@ export const generateSlideNarrationScript = (slide, context = {}) => {
           .map(([key, label]) => `${label} ${row.metrics[key]}`);
         if (metrics.length) parts.push(`${row.name}: ${metrics.join(', ')}.`);
       });
+      const totals = totalDepartmentOverview(rows);
+      const totalMetrics = OVERVIEW_COLUMNS.filter(({ key }) => totals[key] !== null)
+        .map(({ key, label }) => `${label.toLowerCase()} ${totals[key]}`);
+      if (totalMetrics.length) parts.push(`Tổng cộng các số đã báo cáo: ${totalMetrics.join(', ')}.`);
       parts.push('Dấu gạch ngang là chưa có số liệu. HSCC và Thận nhân tạo được cộng hai khối. Y học cổ truyền lấy số liệu nội trú. Gây mê hồi sức hiển thị số hiện còn hồi tỉnh.');
       break;
     }

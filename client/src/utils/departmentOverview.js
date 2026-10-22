@@ -23,6 +23,12 @@ const sumCounts = (...values) => {
   return counts.length ? counts.reduce((sum, value) => sum + value, 0) : null;
 };
 
+export const totalDepartmentOverview = (rows = []) => Object.fromEntries(
+  OVERVIEW_COLUMNS.map(({ key }) => [
+    key, sumCounts(...rows.map(row => row.metrics[key]).filter(value => Number.isFinite(value))),
+  ]),
+);
+
 const readMetrics = (data = {}, prefix = '') => ({
   benhCu: readCount(data[`${prefix}benhCu`]),
   benhMoi: readCount(data[`${prefix}benhMoi`]),
