@@ -46,6 +46,22 @@ export const generateSlideNarrationScript = (slide, context = {}) => {
     }
 
     // 2. HOSPITAL-WIDE SUMMARY SLIDE (Bảng tổng hợp toàn viện)
+    case 'department_overview': {
+      const rows = slide.rows || [];
+      parts.push(`Bảng tổng quan số liệu bệnh nhân của 12 khoa. Đã có ${rows.filter(row => row.submitted).length} khoa nộp báo cáo.`);
+      rows.filter(row => row.submitted).forEach(row => {
+        const metrics = [
+          ['benhCu', 'bệnh cũ'], ['benhMoi', 'bệnh mới'], ['xuatVien', 'xuất viện'],
+          ['chuyenVien', 'chuyển viện'], ['chuyenKhoa', 'chuyển khoa'],
+          ['hienCon', 'hiện còn'], ['tuVong', 'tử vong'],
+        ].filter(([key]) => row.metrics[key] !== null)
+          .map(([key, label]) => `${label} ${row.metrics[key]}`);
+        if (metrics.length) parts.push(`${row.name}: ${metrics.join(', ')}.`);
+      });
+      parts.push('Dấu gạch ngang là chưa có số liệu. HSCC và Thận nhân tạo được cộng hai khối. Y học cổ truyền lấy số liệu nội trú. Gây mê hồi sức hiển thị số hiện còn hồi tỉnh.');
+      break;
+    }
+
     case 'summary': {
       parts.push('Tiếp theo là bảng số liệu tổng hợp chuyên môn toàn viện.');
       if (slide.summary || slide.stats) {
