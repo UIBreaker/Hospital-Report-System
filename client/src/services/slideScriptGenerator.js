@@ -51,12 +51,8 @@ export const generateSlideNarrationScript = (slide, context = {}) => {
       const rows = slide.rows || [];
       parts.push(`Bảng tổng quan số liệu bệnh nhân của 12 khoa. Đã có ${rows.filter(row => row.submitted).length} khoa nộp báo cáo.`);
       rows.filter(row => row.submitted).forEach(row => {
-        const metrics = [
-          ['benhCu', 'bệnh cũ'], ['benhMoi', 'bệnh mới'], ['xuatVien', 'xuất viện'],
-          ['chuyenVien', 'chuyển viện'], ['chuyenKhoa', 'chuyển khoa'],
-          ['hienCon', 'hiện còn'], ['tuVong', 'tử vong'],
-        ].filter(([key]) => row.metrics[key] !== null)
-          .map(([key, label]) => `${label} ${row.metrics[key]}`);
+        const metrics = OVERVIEW_COLUMNS.filter(({ key }) => row.metrics[key] !== null)
+          .map(({ key, label }) => `${label.toLowerCase()} ${row.metrics[key]}`);
         if (metrics.length) parts.push(`${row.name}: ${metrics.join(', ')}.`);
       });
       const totals = totalDepartmentOverview(rows);

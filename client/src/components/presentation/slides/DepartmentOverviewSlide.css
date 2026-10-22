@@ -43,7 +43,7 @@
 .department-overview tfoot th, .department-overview tfoot td { background: #0f2c59; color: #fff; border-top: 3px solid #38bdf8; padding: clamp(7px, 1.3cqh, 15px) 3px; }
 .department-overview tfoot th { text-align: left; padding-left: 20px; font-size: clamp(17px, 2.6cqh, 28px); font-weight: 900; }
 .department-overview__sum { margin-right: 10px; color: #38bdf8; font-size: 1.2em; }
-.department-overview tfoot .department-overview__badge { color: #fff; font-size: clamp(26px, 4.4cqh, 46px); font-weight: 900; }
+.department-overview tfoot .department-overview__badge { color: #fff; font-size: clamp(23px, min(3.8cqh, 2.6cqw), 42px); font-weight: 900; }
 .department-overview tfoot .column-hienCon { background: #1e3a6b; }
 .department-overview tfoot .is-alert { background: #991b1b; }
 .department-overview__footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 2px 16px; flex-shrink: 0; color: #475569; font-size: clamp(11px, 1.7cqh, 17px); line-height: 1.3; }

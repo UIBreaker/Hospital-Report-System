@@ -40,7 +40,7 @@ const DepartmentOverviewSlide = ({ slide }) => {
       <div className="department-overview__table-wrap">
         <table aria-label="Số liệu bệnh nhân của 12 khoa trong ca trực">
           <colgroup>
-            <col style={{ width: '30%' }} />
+            <col style={{ width: '26%' }} />
             {OVERVIEW_COLUMNS.map(column => <col key={column.key} />)}
           </colgroup>
           <thead>
@@ -82,7 +82,7 @@ const DepartmentOverviewSlide = ({ slide }) => {
 
       <footer className="department-overview__footer">
         <span><b>—</b> Chưa có số liệu · Tổng cộng các số đã báo cáo, không cộng ô trống.</span>
-        <span>HSCC–TNT: 2 khối · YHCT–PHCN: nội trú · GMHS: hồi tỉnh</span>
+        <span>Khám: lấy tổng trước dấu / · YHCT: ngoại trú hiện còn · GMHS: hồi tỉnh</span>
       </footer>
     </section>
   );
