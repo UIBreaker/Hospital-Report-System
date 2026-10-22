@@ -2,10 +2,10 @@ import { DEPARTMENT_ORDER, DEPARTMENT_NAMES } from '../constants/medicalDictiona
 
 export const OVERVIEW_COLUMNS = [
   { key: 'tongSoKham', label: 'Tổng số khám bệnh', tone: 'blue' },
-  { key: 'ngoaiTru', label: 'Ngoại trú', tone: 'blue' },
   { key: 'benhCu', label: 'Bệnh cũ', tone: 'purple' },
   { key: 'benhMoi', label: 'Bệnh mới', tone: 'blue' },
   { key: 'xuatVien', label: 'Xuất viện', tone: 'green' },
+  { key: 'ngoaiTru', label: 'Ngoại trú', tone: 'blue' },
   { key: 'chuyenVien', label: 'Chuyển viện', tone: 'amber' },
   { key: 'chuyenKhoa', label: 'Chuyển khoa', tone: 'amber' },
   { key: 'hienCon', label: 'Hiện còn', tone: 'purple' },
