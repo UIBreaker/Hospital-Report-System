@@ -36,20 +36,20 @@
 .department-overview__sum { margin-right: 8px; color: #38bdf8; }
 .department-overview tfoot .department-overview__badge { color: #fff; font-weight: 900; }
 .department-overview tfoot .column-tongSoKham,
-.department-overview tfoot .column-tongSoTiepNhan,
-.department-overview tfoot .column-ngoaiTru { background: #dbeafe; }
+.department-overview tfoot .column-tongSoTiepNhan { background: #38bdf8; border-top-color: #bae6fd; }
+.department-overview tfoot .column-ngoaiTru { background: #34d399; border-top-color: #a7f3d0; }
 .department-overview tfoot .column-benhCu,
-.department-overview tfoot .column-hienCon { background: #ede9fe; }
+.department-overview tfoot .column-hienCon { background: #7c3aed; border-top-color: #c4b5fd; }
 .department-overview tfoot .column-tongSoKham .department-overview__badge,
 .department-overview tfoot .column-tongSoTiepNhan .department-overview__badge,
-.department-overview tfoot .column-ngoaiTru .department-overview__badge { color: #1e40af; }
+.department-overview tfoot .column-ngoaiTru .department-overview__badge { color: #0f2c59; }
 .department-overview tfoot .column-benhCu .department-overview__badge,
-.department-overview tfoot .column-hienCon .department-overview__badge { color: #6d28d9; }
+.department-overview tfoot .column-hienCon .department-overview__badge { color: #fff; }
 .department-overview tfoot .column-benhCu .department-overview__missing,
-.department-overview tfoot .column-hienCon .department-overview__missing,
+.department-overview tfoot .column-hienCon .department-overview__missing { color: #fff; }
 .department-overview tfoot .column-tongSoKham .department-overview__missing,
 .department-overview tfoot .column-tongSoTiepNhan .department-overview__missing,
-.department-overview tfoot .column-ngoaiTru .department-overview__missing { color: #64748b; }
+.department-overview tfoot .column-ngoaiTru .department-overview__missing { color: #0f2c59; }
 .department-overview tfoot .is-alert { background: #991b1b; }
 .department-overview__support { flex: 0 0 auto; padding-bottom: 2px; background: #0f2c59; }
 .department-overview__support table { height: auto; }
