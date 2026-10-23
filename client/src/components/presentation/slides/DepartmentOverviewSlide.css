@@ -51,6 +51,6 @@
 .department-overview tfoot .column-hienCon .department-overview__missing,
 .department-overview tfoot .column-ngoaiTru .department-overview__missing { color: #0f2c59; }
 .department-overview tfoot .is-alert { background: #991b1b; }
-.department-overview__support { flex: 0 0 auto; padding-bottom: 2px; background: #0f2c59; }
+.department-overview__support { flex: 0 0 auto; }
 .department-overview__support table { height: auto; }
 .department-overview__support th, .department-overview__support td { padding-top: 5px; padding-bottom: 5px; }
