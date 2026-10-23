@@ -90,6 +90,9 @@ export const buildDepartmentOverview = (reports = []) => DEPARTMENT_ORDER.flatMa
     hscc.tongSoKham = readExaminations(hscc.tongSoKham, data.hscc?.tongSo);
     // Dialysis sessions belong to activity/intake, never the examination column.
     tnt.tongSoKham = readExaminations(tnt.tongSoKham, data.tnt?.tongSoKham);
+    // Slide 2 presents the saved TNT old-patient count as outpatient activity.
+    tnt.ngoaiTru = tnt.benhCu ?? tnt.ngoaiTru;
+    tnt.benhCu = null;
     const unitRow = (unitCode, name, unitMetrics) => ({
       code: unitCode, departmentCode: code, name, submitted: Boolean(report), metrics: unitMetrics,
     });
