@@ -1,0 +1,56 @@
+.department-overview {
+  container-type: size;
+  --overview-label-size: clamp(17px, 2.25cqh, 25px);
+  --overview-number-size: clamp(24px, 3.6cqh, 38px);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  gap: 6px;
+  color: #0f2c59;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+}
+.department-overview__table-wrap { flex: 1; min-height: 0; overflow: hidden; border: 1px solid #cbd5e1; border-radius: 12px; box-shadow: 0 4px 18px #0f2c590a; }
+.department-overview table { width: 100%; height: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
+.department-overview th { font-size: var(--overview-label-size); font-weight: 800; line-height: 1.2; }
+.department-overview thead th { background: #0f2c59; color: #fff; padding: 3px; border-right: 1px solid #ffffff26; }
+.department-overview thead th:first-child { text-align: left; padding-left: 14px; }
+.department-overview tbody th { text-align: left; padding: 1px 14px; color: #0f2c59; }
+.department-overview tbody tr { background: #fff; }
+.department-overview tbody tr:nth-child(even) { background: #f4f7fb; }
+.department-overview tbody tr + tr > * { border-top: 1px solid #e2e8f0; }
+.department-overview td { text-align: center; padding: 0 3px; border-left: 1px solid #e2e8f0; }
+.department-overview tbody .column-hienCon { background: #faf5ff; border-inline: 1px solid #ddd6fe; }
+.department-overview__badge { display: inline-block; padding: 1px 3px; font-size: var(--overview-number-size); font-weight: 850; font-variant-numeric: tabular-nums; line-height: 1.05; letter-spacing: -.7px; }
+.department-overview__badge.tone-purple { color: #7c3aed; }
+.department-overview__badge.tone-blue { color: #1e40af; }
+.department-overview__badge.tone-green { color: #047857; }
+.department-overview__badge.tone-amber { color: #b45309; }
+.department-overview__badge.tone-red { color: #dc2626; }
+.department-overview__badge.is-zero { color: #475569; font-weight: 750; }
+.department-overview__badge.is-alert { color: #b91c1c; background: #fee2e2; border-radius: 7px; min-width: 1.5em; }
+.department-overview__missing { color: #94a3b8; font-size: var(--overview-number-size); font-weight: 500; line-height: 1.05; }
+.department-overview tfoot th, .department-overview tfoot td { background: #0f2c59; color: #fff; border-top: 2px solid #38bdf8; padding: 2px 3px; }
+.department-overview tfoot th { text-align: left; padding-left: 14px; }
+.department-overview__sum { margin-right: 8px; color: #38bdf8; }
+.department-overview tfoot .department-overview__badge { color: #fff; font-weight: 900; }
+.department-overview tfoot .column-tongSoKham,
+.department-overview tfoot .column-tongSoTiepNhan,
+.department-overview tfoot .column-hienCon,
+.department-overview tfoot .column-ngoaiTru { background: #38d399; border-top-color: #a7f3d0; }
+.department-overview tfoot .column-benhCu { background: #7c3aed; border-top-color: #c4b5fd; }
+.department-overview tfoot .column-tongSoKham .department-overview__badge,
+.department-overview tfoot .column-tongSoTiepNhan .department-overview__badge,
+.department-overview tfoot .column-hienCon .department-overview__badge,
+.department-overview tfoot .column-ngoaiTru .department-overview__badge { color: #0f2c59; }
+.department-overview tfoot .column-benhCu .department-overview__badge { color: #fff; }
+.department-overview tfoot .column-benhCu .department-overview__missing { color: #fff; }
+.department-overview tfoot .column-tongSoKham .department-overview__missing,
+.department-overview tfoot .column-tongSoTiepNhan .department-overview__missing,
+.department-overview tfoot .column-hienCon .department-overview__missing,
+.department-overview tfoot .column-ngoaiTru .department-overview__missing { color: #0f2c59; }
+.department-overview tfoot .is-alert { background: #991b1b; }
+.department-overview__support { flex: 0 0 auto; }
+.department-overview__support table { height: auto; }
+.department-overview__support th, .department-overview__support td { padding-top: 5px; padding-bottom: 5px; }

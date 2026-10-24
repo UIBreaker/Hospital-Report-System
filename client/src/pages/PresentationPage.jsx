@@ -31,6 +31,9 @@ import DeathSlide from '../components/presentation/slides/DeathSlide';
 import CriticalSlide from '../components/presentation/slides/CriticalSlide';
 import FullScreenImageSlide from '../components/presentation/slides/FullScreenImageSlide';
 import SummarySlide from '../components/presentation/slides/SummarySlide';
+import DepartmentOverviewSlide from '../components/presentation/slides/DepartmentOverviewSlide';
+import { buildDepartmentOverview } from '../utils/departmentOverview';
+import { getDepartmentIntakeBreakdown, groupDailyIntakeBreakdown } from '../utils/dailyIntakeBreakdown';
 import ClosingSlide from '../components/presentation/slides/ClosingSlide';
 import CinematicNetflixIntro from '../components/presentation/CinematicNetflixIntro';
 
@@ -50,65 +53,6 @@ const parseMetricNum = (val) => {
   }
   const parsed = parseFloat(str.replace(/[^0-9.-]/g, ''));
   return isNaN(parsed) ? 0 : parsed;
-};
-
-const extractDepartmentPatientCount = (rawData, deptCode = '') => {
-  if (!rawData || typeof rawData !== 'object') return 0;
-  const code = (deptCode || '').toLowerCase();
-
-  // 1. HSCC - TNT
-  if (code.includes('hscc') || (rawData.hscc && rawData.tnt)) {
-    const hsccKham = parseMetricNum(rawData.hscc?.tongSoKham || rawData.hscc?.tongSo || rawData.hscc?.benhMoi);
-    const tntKham = parseMetricNum(rawData.tnt?.tongSoKham || rawData.tnt?.tnt_ctdk || rawData.tnt?.ctdk || rawData.tnt?.tnt_benhMoi);
-    const pk21Kham = parseMetricNum(rawData.pk21?.pk21_tongSo || rawData.pk21?.pk21_tongSoKham || rawData.pk21?.tongSo || rawData.pk21?.pk21_ngoaiTru);
-    const sum = hsccKham + tntKham + pk21Kham;
-    if (sum > 0) return sum;
-  }
-
-  // 2. LCK (Liên Chuyên Khoa)
-  if (code.includes('lck') || rawData.tong4ck_tongSo !== undefined || rawData.tmh_tongSo !== undefined) {
-    if (rawData.tong4ck_tongSo) return parseMetricNum(rawData.tong4ck_tongSo);
-    const sum = parseMetricNum(rawData.tmh_tongSo) + parseMetricNum(rawData.mat_tongSo) + parseMetricNum(rawData.rhm_noi_tongSo) + parseMetricNum(rawData.daLieu_tongSo) + parseMetricNum(rawData.nhapVien_tongSo);
-    if (sum > 0) return sum;
-  }
-
-  // 3. CDHA (Chẩn Đoán Hình Ảnh)
-  if (code.includes('cdha') || Array.isArray(rawData.techniques)) {
-    if (Array.isArray(rawData.techniques) && rawData.techniques.length > 0) {
-      return rawData.techniques.reduce((acc, t) => acc + parseMetricNum(t?.tongSo), 0);
-    }
-    if (rawData.tongSo) return parseMetricNum(rawData.tongSo);
-  }
-
-  // 4. XN (Xét Nghiệm)
-  if (code.includes('xn') || rawData.tongXetNghiem) {
-    return parseMetricNum(rawData.tongSo || rawData.tongXetNghiem);
-  }
-
-  // 5. GMHS (Gây Mê Hồi Sức)
-  if (code.includes('gmhs') || rawData.tongSoCaMo) {
-    return parseMetricNum(rawData.tongSoCaMo || rawData.soCaGayMe || 0);
-  }
-
-  // 6. Khoa Nhi
-  if (code.includes('nhi')) {
-    const pk = parseMetricNum(rawData.pk || rawData.tongSoKham || rawData.soCaKham);
-    const bm = parseMetricNum(rawData.benhMoi || rawData.benhMoi_cc || rawData.benhMoi_pk);
-    return pk > 0 ? pk : bm;
-  }
-
-  // 7. Khoa Sản
-  if (code.includes('san')) {
-    const tk = parseMetricNum(rawData.tongSoKham || rawData.soCaKham);
-    const bm = parseMetricNum(rawData.benhMoi || rawData.sanhThuong);
-    return tk > 0 ? tk : bm;
-  }
-
-  // 8. Các khoa lâm sàng khác (Nội, Nhiễm, Ngoại TH, CTCH, YHCT-PHCN)
-  const directKham = parseMetricNum(rawData.tongSoKham || rawData.soCaKham || rawData.tongSo || rawData.tong_so || rawData.tongSoCa);
-  if (directKham > 0) return directKham;
-
-  return parseMetricNum(rawData.benhMoi || 0);
 };
 
 const PresentationPage = () => {
@@ -232,7 +176,15 @@ const PresentationPage = () => {
 
   // Build slides with official department order, intro, clinical cases, summary, and closing slides
   const slides = useMemo(() => {
-    const s = [{ type: 'title', title: 'BÁO CÁO GIAO BAN' }];
+    const s = [
+      { type: 'title', title: 'BÁO CÁO GIAO BAN' },
+      {
+        type: 'department_overview',
+        title: 'TỔNG QUAN 12 KHOA',
+        selectedDate: date,
+        rows: buildDepartmentOverview(reports),
+      },
+    ];
 
     const sortedReports = [...reports].sort((a, b) => {
       const idxA = DEPARTMENT_ORDER.indexOf(a.department_code);
@@ -253,6 +205,7 @@ const PresentationPage = () => {
       return [];
     };
 
+    const dailyIntakeItems = [];
     let totalKham = 0, totalBenhCu = 0, totalBenhMoi = 0, totalXuatVien = 0;
     let totalChuyenVien = 0, totalPhauThuat = 0, totalBenhNang = 0, totalHienCon = 0, totalTuVong = 0;
 
@@ -347,7 +300,9 @@ const PresentationPage = () => {
       }));
 
       // Accumulate totals for hospital-wide summary & title slide
-      totalKham += extractDepartmentPatientCount(rawData, r.department_code);
+      const intakeItems = getDepartmentIntakeBreakdown(rawData, r.department_code);
+      dailyIntakeItems.push(...intakeItems);
+      totalKham += intakeItems.reduce((sum, item) => sum + item.value, 0);
       totalBenhCu += parseMetricNum(rawData.benhCu || rawData.hscc?.benhCu || rawData.tnt?.tnt_benhCu || 0);
       totalBenhMoi += parseMetricNum(rawData.benhMoi || rawData.hscc?.benhMoi || rawData.tnt?.tnt_benhMoi || 0);
       totalXuatVien += parseMetricNum(rawData.xuatVien || rawData.hscc?.xuatVien || rawData.tnt?.tnt_xuatVien || 0);
@@ -793,6 +748,8 @@ const PresentationPage = () => {
       s[0].summary = summaryData;
       s[0].reportsCount = sortedReports.length;
     }
+    s[1].dailyIntakeTotal = summaryData.tongSoKham;
+    s[1].dailyIntakeBreakdown = groupDailyIntakeBreakdown(dailyIntakeItems);
 
     // 5. Hospital-Wide Summary Slide
     if (sortedReports.length > 0) {
@@ -953,6 +910,8 @@ const PresentationPage = () => {
         return `Hình ảnh minh họa lâm sàng (${s.imgIndex}/${s.totalImages})`;
       case 'summary':
         return 'Tổng hợp số liệu toàn viện';
+      case 'department_overview':
+        return 'Tổng quan số liệu bệnh nhân 12 khoa';
       case 'closing':
         return 'Bế mạc & Cảm ơn';
       default:
@@ -969,7 +928,7 @@ const PresentationPage = () => {
     if (type?.includes('critical')) return <FaHeartbeat style={{ color: '#A855F7' }} />;
     if (type?.includes('death')) return <FaSkullCrossbones style={{ color: '#EF4444' }} />;
     if (type === 'case_image') return <span style={{ fontSize: '0.82rem' }}>🖼️</span>;
-    if (type === 'summary') return <FaClipboardList style={{ color: '#38BDF8' }} />;
+    if (type === 'summary' || type === 'department_overview') return <FaClipboardList style={{ color: '#38BDF8' }} />;
     if (type === 'closing') return <FaHandHoldingHeart style={{ color: '#F43F5E' }} />;
     return <FaFileAlt />;
   };
@@ -1352,18 +1311,20 @@ const PresentationPage = () => {
                 paddingBottom: '0.5rem'
               }}>
                 {/* 1. Mở Đầu (Title Slide) */}
-                {slideGroups.introSlide && (() => {
-                  const isTitleActive = currentSlide === 0;
+                {[slideGroups.introSlide, { slide: slides[1], index: 1 }].filter(Boolean).map((item) => {
+                  const isTitleActive = currentSlide === item.index;
                   const query = drawerSearch.trim().toLowerCase();
-                  if (query && !'báo cáo giao ban toàn viện'.includes(query)) return null;
+                  const label = item.index === 0 ? 'BÁO CÁO GIAO BAN TOÀN VIỆN' : item.slide.title;
+                  if (query && !`${label} ${getSlideSubLabel(item.slide)}`.toLowerCase().includes(query)) return null;
 
                   return (
                     <button
+                      key={item.index}
                       type="button"
                       ref={isTitleActive ? activeThumbRef : null}
                       onClick={() => {
-                        setSlideDirection(currentSlide === 0 ? 'next' : 'prev');
-                        setCurrentSlide(0);
+                        setSlideDirection(currentSlide < item.index ? 'next' : 'prev');
+                        setCurrentSlide(item.index);
                         setShowSidebar(false);
                       }}
                       style={{
@@ -1397,14 +1358,14 @@ const PresentationPage = () => {
                         }
                       }}
                     >
-                      <FaHospital style={{ color: '#38BDF8', fontSize: '0.95rem', flexShrink: 0 }} />
-                      <span style={{ fontSize: '0.72rem', fontWeight: '900', color: '#93C5FD', minWidth: '18px' }}>#1</span>
+                      {getSlideIcon(item.slide.type)}
+                      <span style={{ fontSize: '0.72rem', fontWeight: '900', color: '#93C5FD', minWidth: '18px' }}>#{item.index + 1}</span>
                       <span style={{ fontSize: '0.8rem', fontWeight: isTitleActive ? '900' : '700', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        BÁO CÁO GIAO BAN TOÀN VIỆN
+                        {label}
                       </span>
                     </button>
                   );
-                })()}
+                })}
 
                 {/* 2. 12 Khoa Chuyên Môn (Accordions) */}
                 {slideGroups.deptGroups.map((group) => {
@@ -1806,6 +1767,10 @@ const PresentationPage = () => {
                   summary={slide.summary || {}}
                   isFullscreen={true}
                 />
+              )}
+
+              {slide.type === 'department_overview' && (
+                <DepartmentOverviewSlide slide={slide} />
               )}
 
               {/* 2. Department Intro Slide */}
