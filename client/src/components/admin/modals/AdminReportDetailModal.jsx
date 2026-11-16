@@ -110,10 +110,10 @@ const AdminReportDetailModal = ({
   handleAddCriticalCase,
   handleCriticalCaseChange,
   handleRemoveCriticalCase,
-  onOpenMoveReportModal
+  onOpenMoveReportModal,
+  onLockedAction
 }) => {
   const [mounted, setMounted] = useState(false);
-  const warnLocked = () => window.alert('Báo cáo đã khóa sổ. Vui lòng mở khóa sổ của khoa trước khi sửa số liệu, chuyển ngày hoặc xóa báo cáo.');
 
   useEffect(() => {
     setMounted(true);
@@ -255,7 +255,7 @@ const AdminReportDetailModal = ({
                 {!isEditing ? (
                   <button
                     className="btn btn-primary btn-sm"
-                    onClick={() => modalReportLocked ? warnLocked() : setIsEditing(true)}
+                    onClick={() => modalReportLocked ? onLockedAction?.('sửa số liệu') : setIsEditing(true)}
                     style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.45rem 0.85rem', fontWeight: '700' }}
                   >
                     <FaEdit /> Sửa số liệu
@@ -285,7 +285,7 @@ const AdminReportDetailModal = ({
                 <button
                   className="btn btn-sm"
                   type="button"
-                  onClick={() => modalReportLocked ? warnLocked() : onOpenMoveReportModal?.(modalDept)}
+                  onClick={() => modalReportLocked ? onLockedAction?.('chuyển ngày') : onOpenMoveReportModal?.(modalDept)}
                   style={{
                     backgroundColor: '#EFF6FF',
                     color: '#1D4ED8',
@@ -306,7 +306,7 @@ const AdminReportDetailModal = ({
                 {/* Delete button */}
                 <button
                   className="btn btn-danger btn-sm"
-                  onClick={() => modalReportLocked ? warnLocked() : setShowDeleteConfirm(true)}
+                  onClick={() => modalReportLocked ? onLockedAction?.('xóa báo cáo') : setShowDeleteConfirm(true)}
                   style={{ padding: '0.45rem 0.75rem' }}
                   title="Xóa báo cáo"
                 >
@@ -349,8 +349,10 @@ const AdminReportDetailModal = ({
             </div>
           )}
           {hasReport && modalReportLocked && (
-            <div role="alert" style={{ marginBottom: '1.25rem', padding: '0.75rem 1rem', borderRadius: '10px', backgroundColor: '#FFFBEB', border: '1px solid #FDE68A', color: '#92400E', display: 'flex', alignItems: 'center', gap: '0.6rem', fontWeight: '700', fontSize: '0.85rem' }}>
-              <FaLock /> Báo cáo đã khóa sổ. Hãy mở khóa sổ của khoa trước khi sửa số liệu, chuyển ngày hoặc xóa.
+            <div className="locked-report-banner" role="status">
+              <LockIcon locked={true} size={36} />
+              <div><strong>Báo cáo đang khóa sổ</strong><span>Mở khóa trước khi sửa số liệu, chuyển ngày hoặc xóa báo cáo.</span></div>
+              <button type="button" onClick={handleToggleModalLock}>Mở khóa sổ</button>
             </div>
           )}
 

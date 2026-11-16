@@ -26,8 +26,9 @@ const SecurityLockModal = ({
     <div className="security-lock-backdrop" role="dialog" aria-modal="true" aria-label={willLock ? 'Xác nhận khóa sổ' : 'Xác nhận mở khóa sổ'}>
       <div className="security-lock-panel">
         <div className="security-lock-hero"><LockIcon locked={!willLock} size={72} /></div>
+        <span className="security-lock-eyebrow">XÁC NHẬN THAO TÁC</span>
         <h2>{willLock ? (targetType === 'all' ? 'Khóa sổ toàn viện?' : `Khóa sổ ${targetName}?`) : `Mở khóa sổ ${targetName}?`}</h2>
-        <p>Ngày giao ban {dateLabel}</p>
+        <p className="security-lock-date">Ngày giao ban {dateLabel}</p>
         <p className="security-lock-note">
           {willLock
             ? 'Sau khi khóa, báo cáo không thể sửa số liệu, chuyển ngày hoặc xóa. Muốn thao tác lại, hãy mở khóa trong chi tiết khoa.'

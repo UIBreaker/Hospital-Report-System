@@ -127,6 +127,7 @@ const AdminDashboard = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [hasReport, setHasReport] = useState(false);
   const [modalReportLocked, setModalReportLocked] = useState(false);
+  const [lockedAction, setLockedAction] = useState('');
   const [togglingModalLock, setTogglingModalLock] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState('');
@@ -311,6 +312,7 @@ const AdminDashboard = () => {
     setModalDept(resolvedDept);
     setModalReportDate(targetDate);
     setModalOpen(true);
+    setLockedAction('');
     setLoadingReport(true);
     setIsEditing(false);
     setSaveSuccess('');
@@ -402,6 +404,7 @@ const AdminDashboard = () => {
   // Toggle Lock inside Modal
   const handleToggleModalLock = () => {
     if (!modalDept) return;
+    setLockedAction('');
     const nextLocked = !modalReportLocked;
     setSecurityModal({
       isOpen: true,
@@ -435,6 +438,7 @@ const AdminDashboard = () => {
         );
         if (res && res.success) {
           setModalReportLocked(securityModal.willLock);
+          setLockedAction('');
           if (securityModal.willLock) {
             setIsEditing(false);
             setShowDeleteConfirm(false);
@@ -602,7 +606,7 @@ const AdminDashboard = () => {
   const handleSaveReport = async () => {
     if (!modalDept) return;
     if (modalReportLocked) {
-      alert('Báo cáo đã khóa sổ. Vui lòng mở khóa sổ của khoa trước khi sửa số liệu.');
+      setLockedAction('sửa số liệu');
       return;
     }
     setSaving(true);
@@ -644,7 +648,7 @@ const AdminDashboard = () => {
   const handleDeleteReport = async () => {
     if (!modalDept) return;
     if (modalReportLocked) {
-      alert('Báo cáo đã khóa sổ. Vui lòng mở khóa sổ của khoa trước khi xóa.');
+      setLockedAction('xóa báo cáo');
       return;
     }
     setDeleting(true);
@@ -1419,7 +1423,7 @@ const AdminDashboard = () => {
       {/* Admin Report Detail Modal */}
       <AdminReportDetailModal
         isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={() => { setModalOpen(false); setLockedAction(''); }}
         modalDept={modalDept}
         date={modalReportDate || date}
         editHeader={editHeader}
@@ -1443,6 +1447,7 @@ const AdminDashboard = () => {
         modalReportLocked={modalReportLocked}
         togglingModalLock={togglingModalLock}
         handleToggleModalLock={handleToggleModalLock}
+        onLockedAction={setLockedAction}
         showDeleteConfirm={showDeleteConfirm}
         setShowDeleteConfirm={setShowDeleteConfirm}
         deleting={deleting}
@@ -1463,7 +1468,7 @@ const AdminDashboard = () => {
         handleRemoveCriticalCase={handleRemoveCriticalCase}
         onOpenMoveReportModal={(dept) => {
           if (modalReportLocked) {
-            alert('Báo cáo đã khóa sổ. Vui lòng mở khóa sổ của khoa trước khi chuyển ngày.');
+            setLockedAction('chuyển ngày');
             return;
           }
           setDashboardMoveModal({
@@ -1476,6 +1481,18 @@ const AdminDashboard = () => {
           });
         }}
       />
+
+      {lockedAction && modalOpen && modalReportLocked && (
+        <div className="locked-action-notice" role="alert">
+          <LockIcon locked={true} size={42} />
+          <div className="locked-action-notice-copy">
+            <strong>Chưa thể {lockedAction}</strong>
+            <span>Báo cáo {modalDept?.departmentName || 'của khoa'} đã khóa sổ. Mở khóa để tiếp tục thao tác.</span>
+          </div>
+          <button type="button" className="locked-action-notice-action" onClick={handleToggleModalLock}>Mở khóa sổ</button>
+          <button type="button" className="locked-action-notice-close" aria-label="Đóng thông báo" onClick={() => setLockedAction('')}>×</button>
+        </div>
+      )}
 
       {/* High-Tech Security Lockdown & Unlock Modal */}
       <SecurityLockModal
