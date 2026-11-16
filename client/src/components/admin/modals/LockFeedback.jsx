@@ -47,11 +47,13 @@ const LockFeedback = ({ targetType, targetName, willLock, date, departments, onC
       <div className={`security-lock-panel${isAll ? ' security-lock-panel-wide' : ''}`}>
         <div className="security-lock-heading">
           <div className={`security-lock-hero${complete ? ' is-complete' : ''}`}>
-            <LockIcon locked={isAll ? complete : willLock ? step > 0 : step === 0} size={80} />
+            <LockIcon locked={isAll ? complete : willLock ? step > 0 : step === 0} size={isAll ? 64 : 80} />
           </div>
-          <span className="security-lock-eyebrow">BẢO MẬT BÁO CÁO GIAO BAN</span>
-          <h2>{isAll ? (complete ? 'Đã khóa sổ toàn viện' : 'Đang khóa sổ từng khoa') : complete ? (willLock ? 'Đã khóa sổ thành công' : 'Đã mở khóa sổ') : (willLock ? 'Đang khóa sổ' : 'Đang mở khóa sổ')}</h2>
-          <p>{isAll ? `${submittedCount} báo cáo đã nộp · Ngày ${dateLabel}` : `${targetName} · Ngày ${dateLabel}`}</p>
+          <div className="security-lock-heading-copy">
+            <span className="security-lock-eyebrow">BẢO MẬT BÁO CÁO GIAO BAN</span>
+            <h2>{isAll ? (complete ? 'Đã khóa sổ toàn viện' : 'Đang khóa sổ từng khoa') : complete ? (willLock ? 'Đã khóa sổ thành công' : 'Đã mở khóa sổ') : (willLock ? 'Đang khóa sổ' : 'Đang mở khóa sổ')}</h2>
+            <p>{isAll ? `${submittedCount}/12 khoa đã nộp · Ngày ${dateLabel}` : `${targetName} · Ngày ${dateLabel}`}</p>
+          </div>
         </div>
 
         {isAll && (
@@ -64,7 +66,7 @@ const LockFeedback = ({ targetType, targetName, willLock, date, departments, onC
             <div className="security-lock-grid">
               {departments.map((dept, index) => (
                 <div className={`security-lock-department${step > index && dept.submitted ? ' is-done' : ''}${step === index && dept.submitted ? ' is-current' : ''}`} key={dept.code}>
-                  {dept.submitted ? <LockIcon locked={step > index} size={42} /> : <span className="security-lock-empty" aria-hidden="true">—</span>}
+                  {dept.submitted ? <LockIcon locked={step > index} size={34} /> : <span className="security-lock-empty" aria-hidden="true">—</span>}
                   <div><strong>{index + 1}. {dept.name}</strong><small>{!dept.submitted ? 'Chưa có báo cáo' : step > index ? 'Đã khóa sổ' : 'Đang chờ'}</small></div>
                 </div>
               ))}

@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 import { 
-  FaCalendarAlt, 
   FaSignOutAlt, 
   FaTv, 
   FaChevronLeft,
@@ -27,6 +26,7 @@ import Footer from '../components/common/Footer';
 import AdminReportDetailModal from '../components/admin/modals/AdminReportDetailModal';
 import SecurityLockModal from '../components/admin/modals/SecurityLockModal';
 import { LockIcon } from '../components/admin/modals/LockFeedback';
+import ReportCalendar from '../components/admin/ReportCalendar';
 import VersionManageModal from '../components/admin/modals/VersionManageModal';
 import MoveReportModal from '../components/admin/modals/MoveReportModal';
 import MedicalLoader from '../components/common/MedicalLoader';
@@ -1248,36 +1248,12 @@ const AdminDashboard = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
             {activeTab === 'reports' && (
               <>
-                {/* Date Picker Pill */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.45rem',
-                  backgroundColor: '#F8FAFC',
-                  padding: '0.42rem 0.75rem',
-                  borderRadius: '8px',
-                  border: '1.5px solid #CBD5E1'
-                }}>
-                  <FaCalendarAlt style={{ color: '#0284C7', fontSize: '0.85rem' }} />
-                  <input
-                    type="date"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    style={{
-                      border: 'none',
-                      background: 'transparent',
-                      outline: 'none',
-                      fontWeight: '700',
-                      fontSize: '0.85rem',
-                      color: '#0F2C59',
-                      cursor: 'pointer'
-                    }}
-                  />
-                </div>
+                <ReportCalendar value={date} onChange={setDate} />
 
                 {/* Toggle Lock All Reports */}
                 <button
                   type="button"
+                  className="admin-header-action"
                   onClick={handleToggleLockAll}
                   disabled={submittedCount === 0 || allLocked}
                   style={{
@@ -1302,6 +1278,7 @@ const AdminDashboard = () => {
                 {/* Presentation Mode */}
                 <button
                   type="button"
+                  className="admin-header-action"
                   onClick={handlePresentation}
                   style={{
                     backgroundColor: '#0F2C59',
@@ -1326,6 +1303,7 @@ const AdminDashboard = () => {
             {/* Version Changelog Manager */}
             <button
               type="button"
+              className="admin-header-action"
               onClick={() => setShowVersionManageModal(true)}
               style={{
                 backgroundColor: '#EFF6FF',
@@ -1349,6 +1327,7 @@ const AdminDashboard = () => {
             {/* Logout Button */}
             <button
               type="button"
+              className="admin-header-action"
               onClick={logout}
               style={{
                 backgroundColor: '#FFFFFF',

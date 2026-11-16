@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { 
   getDepartmentStatus, 
+  getReportCalendar,
   getPresentationData,
   getDatabaseStats,
   getReportsPayloadSize,
@@ -28,6 +29,7 @@ const { getShiftReportHistory, getCustomFormsHistory } = require('../controllers
 const { auth, adminOnly: requireAdmin } = require('../middleware/auth');
 
 router.get('/departments/:date', auth, requireAdmin, getDepartmentStatus);
+router.get('/report-calendar', auth, requireAdmin, getReportCalendar);
 router.get('/presentation/:date', auth, requireAdmin, getPresentationData);
 router.get('/analytics/stats', auth, requireAdmin, getHospitalAnalytics);
 router.get('/database-stats', auth, requireAdmin, getDatabaseStats);

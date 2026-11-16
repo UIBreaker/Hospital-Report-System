@@ -256,6 +256,42 @@ const getDepartmentStatus = async (req, res, next) => {
   }
 };
 
+const getReportCalendar = async (req, res, next) => {
+  try {
+    const { month } = req.query;
+    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month || '')) {
+      return res.status(400).json({ success: false, error: 'Tháng không hợp lệ.' });
+    }
+    const [year, monthNumber] = month.split('-').map(Number);
+    const nextMonth = monthNumber === 12
+      ? `${year + 1}-01-01`
+      : `${year}-${String(monthNumber + 1).padStart(2, '0')}-01`;
+    const [rows] = await pool.execute(
+      `SELECT DATE_FORMAT(report_date, '%Y-%m-%d') AS date,
+              COUNT(*) AS submitted_count,
+              SUM(CASE WHEN is_locked = 1 THEN 1 ELSE 0 END) AS locked_count
+       FROM reports
+       WHERE status = 'submitted' AND report_date >= ? AND report_date < ?
+       GROUP BY report_date ORDER BY report_date`,
+      [`${month}-01`, nextMonth]
+    );
+    const [latestRows] = await pool.execute(
+      "SELECT DATE_FORMAT(MAX(report_date), '%Y-%m-%d') AS latest_date FROM reports WHERE status = 'submitted'"
+    );
+    return res.json({ success: true, data: {
+      month,
+      latestReportDate: latestRows[0]?.latest_date || null,
+      days: rows.map(row => ({
+        date: row.date,
+        submittedCount: Number(row.submitted_count) || 0,
+        lockedCount: Number(row.locked_count) || 0
+      }))
+    } });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const getDatabaseStats = async (req, res, next) => {
   try {
     let dbName = process.env.DB_NAME || 'hospital_report';
@@ -1151,6 +1187,7 @@ const moveReportDate = async (req, res, next) => {
 module.exports = { 
   getPresentationData, 
   getDepartmentStatus, 
+  getReportCalendar,
   getDatabaseStats, 
   getReportsPayloadSize,
   getAuditLogs,

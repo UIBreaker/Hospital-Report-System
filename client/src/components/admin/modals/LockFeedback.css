@@ -25,7 +25,10 @@
   animation: security-panel-enter .3s ease-out both;
 }
 
-.security-lock-panel-wide { width: min(760px, 100%); }
+.security-lock-panel-wide { width: min(980px, 100%); max-height: calc(100dvh - 32px); overflow: hidden; padding: 24px 28px; }
+.security-lock-panel-wide .security-lock-heading { display: flex; align-items: center; gap: 18px; padding-bottom: 16px; text-align: left; }
+.security-lock-panel-wide .security-lock-hero { margin: 0; }
+.security-lock-panel-wide .security-lock-heading-copy { min-width: 0; }
 .security-lock-panel h2 { margin: 7px 0; font-size: clamp(1.3rem, 3vw, 1.65rem); line-height: 1.25; }
 .security-lock-panel p { margin: 0; color: #52647f; line-height: 1.5; }
 .security-lock-eyebrow { display: block; color: #087e71; font-size: .72rem; font-weight: 900; letter-spacing: .12em; }
@@ -75,6 +78,13 @@
 .security-lock-progress > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #0da78d, #20cca5); transition: width .24s ease; }
 .security-lock-progress-label { min-height: 1.5em; text-align: left; font-size: .78rem; }
 .security-lock-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; margin: 18px 0; text-align: left; }
+.security-lock-panel-wide .security-lock-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 12px 0 15px; }
+.security-lock-panel-wide .security-lock-progress-heading { margin-top: 14px; }
+.security-lock-panel-wide .security-lock-department { min-height: 58px; padding: 7px 8px; gap: 7px; }
+.security-lock-panel-wide .security-lock-department strong { font-size: .7rem; }
+.security-lock-panel-wide .security-lock-department small { font-size: .66rem; }
+.security-lock-panel-wide .security-lock-empty { width: 34px; height: 34px; }
+.security-lock-panel-wide .security-lock-footer { padding-top: 13px; }
 .security-lock-department {
   display: flex;
   align-items: center;
@@ -139,11 +149,15 @@
 @keyframes security-panel-enter { from { opacity: 0; transform: translateY(10px) scale(.985); } to { opacity: 1; transform: none; } }
 @media (max-width: 650px) {
   .security-lock-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .security-lock-panel-wide { overflow: auto; }
+  .security-lock-panel-wide .security-lock-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .security-lock-panel-wide .security-lock-heading { gap: 12px; }
   .security-lock-panel { padding: 22px; }
   .locked-action-notice { top: auto; right: 16px; bottom: 16px; left: 16px; width: auto; flex-wrap: wrap; }
   .locked-action-notice-action { margin-left: 55px; }
   .locked-report-banner { flex-wrap: wrap; }
   .locked-report-banner button { margin-left: 48px; }
 }
-@media (max-width: 420px) { .security-lock-grid { grid-template-columns: 1fr; } .security-lock-actions { justify-content: stretch; } .security-lock-actions > button { flex: 1; } }
+@media (max-width: 420px) { .security-lock-grid, .security-lock-panel-wide .security-lock-grid { grid-template-columns: 1fr; } .security-lock-actions { justify-content: stretch; } .security-lock-actions > button { flex: 1; } }
+@media (max-height: 700px) { .security-lock-panel-wide { overflow: auto; } }
 @media (prefers-reduced-motion: reduce) { .security-lock-backdrop *, .locked-action-notice, .locked-action-notice * { transition: none !important; animation: none !important; } }

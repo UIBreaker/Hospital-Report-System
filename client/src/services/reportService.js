@@ -35,6 +35,10 @@ const reportService = {
     const response = await api.get(`/admin/departments/${date}`);
     return response.data;
   },
+  getReportCalendar: async (month) => {
+    const response = await api.get('/admin/report-calendar', { params: { month }, useCache: false });
+    return response.data;
+  },
   deleteReport: async (departmentCode, date) => {
     const response = await api.delete(`/reports/${departmentCode}/${date}`);
     return response.data;
