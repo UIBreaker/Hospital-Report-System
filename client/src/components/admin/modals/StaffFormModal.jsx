@@ -89,21 +89,18 @@ const StaffFormModal = ({
     setSaving(true);
     setActionMsg({ type: '', text: '' });
     try {
-      if (editingStaff && editingStaff.id) {
+      if (editingStaff) {
+        if (!editingStaff.id) throw new Error('Không xác định được nhân sự cần cập nhật.');
         await staffService.updateStaff(editingStaff.id, formData);
-        setActionMsg({ type: 'success', text: 'Cập nhật thông tin nhân sự thành công!' });
       } else {
         await staffService.createStaff(formData);
-        setActionMsg({ type: 'success', text: 'Thêm nhân sự mới thành công!' });
       }
-      setTimeout(() => {
-        if (onSaveSuccess) onSaveSuccess();
-        onClose();
-      }, 600);
+      if (onSaveSuccess) await onSaveSuccess(editingStaff ? 'Đã cập nhật nhân sự.' : 'Đã thêm nhân sự mới.');
+      onClose();
     } catch (err) {
       setActionMsg({
         type: 'error',
-        text: err.response?.data?.error || 'Có lỗi xảy ra khi lưu thông tin nhân sự.'
+        text: err.response?.data?.error || err.message || 'Có lỗi xảy ra khi lưu thông tin nhân sự.'
       });
     } finally {
       setSaving(false);
@@ -114,6 +111,9 @@ const StaffFormModal = ({
 
   const modalContent = (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={editingStaff ? `Chỉnh sửa nhân sự ${editingStaff.full_name}` : 'Thêm mới nhân sự'}
       style={{
         position: 'fixed',
         inset: 0,
@@ -163,7 +163,10 @@ const StaffFormModal = ({
             <FaUsers /> {editingStaff ? 'Chỉnh Sửa Nhân Sự' : 'Thêm Mới Nhân Sự'}
           </h3>
           <button
+            type="button"
             onClick={onClose}
+            disabled={saving}
+            aria-label="Đóng biểu mẫu nhân sự"
             style={{
               background: 'none',
               border: 'none',
@@ -217,6 +220,9 @@ const StaffFormModal = ({
                 className="form-control"
                 style={{ width: '100%', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid var(--border)' }}
               >
+                {editingStaff?.position && !['Bác sĩ', 'Điều dưỡng', 'Kỹ thuật viên', 'Hộ sinh', 'Dược sĩ', 'Khác'].includes(editingStaff.position) && (
+                  <option value={editingStaff.position}>{editingStaff.position}</option>
+                )}
                 <option value="Bác sĩ">Bác sĩ</option>
                 <option value="Điều dưỡng">Điều dưỡng</option>
                 <option value="Kỹ thuật viên">Kỹ thuật viên</option>
@@ -252,6 +258,9 @@ const StaffFormModal = ({
               className="form-control"
               style={{ width: '100%', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid var(--border)' }}
             >
+              {editingStaff?.department && !DEPARTMENT_ORDER.includes(editingStaff.department) && (
+                <option value={editingStaff.department}>{editingStaff.department_name || editingStaff.department}</option>
+              )}
               {DEPARTMENT_ORDER.map((code) => (
                 <option key={code} value={code}>
                   {DEPARTMENT_MAP[code] || code}

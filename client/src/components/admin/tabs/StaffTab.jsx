@@ -18,6 +18,7 @@ import staffService from '../../../services/staffService';
 import StaffFormModal from '../modals/StaffFormModal';
 import MedicalLoader from '../../common/MedicalLoader';
 import CountUpNumber from '../../common/CountUpNumber';
+import './StaffTab.css';
 
 const DEPARTMENT_MAP = {
   lck: 'Khoa Liên Chuyên Khoa',
@@ -58,6 +59,7 @@ const StaffTab = () => {
   const [staffList, setStaffList] = useState([]);
   const [loadingStaff, setLoadingStaff] = useState(false);
   const [staffError, setStaffError] = useState('');
+  const [staffNotice, setStaffNotice] = useState('');
   const [staffSearch, setStaffSearch] = useState('');
   const [staffDeptFilter, setStaffDeptFilter] = useState('all');
   const [staffPosFilter, setStaffPosFilter] = useState('all');
@@ -102,11 +104,13 @@ const StaffTab = () => {
   };
 
   const handleOpenAddStaff = () => {
+    setStaffNotice('');
     setEditingStaff(null);
     setIsModalOpen(true);
   };
 
   const handleOpenEditStaff = (staff) => {
+    setStaffNotice('');
     setEditingStaff(staff);
     setIsModalOpen(true);
   };
@@ -126,8 +130,8 @@ const StaffTab = () => {
   };
 
   const totalStaffCount = staffList.length;
-  const doctorCount = staffList.filter((s) => s.position === 'Bác sĩ').length;
-  const nurseCount = staffList.filter((s) => s.position !== 'Bác sĩ').length;
+  const doctorCount = staffList.filter((s) => (s.position || '').toLowerCase().includes('bác sĩ')).length;
+  const nurseCount = totalStaffCount - doctorCount;
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -169,10 +173,10 @@ const StaffTab = () => {
               <CountUpNumber value={totalStaffCount} duration={800} />
             </div>
             <div style={{ fontSize: '0.82rem', fontWeight: '800', color: '#0F2C59', textTransform: 'uppercase', letterSpacing: '0.4px', marginTop: '0.2rem' }}>
-              TỔNG SỐ NHÂN SỰ
+              NHÂN SỰ HIỂN THỊ
             </div>
             <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '0.1rem' }}>
-              Đã đăng ký trong danh bạ
+              Theo bộ lọc hiện tại
             </div>
           </div>
         </div>
@@ -208,10 +212,10 @@ const StaffTab = () => {
               <CountUpNumber value={doctorCount} duration={800} />
             </div>
             <div style={{ fontSize: '0.82rem', fontWeight: '800', color: '#065F46', textTransform: 'uppercase', letterSpacing: '0.4px', marginTop: '0.2rem' }}>
-              BÁC SĨ ĐIỀU TRỊ
+              BÁC SĨ
             </div>
             <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '0.1rem' }}>
-              Bác sĩ trực chuyên khoa
+              Trong danh sách đang xem
             </div>
           </div>
         </div>
@@ -247,38 +251,40 @@ const StaffTab = () => {
               <CountUpNumber value={nurseCount} duration={800} />
             </div>
             <div style={{ fontSize: '0.82rem', fontWeight: '800', color: '#92400E', textTransform: 'uppercase', letterSpacing: '0.4px', marginTop: '0.2rem' }}>
-              ĐIỀU DƯỠNG / KTV / KHÁC
+              VỊ TRÍ KHÁC
             </div>
             <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '0.1rem' }}>
-              Điều dưỡng & Kỹ thuật viên
+              Điều dưỡng, kỹ thuật viên và khác
             </div>
           </div>
         </div>
       </div>
 
       {/* 2. Action Toolbar & Filter Controls */}
-      <div style={{
+      <div className="staff-directory-toolbar" style={{
         backgroundColor: '#FFFFFF',
         borderRadius: '14px',
         border: '1px solid #E2E8F0',
         padding: '0.85rem 1.25rem',
-        display: 'flex',
+        display: 'grid',
         justifyContent: 'space-between',
-        alignItems: 'center',
+        alignItems: 'stretch',
         flexWrap: 'wrap',
         gap: '0.85rem',
         boxShadow: '0 2px 8px rgba(15, 44, 89, 0.04)'
       }}>
         {/* Search & Filter Form */}
         <form
+          className="staff-directory-filters"
           onSubmit={handleSearchSubmit}
-          style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap', alignItems: 'center', flex: 1 }}
+          style={{ display: 'grid', gridTemplateColumns: 'minmax(220px, 1.5fr) repeat(2, minmax(160px, 1fr)) auto', gap: '0.65rem', alignItems: 'center' }}
         >
           {/* Search Box */}
-          <div style={{ position: 'relative', minWidth: '220px', flex: 1 }}>
+          <div style={{ position: 'relative', minWidth: 0 }}>
             <FaSearch style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8', fontSize: '0.85rem' }} />
             <input
               type="text"
+              aria-label="Tìm nhân sự theo họ tên hoặc chứng chỉ hành nghề"
               placeholder="Tìm theo họ tên, CCHN..."
               value={staffSearch}
               onChange={(e) => setStaffSearch(e.target.value)}
@@ -297,6 +303,7 @@ const StaffTab = () => {
 
           {/* Department Filter */}
           <select
+            aria-label="Lọc theo khoa phòng"
             value={staffDeptFilter}
             onChange={(e) => setStaffDeptFilter(e.target.value)}
             style={{
@@ -321,6 +328,7 @@ const StaffTab = () => {
 
           {/* Position Filter */}
           <select
+            aria-label="Lọc theo chức danh"
             value={staffPosFilter}
             onChange={(e) => setStaffPosFilter(e.target.value)}
             style={{
@@ -365,7 +373,8 @@ const StaffTab = () => {
         </form>
 
         {/* Action Buttons: Refresh & Add Staff */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <div className="staff-directory-heading" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', order: -1 }}>
+          <div className="staff-directory-title"><strong>Danh bạ nhân sự</strong><span>Tra cứu và cập nhật thông tin cán bộ theo khoa phòng</span></div>
           <button
             type="button"
             onClick={fetchStaff}
@@ -424,15 +433,20 @@ const StaffTab = () => {
           {staffError}
         </div>
       )}
+      {staffNotice && <div className="staff-directory-notice" role="status">{staffNotice}</div>}
 
       {/* 3. Staff Data Table */}
-      <div style={{
+      <div className="staff-directory-results" style={{
         backgroundColor: '#FFFFFF',
         borderRadius: '14px',
         border: '1px solid #E2E8F0',
         boxShadow: '0 2px 8px rgba(15, 44, 89, 0.04)',
         overflow: 'hidden'
       }}>
+        <div className="staff-directory-results-heading">
+          <strong>Danh sách nhân sự</strong>
+          <span>{loadingStaff ? 'Đang tải danh sách…' : `${staffList.length} nhân sự theo bộ lọc hiện tại`}</span>
+        </div>
         {loadingStaff ? (
           <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {Array.from({ length: 6 }).map((_, i) => (
@@ -456,7 +470,7 @@ const StaffTab = () => {
           </div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
+            <table className="staff-directory-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
               <thead>
                 <tr style={{ backgroundColor: '#F8FAFC', borderBottom: '2px solid #E2E8F0', color: '#0F2C59' }}>
                   <th style={{ padding: '0.75rem 1rem', fontWeight: '800', width: '5%', textAlign: 'center' }}>STT</th>
@@ -469,7 +483,7 @@ const StaffTab = () => {
               </thead>
               <tbody>
                 {staffList.map((st, idx) => {
-                  const isDoctor = st.position === 'Bác sĩ';
+                  const isDoctor = (st.position || '').toLowerCase().includes('bác sĩ');
                   return (
                     <tr
                       key={st.id || idx}
@@ -503,9 +517,9 @@ const StaffTab = () => {
                           </div>
                           <div>
                             <div style={{ fontWeight: '800', color: '#0F2C59' }}>{st.full_name || st.name}</div>
-                            {st.license_number && (
+                            {st.certificate && (
                               <div style={{ fontSize: '0.75rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '1px' }}>
-                                <FaIdCard size={10} /> CCHN: {st.license_number}
+                                <FaIdCard size={10} /> CCHN: {st.certificate}
                               </div>
                             )}
                           </div>
@@ -550,7 +564,7 @@ const StaffTab = () => {
                           fontWeight: '800',
                           fontSize: '0.72rem'
                         }}>
-                          Đang công tác
+                          Trong danh bạ
                         </span>
                       </td>
 
@@ -612,10 +626,8 @@ const StaffTab = () => {
       <StaffFormModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        staff={editingStaff}
-        onSuccess={fetchStaff}
-        departments={DEPARTMENT_MAP}
-        departmentOrder={DEPARTMENT_ORDER}
+        editingStaff={editingStaff}
+        onSaveSuccess={async message => { await fetchStaff(); setStaffNotice(message); }}
       />
 
       {/* Delete Confirmation Modal (Portal) */}

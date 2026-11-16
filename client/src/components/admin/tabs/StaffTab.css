@@ -1,0 +1,26 @@
+.staff-directory-toolbar { grid-template-columns: minmax(0, 1fr); padding: 18px 22px !important; gap: 17px !important; }
+.staff-directory-heading { min-width: 0; justify-content: flex-end; padding-bottom: 15px; border-bottom: 1px solid #e8eef6; }
+.staff-directory-title { display: grid; gap: 3px; margin-right: auto; }
+.staff-directory-title strong { color: #0f2c59; font-size: 1rem; font-weight: 850; }
+.staff-directory-title span { color: #64748b; font-size: .76rem; }
+.staff-directory-heading > button, .staff-directory-filters > button { min-height: 42px; box-sizing: border-box; white-space: nowrap; justify-content: center; }
+.staff-directory-filters > div > input, .staff-directory-filters > select { height: 42px; box-sizing: border-box; min-width: 0; width: 100%; }
+.staff-directory-filters > div > input:focus, .staff-directory-filters > select:focus { border-color: #2563eb !important; box-shadow: 0 0 0 3px #dbeafe; }
+.staff-directory-results-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; border-bottom: 1px solid #e8eef6; background: #fff; }
+.staff-directory-results-heading strong { color: #0f2c59; font-size: .94rem; }
+.staff-directory-results-heading span { color: #52647f; font-size: .76rem; font-weight: 650; }
+.staff-directory-notice { padding: 11px 15px; border: 1px solid #a7e7d1; border-radius: 10px; background: #ecfdf5; color: #087e71; font-size: .84rem; font-weight: 700; }
+.staff-directory-table { min-width: 930px; }
+.staff-directory-table thead th { font-size: .72rem; letter-spacing: .025em; white-space: nowrap; }
+.staff-directory-table tbody td { vertical-align: middle; }
+.staff-directory-table tbody tr:last-child { border-bottom: 0 !important; }
+.staff-directory-table tbody button { min-height: 31px; }
+.staff-directory-table button:focus-visible, .staff-directory-heading button:focus-visible, .staff-directory-filters button:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+@media (max-width: 1150px) { .staff-directory-filters { grid-template-columns: minmax(220px, 1fr) minmax(180px, 1fr) !important; } }
+@media (max-width: 620px) {
+  .staff-directory-toolbar { padding: 16px !important; }
+  .staff-directory-filters { grid-template-columns: minmax(0, 1fr) !important; }
+  .staff-directory-heading { flex-wrap: wrap; }
+  .staff-directory-title { flex-basis: 100%; margin-bottom: 8px; }
+  .staff-directory-results-heading { align-items: flex-start; flex-direction: column; gap: 3px; }
+}
