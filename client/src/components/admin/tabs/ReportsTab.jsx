@@ -63,12 +63,15 @@ const DEPT_ICONS = {
 
 const ReportsTab = ({
   statusList = [],
+  date = '',
   loading = false,
   error = '',
   onClearError,
   onOpenDetailModal
 }) => {
   const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'submitted' | 'unsubmitted' | 'has_cases'
+  const [year, month, day] = date.split('-');
+  const loadingDate = date ? ` ngày ${Number(day)} tháng ${Number(month)} năm ${year}` : '';
 
   const totalCount = statusList.length || 12;
   const submittedCount = statusList.filter((s) => s.status === 'submitted').length;
@@ -377,7 +380,7 @@ const ReportsTab = ({
       {/* 3. 12 Department Cards Grid (High-Contrast Visual Separation) */}
       {loading ? (
         <MedicalLoader
-          text="Đang tải dữ liệu báo cáo 12 khoa phòng..."
+          text={`Đang tải dữ liệu báo cáo 12 khoa phòng${loadingDate}`}
           subtext="Hệ thống đang đồng bộ trạng thái nộp báo cáo từ máy chủ"
           minHeight="340px"
         />

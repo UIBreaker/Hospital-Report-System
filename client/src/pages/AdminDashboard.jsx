@@ -5,10 +5,6 @@ import {
   FaCalendarAlt, 
   FaSignOutAlt, 
   FaTv, 
-  FaPrint,
-  FaFilePdf,
-  FaFileExcel,
-  FaChevronDown,
   FaChevronLeft,
   FaChevronRight,
   FaBars,
@@ -28,7 +24,6 @@ import {
   FaFolderOpen
 } from 'react-icons/fa';
 import reportService from '../services/reportService';
-import { generateAndDownloadHospitalExcel } from '../services/excelExportService';
 import MedicalPrintView from '../components/common/MedicalPrintView';
 import Footer from '../components/common/Footer';
 import AdminReportDetailModal from '../components/admin/modals/AdminReportDetailModal';
@@ -121,9 +116,7 @@ const AdminDashboard = () => {
     loading: false
   });
 
-  // Export Excel & Print Modal States
-  const [showExportMenu, setShowExportMenu] = useState(false);
-  const [exportingExcel, setExportingExcel] = useState(false);
+  // Print Modal State (used by history and archive tabs)
   const [showPrintModal, setShowPrintModal] = useState(false);
   const [printReports, setPrintReports] = useState([]);
 
@@ -656,53 +649,6 @@ const AdminDashboard = () => {
       alert('Xóa báo cáo thất bại: ' + (err.response?.data?.error || err.message));
     } finally {
       setDeleting(false);
-    }
-  };
-
-  // Export Excel Full
-  const handleExportExcel = async (type = 'full') => {
-    setShowExportMenu(false);
-    setExportingExcel(true);
-    try {
-      const res = await reportService.getPresentationData(date);
-      const reports = (res && res.data) ? res.data : [];
-      await generateAndDownloadHospitalExcel(date, reports, statusList);
-    } catch (err) {
-      console.warn('Client Excel generation failed, falling back to server export:', err);
-      try {
-        const response = await reportService.exportHospitalReportExcel(date);
-        const blob = new Blob([response.data], {
-          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        });
-        const downloadUrl = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.setAttribute('download', `Bao_Cao_Giao_Ban_Tong_Hop_${date}.xlsx`);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        window.URL.revokeObjectURL(downloadUrl);
-      } catch (fallbackErr) {
-        alert('Không thể xuất file Excel: ' + (fallbackErr.response?.data?.error || fallbackErr.message || err.message || 'Lỗi hệ thống'));
-      }
-    } finally {
-      setExportingExcel(false);
-    }
-  };
-
-  // Medical Print View & PDF Modal
-  const handlePrintReport = async () => {
-    try {
-      const res = await reportService.getPresentationData(date);
-      if (res && res.data) {
-        setPrintReports(res.data);
-        setShowPrintModal(true);
-      } else {
-        alert('Không có dữ liệu báo cáo cho ngày này để in / xuất PDF.');
-      }
-    } catch (err) {
-      console.error('Lỗi khi tải dữ liệu in báo cáo:', err);
-      alert('Không thể tải dữ liệu để in báo cáo: ' + (err.response?.data?.error || err.message));
     }
   };
 
@@ -1335,85 +1281,6 @@ const AdminDashboard = () => {
                   {lockingAll ? <FaSpinner className="spinner" /> : allLocked ? <><FaUnlockAlt /> Mở Khóa Toàn Viện</> : <><FaLock /> Khóa Sổ Toàn Viện</>}
                 </button>
 
-                {/* Export Excel Dropdown */}
-                <div style={{ position: 'relative' }}>
-                  <button
-                    type="button"
-                    onClick={() => setShowExportMenu(!showExportMenu)}
-                    disabled={exportingExcel}
-                    style={{
-                      backgroundColor: '#FFFFFF',
-                      color: '#334155',
-                      border: '1.5px solid #CBD5E1',
-                      borderRadius: '8px',
-                      fontWeight: '700',
-                      fontSize: '0.82rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.35rem',
-                      padding: '0.45rem 0.85rem',
-                      cursor: exportingExcel ? 'not-allowed' : 'pointer'
-                    }}
-                  >
-                    {exportingExcel ? <FaSpinner className="spinner" /> : <FaFileExcel style={{ color: '#10B981' }} />}
-                    Xuất Excel <FaChevronDown size={9} />
-                  </button>
-                  {showExportMenu && (
-                    <div style={{
-                      position: 'absolute',
-                      top: '100%',
-                      right: 0,
-                      marginTop: '0.35rem',
-                      backgroundColor: '#FFFFFF',
-                      borderRadius: '10px',
-                      boxShadow: '0 10px 30px rgba(0, 0, 0, 0.15)',
-                      border: '1px solid #E2E8F0',
-                      zIndex: 1000,
-                      minWidth: '220px',
-                      overflow: 'hidden'
-                    }}>
-                      <button
-                        onClick={() => handleExportExcel('full')}
-                        style={{ width: '100%', padding: '0.65rem 1rem', textAlign: 'left', border: 'none', background: 'none', cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600', color: '#0F2C59', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F1F5F9'}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                      >
-                        📊 Báo Cáo Giao Ban Chuẩn
-                      </button>
-                      <button
-                        onClick={() => handleExportExcel('cases')}
-                        style={{ width: '100%', padding: '0.65rem 1rem', textAlign: 'left', border: 'none', background: 'none', cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600', color: '#0F2C59', display: 'flex', alignItems: 'center', gap: '0.5rem', borderTop: '1px solid #F1F5F9' }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F1F5F9'}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                      >
-                        🏥 Danh Sách Ca Bệnh Chi Tiết
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Print / PDF View */}
-                <button
-                  type="button"
-                  onClick={handlePrintReport}
-                  style={{
-                    backgroundColor: '#FFFFFF',
-                    color: '#334155',
-                    border: '1.5px solid #CBD5E1',
-                    borderRadius: '8px',
-                    fontWeight: '700',
-                    fontSize: '0.82rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.35rem',
-                    padding: '0.45rem 0.85rem',
-                    cursor: 'pointer'
-                  }}
-                  title="Xem bản in toàn viện & Tải file PDF A4 chuẩn"
-                >
-                  <FaFilePdf style={{ color: '#EF4444' }} /> In / Tải PDF
-                </button>
-
                 {/* Presentation Mode */}
                 <button
                   type="button"
@@ -1491,6 +1358,7 @@ const AdminDashboard = () => {
             {activeTab === 'reports' && (
               <ReportsTab
                 statusList={statusList}
+                date={date}
                 loading={loading}
                 error={error}
                 onClearError={() => setError('')}
