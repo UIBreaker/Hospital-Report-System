@@ -944,20 +944,22 @@ const toggleLockAllReports = async (req, res, next) => {
   try {
     const { date } = req.params;
     const { isLocked } = req.body;
-    const lockVal = isLocked ? 1 : 0;
+    if (isLocked !== true) {
+      return res.status(400).json({ success: false, error: 'Chỉ có thể mở khóa từng khoa trong chi tiết báo cáo.' });
+    }
     const adminUser = req.user?.username || 'Admin';
     const clientIp = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || null;
 
     const [result] = await pool.execute(
       `UPDATE reports 
-       SET is_locked = ?, locked_at = ${lockVal ? 'NOW()' : 'NULL'}, locked_by = ? 
-       WHERE report_date = ?`,
-      [lockVal, lockVal ? adminUser : null, date]
+       SET is_locked = 1, locked_at = NOW(), locked_by = ?
+       WHERE report_date = ? AND status = 'submitted' AND is_locked = 0`,
+      [adminUser, date]
     );
 
     // Write audit log
     try {
-      const actionSummary = `[${lockVal ? 'KHÓA SỔ TOÀN VIỆN' : 'MỞ KHÓA TOÀN VIỆN'}] Admin "${adminUser}" đã ${lockVal ? 'khóa sổ' : 'mở khóa'} toàn bộ báo cáo ngày ${date} (${result.affectedRows} khoa)`;
+      const actionSummary = `[KHÓA SỔ TOÀN VIỆN] Admin "${adminUser}" đã khóa các báo cáo đã nộp ngày ${date} (${result.affectedRows} khoa)`;
       await pool.execute(
         `INSERT INTO report_audit_logs 
          (report_id, department_code, report_date, action_type, doctor_name, ip_address, changes_summary)
@@ -969,10 +971,8 @@ const toggleLockAllReports = async (req, res, next) => {
     res.json({
       success: true,
       affectedRows: result.affectedRows,
-      isLocked: Boolean(lockVal),
-      message: lockVal 
-        ? `Đã KHÓA SỔ TOÀN VIỆN cho ${result.affectedRows} báo cáo ngày ${date}!`
-        : `Đã MỞ KHÓA TOÀN VIỆN cho ${result.affectedRows} báo cáo ngày ${date}!`
+      isLocked: true,
+      message: `Đã KHÓA SỔ cho ${result.affectedRows} báo cáo ngày ${date}!`
     });
   } catch (error) {
     next(error);
@@ -1062,7 +1062,7 @@ const moveReportDate = async (req, res, next) => {
 
     // 1. Kiểm tra báo cáo nguồn
     const [sourceReports] = await connection.execute(
-      'SELECT id, department_code, report_date, doctor_name, nurse_name FROM reports WHERE department_code = ? AND report_date = ? FOR UPDATE',
+      'SELECT id, department_code, report_date, doctor_name, nurse_name, is_locked FROM reports WHERE department_code = ? AND report_date = ? FOR UPDATE',
       [departmentCode, fromDate]
     );
 
@@ -1072,6 +1072,13 @@ const moveReportDate = async (req, res, next) => {
     }
 
     const sourceReport = sourceReports[0];
+    if (Number(sourceReport.is_locked) === 1) {
+      await connection.rollback();
+      return res.status(403).json({
+        success: false,
+        error: 'Báo cáo đã khóa sổ. Vui lòng mở khóa sổ của khoa trước khi chuyển ngày.'
+      });
+    }
 
     // 2. Kiểm tra ngày đích: đã có báo cáo của khoa này chưa?
     const [targetExisting] = await connection.execute(

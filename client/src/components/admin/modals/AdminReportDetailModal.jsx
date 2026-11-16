@@ -112,6 +112,7 @@ const AdminReportDetailModal = ({
   onOpenMoveReportModal
 }) => {
   const [mounted, setMounted] = useState(false);
+  const warnLocked = () => window.alert('Báo cáo đã khóa sổ. Vui lòng mở khóa sổ của khoa trước khi sửa số liệu, chuyển ngày hoặc xóa báo cáo.');
 
   useEffect(() => {
     setMounted(true);
@@ -253,7 +254,7 @@ const AdminReportDetailModal = ({
                 {!isEditing ? (
                   <button
                     className="btn btn-primary btn-sm"
-                    onClick={() => setIsEditing(true)}
+                    onClick={() => modalReportLocked ? warnLocked() : setIsEditing(true)}
                     style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.45rem 0.85rem', fontWeight: '700' }}
                   >
                     <FaEdit /> Sửa số liệu
@@ -283,7 +284,7 @@ const AdminReportDetailModal = ({
                 <button
                   className="btn btn-sm"
                   type="button"
-                  onClick={() => onOpenMoveReportModal && onOpenMoveReportModal(modalDept)}
+                  onClick={() => modalReportLocked ? warnLocked() : onOpenMoveReportModal?.(modalDept)}
                   style={{
                     backgroundColor: '#EFF6FF',
                     color: '#1D4ED8',
@@ -304,7 +305,7 @@ const AdminReportDetailModal = ({
                 {/* Delete button */}
                 <button
                   className="btn btn-danger btn-sm"
-                  onClick={() => setShowDeleteConfirm(true)}
+                  onClick={() => modalReportLocked ? warnLocked() : setShowDeleteConfirm(true)}
                   style={{ padding: '0.45rem 0.75rem' }}
                   title="Xóa báo cáo"
                 >
@@ -344,6 +345,11 @@ const AdminReportDetailModal = ({
           {saveSuccess && (
             <div className="alert alert-success" style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <FaCheck /> {saveSuccess}
+            </div>
+          )}
+          {hasReport && modalReportLocked && (
+            <div role="alert" style={{ marginBottom: '1.25rem', padding: '0.75rem 1rem', borderRadius: '10px', backgroundColor: '#FFFBEB', border: '1px solid #FDE68A', color: '#92400E', display: 'flex', alignItems: 'center', gap: '0.6rem', fontWeight: '700', fontSize: '0.85rem' }}>
+              <FaLock /> Báo cáo đã khóa sổ. Hãy mở khóa sổ của khoa trước khi sửa số liệu, chuyển ngày hoặc xóa.
             </div>
           )}
 

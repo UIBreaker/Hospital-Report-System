@@ -30,8 +30,7 @@ const parseCaseImages = (caseItem) => {
   };
 };
 
-const isReportLocked = (report, userRole) => {
-  if (userRole === 'admin') return false; // Admin always has bypass permission
+const isReportLocked = (report) => {
   if (!report) return false;
   return Number(report.is_locked) === 1;
 };
@@ -61,27 +60,18 @@ const createOrUpdateReport = async (req, res, next) => {
 
     // Check if report exists
     const [existing] = await connection.execute(
-      'SELECT id, is_locked, report_date FROM reports WHERE department_code = ? AND report_date = ?',
+      'SELECT id, is_locked, report_date FROM reports WHERE department_code = ? AND report_date = ? FOR UPDATE',
       [departmentCode, reportDate]
     );
 
     // Permission and lock check
-    if (req.user.role !== 'admin') {
-      if (existing.length > 0 && isReportLocked(existing[0], req.user.role)) {
-        await connection.rollback();
-        return res.status(403).json({
-          success: false,
-          error: 'Báo cáo ngày này đã bị KHÓA SỔ GIAO BAN. Chỉ Quản trị viên (Admin) mới có quyền mở khóa hoặc chỉnh sửa.',
-          isLocked: true
-        });
-      } else if (existing.length === 0 && isReportLocked({ report_date: reportDate, is_locked: 0 }, req.user.role)) {
-        await connection.rollback();
-        return res.status(403).json({
-          success: false,
-          error: 'Đã quá thời hạn nộp báo cáo giao ban (sau 08:30 sáng). Hệ thống đã khóa sổ. Vui lòng liên hệ Admin để mở khóa nếu cần nộp bổ sung.',
-          isLocked: true
-        });
-      }
+    if (existing.length > 0 && isReportLocked(existing[0])) {
+      await connection.rollback();
+      return res.status(403).json({
+        success: false,
+        error: 'Báo cáo đã khóa sổ. Vui lòng mở khóa sổ của khoa trước khi sửa số liệu.',
+        isLocked: true
+      });
     }
 
     let reportId;
@@ -364,15 +354,15 @@ const deleteReport = async (req, res, next) => {
 
     // 1. Tìm các report ID tương ứng
     const [reports] = await connection.execute(
-      'SELECT id, is_locked, report_date FROM reports WHERE department_code = ? AND report_date = ?',
+      'SELECT id, is_locked, report_date FROM reports WHERE department_code = ? AND report_date = ? FOR UPDATE',
       [departmentCode, date]
     );
 
-    if (reports.length > 0 && req.user.role !== 'admin' && isReportLocked(reports[0], req.user.role)) {
+    if (reports.length > 0 && isReportLocked(reports[0])) {
       await connection.rollback();
       return res.status(403).json({
         success: false,
-        error: 'Báo cáo này đã bị KHÓA SỔ GIAO BAN. Chỉ Quản trị viên (Admin) mới có quyền xóa hoặc mở khóa.'
+        error: 'Báo cáo đã khóa sổ. Vui lòng mở khóa sổ của khoa trước khi xóa.'
       });
     }
 

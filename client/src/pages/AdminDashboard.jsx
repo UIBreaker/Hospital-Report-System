@@ -32,6 +32,7 @@ import VersionManageModal from '../components/admin/modals/VersionManageModal';
 import MoveReportModal from '../components/admin/modals/MoveReportModal';
 import MedicalLoader from '../components/common/MedicalLoader';
 import { normalizeImages } from '../utils/medicalFormatters';
+import { DEPARTMENT_ORDER } from '../constants/medicalDictionary';
 
 // Lazy-loaded Tab components for performance and code splitting
 const ReportsTab = lazy(() => import('../components/admin/tabs/ReportsTab'));
@@ -105,7 +106,6 @@ const AdminDashboard = () => {
   const [statusList, setStatusList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [lockingAll, setLockingAll] = useState(false);
   const [securityModal, setSecurityModal] = useState({
     isOpen: false,
     mode: 'confirm',
@@ -192,15 +192,14 @@ const AdminDashboard = () => {
       alert(`Ngày ${date} chưa có khoa phòng nào nộp báo cáo.`);
       return;
     }
-    const allLocked = submittedDepts.every(s => s.isLocked);
-    const nextLocked = !allLocked;
+    if (submittedDepts.every(s => s.isLocked)) return;
     setSecurityModal({
       isOpen: true,
       mode: 'confirm',
       targetType: 'all',
       targetName: 'Toàn Viện',
       targetDeptCode: '',
-      willLock: nextLocked,
+      willLock: true,
       loading: false
     });
   };
@@ -432,11 +431,15 @@ const AdminDashboard = () => {
       } else {
         const res = await reportService.toggleReportLock(
           securityModal.targetDeptCode,
-          date,
+          modalReportDate || date,
           securityModal.willLock
         );
         if (res && res.success) {
           setModalReportLocked(securityModal.willLock);
+          if (securityModal.willLock) {
+            setIsEditing(false);
+            setShowDeleteConfirm(false);
+          }
           await fetchStatus();
           setSecurityModal(prev => ({
             ...prev,
@@ -599,13 +602,17 @@ const AdminDashboard = () => {
   // Save Report on Behalf of Department
   const handleSaveReport = async () => {
     if (!modalDept) return;
+    if (modalReportLocked) {
+      alert('Báo cáo đã khóa sổ. Vui lòng mở khóa sổ của khoa trước khi sửa số liệu.');
+      return;
+    }
     setSaving(true);
     setSaveSuccess('');
 
     try {
       const payload = {
         departmentCode: modalDept.departmentCode,
-        reportDate: date,
+        reportDate: modalReportDate || date,
         doctorName: editHeader.doctorName,
         nurseName: editHeader.nurseName,
         overtimeStaff: editHeader.overtimeStaff || [],
@@ -637,9 +644,13 @@ const AdminDashboard = () => {
   // Delete Report
   const handleDeleteReport = async () => {
     if (!modalDept) return;
+    if (modalReportLocked) {
+      alert('Báo cáo đã khóa sổ. Vui lòng mở khóa sổ của khoa trước khi xóa.');
+      return;
+    }
     setDeleting(true);
     try {
-      const res = await reportService.deleteReport(modalDept.departmentCode, date);
+      const res = await reportService.deleteReport(modalDept.departmentCode, modalReportDate || date);
       if (res && res.success) {
         setShowDeleteConfirm(false);
         setModalOpen(false);
@@ -664,6 +675,10 @@ const AdminDashboard = () => {
 
   const submittedCount = statusList.filter(s => s.status === 'submitted').length;
   const allLocked = submittedCount > 0 && statusList.filter(s => s.status === 'submitted').every(s => s.isLocked);
+  const departmentSequence = DEPARTMENT_ORDER.map(code => {
+    const report = statusList.find(item => item.departmentCode === code);
+    return { code, name: DEPARTMENT_NAMES[code], submitted: report?.status === 'submitted' };
+  });
 
   return (
     <div style={{
@@ -1261,9 +1276,9 @@ const AdminDashboard = () => {
                 <button
                   type="button"
                   onClick={handleToggleLockAll}
-                  disabled={lockingAll || submittedCount === 0}
+                  disabled={submittedCount === 0 || allLocked}
                   style={{
-                    backgroundColor: allLocked ? '#10B981' : '#D97706',
+                    backgroundColor: allLocked ? '#64748B' : '#D97706',
                     color: '#FFFFFF',
                     border: 'none',
                     borderRadius: '8px',
@@ -1273,12 +1288,12 @@ const AdminDashboard = () => {
                     alignItems: 'center',
                     gap: '0.35rem',
                     padding: '0.45rem 0.85rem',
-                    cursor: (lockingAll || submittedCount === 0) ? 'not-allowed' : 'pointer',
+                    cursor: (submittedCount === 0 || allLocked) ? 'not-allowed' : 'pointer',
                     boxShadow: '0 2px 6px rgba(16, 185, 129, 0.2)'
                   }}
-                  title={allLocked ? 'Mở khóa cho tất cả khoa phòng sửa số liệu' : 'Khóa sổ toàn viện sau 08:30 sáng'}
+                  title={allLocked ? 'Muốn mở khóa, vào chi tiết từng khoa' : 'Khóa các báo cáo đã nộp trong ngày'}
                 >
-                  {lockingAll ? <FaSpinner className="spinner" /> : allLocked ? <><FaUnlockAlt /> Mở Khóa Toàn Viện</> : <><FaLock /> Khóa Sổ Toàn Viện</>}
+                  <FaLock /> {allLocked ? 'Đã Khóa Sổ Toàn Viện' : 'Khóa Sổ Toàn Viện'}
                 </button>
 
                 {/* Presentation Mode */}
@@ -1448,6 +1463,10 @@ const AdminDashboard = () => {
         handleCriticalCaseChange={handleCriticalCaseChange}
         handleRemoveCriticalCase={handleRemoveCriticalCase}
         onOpenMoveReportModal={(dept) => {
+          if (modalReportLocked) {
+            alert('Báo cáo đã khóa sổ. Vui lòng mở khóa sổ của khoa trước khi chuyển ngày.');
+            return;
+          }
           setDashboardMoveModal({
             isOpen: true,
             departmentCode: dept.departmentCode,
@@ -1465,7 +1484,8 @@ const AdminDashboard = () => {
         mode={securityModal.mode}
         targetType={securityModal.targetType}
         targetName={securityModal.targetName}
-        date={date}
+        departments={departmentSequence}
+        date={securityModal.targetType === 'single' ? (modalReportDate || date) : date}
         willLock={securityModal.willLock}
         loading={securityModal.loading}
         onConfirm={handleConfirmSecurityAction}

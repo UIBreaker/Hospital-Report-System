@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import LockSequence from './LockSequence';
 import {
   FaLock,
   FaUnlockAlt,
@@ -90,6 +91,7 @@ const SecurityLockModal = ({
   mode = 'confirm', // 'confirm' | 'animating'
   targetType = 'all', // 'all' | 'single'
   targetName = 'Toàn Viện',
+  departments = [],
   date = '',
   willLock = true,
   onConfirm,
@@ -121,6 +123,10 @@ const SecurityLockModal = ({
     return dStr;
   };
   const dateFormatted = formatDateVN(date);
+
+  if (mode === 'animating' && targetType === 'all' && willLock) {
+    return <LockSequence date={date} departments={departments} onClose={onClose} />;
+  }
 
   // ================= 1. ANIMATION SUCCESS OVERLAY (CYBER LOCKDOWN / ACCESS GRANTED) =================
   if (mode === 'animating') {
@@ -271,11 +277,11 @@ const SecurityLockModal = ({
           }}>
             {isLock ? (
               <>
-                Toàn bộ dữ liệu ngày <strong style={{ color: '#FFFFFF' }}>{dateFormatted}</strong> đã được <strong>niêm phong toàn vẹn</strong>. Mọi thao tác chỉnh sửa từ các khoa phòng đã bị <strong>vô hiệu hóa an toàn</strong>.
+                Báo cáo {targetName} ngày <strong style={{ color: '#FFFFFF' }}>{dateFormatted}</strong> đã được <strong>khóa sổ</strong>. Cần mở khóa trước khi sửa số liệu, chuyển ngày hoặc xóa.
               </>
             ) : (
               <>
-                Quyền chỉnh sửa báo cáo ngày <strong style={{ color: '#FFFFFF' }}>{dateFormatted}</strong> đã được <strong>kích hoạt trở lại</strong>. Các khoa phòng có thể tự do cập nhật và nộp lại số liệu.
+                Báo cáo {targetName} ngày <strong style={{ color: '#FFFFFF' }}>{dateFormatted}</strong> đã được <strong>mở khóa</strong>. Khoa có thể tiếp tục cập nhật số liệu.
               </>
             )}
           </p>
@@ -475,7 +481,7 @@ const SecurityLockModal = ({
               <div style={{ fontSize: '0.86rem', color: isLockAction ? '#78350F' : '#14532D', lineHeight: 1.5 }}>
                 {isLockAction ? (
                   <>
-                    <strong>Khóa sổ toàn vẹn:</strong> Dữ liệu báo cáo sẽ được niêm phong để chuẩn bị giao ban chuyên môn. Sau khi khóa, <strong>các khoa phòng sẽ không thể chỉnh sửa, thêm bớt số liệu hay xóa ca bệnh</strong>.
+                    <strong>Khóa sổ toàn vẹn:</strong> Các báo cáo đã nộp sẽ được niêm phong. Sau khi khóa, <strong>không thể sửa số liệu, chuyển ngày hoặc xóa báo cáo</strong>. Muốn thao tác lại, hãy mở khóa trong chi tiết từng khoa.
                   </>
                 ) : (
                   <>
