@@ -1,0 +1,28 @@
+.security-lock-backdrop { position:fixed; inset:0; z-index:999999; display:grid; place-items:center; padding:16px; box-sizing:border-box; background:rgba(238,238,238,.94); }
+.security-lock-panel { width:min(440px,100%); max-height:92vh; overflow:auto; box-sizing:border-box; padding:30px; border-radius:20px; background:#fff; color:#0f2c59; text-align:center; box-shadow:0 18px 50px rgba(15,44,89,.18); }
+.security-lock-panel-wide { width:min(760px,100%); }
+.security-lock-panel h2 { margin:0 0 7px; font-size:1.45rem; line-height:1.3; }
+.security-lock-panel p { margin:0; color:#64748b; line-height:1.5; }
+.security-lock-hero { display:flex; justify-content:center; margin-bottom:22px; }
+.security-lock-icon { display:grid; place-items:center; flex:none; border-radius:50%; background:#f43f5e; transition:background .35s ease,transform .35s ease; }
+.security-lock-icon.is-locked { background:#20cca5; }
+.security-lock-icon svg { overflow:visible; }
+.security-lock-shackle { fill:none; stroke:white; stroke-width:4; stroke-linecap:round; stroke-linejoin:round; transform:translate(-4px,-3px) rotate(-22deg); transform-origin:9px 20px; transition:transform .4s cubic-bezier(.2,1.4,.5,1); }
+.security-lock-icon.is-locked .security-lock-shackle { transform:none; }
+.security-lock-progress { height:7px; margin:22px 0 8px; border-radius:99px; background:#e2e8f0; overflow:hidden; }
+.security-lock-progress > span { display:block; height:100%; background:#20cca5; transition:width .2s ease; }
+.security-lock-progress-label { font-size:.8rem; font-weight:700; }
+.security-lock-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:9px; margin:17px 0 22px; text-align:left; }
+.security-lock-department { display:flex; align-items:center; gap:9px; min-width:0; padding:9px; border:1px solid #e2e8f0; border-radius:12px; background:#f8fafc; transition:background .25s,border-color .25s; }
+.security-lock-department.is-done { background:#ecfdf5; border-color:#99f6e4; }
+.security-lock-department strong { display:block; font-size:.76rem; line-height:1.25; }
+.security-lock-department small { display:block; margin-top:3px; color:#64748b; font-size:.7rem; }
+.security-lock-empty { display:grid; place-items:center; width:42px; height:42px; flex:none; border-radius:50%; background:#e2e8f0; color:#64748b; }
+.security-lock-primary { min-height:44px; padding:10px 24px; border:0; border-radius:9px; background:#0f2c59; color:white; font-weight:800; cursor:pointer; }
+.security-lock-primary:disabled { opacity:.5; cursor:wait; }
+.security-lock-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:24px; }
+.security-lock-secondary { min-height:44px; padding:10px 20px; border:1px solid #cbd5e1; border-radius:9px; background:white; color:#334155; font-weight:700; cursor:pointer; }
+.security-lock-note { margin-top:18px !important; padding:12px; border-radius:10px; background:#fffbeb; color:#78350f !important; font-size:.86rem; text-align:left; }
+@media (max-width:650px) { .security-lock-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .security-lock-panel { padding:20px; } }
+@media (max-width:420px) { .security-lock-grid { grid-template-columns:1fr; } }
+@media (prefers-reduced-motion:reduce) { .security-lock-backdrop *, .security-lock-backdrop *::before { transition:none !important; animation:none !important; } }

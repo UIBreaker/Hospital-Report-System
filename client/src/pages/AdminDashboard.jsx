@@ -9,8 +9,6 @@ import {
   FaChevronRight,
   FaBars,
   FaSpinner, 
-  FaLock,
-  FaUnlockAlt,
   FaTable,
   FaClipboardList,
   FaWpforms,
@@ -28,6 +26,7 @@ import MedicalPrintView from '../components/common/MedicalPrintView';
 import Footer from '../components/common/Footer';
 import AdminReportDetailModal from '../components/admin/modals/AdminReportDetailModal';
 import SecurityLockModal from '../components/admin/modals/SecurityLockModal';
+import { LockIcon } from '../components/admin/modals/LockFeedback';
 import VersionManageModal from '../components/admin/modals/VersionManageModal';
 import MoveReportModal from '../components/admin/modals/MoveReportModal';
 import MedicalLoader from '../components/common/MedicalLoader';
@@ -1278,9 +1277,9 @@ const AdminDashboard = () => {
                   onClick={handleToggleLockAll}
                   disabled={submittedCount === 0 || allLocked}
                   style={{
-                    backgroundColor: allLocked ? '#64748B' : '#D97706',
-                    color: '#FFFFFF',
-                    border: 'none',
+                    backgroundColor: '#FFFFFF',
+                    color: '#0F2C59',
+                    border: '1.5px solid #CBD5E1',
                     borderRadius: '8px',
                     fontWeight: '700',
                     fontSize: '0.82rem',
@@ -1289,11 +1288,11 @@ const AdminDashboard = () => {
                     gap: '0.35rem',
                     padding: '0.45rem 0.85rem',
                     cursor: (submittedCount === 0 || allLocked) ? 'not-allowed' : 'pointer',
-                    boxShadow: '0 2px 6px rgba(16, 185, 129, 0.2)'
+                    boxShadow: '0 2px 6px rgba(15, 44, 89, 0.08)'
                   }}
                   title={allLocked ? 'Muốn mở khóa, vào chi tiết từng khoa' : 'Khóa các báo cáo đã nộp trong ngày'}
                 >
-                  <FaLock /> {allLocked ? 'Đã Khóa Sổ Toàn Viện' : 'Khóa Sổ Toàn Viện'}
+                  <LockIcon locked={allLocked} size={28} /> {allLocked ? 'Đã Khóa Sổ Toàn Viện' : 'Khóa Sổ Toàn Viện'}
                 </button>
 
                 {/* Presentation Mode */}

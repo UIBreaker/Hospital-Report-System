@@ -26,6 +26,7 @@ import {
 } from 'react-icons/fa';
 import CaseImageUploader from '../../common/CaseImageUploader';
 import ReportDataViewer from '../common/ReportDataViewer';
+import { LockIcon } from './LockFeedback';
 
 import {
   HoiSucCapCuuForm,
@@ -231,9 +232,9 @@ const AdminReportDetailModal = ({
                   onClick={handleToggleModalLock}
                   disabled={togglingModalLock}
                   style={{
-                    backgroundColor: modalReportLocked ? '#059669' : '#D97706',
-                    color: '#FFFFFF',
-                    border: 'none',
+                    backgroundColor: '#FFFFFF',
+                    color: '#0F2C59',
+                    border: '1.5px solid #CBD5E1',
                     fontWeight: '700',
                     display: 'flex',
                     alignItems: 'center',
@@ -244,9 +245,9 @@ const AdminReportDetailModal = ({
                   {togglingModalLock ? (
                     <FaSpinner className="spinner" />
                   ) : modalReportLocked ? (
-                    <><FaUnlockAlt /> Mở khóa cho khoa</>
+                    <><LockIcon locked={true} size={28} /> Mở khóa cho khoa</>
                   ) : (
-                    <><FaLock /> Khóa sổ</>
+                    <><LockIcon locked={false} size={28} /> Khóa sổ</>
                   )}
                 </button>
 
