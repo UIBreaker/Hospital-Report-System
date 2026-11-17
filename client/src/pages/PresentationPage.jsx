@@ -3,10 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   FaChevronLeft, FaChevronRight, FaExpand, FaCompress,
   FaSpinner, FaSearchPlus, FaSearchMinus,
-  FaArrowLeft, FaFileAlt, FaUserMd, FaListUl, FaTimes, FaBars,
-  FaHospital, FaAmbulance, FaProcedures, FaHeartbeat, FaSkullCrossbones,
-  FaClipboardList, FaDoorOpen, FaHandHoldingHeart,
-  FaChevronDown, FaChevronUp, FaSearch
+  FaArrowLeft, FaListUl, FaTimes, FaBars
 } from 'react-icons/fa';
 import reportService from '../services/reportService';
 import ImageLightboxModal from '../components/common/ImageLightboxModal';
@@ -36,6 +33,7 @@ import { buildDepartmentOverview } from '../utils/departmentOverview';
 import { getDepartmentIntakeBreakdown, groupDailyIntakeBreakdown } from '../utils/dailyIntakeBreakdown';
 import ClosingSlide from '../components/presentation/slides/ClosingSlide';
 import CinematicNetflixIntro from '../components/presentation/CinematicNetflixIntro';
+import PresentationNavigator from '../components/presentation/PresentationNavigator';
 
 // AI Voice Narrator & Synchronizer
 import AIVoicePresenterControl from '../components/presentation/AIVoicePresenterControl';
@@ -66,8 +64,6 @@ const PresentationPage = () => {
   const [slideDirection, setSlideDirection] = useState('next');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
-  const [expandedDepts, setExpandedDepts] = useState({});
-  const [drawerSearch, setDrawerSearch] = useState('');
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showIntro, setShowIntro] = useState(true);
@@ -842,97 +838,6 @@ const PresentationPage = () => {
     return { introSlide, deptGroups, endSlides };
   }, [slides, currentSlide]);
 
-  // Auto-expand current active slide's department whenever currentSlide changes (Single focus mode)
-  useEffect(() => {
-    const activeSlide = slides[currentSlide];
-    if (activeSlide && activeSlide.deptCode) {
-      setExpandedDepts({ [activeSlide.deptCode]: true });
-    }
-  }, [currentSlide]);
-
-  const toggleDept = (code) => {
-    setExpandedDepts(prev => {
-      const isAlreadyOpen = !!prev[code];
-      if (isAlreadyOpen) {
-        return {};
-      }
-      return { [code]: true };
-    });
-  };
-
-  const expandAllDepts = () => {
-    const all = {};
-    slideGroups.deptGroups.forEach(g => {
-      if (g.isSubmitted) all[g.code] = true;
-    });
-    setExpandedDepts(all);
-  };
-
-  const collapseAllDepts = () => {
-    setExpandedDepts({});
-  };
-
-  const getSlideSubLabel = (s) => {
-    switch (s.type) {
-      case 'title':
-        return 'Báo cáo giao ban toàn viện';
-      case 'dept_intro':
-        return 'Giới thiệu ca trực & Nhân sự';
-      case 'department':
-        return s.subTitle || s.title || 'Số liệu chuyên môn';
-      case 'transfer': {
-        const pName = s.transferCase?.patient_name || s.transferCase?.patientName;
-        return `Ca chuyển viện ${s.caseIndex}${pName ? `: ${pName}` : ''} (Tiếp nhận)`;
-      }
-      case 'transfer_clinical':
-        return `Ca chuyển viện ${s.caseIndex} (Lâm sàng & CLS)`;
-      case 'transfer_progress':
-        return `Ca chuyển viện ${s.caseIndex} (Diễn biến & Chuyển)`;
-      case 'surgery': {
-        const pName = s.surgeryCase?.patient_name || s.surgeryCase?.patientName;
-        return `Ca phẫu thuật ${s.caseIndex}${pName ? `: ${pName}` : ''} (Lệnh mổ)`;
-      }
-      case 'surgery_clinical':
-        return `Ca phẫu thuật ${s.caseIndex} (Lâm sàng & CLS)`;
-      case 'critical': {
-        const pName = s.criticalCase?.patient_name || s.criticalCase?.patientName;
-        return `Ca bệnh nặng ${s.caseIndex}${pName ? `: ${pName}` : ''} (Xử trí)`;
-      }
-      case 'critical_clinical':
-        return `Ca bệnh nặng ${s.caseIndex} (Lâm sàng & XN)`;
-      case 'death': {
-        const pName = s.deathCase?.patient_name || s.deathCase?.patientName;
-        return `Ca tử vong ${s.caseIndex}${pName ? `: ${pName}` : ''} (Cấp cứu)`;
-      }
-      case 'death_clinical':
-        return `Ca tử vong ${s.caseIndex} (Tiền sử & CLS)`;
-      case 'case_image':
-        return `Hình ảnh minh họa lâm sàng (${s.imgIndex}/${s.totalImages})`;
-      case 'summary':
-        return 'Tổng hợp số liệu toàn viện';
-      case 'department_overview':
-        return 'Tổng quan số liệu bệnh nhân 12 khoa';
-      case 'closing':
-        return 'Bế mạc & Cảm ơn';
-      default:
-        return s.title || 'Slide';
-    }
-  };
-
-  const getSlideIcon = (type) => {
-    if (type === 'title') return <FaHospital style={{ color: '#38BDF8' }} />;
-    if (type === 'dept_intro') return <FaUserMd style={{ color: '#FDE047' }} />;
-    if (type === 'department' || type === 'department_hscc_tnt' || type === 'department_nhi') return <FaFileAlt style={{ color: '#93C5FD' }} />;
-    if (type?.includes('transfer')) return <FaAmbulance style={{ color: '#F59E0B' }} />;
-    if (type?.includes('surgery')) return <FaProcedures style={{ color: '#38BDF8' }} />;
-    if (type?.includes('critical')) return <FaHeartbeat style={{ color: '#A855F7' }} />;
-    if (type?.includes('death')) return <FaSkullCrossbones style={{ color: '#EF4444' }} />;
-    if (type === 'case_image') return <span style={{ fontSize: '0.82rem' }}>🖼️</span>;
-    if (type === 'summary' || type === 'department_overview') return <FaClipboardList style={{ color: '#38BDF8' }} />;
-    if (type === 'closing') return <FaHandHoldingHeart style={{ color: '#F43F5E' }} />;
-    return <FaFileAlt />;
-  };
-
   // Next / Prev slide handlers with direction tracking
   const handlePrevSlide = () => {
     if (currentSlide > 0) {
@@ -1008,6 +913,13 @@ const PresentationPage = () => {
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (lightboxOpen) return;
+      if (showSidebar && e.key === 'Escape') {
+        e.preventDefault();
+        setShowSidebar(false);
+        return;
+      }
+      if (showSidebar && e.target instanceof Element && e.target.closest('.presentation-nav')) return;
+      if (e.target instanceof HTMLElement && (e.target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName))) return;
 
       // Space / P for Play/Pause in AI Voice Mode
       if (aiVoiceActive && (e.code === 'Space' || e.code === 'KeyP')) {
@@ -1054,7 +966,7 @@ const PresentationPage = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentSlide, slides.length, lightboxOpen, aiVoiceActive]);
+  }, [currentSlide, slides.length, lightboxOpen, aiVoiceActive, showSidebar]);
 
   const toggleFullscreen = () => {
     try {
@@ -1120,526 +1032,21 @@ const PresentationPage = () => {
         }
       `}</style>
 
-      {/* ===================== SIDEBAR DRAWER (Toggleable via M/S or Button) ===================== */}
+      {/* Điều hướng slide theo khoa, loại ca và tên bệnh nhân */}
       {showSidebar && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 99999,
-          display: 'flex'
-        }}>
-          {/* Backdrop */}
-          <div
-            onClick={() => setShowSidebar(false)}
-            style={{
-              position: 'absolute',
-              inset: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.65)',
-              backdropFilter: 'blur(4px)'
-            }}
-          />
-
-          {/* Drawer Sidebar with 12 Departments Accordion */}
-          <aside style={{
-            position: 'relative',
-            width: '400px',
-            maxWidth: '92vw',
-            height: '100%',
-            backgroundColor: '#0A192F',
-            borderRight: '1px solid rgba(255, 255, 255, 0.15)',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            padding: '1.1rem 1rem',
-            boxSizing: 'border-box',
-            zIndex: 10,
-            boxShadow: '10px 0 35px rgba(0, 0, 0, 0.55)'
-          }}>
-            {/* Top: Header, Return Button & Search / Quick Collapse Controls */}
-            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.8rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                  <img src="/logo.png" alt="Logo" style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
-                  <div>
-                    <div style={{ fontSize: '0.88rem', fontWeight: '900', color: '#FFFFFF', letterSpacing: '0.5px' }}>
-                      DANH SÁCH 12 KHOA & SLIDE
-                    </div>
-                    <div style={{ fontSize: '0.7rem', color: '#93C5FD' }}>
-                      Tổng số: <strong>{slides.length} slide</strong> • 12 Khoa chuyên môn
-                    </div>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowSidebar(false)}
-                  style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    border: 'none',
-                    color: '#FFFFFF',
-                    borderRadius: '50%',
-                    width: '30px',
-                    height: '30px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.4)'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
-                  title="Đóng danh sách (Phím Esc, M hoặc S)"
-                >
-                  <FaTimes />
-                </button>
-              </div>
-
-              {/* SAFE EXIT BUTTON (Inside Drawer) */}
-              <button
-                onClick={() => navigate('/admin')}
-                style={{
-                  width: '100%',
-                  backgroundColor: '#1E3A8A',
-                  border: '1.5px solid #3B82F6',
-                  color: '#FFFFFF',
-                  borderRadius: '9px',
-                  padding: '0.55rem 0.9rem',
-                  fontSize: '0.82rem',
-                  fontWeight: '800',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.5rem',
-                  marginBottom: '0.65rem',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.25)',
-                  transition: 'all 0.18s ease'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2563EB'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1E3A8A'}
-              >
-                <FaArrowLeft /> QUAY LẠI BẢNG ĐIỀU KHIỂN
-              </button>
-
-              {/* Quick Search & Expand/Collapse All Toolbar */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', marginBottom: '0.75rem' }}>
-                {/* Search input */}
-                <div style={{ position: 'relative', width: '100%' }}>
-                  <FaSearch style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#93C5FD', fontSize: '0.75rem' }} />
-                  <input
-                    type="text"
-                    value={drawerSearch}
-                    onChange={(e) => setDrawerSearch(e.target.value)}
-                    placeholder="Tìm nhanh khoa hoặc slide..."
-                    style={{
-                      width: '100%',
-                      backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                      border: '1px solid rgba(255, 255, 255, 0.18)',
-                      borderRadius: '8px',
-                      padding: '0.4rem 2rem 0.4rem 1.9rem',
-                      color: '#FFFFFF',
-                      fontSize: '0.78rem',
-                      outline: 'none',
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                  {drawerSearch && (
-                    <button
-                      onClick={() => setDrawerSearch('')}
-                      style={{
-                        position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)',
-                        background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer', fontSize: '0.75rem'
-                      }}
-                    >
-                      <FaTimes />
-                    </button>
-                  )}
-                </div>
-
-                {/* Expand / Collapse All Buttons */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.4rem' }}>
-                  <span style={{ fontSize: '0.7rem', color: '#93C5FD', fontWeight: '700' }}>
-                    📑 12 KHOA TRỰC
-                  </span>
-                  <div style={{ display: 'flex', gap: '0.35rem' }}>
-                    <button
-                      type="button"
-                      onClick={expandAllDepts}
-                      style={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                        border: '1px solid rgba(255, 255, 255, 0.15)',
-                        color: '#93C5FD',
-                        borderRadius: '5px',
-                        padding: '0.2rem 0.5rem',
-                        fontSize: '0.68rem',
-                        fontWeight: '700',
-                        cursor: 'pointer'
-                      }}
-                      title="Mở toàn bộ danh sách slide của 12 khoa"
-                    >
-                      Mở hết
-                    </button>
-                    <button
-                      type="button"
-                      onClick={collapseAllDepts}
-                      style={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                        border: '1px solid rgba(255, 255, 255, 0.15)',
-                        color: '#CBD5E1',
-                        borderRadius: '5px',
-                        padding: '0.2rem 0.5rem',
-                        fontSize: '0.68rem',
-                        fontWeight: '700',
-                        cursor: 'pointer'
-                      }}
-                      title="Thu gọn danh sách slide của tất cả khoa"
-                    >
-                      Thu gọn
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Scrollable 12 Departments Accordions List */}
-              <div style={{
-                flex: 1,
-                minHeight: 0,
-                overflowY: 'auto',
-                overflowX: 'hidden',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '0.45rem',
-                paddingRight: '4px',
-                paddingBottom: '0.5rem'
-              }}>
-                {/* 1. Mở Đầu (Title Slide) */}
-                {[slideGroups.introSlide, { slide: slides[1], index: 1 }].filter(Boolean).map((item) => {
-                  const isTitleActive = currentSlide === item.index;
-                  const query = drawerSearch.trim().toLowerCase();
-                  const label = item.index === 0 ? 'BÁO CÁO GIAO BAN TOÀN VIỆN' : item.slide.title;
-                  if (query && !`${label} ${getSlideSubLabel(item.slide)}`.toLowerCase().includes(query)) return null;
-
-                  return (
-                    <button
-                      key={item.index}
-                      type="button"
-                      ref={isTitleActive ? activeThumbRef : null}
-                      onClick={() => {
-                        setSlideDirection(currentSlide < item.index ? 'next' : 'prev');
-                        setCurrentSlide(item.index);
-                        setShowSidebar(false);
-                      }}
-                      style={{
-                        flexShrink: 0,
-                        width: '100%',
-                        minHeight: '44px',
-                        boxSizing: 'border-box',
-                        padding: '0.6rem 0.85rem',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        backgroundColor: isTitleActive ? '#2563EB' : 'rgba(255, 255, 255, 0.06)',
-                        border: isTitleActive ? '1.5px solid #60A5FA' : '1px solid rgba(255, 255, 255, 0.12)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.6rem',
-                        textAlign: 'left',
-                        boxShadow: isTitleActive ? '0 4px 12px rgba(37, 99, 235, 0.45)' : 'none',
-                        color: isTitleActive ? '#FFFFFF' : '#E2E8F0',
-                        transition: 'all 0.15s ease'
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!isTitleActive) {
-                          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.12)';
-                          e.currentTarget.style.color = '#FFFFFF';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!isTitleActive) {
-                          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.06)';
-                          e.currentTarget.style.color = '#E2E8F0';
-                        }
-                      }}
-                    >
-                      {getSlideIcon(item.slide.type)}
-                      <span style={{ fontSize: '0.72rem', fontWeight: '900', color: '#93C5FD', minWidth: '18px' }}>#{item.index + 1}</span>
-                      <span style={{ fontSize: '0.8rem', fontWeight: isTitleActive ? '900' : '700', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {label}
-                      </span>
-                    </button>
-                  );
-                })}
-
-                {/* 2. 12 Khoa Chuyên Môn (Accordions) */}
-                {slideGroups.deptGroups.map((group) => {
-                  const query = drawerSearch.trim().toLowerCase();
-                  const matchesDept = !query || group.name.toLowerCase().includes(query);
-                  const matchingSlides = !query
-                    ? group.slides
-                    : group.slides.filter(item => {
-                        const label = getSlideSubLabel(item.slide).toLowerCase();
-                        const title = (item.slide.title || '').toLowerCase();
-                        return label.includes(query) || title.includes(query);
-                      });
-                  const isVisible = matchesDept || matchingSlides.length > 0;
-                  if (!isVisible) return null;
-
-                  const isExpanded = expandedDepts[group.code] || !!query;
-
-                  return (
-                    <div
-                      key={group.code}
-                      style={{
-                        flexShrink: 0,
-                        width: '100%',
-                        boxSizing: 'border-box',
-                        backgroundColor: group.hasActiveSlide ? 'rgba(30, 58, 138, 0.45)' : 'rgba(255, 255, 255, 0.05)',
-                        border: group.hasActiveSlide ? '1.5px solid #38BDF8' : '1px solid rgba(255, 255, 255, 0.1)',
-                        borderLeft: group.hasActiveSlide ? '5px solid #38BDF8' : `5px solid ${group.theme?.main || '#3B82F6'}`,
-                        borderRadius: '8px',
-                        overflow: 'hidden',
-                        transition: 'all 0.15s ease'
-                      }}
-                    >
-                      {/* Department Accordion Header */}
-                      <div
-                        onClick={() => group.isSubmitted && toggleDept(group.code)}
-                        style={{
-                          minHeight: '46px',
-                          boxSizing: 'border-box',
-                          padding: '0.55rem 0.8rem',
-                          cursor: group.isSubmitted ? 'pointer' : 'default',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          gap: '0.45rem',
-                          userSelect: 'none',
-                          backgroundColor: group.hasActiveSlide ? 'rgba(56, 189, 248, 0.14)' : 'transparent'
-                        }}
-                        title={group.isSubmitted ? `Bấm để ${isExpanded ? 'thu gọn' : 'xổ ra'} slide khoa ${group.name}` : 'Khoa chưa nộp báo cáo'}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0, flex: 1 }}>
-                          <span style={{ fontSize: '1rem', flexShrink: 0 }}>
-                            {group.theme?.icon || '🏥'}
-                          </span>
-                          <div style={{ minWidth: 0, flex: 1 }}>
-                            <div style={{
-                              fontSize: '0.8rem',
-                              fontWeight: group.hasActiveSlide ? '900' : '700',
-                              color: group.hasActiveSlide ? '#38BDF8' : '#FFFFFF',
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis'
-                            }}>
-                              {group.orderIdx}. {group.name}
-                            </div>
-                            {group.hasActiveSlide && (
-                              <div style={{ fontSize: '0.66rem', color: '#6EE7B7', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '0.3rem', marginTop: '1px' }}>
-                                <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10B981', boxShadow: '0 0 6px #10B981' }} />
-                                Đang trình chiếu
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
-                          {group.isSubmitted ? (
-                            <span style={{
-                              backgroundColor: group.hasActiveSlide ? '#2563EB' : 'rgba(255, 255, 255, 0.14)',
-                              color: '#FFFFFF',
-                              fontSize: '0.68rem',
-                              fontWeight: '800',
-                              padding: '0.14rem 0.5rem',
-                              borderRadius: '10px'
-                            }}>
-                              {group.slideCount} slide
-                            </span>
-                          ) : (
-                            <span style={{
-                              backgroundColor: 'rgba(239, 68, 68, 0.18)',
-                              color: '#FCA5A5',
-                              fontSize: '0.66rem',
-                              fontWeight: '700',
-                              padding: '0.14rem 0.45rem',
-                              borderRadius: '8px'
-                            }}>
-                              Chưa nộp
-                            </span>
-                          )}
-                          {group.isSubmitted && (
-                            <FaChevronDown style={{
-                              color: group.hasActiveSlide ? '#38BDF8' : '#94A3B8',
-                              fontSize: '0.72rem',
-                              transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                              transition: 'transform 0.2s ease'
-                            }} />
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Accordion Body: List of slides belonging to this department */}
-                      {isExpanded && group.isSubmitted && (
-                        <div style={{
-                          backgroundColor: 'rgba(0, 0, 0, 0.35)',
-                          borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-                          padding: '0.35rem 0.45rem',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '0.25rem'
-                        }}>
-                          {matchingSlides.map((item) => {
-                            const isActive = item.index === currentSlide;
-                            const subLabel = getSlideSubLabel(item.slide);
-
-                            return (
-                              <button
-                                key={item.index}
-                                type="button"
-                                ref={isActive ? activeThumbRef : null}
-                                onClick={() => {
-                                  setSlideDirection(item.index >= currentSlide ? 'next' : 'prev');
-                                  setCurrentSlide(item.index);
-                                  setShowSidebar(false);
-                                }}
-                                style={{
-                                  flexShrink: 0,
-                                  minHeight: '36px',
-                                  width: '100%',
-                                  boxSizing: 'border-box',
-                                  padding: '0.45rem 0.65rem',
-                                  borderRadius: '6px',
-                                  cursor: 'pointer',
-                                  backgroundColor: isActive ? '#2563EB' : 'transparent',
-                                  border: 'none',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '0.5rem',
-                                  textAlign: 'left',
-                                  boxShadow: isActive ? '0 3px 10px rgba(37, 99, 235, 0.45)' : 'none',
-                                  color: isActive ? '#FFFFFF' : '#CBD5E1',
-                                  transition: 'all 0.15s ease'
-                                }}
-                                onMouseEnter={(e) => {
-                                  if (!isActive) {
-                                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.08)';
-                                    e.currentTarget.style.color = '#FFFFFF';
-                                  }
-                                }}
-                                onMouseLeave={(e) => {
-                                  if (!isActive) {
-                                    e.currentTarget.style.backgroundColor = 'transparent';
-                                    e.currentTarget.style.color = '#CBD5E1';
-                                  }
-                                }}
-                                title={`Bấm để chuyển tới Slide #${item.index + 1}: ${subLabel}`}
-                              >
-                                <span style={{ fontSize: '0.82rem', flexShrink: 0, opacity: isActive ? 1 : 0.85 }}>
-                                  {getSlideIcon(item.slide.type)}
-                                </span>
-                                <span style={{
-                                  fontSize: '0.7rem',
-                                  fontWeight: '900',
-                                  color: isActive ? '#FFFFFF' : '#94A3B8',
-                                  minWidth: '24px',
-                                  flexShrink: 0
-                                }}>
-                                  #{item.index + 1}
-                                </span>
-                                <span style={{
-                                  fontSize: '0.75rem',
-                                  fontWeight: isActive ? '800' : '500',
-                                  whiteSpace: 'nowrap',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  flex: 1
-                                }}>
-                                  {subLabel}
-                                </span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-
-                {/* 3. Phần Bế Mạc & Tổng Kết (Closing Slides) */}
-                {slideGroups.endSlides.map((item) => {
-                  const isActive = item.index === currentSlide;
-                  const subLabel = getSlideSubLabel(item.slide);
-                  const query = drawerSearch.trim().toLowerCase();
-                  if (query && !subLabel.toLowerCase().includes(query)) return null;
-
-                  return (
-                    <button
-                      key={item.index}
-                      type="button"
-                      ref={isActive ? activeThumbRef : null}
-                      onClick={() => {
-                        setSlideDirection(item.index >= currentSlide ? 'next' : 'prev');
-                        setCurrentSlide(item.index);
-                        setShowSidebar(false);
-                      }}
-                      style={{
-                        flexShrink: 0,
-                        width: '100%',
-                        minHeight: '44px',
-                        boxSizing: 'border-box',
-                        padding: '0.6rem 0.85rem',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        backgroundColor: isActive ? '#2563EB' : 'rgba(255, 255, 255, 0.06)',
-                        border: isActive ? '1.5px solid #60A5FA' : '1px solid rgba(255, 255, 255, 0.12)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.6rem',
-                        textAlign: 'left',
-                        boxShadow: isActive ? '0 4px 12px rgba(37, 99, 235, 0.45)' : 'none',
-                        color: isActive ? '#FFFFFF' : '#E2E8F0',
-                        transition: 'all 0.15s ease'
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!isActive) {
-                          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.12)';
-                          e.currentTarget.style.color = '#FFFFFF';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!isActive) {
-                          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.06)';
-                          e.currentTarget.style.color = '#E2E8F0';
-                        }
-                      }}
-                    >
-                      <span style={{ fontSize: '0.88rem', flexShrink: 0 }}>
-                        {getSlideIcon(item.slide.type)}
-                      </span>
-                      <span style={{ fontSize: '0.72rem', fontWeight: '900', color: '#93C5FD', minWidth: '18px' }}>
-                        #{item.index + 1}
-                      </span>
-                      <span style={{ fontSize: '0.8rem', fontWeight: isActive ? '900' : '700', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {subLabel}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Bottom: Navigation Tip */}
-            <div style={{
-              marginTop: '0.8rem',
-              padding: '0.6rem 0.75rem',
-              backgroundColor: 'rgba(255, 255, 255, 0.06)',
-              borderRadius: '10px',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
-              fontSize: '0.7rem',
-              color: '#93C5FD'
-            }}>
-              💡 Nhấp vào từng khoa để mở slide • Dùng phím ⬅️ ➡️ hoặc Space để chuyển slide.
-            </div>
-          </aside>
-        </div>
+        <PresentationNavigator
+          slides={slides}
+          groups={slideGroups}
+          currentSlide={currentSlide}
+          activeThumbRef={activeThumbRef}
+          onJump={(index) => {
+            setSlideDirection(index >= currentSlide ? 'next' : 'prev');
+            setCurrentSlide(index);
+          }}
+          onClose={() => setShowSidebar(false)}
+          onBack={() => navigate('/admin')}
+        />
       )}
-
       {/* ===================== TRUE EDGE-TO-EDGE FULL BLEED PRESENTATION STAGE ===================== */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100vh', overflow: 'hidden', width: '100%', backgroundColor: '#FFFFFF' }}>
         
