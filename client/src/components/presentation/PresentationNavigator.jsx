@@ -129,6 +129,7 @@ const PresentationNavigator = ({ slides, groups, currentSlide, onJump, onClose, 
                     <button type="button" className="presentation-nav-dept-jump" disabled={!firstReport} onClick={() => jump(firstReport.index)}
                       title={firstReport ? `Đến báo cáo ${group.name}` : `${group.name} chưa nộp báo cáo`}>
                       <span className="presentation-nav-dept-index">{String(group.orderIdx).padStart(2, '0')}</span>
+                      <span className="presentation-nav-dept-icon" aria-hidden="true" style={{ backgroundColor: group.theme?.bg, borderColor: group.theme?.border }}>{group.theme?.icon || '🏥'}</span>
                       <span className="presentation-nav-dept-name"><strong>{group.name}</strong><small>{group.isSubmitted ? `Slide ${firstReport.index + 1} · ${group.slideCount} slide` : 'Chưa nộp báo cáo'}</small></span>
                     </button>
                     {group.isSubmitted && <button type="button" className="presentation-nav-expand" aria-expanded={open} aria-label={`${open ? 'Thu gọn' : 'Xem'} slide ${group.name}`}
