@@ -134,7 +134,7 @@ const ArchiveTrashTab = () => {
             {preview.youngerDates.length > 0 && <div className="archive-trash-young">
               <strong><FaExclamationTriangle /> Trong thời hạn lưu trữ</strong>
               <p>{preview.youngerDates.map(displayDate).join(', ')} chưa quá 365 ngày. Hãy kiểm tra kỹ trước khi xóa.</p>
-              <label><input type="checkbox" checked={youngAcknowledged} onChange={event => setYoungAcknowledged(event.target.checked)} /> Tôi đã kiểm tra và vẫn muốn xóa những ngày này.</label>
+              <label className="archive-trash-young-confirm"><input type="checkbox" checked={youngAcknowledged} onChange={event => setYoungAcknowledged(event.target.checked)} /><span>Tôi đã kiểm tra và vẫn muốn xóa những ngày này.</span></label>
             </div>}
             <label className="archive-trash-confirm-label">Nhập <strong>XOA DU LIEU</strong> để xác nhận<input value={confirmation} onChange={event => setConfirmation(event.target.value)} autoComplete="off" placeholder="XOA DU LIEU" /></label>
           </section>

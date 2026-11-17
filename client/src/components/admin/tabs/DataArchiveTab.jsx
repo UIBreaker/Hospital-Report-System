@@ -53,7 +53,7 @@ const formatDateDDMMYYYY = (dateStr) => {
   return dateStr;
 };
 
-const DataArchiveTab = ({ onOpenPresentation, onOpenPrintView, onOpenReportDetail }) => {
+const DataArchiveTab = ({ onOpenPresentation, onOpenPrintView, onOpenReportDetail, onNavigateToTrash }) => {
   // Navigation State: 'years' | 'months' | 'days' | 'day_details'
   const [currentLevel, setCurrentLevel] = useState('years');
   const [selectedYear, setSelectedYear] = useState(null);
@@ -81,11 +81,8 @@ const DataArchiveTab = ({ onOpenPresentation, onOpenPrintView, onOpenReportDetai
       setMovingToTrash(true);
       setTrashError('');
       await archiveTrashService.moveToTrash(trashCandidate.date);
-      setSelectedMonth(null);
-      setSelectedYear(null);
-      setCurrentLevel('years');
       setTrashCandidate(null);
-      await loadTree();
+      onNavigateToTrash?.();
     } catch (error) {
       setTrashError(error.response?.data?.error || 'Không thể chuyển ngày này vào Thùng Rác.');
     } finally { setMovingToTrash(false); }

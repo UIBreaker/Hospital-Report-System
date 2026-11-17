@@ -1391,6 +1391,7 @@ const AdminDashboard = () => {
             {activeTab === 'data_archive' && (
               <DataArchiveTab
                 onOpenPresentation={handlePresentation}
+                onNavigateToTrash={() => { setActiveTab('archive_trash'); setMobileDrawerOpen(false); }}
                 onOpenPrintView={() => {
                   fetchStatus(date);
                   setShowPrintModal(true);
