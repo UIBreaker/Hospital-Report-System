@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const { ageDays, manualTrashDates } = require('./archiveTrashController');
 let nodemailer;
 try {
   nodemailer = require('nodemailer');
@@ -22,6 +23,7 @@ const parseJsonSafe = (str, fallback = []) => {
  */
 exports.getArchiveTree = async (req, res) => {
   try {
+    const manualTrash = await manualTrashDates(pool);
     // 1. Get all unique dates with reports
     const [reportRows] = await pool.query(`
       SELECT 
@@ -67,6 +69,7 @@ exports.getArchiveTree = async (req, res) => {
 
     (reportRows || []).forEach(row => {
       const dateStr = String(row.report_date).slice(0, 10);
+      if (ageDays(dateStr) > 365 || manualTrash.has(dateStr)) return;
       const parts = dateStr.split('-');
       if (parts.length !== 3) return;
 
@@ -112,6 +115,7 @@ exports.getArchiveTree = async (req, res) => {
         month,
         year,
         label: `Ngày ${day}/${month}/${year}`,
+        ageDays: ageDays(dateStr),
         submittedCount: Number(row.submitted_count) || 0,
         isFullySubmitted: Number(row.submitted_count) >= 12,
         lockedCount: Number(row.locked_count) || 0,

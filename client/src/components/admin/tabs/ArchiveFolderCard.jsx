@@ -35,7 +35,8 @@ const ArchiveFolderCard = ({
   colorTheme = 'blue',
   stats = null,
   files = null,
-  onOpen
+  onOpen,
+  secondaryAction = null
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const theme = THEME_PALETTES[colorTheme] || THEME_PALETTES.blue;
@@ -121,6 +122,12 @@ const ArchiveFolderCard = ({
           </span>
         </div>
 
+        {type === 'day' && stats?.ageDays !== undefined && (
+          <div style={{ marginTop: '0.5rem', color: '#475569', fontSize: '0.84rem', fontWeight: 700 }}>
+            <FaCalendarAlt style={{ marginRight: 6 }} /> Tuổi thọ: {stats.ageDays} ngày
+          </div>
+        )}
+
         {stats && (
           <div className="folder-stats-grid">
             {stats.days !== undefined && (
@@ -159,6 +166,7 @@ const ArchiveFolderCard = ({
         <button type="button" className="folder-btn-open" onClick={onOpen}>
           <FaFolderOpen /> Mở Thư Mục <FaArrowRight style={{ fontSize: '0.7rem' }} />
         </button>
+        {secondaryAction && <button type="button" onClick={secondaryAction.onClick} style={{ width: '100%', marginTop: 8, padding: '0.65rem', border: '1px solid #FCA5A5', borderRadius: 9, background: '#FFF7F7', color: '#991B1B', fontWeight: 750, cursor: 'pointer' }}>{secondaryAction.label}</button>}
       </div>
     </div>
   );

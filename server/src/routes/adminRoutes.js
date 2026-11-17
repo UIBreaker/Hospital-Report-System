@@ -74,5 +74,11 @@ const { getArchiveTree, getArchiveDayDetails, sendArchiveEmail } = require('../c
 router.get('/data-archive/tree', auth, requireAdmin, getArchiveTree);
 router.get('/data-archive/day/:date', auth, requireAdmin, getArchiveDayDetails);
 router.post('/data-archive/send-email', auth, requireAdmin, sendArchiveEmail);
+const archiveTrash = require('../controllers/archiveTrashController');
+router.get('/data-archive/trash', auth, requireAdmin, archiveTrash.listTrash);
+router.post('/data-archive/trash/preview-delete', auth, requireAdmin, archiveTrash.previewDelete);
+router.post('/data-archive/trash/delete-selected', auth, requireAdmin, archiveTrash.deleteSelected);
+router.post('/data-archive/trash/:date', auth, requireAdmin, archiveTrash.moveToTrash);
+router.delete('/data-archive/trash/:date', auth, requireAdmin, archiveTrash.restoreFromTrash);
 
 module.exports = router;

@@ -19,7 +19,8 @@ import {
   FaHistory,
   FaRocket,
   FaLock,
-  FaFolderOpen
+  FaFolderOpen,
+  FaTrashAlt
 } from 'react-icons/fa';
 import reportService from '../services/reportService';
 import MedicalPrintView from '../components/common/MedicalPrintView';
@@ -38,6 +39,7 @@ import { DEPARTMENT_ORDER } from '../constants/medicalDictionary';
 const ReportsTab = lazy(() => import('../components/admin/tabs/ReportsTab'));
 const SubmissionHistoryTab = lazy(() => import('../components/admin/tabs/SubmissionHistoryTab'));
 const DataArchiveTab = lazy(() => import('../components/admin/tabs/DataArchiveTab'));
+const ArchiveTrashTab = lazy(() => import('../components/admin/tabs/ArchiveTrashTab'));
 const AnalyticsTab = lazy(() => import('../components/admin/tabs/AnalyticsTab'));
 const StaffTab = lazy(() => import('../components/admin/tabs/StaffTab'));
 const DatabaseTab = lazy(() => import('../components/admin/tabs/DatabaseTab'));
@@ -933,6 +935,14 @@ const AdminDashboard = () => {
             </button>
 
             {/* Item 3: Số Liệu Thống Kê & Biểu Đồ */}
+            <button type="button" onClick={() => { setActiveTab('archive_trash'); setMobileDrawerOpen(false); }}
+              title={isSidebarCollapsed ? 'Thùng Rác Dữ liệu' : undefined}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: isSidebarCollapsed ? 'center' : 'flex-start', gap: '0.65rem', padding: isSidebarCollapsed ? '0.75rem 0' : '0.75rem 0.85rem', borderRadius: '10px', border: 'none', width: '100%', backgroundColor: activeTab === 'archive_trash' ? '#2563EB' : 'transparent', color: activeTab === 'archive_trash' ? '#FFFFFF' : '#94A3B8', cursor: 'pointer', fontWeight: activeTab === 'archive_trash' ? '800' : '600', fontSize: '0.86rem', textAlign: 'left', boxShadow: activeTab === 'archive_trash' ? '0 4px 12px rgba(37,99,235,.4)' : 'none' }}>
+              <FaTrashAlt style={{ fontSize: isSidebarCollapsed ? '1.15rem' : '0.95rem' }} />
+              {!isSidebarCollapsed && <span>Thùng Rác Dữ liệu</span>}
+            </button>
+
+            {/* Item 3: Số Liệu Thống Kê & Biểu Đồ */}
             <button
               type="button"
               onClick={() => { setActiveTab('analytics'); setMobileDrawerOpen(false); }}
@@ -1388,6 +1398,7 @@ const AdminDashboard = () => {
                 }}
               />
             )}
+            {activeTab === 'archive_trash' && <ArchiveTrashTab />}
             {activeTab === 'analytics' && <AnalyticsTab initialDate={date} />}
             {activeTab === 'custom_forms' && <CustomFormsTab />}
             {activeTab === 'staff' && <StaffTab />}

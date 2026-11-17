@@ -35,10 +35,12 @@ import {
   FaCopy
 } from 'react-icons/fa';
 import dataArchiveService from '../../../services/dataArchiveService';
+import archiveTrashService from '../../../services/archiveTrashService';
 import CountUpNumber from '../../common/CountUpNumber';
 import ImageLightboxModal from '../../common/ImageLightboxModal';
 import ArchiveFolderCard from './ArchiveFolderCard';
 import { translateFieldKey } from '../../../utils/medicalFormatters';
+import './archiveTrash.css';
 
 const formatDateDDMMYYYY = (dateStr) => {
   if (!dateStr) return '';
@@ -68,6 +70,25 @@ const DataArchiveTab = ({ onOpenPresentation, onOpenPrintView, onOpenReportDetai
 
   // Search & Filter
   const [searchTerm, setSearchTerm] = useState('');
+  const [trashCandidate, setTrashCandidate] = useState(null);
+  const [trashError, setTrashError] = useState('');
+  const [movingToTrash, setMovingToTrash] = useState(false);
+
+  const confirmMoveToTrash = async () => {
+    if (!trashCandidate || movingToTrash) return;
+    try {
+      setMovingToTrash(true);
+      setTrashError('');
+      await archiveTrashService.moveToTrash(trashCandidate.date);
+      setSelectedMonth(null);
+      setSelectedYear(null);
+      setCurrentLevel('years');
+      setTrashCandidate(null);
+      await loadTree();
+    } catch (error) {
+      setTrashError(error.response?.data?.error || 'Không thể chuyển ngày này vào Thùng Rác.');
+    } finally { setMovingToTrash(false); }
+  };
 
   // Zip Packaging Progress State
   const [isZipping, setIsZipping] = useState(false);
@@ -612,14 +633,32 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
               counterLabel="CA BỆNH"
               colorTheme="purple"
               stats={{
+                ageDays: d.ageDays,
                 submittedCount: d.submittedCount,
                 isFullySubmitted: d.isFullySubmitted,
                 surgeries: d.stats?.surgeries || 0,
                 transfers: d.stats?.transfers || 0
               }}
               onOpen={() => handleSelectDay(d)}
+              secondaryAction={{ label: 'Chuyển vào Thùng Rác', onClick: () => { setTrashCandidate(d); setTrashError(''); } }}
             />
           ))}
+        </div>
+      )}
+
+      {trashCandidate && (
+        <div className="archive-trash-overlay" role="presentation" onMouseDown={() => setTrashCandidate(null)}>
+          <div className="archive-trash-dialog" role="dialog" aria-modal="true" aria-labelledby="move-trash-title" onMouseDown={event => event.stopPropagation()}>
+            <div className="archive-trash-dialog-icon"><FaFileArchive /></div>
+            <h2 id="move-trash-title">Chuyển ngày báo cáo vào Thùng Rác?</h2>
+            <p><strong>{trashCandidate.label}</strong> · Tuổi thọ {trashCandidate.ageDays} ngày · {trashCandidate.submittedCount} phiếu khoa</p>
+            <p>Ngày này sẽ rời Kho Lưu Trữ. Dữ liệu vẫn được giữ nguyên cho đến khi bạn xác nhận xóa vĩnh viễn trong Thùng Rác Dữ liệu.</p>
+            {trashError && <p className="archive-trash-error">{trashError}</p>}
+            <div className="archive-trash-dialog-actions">
+              <button type="button" onClick={() => setTrashCandidate(null)}>Hủy</button>
+              <button type="button" className="danger" onClick={confirmMoveToTrash} disabled={movingToTrash}>{movingToTrash ? 'Đang chuyển...' : 'Chuyển vào Thùng Rác'}</button>
+            </div>
+          </div>
         </div>
       )}
 
