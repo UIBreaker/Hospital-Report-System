@@ -1465,10 +1465,9 @@ const AdminDashboard = () => {
         <div className="locked-action-notice" role="alert">
           <LockIcon locked={true} size={42} />
           <div className="locked-action-notice-copy">
-            <strong>Chưa thể {lockedAction}</strong>
-            <span>Báo cáo {modalDept?.departmentName || 'của khoa'} đã khóa sổ. Mở khóa để tiếp tục thao tác.</span>
+            <strong>Cần mở khóa sổ để thực hiện thao tác</strong>
+            <span>Báo cáo {modalDept?.departmentName || 'của khoa'} đang khóa sổ; chưa thể {lockedAction}.</span>
           </div>
-          <button type="button" className="locked-action-notice-action" onClick={handleToggleModalLock}>Mở khóa sổ</button>
           <button type="button" className="locked-action-notice-close" aria-label="Đóng thông báo" onClick={() => setLockedAction('')}>×</button>
         </div>
       )}

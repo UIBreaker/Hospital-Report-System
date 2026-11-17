@@ -351,8 +351,7 @@ const AdminReportDetailModal = ({
           {hasReport && modalReportLocked && (
             <div className="locked-report-banner" role="status">
               <LockIcon locked={true} size={36} />
-              <div><strong>Báo cáo đang khóa sổ</strong><span>Mở khóa trước khi sửa số liệu, chuyển ngày hoặc xóa báo cáo.</span></div>
-              <button type="button" onClick={handleToggleModalLock}>Mở khóa sổ</button>
+              <div><strong>Báo cáo đang khóa sổ</strong><span>Cần mở khóa sổ để thực hiện thao tác.</span></div>
             </div>
           )}
 
