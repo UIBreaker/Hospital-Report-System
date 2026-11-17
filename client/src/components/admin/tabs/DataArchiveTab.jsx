@@ -384,9 +384,6 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
             <h1 style={{ margin: 0, fontSize: '1.45rem', fontWeight: '900', letterSpacing: '0.2px', display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#FFFFFF', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
               TỔNG HỢP DỮ LIỆU DỰ ÁN & KHO LƯU TRỮ SỐ HÓA
             </h1>
-            <p style={{ margin: '4px 0 0 0', fontSize: '0.88rem', fontWeight: '600', color: '#BAE6FD', textShadow: '0 1px 4px rgba(0,0,0,0.4)' }}>
-              Kho dữ liệu 3D phân cấp theo Năm ➔ Tháng ➔ Ngày, đóng gói 5 File riêng biệt, bảo tồn hồ sơ giao ban
-            </p>
           </div>
         </div>
 
