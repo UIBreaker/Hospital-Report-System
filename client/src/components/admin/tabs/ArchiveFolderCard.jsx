@@ -170,7 +170,7 @@ const ArchiveFolderCard = ({
         {!isTrash && <button type="button" className="folder-btn-open" onClick={onOpen}>
           <FaFolderOpen /> Mở Thư Mục <FaArrowRight style={{ fontSize: '0.7rem' }} />
         </button>}
-        {secondaryAction && <button type="button" className="archive-secondary-action" onClick={secondaryAction.onClick}>{secondaryAction.label}</button>}
+        {secondaryAction && <button type="button" className={isTrash ? 'folder-btn-restore' : 'folder-btn-trash'} onClick={secondaryAction.onClick}>{secondaryAction.label}</button>}
       </div>
     </div>
   );

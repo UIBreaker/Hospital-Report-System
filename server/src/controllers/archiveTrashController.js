@@ -27,6 +27,12 @@ const EXCEPTIONS_TABLE = `CREATE TABLE IF NOT EXISTS archive_trash_exceptions (
   restored_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   restored_by VARCHAR(150) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`;
+const DELETED_TABLE = `CREATE TABLE IF NOT EXISTS archive_deleted_days (
+  report_date DATE PRIMARY KEY,
+  deleted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  report_count INT NOT NULL,
+  deleted_by VARCHAR(150) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`;
 
 async function manualTrashDates(db, lock = false) {
   try {
@@ -48,6 +54,18 @@ async function restoredDates(db, lock = false) {
   }
 }
 
+async function deletedDates(db, start, end) {
+  try {
+    const [rows] = await db.query(`SELECT DATE_FORMAT(report_date, '%Y-%m-%d') AS date,
+      DATE_FORMAT(deleted_at, '%Y-%m-%d %H:%i') AS deletedAt, report_count AS reportCount
+      FROM archive_deleted_days WHERE report_date >= ? AND report_date < ?`, [start, end]);
+    return rows;
+  } catch (error) {
+    if (isMissingTable(error)) return [];
+    throw error;
+  }
+}
+
 async function reportDates(db) {
   const [rows] = await db.query(`SELECT DATE_FORMAT(report_date, '%Y-%m-%d') AS date,
     COUNT(*) AS reportCount FROM reports WHERE status = 'submitted'
@@ -61,8 +79,10 @@ const errorResponse = (res, error) => {
 };
 
 exports.ageDays = ageDays;
+exports.todayInVietnam = todayInVietnam;
 exports.manualTrashDates = manualTrashDates;
 exports.restoredDates = restoredDates;
+exports.deletedDates = deletedDates;
 
 exports.listTrash = async (_req, res) => {
   try {
@@ -177,6 +197,8 @@ exports.deleteSelected = async (req, res) => {
   if (!dates || !/^[a-f0-9]{64}$/.test(String(digest || '')) || confirmation !== 'XOA DU LIEU') {
     return res.status(400).json({ success: false, error: 'Cần xem trước và nhập đúng xác nhận xóa.' });
   }
+  try { await pool.query(DELETED_TABLE); }
+  catch (error) { return errorResponse(res, error); }
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
@@ -197,6 +219,13 @@ exports.deleteSelected = async (req, res) => {
     }
     await connection.query(`DELETE FROM custom_form_submissions WHERE submission_date IN (${dateMarks})`, dates);
     await connection.query(`DELETE FROM reports WHERE id IN (${idMarks})`, ids);
+    for (const date of dates) {
+      const reportCount = data.reports.filter(report => report.date === date).length;
+      await connection.query(`INSERT INTO archive_deleted_days (report_date, report_count, deleted_by)
+        VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE deleted_at = CURRENT_TIMESTAMP,
+        report_count = VALUES(report_count), deleted_by = VALUES(deleted_by)`,
+      [date, reportCount, String(req.user?.username || req.user?.userId || 'admin').slice(0, 150)]);
+    }
     try { await connection.query(`DELETE FROM archive_trash_days WHERE report_date IN (${dateMarks})`, dates); }
     catch (error) { if (!isMissingTable(error)) throw error; }
     try { await connection.query(`DELETE FROM archive_trash_exceptions WHERE report_date IN (${dateMarks})`, dates); }

@@ -1,5 +1,6 @@
 const pool = require('../config/db');
 const bcrypt = require('bcryptjs');
+const { ageDays, todayInVietnam, manualTrashDates, restoredDates, deletedDates } = require('./archiveTrashController');
 
 const parseCaseImages = (caseItem) => {
   if (!caseItem) return caseItem;
@@ -275,17 +276,25 @@ const getReportCalendar = async (req, res, next) => {
        GROUP BY report_date ORDER BY report_date`,
       [`${month}-01`, nextMonth]
     );
-    const [latestRows] = await pool.execute(
-      "SELECT DATE_FORMAT(MAX(report_date), '%Y-%m-%d') AS latest_date FROM reports WHERE status = 'submitted'"
-    );
+    const [latestRows, manualTrash, restored, deleted] = await Promise.all([
+      pool.execute("SELECT DATE_FORMAT(MAX(report_date), '%Y-%m-%d') AS latest_date FROM reports WHERE status = 'submitted' AND report_date <= ?", [todayInVietnam()]).then(result => result[0]),
+      manualTrashDates(pool), restoredDates(pool), deletedDates(pool, `${month}-01`, nextMonth)
+    ]);
+    const days = rows.map(row => ({
+      date: row.date,
+      submittedCount: Number(row.submitted_count) || 0,
+      lockedCount: Number(row.locked_count) || 0,
+      storageStatus: manualTrash.has(row.date) || (ageDays(row.date) > 365 && !restored.has(row.date)) ? 'trash' : 'active'
+    }));
+    const existingDates = new Set(days.map(day => day.date));
+    for (const record of deleted) {
+      if (!existingDates.has(record.date)) days.push({ date: record.date, submittedCount: 0, lockedCount: 0, storageStatus: 'deleted', deletedAt: record.deletedAt, deletedReportCount: Number(record.reportCount) || 0 });
+    }
+    days.sort((a, b) => a.date.localeCompare(b.date));
     return res.json({ success: true, data: {
       month,
       latestReportDate: latestRows[0]?.latest_date || null,
-      days: rows.map(row => ({
-        date: row.date,
-        submittedCount: Number(row.submitted_count) || 0,
-        lockedCount: Number(row.locked_count) || 0
-      }))
+      days
     } });
   } catch (error) {
     next(error);

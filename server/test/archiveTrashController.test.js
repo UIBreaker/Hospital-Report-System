@@ -67,6 +67,7 @@ test('xóa đúng ngày đã xem trước trong một giao dịch', async () => 
   assert.equal(writes[0], 'begin');
   assert.equal(writes.at(-1), 'commit');
   assert.equal(writes.filter(write => write.startsWith('DELETE FROM reports')).length, 1);
+  assert.equal(writes.some(write => write.startsWith('INSERT INTO archive_deleted_days')), true);
 });
 
 test('hoàn tác ngày quá hạn tạo ngoại lệ thay vì xóa báo cáo', async () => {

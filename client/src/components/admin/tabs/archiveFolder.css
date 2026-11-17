@@ -418,3 +418,24 @@
   transform: translateY(-1px);
   box-shadow: 0 6px 15px rgba(2, 132, 199, 0.35);
 }
+
+.folder-btn-trash, .folder-btn-restore {
+  width: 100%;
+  min-height: 42px;
+  padding: 0.65rem 0.8rem;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background-color .2s ease, border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+.folder-btn-trash { border: 1.5px solid #fda4af; background: #fff1f2; color: #9f1239; }
+.folder-btn-trash:hover { border-color: #e11d48; background: #ffe4e6; box-shadow: 0 5px 12px #e11d4826; transform: translateY(-1px); }
+.folder-btn-restore { border: 1.5px solid #bfdbfe; background: #eff6ff; color: #1e40af; }
+.folder-btn-restore:hover { border-color: #3b82f6; background: #dbeafe; box-shadow: 0 5px 12px #2563eb26; transform: translateY(-1px); }
+.folder-btn-trash:focus-visible, .folder-btn-restore:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }

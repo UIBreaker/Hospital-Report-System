@@ -32,7 +32,8 @@ import {
   FaCheck,
   FaExternalLinkAlt,
   FaShieldAlt,
-  FaCopy
+  FaCopy,
+  FaTrashAlt
 } from 'react-icons/fa';
 import dataArchiveService from '../../../services/dataArchiveService';
 import archiveTrashService from '../../../services/archiveTrashService';
@@ -640,7 +641,7 @@ ${emailNotes ? `Ghi chú từ Admin: ${emailNotes}\n\n` : ''}Hồ sơ chi tiết
                 transfers: d.stats?.transfers || 0
               }}
               onOpen={() => handleSelectDay(d)}
-              secondaryAction={{ label: 'Chuyển vào Thùng Rác', onClick: () => { setTrashCandidate(d); setTrashError(''); } }}
+              secondaryAction={{ label: <><FaTrashAlt /> Chuyển vào Thùng Rác</>, onClick: () => { setTrashCandidate(d); setTrashError(''); } }}
             />
           ))}
         </div>

@@ -25,10 +25,6 @@
 .archive-trash-card .folder-main-title { white-space: nowrap; }
 .archive-trash-card-select { display: flex; align-items: center; gap: 8px; width: fit-content; font-size: .8rem; font-weight: 700; color: #475569; cursor: pointer; }
 .archive-trash-card-select input { width: 17px; height: 17px; margin: 0; accent-color: #2563eb; }
-.archive-secondary-action { width: 100%; border: 1px solid #fca5a5; background: #fff7f7; color: #991b1b; display: flex; align-items: center; justify-content: center; gap: 7px; transition: background .2s ease, border-color .2s ease, transform .2s ease; }
-.archive-secondary-action:hover { background: #ffe4e6; border-color: #fb7185; transform: translateY(-1px); }
-.archive-trash-card .archive-secondary-action { background: #fff; color: #0f2c59; border-color: #cbd5e1; }
-.archive-trash-card .archive-secondary-action:hover { background: #eff6ff; border-color: #93c5fd; }
 .archive-trash-empty { padding: 55px 20px; text-align: center; background: #fff; border: 1px solid #dbe4ef; border-radius: 14px; color: #64748b; }
 .archive-trash-overlay { position: fixed; inset: 0; z-index: 3000; display: grid; place-items: center; padding: 16px; background: #0a192f99; }
 .archive-trash-dialog { width: min(100%, 560px); max-height: calc(100dvh - 32px); box-sizing: border-box; background: #fff; color: #0f2c59; border-radius: 18px; padding: 24px; box-shadow: 0 24px 70px #06122555; }
