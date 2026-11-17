@@ -36,7 +36,11 @@ const ArchiveFolderCard = ({
   stats = null,
   files = null,
   onOpen,
-  secondaryAction = null
+  secondaryAction = null,
+  variant = 'archive',
+  selected = false,
+  onSelect,
+  statusLabel
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const theme = THEME_PALETTES[colorTheme] || THEME_PALETTES.blue;
@@ -51,24 +55,23 @@ const ArchiveFolderCard = ({
 
   const displayFiles = files || defaultFiles;
 
-  const handleCardClick = (e) => {
-    // If clicking directly, trigger onOpen callback
-    if (onOpen) onOpen();
-  };
+  const isTrash = variant === 'trash';
+  const handleCardClick = () => isTrash ? onSelect?.() : onOpen?.();
 
   return (
-    <div className="archive-folder-wrapper">
-      <label className="folder-card" onClick={handleCardClick}>
+    <div className={`archive-folder-wrapper${isTrash ? ' archive-trash-card' : ''}${selected ? ' is-selected' : ''}`}>
+      {isTrash && <span className="archive-trash-card-status">{statusLabel}</span>}
+      <label className="folder-card" onClick={(event) => { if (event.target.tagName !== 'INPUT') handleCardClick(); }}>
         <input
           type="checkbox"
           className="folder-toggle"
-          checked={isOpen}
-          onChange={(e) => setIsOpen(e.target.checked)}
+          checked={isTrash ? selected : isOpen}
+          onChange={(e) => { if (!isTrash) setIsOpen(e.target.checked); }}
         />
 
         {/* Hint Arrow */}
         <div className="hint-wrapper">
-          <span className="hint-text">Nhấn để mở ➔</span>
+          <span className="hint-text">{isTrash ? 'Nhấn để chọn ➔' : 'Nhấn để mở ➔'}</span>
           <svg className="hint-arrow" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M 35 5 C 35 5, 15 5, 10 25 M 10 25 L 3 18 M 10 25 L 18 22" stroke={theme.accent} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
           </svg>
@@ -115,6 +118,7 @@ const ArchiveFolderCard = ({
 
       {/* Metadata Bar */}
       <div className="folder-meta">
+        {isTrash && <label className="archive-trash-card-select" onClick={event => event.stopPropagation()}><input type="checkbox" checked={selected} onChange={onSelect} /> Chọn để xóa</label>}
         <div className="folder-title-row">
           <div className="folder-main-title">{title}</div>
           <span style={{ fontSize: '0.72rem', background: '#EFF6FF', color: '#1E40AF', padding: '2px 8px', borderRadius: '6px', fontWeight: '800' }}>
@@ -163,10 +167,10 @@ const ArchiveFolderCard = ({
           </div>
         )}
 
-        <button type="button" className="folder-btn-open" onClick={onOpen}>
+        {!isTrash && <button type="button" className="folder-btn-open" onClick={onOpen}>
           <FaFolderOpen /> Mở Thư Mục <FaArrowRight style={{ fontSize: '0.7rem' }} />
-        </button>
-        {secondaryAction && <button type="button" onClick={secondaryAction.onClick} style={{ width: '100%', marginTop: 8, padding: '0.65rem', border: '1px solid #FCA5A5', borderRadius: 9, background: '#FFF7F7', color: '#991B1B', fontWeight: 750, cursor: 'pointer' }}>{secondaryAction.label}</button>}
+        </button>}
+        {secondaryAction && <button type="button" className="archive-secondary-action" onClick={secondaryAction.onClick}>{secondaryAction.label}</button>}
       </div>
     </div>
   );

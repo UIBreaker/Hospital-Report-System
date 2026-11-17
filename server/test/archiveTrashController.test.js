@@ -68,3 +68,12 @@ test('xóa đúng ngày đã xem trước trong một giao dịch', async () => 
   assert.equal(writes.at(-1), 'commit');
   assert.equal(writes.filter(write => write.startsWith('DELETE FROM reports')).length, 1);
 });
+
+test('hoàn tác ngày quá hạn tạo ngoại lệ thay vì xóa báo cáo', async () => {
+  writes.length = 0;
+  const result = response();
+  await controller.restoreFromTrash({ params: { date: '2020-01-01' }, user: { username: 'admin' } }, result);
+  assert.equal(result.code, 200);
+  assert.equal(writes.some(write => write.startsWith('INSERT IGNORE INTO archive_trash_exceptions')), true);
+  assert.equal(writes.some(write => write.startsWith('DELETE FROM reports')), false);
+});

@@ -22,6 +22,11 @@ const TRASH_TABLE = `CREATE TABLE IF NOT EXISTS archive_trash_days (
   trashed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   trashed_by VARCHAR(150) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`;
+const EXCEPTIONS_TABLE = `CREATE TABLE IF NOT EXISTS archive_trash_exceptions (
+  report_date DATE PRIMARY KEY,
+  restored_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  restored_by VARCHAR(150) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`;
 
 async function manualTrashDates(db, lock = false) {
   try {
@@ -29,6 +34,16 @@ async function manualTrashDates(db, lock = false) {
     return new Map(rows.map(row => [String(row.report_date).slice(0, 10), row]));
   } catch (error) {
     if (isMissingTable(error)) return new Map();
+    throw error;
+  }
+}
+
+async function restoredDates(db, lock = false) {
+  try {
+    const [rows] = await db.query(`SELECT report_date FROM archive_trash_exceptions${lock ? ' FOR UPDATE' : ''}`);
+    return new Set(rows.map(row => String(row.report_date).slice(0, 10)));
+  } catch (error) {
+    if (isMissingTable(error)) return new Set();
     throw error;
   }
 }
@@ -47,17 +62,32 @@ const errorResponse = (res, error) => {
 
 exports.ageDays = ageDays;
 exports.manualTrashDates = manualTrashDates;
+exports.restoredDates = restoredDates;
 
 exports.listTrash = async (_req, res) => {
   try {
-    const [dates, manual] = await Promise.all([reportDates(pool), manualTrashDates(pool)]);
+    const [dates, manual, restored, [caseRows]] = await Promise.all([
+      reportDates(pool), manualTrashDates(pool), restoredDates(pool), pool.query(`
+        SELECT DATE_FORMAT(r.report_date, '%Y-%m-%d') AS date,
+          COUNT(DISTINCT tc.id) AS transfers,
+          COUNT(DISTINCT sc.id) AS surgeries
+        FROM reports r
+        LEFT JOIN transfer_cases tc ON tc.report_id = r.id
+        LEFT JOIN surgery_cases sc ON sc.report_id = r.id
+        WHERE r.status = 'submitted'
+        GROUP BY r.report_date
+      `)
+    ]);
+    const cases = new Map(caseRows.map(row => [String(row.date).slice(0, 10), row]));
     const data = dates.map(row => {
       const date = String(row.date).slice(0, 10);
       const age = ageDays(date);
       const entry = manual.get(date);
       return { date, ageDays: age, reportCount: Number(row.reportCount),
+        surgeries: Number(cases.get(date)?.surgeries || 0),
+        transfers: Number(cases.get(date)?.transfers || 0),
         reason: entry ? 'manual' : 'expired', trashedAt: entry?.trashed_at || null };
-    }).filter(row => row.ageDays > 365 || manual.has(row.date));
+    }).filter(row => manual.has(row.date) || (row.ageDays > 365 && !restored.has(row.date)));
     res.json({ success: true, data });
   } catch (error) { errorResponse(res, error); }
 };
@@ -65,10 +95,14 @@ exports.listTrash = async (_req, res) => {
 exports.moveToTrash = async (req, res) => {
   const date = String(req.params.date || '');
   if (!validDate(date)) return res.status(400).json({ success: false, error: 'Ngày báo cáo không hợp lệ.' });
-  if (ageDays(date) > 365) return res.json({ success: true });
   try {
     const [rows] = await pool.query('SELECT COUNT(*) AS count FROM reports WHERE report_date = ? AND status = ?', [date, 'submitted']);
     if (!Number(rows[0]?.count)) return res.status(404).json({ success: false, error: 'Không tìm thấy báo cáo ngày này.' });
+    if (ageDays(date) > 365) {
+      try { await pool.query('DELETE FROM archive_trash_exceptions WHERE report_date = ?', [date]); }
+      catch (error) { if (!isMissingTable(error)) throw error; }
+      return res.json({ success: true });
+    }
     // The table is created only after an admin explicitly moves a day; deployment never changes existing rows.
     await pool.query(TRASH_TABLE);
     await pool.query('INSERT IGNORE INTO archive_trash_days (report_date, trashed_by) VALUES (?, ?)',
@@ -80,9 +114,14 @@ exports.moveToTrash = async (req, res) => {
 exports.restoreFromTrash = async (req, res) => {
   const date = String(req.params.date || '');
   if (!validDate(date)) return res.status(400).json({ success: false, error: 'Ngày báo cáo không hợp lệ.' });
-  if (ageDays(date) > 365) return res.status(409).json({ success: false, error: 'Báo cáo quá 365 ngày luôn thuộc Thùng Rác theo chính sách lưu trữ.' });
   try {
-    await pool.query('DELETE FROM archive_trash_days WHERE report_date = ?', [date]);
+    if (ageDays(date) > 365) {
+      await pool.query(EXCEPTIONS_TABLE);
+      await pool.query('INSERT IGNORE INTO archive_trash_exceptions (report_date, restored_by) VALUES (?, ?)',
+        [date, String(req.user.username || req.user.userId || 'admin').slice(0, 150)]);
+    }
+    try { await pool.query('DELETE FROM archive_trash_days WHERE report_date = ?', [date]); }
+    catch (error) { if (!isMissingTable(error)) throw error; }
     return res.json({ success: true });
   } catch (error) { return errorResponse(res, error); }
 };
@@ -116,8 +155,8 @@ async function snapshot(db, dates, lock = false) {
 }
 
 async function allInTrash(db, dates, lock = false) {
-  const manual = await manualTrashDates(db, lock);
-  return dates.every(date => ageDays(date) > 365 || manual.has(date));
+  const [manual, restored] = await Promise.all([manualTrashDates(db, lock), restoredDates(db, lock)]);
+  return dates.every(date => manual.has(date) || (ageDays(date) > 365 && !restored.has(date)));
 }
 
 exports.previewDelete = async (req, res) => {
@@ -159,6 +198,8 @@ exports.deleteSelected = async (req, res) => {
     await connection.query(`DELETE FROM custom_form_submissions WHERE submission_date IN (${dateMarks})`, dates);
     await connection.query(`DELETE FROM reports WHERE id IN (${idMarks})`, ids);
     try { await connection.query(`DELETE FROM archive_trash_days WHERE report_date IN (${dateMarks})`, dates); }
+    catch (error) { if (!isMissingTable(error)) throw error; }
+    try { await connection.query(`DELETE FROM archive_trash_exceptions WHERE report_date IN (${dateMarks})`, dates); }
     catch (error) { if (!isMissingTable(error)) throw error; }
     await connection.commit();
     return res.json({ success: true, deleted: { dates, reportCount: ids.length, counts: data.counts } });

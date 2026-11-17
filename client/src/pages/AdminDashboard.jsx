@@ -937,7 +937,9 @@ const AdminDashboard = () => {
             {/* Item 3: Số Liệu Thống Kê & Biểu Đồ */}
             <button type="button" onClick={() => { setActiveTab('archive_trash'); setMobileDrawerOpen(false); }}
               title={isSidebarCollapsed ? 'Thùng Rác Dữ liệu' : undefined}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: isSidebarCollapsed ? 'center' : 'flex-start', gap: '0.65rem', padding: isSidebarCollapsed ? '0.75rem 0' : '0.75rem 0.85rem', borderRadius: '10px', border: 'none', width: '100%', backgroundColor: activeTab === 'archive_trash' ? '#2563EB' : 'transparent', color: activeTab === 'archive_trash' ? '#FFFFFF' : '#94A3B8', cursor: 'pointer', fontWeight: activeTab === 'archive_trash' ? '800' : '600', fontSize: '0.86rem', textAlign: 'left', boxShadow: activeTab === 'archive_trash' ? '0 4px 12px rgba(37,99,235,.4)' : 'none' }}>
+              style={{ display: 'flex', alignItems: 'center', justifyContent: isSidebarCollapsed ? 'center' : 'flex-start', gap: '0.65rem', padding: isSidebarCollapsed ? '0.75rem 0' : '0.75rem 0.85rem', borderRadius: '10px', border: 'none', width: '100%', backgroundColor: activeTab === 'archive_trash' ? '#2563EB' : 'transparent', color: activeTab === 'archive_trash' ? '#FFFFFF' : '#94A3B8', cursor: 'pointer', fontWeight: activeTab === 'archive_trash' ? '800' : '600', fontSize: '0.86rem', textAlign: 'left', transition: 'background-color .18s ease, color .18s ease, transform .18s ease', boxShadow: activeTab === 'archive_trash' ? '0 4px 12px rgba(37,99,235,.4)' : 'none' }}
+              onMouseEnter={(event) => { if (activeTab !== 'archive_trash') { event.currentTarget.style.backgroundColor = 'rgba(255,255,255,.08)'; event.currentTarget.style.color = '#FFFFFF'; } }}
+              onMouseLeave={(event) => { if (activeTab !== 'archive_trash') { event.currentTarget.style.backgroundColor = 'transparent'; event.currentTarget.style.color = '#94A3B8'; } }}>
               <FaTrashAlt style={{ fontSize: isSidebarCollapsed ? '1.15rem' : '0.95rem' }} />
               {!isSidebarCollapsed && <span>Thùng Rác Dữ liệu</span>}
             </button>
