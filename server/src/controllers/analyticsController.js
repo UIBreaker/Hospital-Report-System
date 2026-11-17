@@ -95,7 +95,7 @@ const computeComparison = (currentVal, prevVal) => {
   if (prev > 0) {
     percent = Number(((diff / prev) * 100).toFixed(1));
   } else if (cur > 0) {
-    percent = 100;
+    percent = null;
   } else {
     percent = 0;
   }
@@ -123,6 +123,7 @@ const getHospitalAnalytics = async (req, res, next) => {
       'SELECT r.id, r.department_code, r.report_date, r.report_data, r.doctor_name, r.nurse_name, r.status, u.department_name ' +
       'FROM reports r ' +
       'LEFT JOIN users u ON r.department_code = u.department_code ' +
+      "WHERE r.status = 'submitted' " +
       'ORDER BY r.report_date ASC, r.department_code ASC'
     );
 
@@ -179,9 +180,16 @@ const getHospitalAnalytics = async (req, res, next) => {
         const raw = r.rawData || {};
         const dKham = extractDepartmentPatientCount(raw, r.department_code);
         const dBenhCu = parseMetricNum(raw.benhCu || (raw.hscc && raw.hscc.benhCu) || (raw.tnt && raw.tnt.tnt_benhCu) || 0);
-        const dBenhMoi = parseMetricNum(raw.benhMoi || (raw.hscc && raw.hscc.benhMoi) || (raw.tnt && raw.tnt.tnt_benhMoi) || 0);
-        const dXuatVien = parseMetricNum(raw.xuatVien || (raw.hscc && raw.hscc.xuatVien) || (raw.tnt && raw.tnt.tnt_xuatVien) || 0);
-        const dChuyenVien = r.transferCnt || parseMetricNum(raw.chuyenVien || (raw.hscc && raw.hscc.chuyenVien) || (raw.tnt && raw.tnt.tnt_chuyenVien) || 0);
+        const dBenhMoi = Math.max(parseMetricNum(raw.benhMoi), parseMetricNum(raw.noiTru?.benhMoi),
+          parseMetricNum(raw.benhMoi_cc) + parseMetricNum(raw.benhMoi_pk),
+          parseMetricNum(raw.hscc?.benhMoi) + parseMetricNum(raw.tnt?.tnt_benhMoi));
+        const dXuatVien = Math.max(parseMetricNum(raw.xuatVien), parseMetricNum(raw.xuat),
+          parseMetricNum(raw.noiTru?.xuat), parseMetricNum(raw.phcn_xuatVien),
+          parseMetricNum(raw.hscc?.xuatVien) + parseMetricNum(raw.tnt?.tnt_xuatVien));
+        const dChuyenVien = Math.max(r.transferCnt, parseMetricNum(raw.chuyenVien),
+          parseMetricNum(raw.chuyenVien_tongSo),
+          parseMetricNum(raw.hscc?.chuyenVien) + parseMetricNum(raw.tnt?.tnt_chuyenVien) + parseMetricNum(raw.pk21?.pk21_chuyenVien),
+          parseMetricNum(raw.benhChuyenVien), parseMetricNum(raw.chuyenVienTT), parseMetricNum(raw.chuyenVienNgoaiTru));
         const dPhauThuat = r.surgeryCnt || parseMetricNum(raw.tongSoCaMo || raw.phauThuat || 0);
         const dBenhNang = r.criticalCnt || 0;
         const dTuVong = r.deathCnt || parseMetricNum(raw.tuVong || (raw.hscc && raw.hscc.tuVong) || 0);
@@ -231,12 +239,12 @@ const getHospitalAnalytics = async (req, res, next) => {
 
     const allRecordedDates = Array.from(reportsByDate.keys()).sort();
     
-    const targetDateObj = new Date(targetDate + 'T00:00:00');
+    const targetDateObj = new Date(targetDate + 'T00:00:00Z');
     const prevCalendarDateObj = new Date(targetDateObj);
-    prevCalendarDateObj.setDate(prevCalendarDateObj.getDate() - 1);
+    prevCalendarDateObj.setUTCDate(prevCalendarDateObj.getUTCDate() - 1);
     const prevCalendarDateStr = prevCalendarDateObj.toISOString().split('T')[0];
 
-    let prevDateToCompare = prevCalendarDateStr;
+    let prevDateToCompare = reportsByDate.has(prevCalendarDateStr) ? prevCalendarDateStr : null;
     if (!reportsByDate.has(prevCalendarDateStr)) {
       const datesBefore = allRecordedDates.filter(d => d < targetDate);
       if (datesBefore.length > 0) {
@@ -269,24 +277,24 @@ const getHospitalAnalytics = async (req, res, next) => {
       const seriesDates = [];
       for (let i = daysCount - 1; i >= 0; i--) {
         const d = new Date(targetDateObj);
-        d.setDate(d.getDate() - i);
+        d.setUTCDate(d.getUTCDate() - i);
         seriesDates.push(d.toISOString().split('T')[0]);
       }
 
       timeSeries = seriesDates.map(dStr => {
         const agg = aggregateDayData(reportsByDate.get(dStr) || []);
-        const dObj = new Date(dStr + 'T00:00:00');
-        const dayLabel = dObj.getDate() + '/' + (dObj.getMonth() + 1);
+        const dObj = new Date(dStr + 'T00:00:00Z');
+        const dayLabel = dObj.getUTCDate() + '/' + (dObj.getUTCMonth() + 1);
         return {
           date: dStr,
           label: dayLabel,
-          fullLabel: 'Ngày ' + dObj.getDate() + '/' + (dObj.getMonth() + 1) + '/' + dObj.getFullYear(),
+          fullLabel: 'Ngày ' + dObj.getUTCDate() + '/' + (dObj.getUTCMonth() + 1) + '/' + dObj.getUTCFullYear(),
           isCurrent: dStr === targetDate,
           ...agg
         };
       });
     } else if (range === 'month') {
-      const year = targetDateObj.getFullYear();
+      const year = targetDateObj.getUTCFullYear();
       timeSeries = Array.from({ length: 12 }, (_, mIdx) => {
         const monthNum = mIdx + 1;
         const monthKey = year + '-' + String(monthNum).padStart(2, '0');
@@ -315,7 +323,7 @@ const getHospitalAnalytics = async (req, res, next) => {
         };
       });
     } else if (range === 'year') {
-      const currentYear = targetDateObj.getFullYear();
+      const currentYear = targetDateObj.getUTCFullYear();
       const years = [currentYear - 2, currentYear - 1, currentYear, currentYear + 1];
       timeSeries = years.map(y => {
         const yKey = String(y);

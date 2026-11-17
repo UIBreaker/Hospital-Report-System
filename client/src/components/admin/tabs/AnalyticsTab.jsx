@@ -24,6 +24,21 @@ import reportService from '../../../services/reportService';
 import { formatDate } from '../../../utils/medicalFormatters';
 import CountUpNumber from '../../common/CountUpNumber';
 
+const CHART_SERIES = [
+  { key: 'tongSoKham', label: 'Khám', color: '#2563EB' },
+  { key: 'benhMoi', label: 'Nhập viện', color: '#059669' },
+  { key: 'xuatVien', label: 'Xuất viện', color: '#7C3AED' },
+  { key: 'chuyenVien', label: 'Chuyển viện', color: '#D97706' },
+  { key: 'phauThuat', label: 'Phẫu thuật', color: '#0891B2' }
+];
+
+const niceAxisMax = value => {
+  const target = Math.max(4, value * 1.12);
+  const magnitude = 10 ** Math.floor(Math.log10(target / 4));
+  const step = [1, 2, 5, 10].map(n => n * magnitude).find(n => n * 4 >= target) || 10 * magnitude;
+  return step * 4;
+};
+
 const AnalyticsTab = ({ initialDate = '' }) => {
   const [selectedDate, setSelectedDate] = useState(() => {
     if (initialDate) return initialDate;
@@ -41,6 +56,7 @@ const AnalyticsTab = ({ initialDate = '' }) => {
   const fetchAnalytics = async () => {
     setLoading(true);
     setError('');
+    setHoveredPoint(null);
     try {
       const res = await reportService.getHospitalAnalytics(range, selectedDate);
       if (res && res.success && res.data) {
@@ -63,6 +79,8 @@ const AnalyticsTab = ({ initialDate = '' }) => {
   const comparison = analyticsData?.comparison || {};
   const timeSeries = analyticsData?.timeSeries || [];
   const departmentBreakdown = analyticsData?.departmentBreakdown || [];
+  const hasRecordedReports = timeSeries.some(point => point.submittedDeptsCount > 0);
+  const selectedMetricHasData = activeMetricFilter === 'all' || timeSeries.some(point => (Number(point[activeMetricFilter]) || 0) > 0);
 
   // Render trend badge with animation
   const renderTrendBadge = (item, reverseColor = false) => {
@@ -98,7 +116,7 @@ const AnalyticsTab = ({ initialDate = '' }) => {
         animation: 'badgePop 0.35s cubic-bezier(0.16, 1, 0.3, 1)'
       }}>
         <Icon style={{ fontSize: '0.65rem' }} />
-        <span>{sign}{diff} ({sign}{percent}%)</span>
+        <span>{sign}{diff} {percent === null ? '(mốc trước 0)' : `(${sign}${percent}%)`}</span>
       </div>
     );
   };
@@ -195,50 +213,28 @@ const AnalyticsTab = ({ initialDate = '' }) => {
     }
   ], [comparison]);
 
-  // SVG Chart Dimensions & Computations
+  // Separate scales keep lower-volume outcomes visible beside high-volume visits.
   const chartMetrics = useMemo(() => {
-    if (timeSeries.length === 0) return { maxVal: 10, points: [] };
-
-    const getVal = (pt, key) => {
-      if (key === 'tongSoKham') return pt.tongSoKham || 0;
-      if (key === 'benhMoi') return pt.benhMoi || 0;
-      if (key === 'xuatVien') return pt.xuatVien || 0;
-      if (key === 'chuyenVien') return pt.chuyenVien || 0;
-      if (key === 'phauThuat') return pt.phauThuat || 0;
-      if (key === 'benhNang') return pt.benhNang || 0;
-      if (key === 'tuVong') return pt.tuVong || 0;
-      return (pt.tongSoKham || 0);
-    };
-
-    let max = 10;
-    timeSeries.forEach(pt => {
-      if (activeMetricFilter === 'all') {
-        const m = Math.max(pt.tongSoKham || 0, pt.benhMoi || 0, pt.xuatVien || 0, pt.chuyenVien || 0, pt.phauThuat || 0);
-        if (m > max) max = m;
-      } else {
-        const v = getVal(pt, activeMetricFilter);
-        if (v > max) max = v;
-      }
-    });
-
-    // Add 15% headroom
-    const maxVal = Math.ceil(max * 1.15) || 10;
-    return { maxVal };
+    const peak = keys => Math.max(0, ...timeSeries.flatMap(pt => keys.map(key => Number(pt[key]) || 0)));
+    return activeMetricFilter === 'all'
+      ? { leftMax: niceAxisMax(peak(['tongSoKham'])), rightMax: niceAxisMax(peak(CHART_SERIES.slice(1).map(item => item.key))) }
+      : { leftMax: niceAxisMax(peak([activeMetricFilter])), rightMax: 0 };
   }, [timeSeries, activeMetricFilter]);
 
   // SVG coordinates
   const width = 850;
   const height = 300;
   const padLeft = 55;
-  const padRight = 25;
+  const padRight = 55;
   const padTop = 30;
   const padBottom = 45;
   const plotW = width - padLeft - padRight;
   const plotH = height - padTop - padBottom;
 
-  const getCoords = (val, idx, total) => {
+  const getCoords = (val, idx, total, metricKey = 'tongSoKham') => {
     const x = padLeft + (idx / Math.max(total - 1, 1)) * plotW;
-    const y = padTop + plotH - (val / chartMetrics.maxVal) * plotH;
+    const axisMax = activeMetricFilter === 'all' && metricKey !== 'tongSoKham' ? chartMetrics.rightMax : chartMetrics.leftMax;
+    const y = padTop + plotH - (val / axisMax) * plotH;
     return { x, y };
   };
 
@@ -246,7 +242,7 @@ const AnalyticsTab = ({ initialDate = '' }) => {
     if (timeSeries.length === 0) return '';
     return timeSeries.map((pt, i) => {
       const val = pt[metricKey] || 0;
-      const { x, y } = getCoords(val, i, timeSeries.length);
+      const { x, y } = getCoords(val, i, timeSeries.length, metricKey);
       return (i === 0 ? 'M' : 'L') + ' ' + x.toFixed(1) + ' ' + y.toFixed(1);
     }).join(' ');
   };
@@ -254,8 +250,8 @@ const AnalyticsTab = ({ initialDate = '' }) => {
   const buildAreaPath = (metricKey) => {
     if (timeSeries.length === 0) return '';
     const linePart = buildSvgPath(metricKey);
-    const lastCoord = getCoords(timeSeries[timeSeries.length - 1][metricKey] || 0, timeSeries.length - 1, timeSeries.length);
-    const firstCoord = getCoords(timeSeries[0][metricKey] || 0, 0, timeSeries.length);
+    const lastCoord = getCoords(timeSeries[timeSeries.length - 1][metricKey] || 0, timeSeries.length - 1, timeSeries.length, metricKey);
+    const firstCoord = getCoords(timeSeries[0][metricKey] || 0, 0, timeSeries.length, metricKey);
     const bottomY = padTop + plotH;
     return linePart + ' L ' + lastCoord.x.toFixed(1) + ' ' + bottomY + ' L ' + firstCoord.x.toFixed(1) + ' ' + bottomY + ' Z';
   };
@@ -339,7 +335,7 @@ const AnalyticsTab = ({ initialDate = '' }) => {
                 BÁO CÁO THỐNG KÊ & PHÂN TÍCH TOÀN VIỆN
               </h2>
               <div style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <span>Đánh giá trực quan số liệu, tỷ lệ tăng trưởng so với hôm trước, theo dõi theo ngày, tháng, năm</span>
+                <span>Đánh giá số liệu và biến động so với mốc báo cáo trước; theo dõi theo ngày, tháng, năm</span>
                 {loading && (
                   <span style={{ 
                     backgroundColor: '#EFF6FF', 
@@ -474,7 +470,7 @@ const AnalyticsTab = ({ initialDate = '' }) => {
             <span>📌 CHỈ SỐ HOẠT ĐỘNG CHUYÊN MÔN TOÀN VIỆN ({formatDate(selectedDate)})</span>
           </div>
           <div style={{ fontSize: '0.78rem', color: '#64748B', fontWeight: '600' }}>
-            So sánh trực quan với ngày: <strong>{formatDate(comparison.previousDate)}</strong>
+            Mốc so sánh: <strong>{comparison.previousDate ? formatDate(comparison.previousDate) : 'Chưa có báo cáo trước đó'}</strong>
           </div>
         </div>
 
@@ -609,7 +605,8 @@ const AnalyticsTab = ({ initialDate = '' }) => {
           boxShadow: '0 4px 16px rgba(15, 44, 89, 0.04)',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'space-between'
+          justifyContent: 'space-between',
+          position: 'relative'
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.85rem' }}>
             <div>
@@ -623,17 +620,11 @@ const AnalyticsTab = ({ initialDate = '' }) => {
 
             {/* Filter metrics pill */}
             <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
-              {[
-                { key: 'all', label: 'Tất cả' },
-                { key: 'tongSoKham', label: 'Khám' },
-                { key: 'benhMoi', label: 'Nhập viện' },
-                { key: 'xuatVien', label: 'Xuất viện' },
-                { key: 'chuyenVien', label: 'Chuyển viện' },
-                { key: 'phauThuat', label: 'Phẫu thuật' }
-              ].map(f => (
+              {[{ key: 'all', label: 'Tất cả' }, ...CHART_SERIES].map(f => (
                 <button
                   key={f.key}
                   type="button"
+                  aria-pressed={activeMetricFilter === f.key}
                   onClick={() => setActiveMetricFilter(f.key)}
                   style={{
                     padding: '0.22rem 0.55rem',
@@ -660,76 +651,63 @@ const AnalyticsTab = ({ initialDate = '' }) => {
                 Đang vẽ biểu đồ xu hướng...
               </div>
             </div>
+          ) : !hasRecordedReports ? (
+            <div style={{ padding: '3rem 1rem', textAlign: 'center', color: '#64748B' }}>Chưa có báo cáo đã nộp trong khoảng thời gian này.</div>
           ) : (
             <div style={{ position: 'relative', width: '100%', overflowX: 'auto' }}>
-              <svg viewBox={'0 0 ' + width + ' ' + height} style={{ width: '100%', height: 'auto', minWidth: '550px' }}>
+              <svg viewBox={'0 0 ' + width + ' ' + height} role="group" aria-label="Biểu đồ xu hướng số ca theo thời gian" style={{ width: '100%', height: 'auto', minWidth: '550px' }}>
                 <defs>
                   <linearGradient id="blueGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#2563EB" stopOpacity="0.35" />
                     <stop offset="100%" stopColor="#2563EB" stopOpacity="0.0" />
                   </linearGradient>
-                  <linearGradient id="greenGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#10B981" stopOpacity="0.3" />
-                    <stop offset="100%" stopColor="#10B981" stopOpacity="0.0" />
-                  </linearGradient>
-                  <linearGradient id="amberGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#F59E0B" stopOpacity="0.3" />
-                    <stop offset="100%" stopColor="#F59E0B" stopOpacity="0.0" />
-                  </linearGradient>
                 </defs>
+
+                <text x={padLeft} y={17} fontSize="10" fontWeight="800" fill="#475569">{activeMetricFilter === 'all' ? 'Lượt khám · trục trái' : 'Số ca · trục trái'}</text>
+                {activeMetricFilter === 'all' && <text x={width - padRight} y={17} textAnchor="end" fontSize="10" fontWeight="800" fill="#475569">Các chỉ số khác · trục phải</text>}
 
                 {/* Grid Lines (5 horizontal levels) */}
                 {[0, 0.25, 0.5, 0.75, 1].map((pct, i) => {
                   const y = padTop + plotH * (1 - pct);
-                  const val = Math.round(chartMetrics.maxVal * pct);
+                  const val = Math.round(chartMetrics.leftMax * pct);
                   return (
                     <g key={i}>
                       <line x1={padLeft} y1={y} x2={width - padRight} y2={y} stroke="#F1F5F9" strokeWidth="1.5" />
                       <text x={padLeft - 8} y={y + 4} textAnchor="end" fontSize="10" fontWeight="700" fill="#94A3B8">
                         {val}
                       </text>
+                      {activeMetricFilter === 'all' && <text x={width - padRight + 8} y={y + 4} textAnchor="start" fontSize="10" fontWeight="700" fill="#94A3B8">{Math.round(chartMetrics.rightMax * pct)}</text>}
                     </g>
                   );
                 })}
 
-                {/* Area Under Curve (Lượt Khám) */}
                 {(activeMetricFilter === 'all' || activeMetricFilter === 'tongSoKham') && (
-                  <>
-                    <path d={buildAreaPath('tongSoKham')} fill="url(#blueGrad)" />
-                    <path d={buildSvgPath('tongSoKham')} fill="none" stroke="#2563EB" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                  </>
+                  <path d={buildAreaPath('tongSoKham')} fill="url(#blueGrad)" />
                 )}
-
-                {/* Area Under Curve (Nhập Viện) */}
-                {(activeMetricFilter === 'all' || activeMetricFilter === 'benhMoi') && (
-                  <>
-                    <path d={buildAreaPath('benhMoi')} fill="url(#greenGrad)" />
-                    <path d={buildSvgPath('benhMoi')} fill="none" stroke="#059669" strokeWidth="2.5" strokeDasharray="4 4" strokeLinecap="round" strokeLinejoin="round" />
-                  </>
-                )}
-
-                {/* Curve (Phẫu thuật) */}
-                {(activeMetricFilter === 'all' || activeMetricFilter === 'phauThuat') && (
-                  <path d={buildSvgPath('phauThuat')} fill="none" stroke="#0891B2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                )}
+                {CHART_SERIES.filter(item => activeMetricFilter === 'all' || activeMetricFilter === item.key).map(item => (
+                  <path key={item.key} d={buildSvgPath(item.key)} fill="none" stroke={item.color}
+                    strokeWidth={item.key === 'tongSoKham' ? 3 : 2.5} strokeLinecap="round" strokeLinejoin="round"
+                    strokeDasharray={item.key === 'chuyenVien' ? '6 4' : undefined} />
+                ))}
 
                 {/* Interactive Data Points & Vertical Highlights */}
                 {timeSeries.map((pt, i) => {
-                  const { x, y } = getCoords(pt.tongSoKham || 0, i, timeSeries.length);
+                  const { x } = getCoords(0, i, timeSeries.length);
                   const isCur = pt.isCurrent;
                   return (
-                    <g key={i} onMouseEnter={() => setHoveredPoint(pt)} onMouseLeave={() => setHoveredPoint(null)} style={{ cursor: 'pointer' }}>
-                      {isCur && (
-                        <line x1={x} y1={padTop} x2={x} y2={padTop + plotH} stroke="#2563EB" strokeWidth="1.5" strokeDasharray="3 3" opacity="0.6" />
+                    <g key={pt.date}>
+                      {(isCur || hoveredPoint?.date === pt.date) && (
+                        <line x1={x} y1={padTop} x2={x} y2={padTop + plotH} stroke="#94A3B8" strokeWidth="1.5" strokeDasharray="3 3" opacity="0.7" />
                       )}
-                      <circle
-                        cx={x}
-                        cy={y}
-                        r={isCur ? 6 : 4}
-                        fill="#FFFFFF"
-                        stroke="#2563EB"
-                        strokeWidth={isCur ? 3 : 2}
-                      />
+                      {CHART_SERIES.filter(item => activeMetricFilter === 'all' || activeMetricFilter === item.key).map(item => (
+                        <circle key={item.key} cx={x} cy={getCoords(Number(pt[item.key]) || 0, i, timeSeries.length, item.key).y}
+                          r={hoveredPoint?.date === pt.date ? 5 : 3} fill="#fff" stroke={item.color} strokeWidth="2" />
+                      ))}
+                      <rect x={x - plotW / Math.max(timeSeries.length - 1, 1) / 2} y={padTop} width={plotW / Math.max(timeSeries.length - 1, 1)} height={plotH}
+                        fill="transparent" tabIndex={0} role="button"
+                        aria-label={`${pt.fullLabel}: ${CHART_SERIES.map(item => `${item.label} ${pt[item.key] || 0} ca`).join(', ')}`}
+                        onMouseEnter={() => setHoveredPoint(pt)} onMouseLeave={() => setHoveredPoint(null)}
+                        onFocus={() => setHoveredPoint(pt)} onBlur={() => setHoveredPoint(null)} />
                       {/* X-axis label */}
                       <text
                         x={x}
@@ -752,7 +730,7 @@ const AnalyticsTab = ({ initialDate = '' }) => {
           {hoveredPoint && (
             <div style={{
               position: 'absolute',
-              top: '10px',
+              top: '95px',
               right: '15px',
               backgroundColor: 'rgba(15, 44, 89, 0.92)',
               color: '#FFFFFF',
@@ -766,27 +744,20 @@ const AnalyticsTab = ({ initialDate = '' }) => {
               <div style={{ fontWeight: '800', color: '#93C5FD', marginBottom: '2px' }}>
                 {hoveredPoint.fullLabel}
               </div>
-              <div>Tổng khám: <strong>{hoveredPoint.tongSoKham} ca</strong></div>
-              <div>Nhập viện: <strong>{hoveredPoint.benhMoi} ca</strong> | Xuất viện: <strong>{hoveredPoint.xuatVien} ca</strong></div>
-              <div>Chuyển viện: <strong>{hoveredPoint.chuyenVien} ca</strong> | Phẫu thuật: <strong>{hoveredPoint.phauThuat} ca</strong></div>
+              <div style={{ marginBottom: '3px', color: '#CBD5E1' }}>{hoveredPoint.submittedDeptsCount} báo cáo đã nộp</div>
+              {CHART_SERIES.map(item => <div key={item.key}>{item.label}: <strong>{hoveredPoint[item.key] || 0} ca</strong></div>)}
             </div>
           )}
 
           {/* Legend */}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '1.25rem', marginTop: '0.75rem', fontSize: '0.76rem', fontWeight: '700' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#1E40AF' }}>
-              <div style={{ width: '12px', height: '4px', backgroundColor: '#2563EB', borderRadius: '2px' }} />
-              <span>Tổng Khám</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#059669' }}>
-              <div style={{ width: '12px', height: '4px', backgroundColor: '#059669', borderRadius: '2px' }} />
-              <span>Nhập Viện</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#0891B2' }}>
-              <div style={{ width: '12px', height: '4px', backgroundColor: '#0891B2', borderRadius: '2px' }} />
-              <span>Phẫu Thuật</span>
-            </div>
+          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '0.65rem 1.1rem', marginTop: '0.75rem', fontSize: '0.76rem', fontWeight: '700' }}>
+            {CHART_SERIES.map(item => <div key={item.key} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: item.color, opacity: activeMetricFilter === 'all' || activeMetricFilter === item.key ? 1 : 0.45 }}>
+              <div style={{ width: '13px', height: '4px', backgroundColor: item.color, borderRadius: '2px' }} />
+              <span>{item.label}</span>
+            </div>)}
           </div>
+          {activeMetricFilter === 'all' && <div style={{ marginTop: '0.5rem', color: '#64748B', fontSize: '0.7rem', textAlign: 'center' }}>Lượt khám dùng trục trái; nhập viện, xuất viện, chuyển viện và phẫu thuật dùng trục phải. Di chuột hoặc dùng phím Tab để xem số ca.</div>}
+          {!loading && hasRecordedReports && !selectedMetricHasData && <div style={{ marginTop: '0.5rem', color: '#92400E', fontSize: '0.73rem', textAlign: 'center' }}>Chưa ghi nhận {CHART_SERIES.find(item => item.key === activeMetricFilter)?.label.toLowerCase()} trong khoảng thời gian này (0 ca).</div>}
         </div>
 
         {/* Chart 2: Department Patient Volume Bar Distribution */}
