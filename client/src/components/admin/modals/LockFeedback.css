@@ -125,22 +125,18 @@
   width: min(510px, calc(100vw - 32px));
   box-sizing: border-box;
   padding: 15px;
-  border: 1px solid #d7e5ed;
-  border-left: 4px solid #20cca5;
+  border: 1px solid #f5d99a;
+  border-left: 4px solid #d97706;
   border-radius: 14px;
-  background: #fff;
-  box-shadow: 0 20px 48px rgba(9, 32, 65, .24);
+  background: #fffbeb;
+  box-shadow: 0 20px 48px rgba(92, 52, 6, .18);
   animation: security-panel-enter .25s ease-out both;
 }
+.locked-action-notice-icon { display: grid; place-items: center; width: 42px; height: 42px; flex: none; border-radius: 50%; background: #fef3c7; color: #b45309; font-size: 1.1rem; }
 .locked-action-notice-copy { flex: 1; min-width: 0; }
-.locked-action-notice-copy strong { display: block; margin-bottom: 3px; color: #0f2c59; font-size: .91rem; }
-.locked-action-notice-copy span { display: block; color: #52647f; font-size: .77rem; line-height: 1.4; }
+.locked-action-notice-copy strong { display: block; margin-bottom: 3px; color: #78350f; font-size: .91rem; }
+.locked-action-notice-copy span { display: block; color: #92400e; font-size: .77rem; line-height: 1.4; }
 .locked-action-notice-close { align-self: flex-start; border: 0; background: transparent; color: #64748b; font-size: 1.25rem; line-height: 1; cursor: pointer; }
-
-.locked-report-banner { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding: 13px 15px; border: 1px solid #b7e8db; border-radius: 12px; background: #f0fdf9; }
-.locked-report-banner > div { flex: 1; min-width: 0; }
-.locked-report-banner strong { display: block; color: #0f2c59; font-size: .87rem; }
-.locked-report-banner span { display: block; margin-top: 2px; color: #405674; font-size: .78rem; line-height: 1.4; }
 
 @keyframes security-panel-enter { from { opacity: 0; transform: translateY(10px) scale(.985); } to { opacity: 1; transform: none; } }
 @media (max-width: 650px) {
@@ -150,7 +146,6 @@
   .security-lock-panel-wide .security-lock-heading { gap: 12px; }
   .security-lock-panel { padding: 22px; }
   .locked-action-notice { right: 16px; bottom: 16px; left: 16px; width: auto; }
-  .locked-report-banner { flex-wrap: wrap; }
 }
 @media (max-width: 420px) { .security-lock-grid, .security-lock-panel-wide .security-lock-grid { grid-template-columns: 1fr; } .security-lock-actions { justify-content: stretch; } .security-lock-actions > button { flex: 1; } }
 @media (max-height: 700px) { .security-lock-panel-wide { overflow: auto; } }

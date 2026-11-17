@@ -18,6 +18,7 @@ import {
   FaChartLine,
   FaHistory,
   FaRocket,
+  FaLock,
   FaFolderOpen
 } from 'react-icons/fa';
 import reportService from '../services/reportService';
@@ -1463,7 +1464,7 @@ const AdminDashboard = () => {
 
       {lockedAction && modalOpen && modalReportLocked && (
         <div className="locked-action-notice" role="alert">
-          <LockIcon locked={true} size={42} />
+          <span className="locked-action-notice-icon" aria-hidden="true"><FaLock /></span>
           <div className="locked-action-notice-copy">
             <strong>Cần mở khóa sổ để thực hiện thao tác</strong>
             <span>Báo cáo {modalDept?.departmentName || 'của khoa'} đang khóa sổ; chưa thể {lockedAction}.</span>

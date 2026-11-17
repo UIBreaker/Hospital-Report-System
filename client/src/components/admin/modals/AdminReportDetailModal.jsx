@@ -348,13 +348,6 @@ const AdminReportDetailModal = ({
               <FaCheck /> {saveSuccess}
             </div>
           )}
-          {hasReport && modalReportLocked && (
-            <div className="locked-report-banner" role="status">
-              <LockIcon locked={true} size={36} />
-              <div><strong>Báo cáo đang khóa sổ</strong><span>Cần mở khóa sổ để thực hiện thao tác.</span></div>
-            </div>
-          )}
-
           {loadingReport ? (
             <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--brand-blue)' }}>
               <FaSpinner className="spinner" style={{ fontSize: '2.5rem', marginBottom: '1rem' }} />
